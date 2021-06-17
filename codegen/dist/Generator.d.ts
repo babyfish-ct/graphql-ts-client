@@ -5,4 +5,8 @@ export declare class Generator {
     generate(): Promise<void>;
     private parseSchema;
     private recreateTargetDir;
+    private generateFetcherTypes;
+    private generateInputTypes;
+    private generateEnumTypes;
+    private writeSimpleIndex;
 }

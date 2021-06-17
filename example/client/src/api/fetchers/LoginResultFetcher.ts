@@ -1,4 +1,5 @@
-import { Fetcher } from 'graphql-ts-client-api';
+import { Fetcher, createFetcher } from 'graphql-ts-client-api';
+import {UserFetcher} from '.';
 
 export interface LoginResultFetcher<T> extends Fetcher<T> {
 
@@ -8,3 +9,10 @@ export interface LoginResultFetcher<T> extends Fetcher<T> {
 	user<X>(child: UserFetcher<X>): LoginResultFetcher<T & {readonly user: X}>;
 	readonly "~user": LoginResultFetcher<Omit<T, 'user'>>;
 }
+
+export const LoginResult$ = createFetcher<LoginResultFetcher<{}>>('user');
+
+export const LoginResult$$ = LoginResult$
+	.token
+
+;

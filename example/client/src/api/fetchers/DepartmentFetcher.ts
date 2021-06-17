@@ -1,4 +1,5 @@
-import { Fetcher } from 'graphql-ts-client-api';
+import { Fetcher, createFetcher } from 'graphql-ts-client-api';
+import {EmployeeFetcher} from '.';
 
 export interface DepartmentFetcher<T> extends Fetcher<T> {
 
@@ -14,3 +15,12 @@ export interface DepartmentFetcher<T> extends Fetcher<T> {
 	readonly name: DepartmentFetcher<T & {readonly name: string}>;
 	readonly "~name": DepartmentFetcher<Omit<T, 'name'>>;
 }
+
+export const Department$ = createFetcher<DepartmentFetcher<{}>>('employees');
+
+export const Department$$ = Department$
+	.avgSalary
+	.id
+	.name
+
+;

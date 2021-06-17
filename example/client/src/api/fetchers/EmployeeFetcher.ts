@@ -1,4 +1,6 @@
-import { Fetcher } from 'graphql-ts-client-api';
+import { Fetcher, createFetcher } from 'graphql-ts-client-api';
+import {DepartmentFetcher} from '.';
+import {Gender} from '../enums';
 
 export interface EmployeeFetcher<T> extends Fetcher<T> {
 
@@ -14,7 +16,7 @@ export interface EmployeeFetcher<T> extends Fetcher<T> {
 	readonly name: EmployeeFetcher<T & {readonly name: string}>;
 	readonly "~name": EmployeeFetcher<Omit<T, 'name'>>;
 
-	readonly salary: EmployeeFetcher<T & {readonly salary: number}>;
+	readonly salary: EmployeeFetcher<T & {readonly salary?: number}>;
 	readonly "~salary": EmployeeFetcher<Omit<T, 'salary'>>;
 
 	subordinates<X>(child: EmployeeFetcher<X>): EmployeeFetcher<T & {readonly subordinates: X[]}>;
@@ -23,3 +25,13 @@ export interface EmployeeFetcher<T> extends Fetcher<T> {
 	supervisor<X>(child: EmployeeFetcher<X>): EmployeeFetcher<T & {readonly supervisor?: X}>;
 	readonly "~supervisor": EmployeeFetcher<Omit<T, 'supervisor'>>;
 }
+
+export const Employee$ = createFetcher<EmployeeFetcher<{}>>('department', 'subordinates', 'supervisor');
+
+export const Employee$$ = Employee$
+	.gender
+	.id
+	.name
+	.salary
+
+;

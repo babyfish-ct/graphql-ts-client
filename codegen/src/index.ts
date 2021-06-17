@@ -1,2 +1,2 @@
 export {Generator} from './Generator';
-export {GeneratorConfig} from './GeneratorConfig';
+export type {GeneratorConfig} from './GeneratorConfig';

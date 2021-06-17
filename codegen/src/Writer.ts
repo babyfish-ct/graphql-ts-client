@@ -1,7 +1,7 @@
 import { WriteStream } from "fs";
 import { GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLType, GraphQLUnionType } from "graphql";
+import { generatedFetcherTypeName } from "./FetcherWriter";
 import { GeneratorConfig } from "./GeneratorConfig";
-import { typeLocation } from "./TypeLocation";
 
 export abstract class Writer {
 
@@ -10,6 +10,8 @@ export abstract class Writer {
     private indent: string;
 
     private needIndent = false;
+
+    private importStatements = new Set<string>();
 
     private importedTypes = new Set<GraphQLNamedType>();
 
@@ -23,19 +25,47 @@ export abstract class Writer {
     }
 
     write() {
-        this.importTypes();
-        for (const importedType of this.importedTypes) {
-            const [dir, fileName] = typeLocation(importedType, this.config);
-        }
+        this.prepareImportings();
         this.imported = true;
+        for (const importStatement of this.importStatements) {
+            this.stream.write(importStatement);
+            this.stream.write("\n");
+        }
+        for (const importedType of this.importedTypes) {
+            const behavior = this.importingBehavior(importedType);
+            if (behavior === 'SELF') {
+                continue;
+            }
+            const importedName = 
+                importedType instanceof GraphQLObjectType ||
+                importedType instanceof GraphQLInterfaceType ?
+                generatedFetcherTypeName(importedType, this.config) :
+                importedType.name;
+            if (behavior === 'SAME_DIR') {
+                this.stream.write(`import {${importedName}} from '.';\n`);
+            } else {
+                let subDir: string;
+                if (importedType instanceof GraphQLInputObjectType) {
+                    subDir = "inputs"; 
+                } else if (importedType instanceof GraphQLEnumType) {
+                    subDir = "enums"; 
+                } else {
+                    subDir = "fetchers";
+                }
+                this.stream.write(`import {${importedName}} from '../${subDir}';\n`);
+            }
+        }
+        if (this.importStatements.size !== 0 || this.importedTypes.size !== 0) {
+            this.stream.write("\n");
+        }
         this.writeCode();
     }
 
-    protected abstract importTypes();
+    protected prepareImportings() {}
 
     protected abstract writeCode();
 
-    protected importField(field: GraphQLField<unknown, unknown>) {
+    protected importFieldTypes(field: GraphQLField<unknown, unknown>) {
         this.importType(field.type);
         for (const arg of field.args) {
             this.importType(arg.type);
@@ -46,6 +76,41 @@ export abstract class Writer {
         if (this.imported) {
             throw new Error("Writer's importing has been terminated");
         }
+        if (type instanceof GraphQLNonNull) {
+            this.importType(type.ofType);
+        } else if (type instanceof GraphQLList) {
+            this.importType(type.ofType);
+        } else if (type instanceof GraphQLUnionType) {
+            for (const itemType of type.getTypes()) {
+                this.importedTypes.add(itemType);
+            }
+        } else if (type instanceof GraphQLObjectType) {
+            this.importedTypes.add(type);
+        } else if (type instanceof GraphQLInterfaceType) {
+            this.importedTypes.add(type);
+        } else if (type instanceof GraphQLInputObjectType) {
+            this.importedTypes.add(type);
+        } else if (type instanceof GraphQLEnumType) {
+            this.importedTypes.add(type);
+        }
+    }
+
+    protected importStatement(statement: string) {
+        if (this.imported) {
+            throw new Error("Writer's importing has been terminated");
+        }
+        let stmt = statement;
+        if (stmt.endsWith("\n")) {
+            stmt = stmt.substring(0, stmt.length - 1);
+        }
+        if (!stmt.endsWith(";")) {
+            stmt += ";";
+        }
+        this.importStatements.add(stmt);
+    }
+
+    protected importingBehavior(type: GraphQLNamedType): ImportingBehavior {
+        return "OTHER_DIR";
     }
 
     protected enter(type: ScopeType, multiLines: boolean = false) {
@@ -101,7 +166,7 @@ export abstract class Writer {
         const scope = this.currentScope;
         if (scope.dirty) {
             if (value !== undefined) {
-                this.text("value");
+                this.text(value);
             }
             if (scope.multiLines) {
                 this.text("\n");
@@ -126,7 +191,7 @@ export abstract class Writer {
             if (overrideObjectTypeName !== undefined) {
                 this.text(overrideObjectTypeName);
             } else if (type instanceof GraphQLUnionType) {
-                this.enter("NONE");
+                this.enter("BLANK");
                 for (const itemType of type.getTypes()) {
                     this.separator(" | ");
                     this.text(itemType.name);    
@@ -166,7 +231,9 @@ export abstract class Writer {
     }
 }
 
-export type ScopeType = "NONE" | "BLOCK" | "PARAMETERS";
+export type ScopeType = "BLANK" | "BLOCK" | "PARAMETERS";
+
+export type ImportingBehavior = "SELF" | "SAME_DIR" | "OTHER_DIR";
 
 interface Scope {
     readonly type: ScopeType;
@@ -175,7 +242,7 @@ interface Scope {
 }
 
 const GLOBAL_SCOPE: Scope = {
-    type: "NONE",
+    type: "BLANK",
     multiLines: true,
     dirty: true
 }

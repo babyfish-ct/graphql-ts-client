@@ -13,7 +13,10 @@ exports.Generator = void 0;
 const graphql_1 = require("graphql");
 const fs_1 = require("fs");
 const util_1 = require("util");
-const TypeGenerator_1 = require("./TypeGenerator");
+const path_1 = require("path");
+const FetcherWriter_1 = require("./FetcherWriter");
+const EnumWriter_1 = require("./EnumWriter");
+const InputWriter_1 = require("./InputWriter");
 class Generator {
     constructor(config) {
         this.config = config;
@@ -24,14 +27,35 @@ class Generator {
             yield this.recreateTargetDir();
             const queryType = schema.getQueryType();
             const mutationType = schema.getMutationType();
+            const fetcherTypes = [];
+            const inputTypes = [];
+            const enumTypes = [];
             const typeMap = schema.getTypeMap();
             for (const typeName in typeMap) {
                 if (!typeName.startsWith("__")) {
                     const type = typeMap[typeName];
                     if (type !== queryType && type !== mutationType) {
-                        TypeGenerator_1.generateType(type, this.config);
+                        if (type instanceof graphql_1.GraphQLObjectType ||
+                            type instanceof graphql_1.GraphQLInterfaceType) {
+                            fetcherTypes.push(type);
+                        }
+                        else if (type instanceof graphql_1.GraphQLInputObjectType) {
+                            inputTypes.push(type);
+                        }
+                        else if (type instanceof graphql_1.GraphQLEnumType) {
+                            enumTypes.push(type);
+                        }
                     }
                 }
+            }
+            if (fetcherTypes.length !== 0) {
+                this.generateFetcherTypes(fetcherTypes);
+            }
+            if (inputTypes.length !== 0) {
+                this.generateInputTypes(inputTypes);
+            }
+            if (enumTypes.length !== 0) {
+                this.generateEnumTypes(enumTypes);
             }
         });
     }
@@ -77,6 +101,74 @@ class Generator {
                     throw ex;
                 }
             }
+        });
+    }
+    generateFetcherTypes(fetcherTypes) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dir = path_1.join(this.config.targetDir, "fetchers");
+            if (!(yield existsAsync(dir))) {
+                yield mkdirAsync(dir);
+            }
+            const promises = fetcherTypes
+                .map((type) => __awaiter(this, void 0, void 0, function* () {
+                const stream = fs_1.createWriteStream(path_1.join(dir, `${FetcherWriter_1.generatedFetcherTypeName(type, this.config)}.ts`));
+                new FetcherWriter_1.FetcherWriter(type, stream, this.config).write();
+                yield stream.end();
+            }));
+            yield Promise.all([
+                ...promises,
+                (() => __awaiter(this, void 0, void 0, function* () {
+                    const stream = fs_1.createWriteStream(path_1.join(dir, "index.ts"));
+                    for (const type of fetcherTypes) {
+                        const generatedName = FetcherWriter_1.generatedFetcherTypeName(type, this.config);
+                        stream.write(`export type {${generatedName}} from './${generatedName}';\n`);
+                    }
+                    yield stream.end();
+                }))()
+            ]);
+        });
+    }
+    generateInputTypes(inputTypes) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dir = path_1.join(this.config.targetDir, "inputs");
+            if (!(yield existsAsync(dir))) {
+                yield mkdirAsync(dir);
+            }
+            const promises = inputTypes.map((type) => __awaiter(this, void 0, void 0, function* () {
+                const stream = fs_1.createWriteStream(path_1.join(dir, `${type.name}.ts`));
+                new InputWriter_1.InputWriter(type, stream, this.config).write();
+                yield stream.end();
+            }));
+            yield Promise.all([
+                ...promises,
+                this.writeSimpleIndex(dir, inputTypes)
+            ]);
+        });
+    }
+    generateEnumTypes(enumTypes) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const dir = path_1.join(this.config.targetDir, "enums");
+            if (!(yield existsAsync(dir))) {
+                yield mkdirAsync(dir);
+            }
+            const promises = enumTypes.map((type) => __awaiter(this, void 0, void 0, function* () {
+                const stream = fs_1.createWriteStream(path_1.join(dir, `${type.name}.ts`));
+                new EnumWriter_1.EnumWriter(type, stream, this.config).write();
+                yield stream.end();
+            }));
+            yield Promise.all([
+                ...promises,
+                this.writeSimpleIndex(dir, enumTypes)
+            ]);
+        });
+    }
+    writeSimpleIndex(dir, types) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const stream = fs_1.createWriteStream(path_1.join(dir, "index.ts"));
+            for (const type of types) {
+                stream.write(`export type {${type.name}} from './${type.name}';\n`);
+            }
+            yield stream.end();
         });
     }
 }

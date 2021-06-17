@@ -1,8 +1,11 @@
-import { buildSchema, GraphQLSchema } from "graphql";
+import { buildSchema, GraphQLEnumType, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
-import { mkdir, rmdir, exists } from "fs";
+import { mkdir, rmdir, exists, createWriteStream } from "fs";
 import { promisify } from "util";
-import { generateType } from "./TypeGenerator";
+import { join } from "path";
+import { FetcherWriter, generatedFetcherTypeName } from "./FetcherWriter";
+import { EnumWriter } from "./EnumWriter";
+import { InputWriter } from "./InputWriter";
 
 export class Generator {
 
@@ -14,14 +17,34 @@ export class Generator {
         await this.recreateTargetDir();
         const queryType = schema.getQueryType();
         const mutationType = schema.getMutationType();
+        const fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType> = [];
+        const inputTypes: GraphQLInputObjectType[] = [];
+        const enumTypes: GraphQLEnumType[] = [];
         const typeMap = schema.getTypeMap();
         for (const typeName in typeMap) {
             if (!typeName.startsWith("__")) {
                 const type = typeMap[typeName]!;
                 if (type !== queryType && type !== mutationType) {
-                    generateType(type, this.config);
+                    if (type instanceof GraphQLObjectType || 
+                        type instanceof GraphQLInterfaceType
+                    ) {
+                        fetcherTypes.push(type);
+                    } else if (type instanceof GraphQLInputObjectType) {
+                        inputTypes.push(type);
+                    } else if (type instanceof GraphQLEnumType) {
+                        enumTypes.push(type);
+                    }
                 }
             }
+        }
+        if (fetcherTypes.length !== 0) {
+            this.generateFetcherTypes(fetcherTypes);
+        }
+        if (inputTypes.length !== 0) {
+            this.generateInputTypes(inputTypes);
+        }
+        if (enumTypes.length !== 0) {
+            this.generateEnumTypes(enumTypes);
         }
     }
 
@@ -63,6 +86,82 @@ export class Generator {
                 throw ex;
             }
         }
+    }
+
+    private async generateFetcherTypes(
+        fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType>
+    ) {
+        const dir = join(this.config.targetDir, "fetchers");
+        if (!await existsAsync(dir)) {
+            await mkdirAsync(dir);
+        }
+        const promises = fetcherTypes
+            .map(async type => {
+                const stream = createWriteStream(
+                    join(dir, `${generatedFetcherTypeName(type, this.config)}.ts`)
+                );
+                new FetcherWriter(type, stream, this.config).write();
+                await stream.end();
+            });
+        await Promise.all([
+            ...promises,
+            (async () => {
+                const stream = createWriteStream(join(dir, "index.ts"));
+                for (const type of fetcherTypes) {
+                    const generatedName = generatedFetcherTypeName(type, this.config);
+                    stream.write(
+                        `export type {${generatedName}} from './${generatedName}';\n`
+                    );
+                }
+                await stream.end();
+            })()
+        ]);
+    }
+
+    private async generateInputTypes(inputTypes: GraphQLInputObjectType[]) {
+        const dir = join(this.config.targetDir, "inputs");
+        if (!await existsAsync(dir)) {
+            await mkdirAsync(dir);
+        }
+        const promises = inputTypes.map(async type => {
+            const stream = createWriteStream(
+                join(dir, `${type.name}.ts`)
+            );
+            new InputWriter(type, stream, this.config).write();
+            await stream.end();
+        });
+        await Promise.all([
+            ...promises,
+            this.writeSimpleIndex(dir, inputTypes)
+        ]);
+    }
+
+    private async generateEnumTypes(enumTypes: GraphQLEnumType[]) {
+        const dir = join(this.config.targetDir, "enums");
+        if (!await existsAsync(dir)) {
+            await mkdirAsync(dir);
+        }
+        const promises = enumTypes.map(async type => {
+            const stream = createWriteStream(
+                join(dir, `${type.name}.ts`)
+            );
+            new EnumWriter(type, stream, this.config).write();
+            await stream.end();
+        });
+        await Promise.all([
+            ...promises,
+            this.writeSimpleIndex(dir, enumTypes)
+        ]);
+    }
+
+    private async writeSimpleIndex(dir: string, types: GraphQLNamedType[]) {
+        const stream = createWriteStream(join(dir, "index.ts"));
+        for (const type of types) {
+            stream.write(
+                `export type {${type.name}} from './${type.name}';\n`
+            );
+        }
+        await stream.end();
     }
 }
 

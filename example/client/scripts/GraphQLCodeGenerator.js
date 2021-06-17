@@ -21,7 +21,7 @@ const generator = new codegen.Generator({
           gender: Gender!
           id: Long!
           name: String!
-          salary: BigDecimal!
+          salary: BigDecimal
           subordinates: [Employee!]!
           supervisor: Employee
         }

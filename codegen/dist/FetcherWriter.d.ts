@@ -1,14 +1,16 @@
 /// <reference types="node" />
 import { WriteStream } from "fs";
-import { GraphQLInterfaceType, GraphQLObjectType } from "graphql";
+import { GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
-import { Writer } from "./Writer";
+import { ImportingBehavior, Writer } from "./Writer";
 export declare class FetcherWriter extends Writer {
     private modelType;
-    private fetcherSuffix;
+    private genartedName;
     constructor(modelType: GraphQLObjectType | GraphQLInterfaceType, stream: WriteStream, config: GeneratorConfig);
-    write(): void;
+    protected prepareImportings(): void;
+    protected importingBehavior(type: GraphQLNamedType): ImportingBehavior;
+    protected writeCode(): void;
     private writePositiveProp;
     private writeNegativeProp;
 }
-export declare const DEFAULT_FETCHER_SUBFFIX = "Fetcher";
+export declare function generatedFetcherTypeName(fetcherType: GraphQLObjectType | GraphQLInterfaceType, config: GeneratorConfig): string;
