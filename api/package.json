@@ -1,0 +1,9 @@
+{
+  "name": "graphql-ts-client-api",
+  "version": "1.0.0",
+  "description": "Strong type API for graphql client",
+  "main": "index.js",
+  "repository": "https://github.com/babyfish-ct/graphql-ts-client",
+  "author": "ChenTao",
+  "license": "MIT"
+}
