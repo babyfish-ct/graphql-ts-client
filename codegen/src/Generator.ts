@@ -12,10 +12,15 @@ export class Generator {
     async generate() {
         const schema = await this.parseSchema();
         await this.recreateTargetDir();
+        const queryType = schema.getQueryType();
+        const mutationType = schema.getMutationType();
         const typeMap = schema.getTypeMap();
         for (const typeName in typeMap) {
             if (!typeName.startsWith("__")) {
-                generateType(typeMap[typeName]!, this.config);
+                const type = typeMap[typeName]!;
+                if (type !== queryType && type !== mutationType) {
+                    generateType(type, this.config);
+                }
             }
         }
     }

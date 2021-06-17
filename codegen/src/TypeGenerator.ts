@@ -2,7 +2,7 @@ import { GraphQLNamedType, GraphQLObjectType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { createWriteStream } from "fs";
 import { typeLocation } from "./TypeLocation";
-import { ObjectTypeWriter } from "./ObjectTypeWriter";
+import { FetcherWriter } from "./FetcherWriter";
 import { mkdir, exists } from "fs";
 import { promisify } from "util";
 import { join } from "path";
@@ -18,7 +18,7 @@ export async function generateType(
         }
         const stream = createWriteStream(join(dir, fileName));
         if (type instanceof GraphQLObjectType) {
-            new ObjectTypeWriter(
+            new FetcherWriter(
                 type,
                 stream,
                 config

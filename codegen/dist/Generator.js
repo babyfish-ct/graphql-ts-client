@@ -22,10 +22,15 @@ class Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const schema = yield this.parseSchema();
             yield this.recreateTargetDir();
+            const queryType = schema.getQueryType();
+            const mutationType = schema.getMutationType();
             const typeMap = schema.getTypeMap();
             for (const typeName in typeMap) {
                 if (!typeName.startsWith("__")) {
-                    TypeGenerator_1.generateType(typeMap[typeName], this.config);
+                    const type = typeMap[typeName];
+                    if (type !== queryType && type !== mutationType) {
+                        TypeGenerator_1.generateType(type, this.config);
+                    }
                 }
             }
         });

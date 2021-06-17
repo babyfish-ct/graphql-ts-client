@@ -13,7 +13,7 @@ exports.generateType = void 0;
 const graphql_1 = require("graphql");
 const fs_1 = require("fs");
 const TypeLocation_1 = require("./TypeLocation");
-const ObjectTypeWriter_1 = require("./ObjectTypeWriter");
+const FetcherWriter_1 = require("./FetcherWriter");
 const fs_2 = require("fs");
 const util_1 = require("util");
 const path_1 = require("path");
@@ -27,7 +27,7 @@ function generateType(type, config) {
             }
             const stream = fs_1.createWriteStream(path_1.join(dir, fileName));
             if (type instanceof graphql_1.GraphQLObjectType) {
-                new ObjectTypeWriter_1.ObjectTypeWriter(type, stream, config).write();
+                new FetcherWriter_1.FetcherWriter(type, stream, config).write();
             }
             stream.end();
         }

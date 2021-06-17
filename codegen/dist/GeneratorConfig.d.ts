@@ -4,4 +4,6 @@ export interface GeneratorConfig {
     readonly recreateTargetDir?: boolean;
     readonly targetNamespace?: string;
     readonly indent?: string;
+    readonly modelEditable?: boolean;
+    readonly fetcherSuffix?: string;
 }
