@@ -3,6 +3,9 @@ import {EmployeeFetcher} from '.';
 
 export interface DepartmentFetcher<T> extends Fetcher<T> {
 
+	readonly __typename: DepartmentFetcher<T & {__typename: 'Department'}>;
+	readonly "~__typename": DepartmentFetcher<Omit<T, '__typename'>>;
+
 	readonly avgSalary: DepartmentFetcher<T & {readonly avgSalary?: number}>;
 	readonly "~avgSalary": DepartmentFetcher<Omit<T, 'avgSalary'>>;
 
@@ -16,10 +19,12 @@ export interface DepartmentFetcher<T> extends Fetcher<T> {
 	readonly "~name": DepartmentFetcher<Omit<T, 'name'>>;
 }
 
-export const department$ = createFetcher<DepartmentFetcher<{}>>('employees');
+export const department$ = 
+	createFetcher<DepartmentFetcher<{}>>('employees');
 
-export const department$$ = department$
-	.avgSalary
-	.id
-	.name
-;
+export const department$$ = 
+	department$
+		.avgSalary
+		.id
+		.name
+	;

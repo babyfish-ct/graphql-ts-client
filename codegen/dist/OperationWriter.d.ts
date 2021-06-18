@@ -13,6 +13,7 @@ export declare class OperationWriter extends Writer {
     protected writeCode(): void;
     private writeArgsWrapperType;
     private writeGQL;
+    private writeRequestExpression;
     private writeGQLTypeRef;
 }
 export declare function argsWrapperTypeName(field: GraphQLField<unknown, unknown>): string | undefined;

@@ -1,8 +1,12 @@
+import {replaceNullValues} from 'graphql-ts-client-api';
 import {graphQLClient} from '../GraphQLClient';
 import {DepartmentFetcher} from '../fetchers';
 import {DepartmentSortedType} from '../enums';
 
-export async function departments<X>(args: DepartmentsArgs, fetcher: DepartmentFetcher<X>): Promise<X> {
+export async function departments<X>(
+	args: DepartmentsArgs, 
+	fetcher: DepartmentFetcher<X>
+): Promise<X> {
 	const gql = `
 		query(
 			$descending: Boolean, 
@@ -20,7 +24,9 @@ export async function departments<X>(args: DepartmentsArgs, fetcher: DepartmentF
 			) ${fetcher.toString()}
 		}
 	`;
-	return await graphQLClient().request(gql, args) as X;
+	const fetchedObj = await graphQLClient().request(gql, args);
+	replaceNullValues(fetchedObj);
+	return fetchedObj as X;
 }
 
 export interface DepartmentsArgs {

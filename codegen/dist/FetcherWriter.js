@@ -52,8 +52,16 @@ class FetcherWriter extends Writer_1.Writer {
         t("export interface ");
         t(this.generatedName);
         t("<T> extends Fetcher<T> ");
-        this.enter("BLOCK");
+        this.enter("BLOCK", true);
         t("\n");
+        t("readonly __typename: ");
+        t(this.generatedName);
+        t("<T & {__typename: '");
+        t(this.modelType.name);
+        t("'}>;\n");
+        t('readonly "~__typename": ');
+        t(this.generatedName);
+        t("<Omit<T, '__typename'>>;\n");
         const fieldMap = this.modelType.getFields();
         for (const fieldName in fieldMap) {
             t("\n");
@@ -64,21 +72,25 @@ class FetcherWriter extends Writer_1.Writer {
         this.leave("\n");
         t("\nexport const ");
         t(this.emptyFetcherName);
-        t(" = createFetcher<");
+        t(" = ");
+        this.enter("BLANK", true);
+        t("createFetcher<");
         t(generatedFetcherTypeName(this.modelType, this.config));
         t("<{}>>");
-        this.enter("PARAMETERS", this.methodNames.length > 3);
+        this.enter("PARAMETERS", this.methodNames.length > 1);
         for (const methodName of this.methodNames) {
             this.separator(", ");
             t("'");
             t(methodName);
             t("'");
         }
-        this.leave(";\n");
+        this.leave(";");
+        this.leave();
         if (this.defaultFetcherName !== undefined) {
             t("\nexport const ");
             t(this.defaultFetcherName);
             t(" = ");
+            this.enter("BLANK", true);
             t(this.emptyFetcherName);
             this.enter("BLANK", true);
             for (const propName of this.propNames) {
@@ -86,7 +98,8 @@ class FetcherWriter extends Writer_1.Writer {
                 t(propName);
                 t("\n");
             }
-            this.leave(";\n");
+            this.leave(";");
+            this.leave();
         }
     }
     writePositiveProp(field) {

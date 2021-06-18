@@ -4,6 +4,9 @@ import {Gender} from '../enums';
 
 export interface EmployeeFetcher<T> extends Fetcher<T> {
 
+	readonly __typename: EmployeeFetcher<T & {__typename: 'Employee'}>;
+	readonly "~__typename": EmployeeFetcher<Omit<T, '__typename'>>;
+
 	department<X>(child: DepartmentFetcher<X>): EmployeeFetcher<T & {readonly department: X}>;
 	readonly "~department": EmployeeFetcher<Omit<T, 'department'>>;
 
@@ -26,11 +29,17 @@ export interface EmployeeFetcher<T> extends Fetcher<T> {
 	readonly "~supervisor": EmployeeFetcher<Omit<T, 'supervisor'>>;
 }
 
-export const employee$ = createFetcher<EmployeeFetcher<{}>>('department', 'subordinates', 'supervisor');
+export const employee$ = 
+	createFetcher<EmployeeFetcher<{}>>(
+		'department', 
+		'subordinates', 
+		'supervisor'
+	);
 
-export const employee$$ = employee$
-	.gender
-	.id
-	.name
-	.salary
-;
+export const employee$$ = 
+	employee$
+		.gender
+		.id
+		.name
+		.salary
+	;

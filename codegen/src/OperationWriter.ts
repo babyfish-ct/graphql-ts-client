@@ -1,5 +1,5 @@
 import { WriteStream } from "fs";
-import { FieldDefinitionNode, GraphQLField, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
+import { GraphQLField, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
 import { associatedTypesOf } from "./Associations";
 import { generatedFetcherTypeName } from "./FetcherWriter";
 import { GeneratorConfig } from "./GeneratorConfig";
@@ -23,6 +23,9 @@ export class OperationWriter extends Writer {
     }
 
     protected prepareImportings() {
+        if (this.associatedTypes.length !== 0) {
+            this.importStatement("import {replaceNullValues} from 'graphql-ts-client-api';");
+        }
         this.importStatement("import {graphQLClient} from '../GraphQLClient';");
         this.importFieldTypes(this.field);
     }
@@ -37,7 +40,11 @@ export class OperationWriter extends Writer {
             t("<X>");
         }
         
-        this.enter("PARAMETERS");
+        this.enter(
+            "PARAMETERS", 
+            this.field.args.length !== 0 && 
+            this.associatedTypes.length !== 0
+        );
         if (this.field.args.length !== 0) {
             this.separator(", ");
             if (this.argsWrapperName !== undefined) {
@@ -83,19 +90,17 @@ export class OperationWriter extends Writer {
 
         this.writeGQL();
 
-        t("return await graphQLClient().request(gql");
-        if (this.field.args.length !== 0) {
-            t(", ");
-            if (this.argsWrapperName !== undefined) {
-                t("args");
-            } else {
-                const arg = this.field.args[0];
-                t("{");
-                t(arg.name);
-                t("}");
-            }
+        if (this.associatedTypes.length !== 0) {
+            t("const fetchedObj = ");
+            this.writeRequestExpression();
+            t(";\n"); 
+            t("replaceNullValues(fetchedObj);\n");
+            t("return fetchedObj");
+        } else {
+            t("return ");
+            this.writeRequestExpression();
         }
-        t(") as ");
+        t(" as ");
         if (this.associatedTypes.length !== 0) {
             t("X");
         } else {
@@ -177,6 +182,25 @@ export class OperationWriter extends Writer {
         this.leave("\n");
 
         this.leave("`;\n");
+    }
+
+    private writeRequestExpression() {
+
+        const t = this.text.bind(this);
+
+        t("await graphQLClient().request(gql");
+        if (this.field.args.length !== 0) {
+            t(", ");
+            if (this.argsWrapperName !== undefined) {
+                t("args");
+            } else {
+                const arg = this.field.args[0];
+                t("{");
+                t(arg.name);
+                t("}");
+            }
+        }
+        t(")");
     }
 
     private writeGQLTypeRef(type: GraphQLType) {

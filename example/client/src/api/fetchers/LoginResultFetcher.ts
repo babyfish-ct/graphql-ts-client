@@ -3,6 +3,9 @@ import {UserFetcher} from '.';
 
 export interface LoginResultFetcher<T> extends Fetcher<T> {
 
+	readonly __typename: LoginResultFetcher<T & {__typename: 'LoginResult'}>;
+	readonly "~__typename": LoginResultFetcher<Omit<T, '__typename'>>;
+
 	readonly token: LoginResultFetcher<T & {readonly token: string}>;
 	readonly "~token": LoginResultFetcher<Omit<T, 'token'>>;
 
@@ -10,8 +13,10 @@ export interface LoginResultFetcher<T> extends Fetcher<T> {
 	readonly "~user": LoginResultFetcher<Omit<T, 'user'>>;
 }
 
-export const loginResult$ = createFetcher<LoginResultFetcher<{}>>('user');
+export const loginResult$ = 
+	createFetcher<LoginResultFetcher<{}>>('user');
 
-export const loginResult$$ = loginResult$
-	.token
-;
+export const loginResult$$ = 
+	loginResult$
+		.token
+	;

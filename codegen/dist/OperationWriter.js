@@ -14,6 +14,9 @@ class OperationWriter extends Writer_1.Writer {
         this.associatedTypes = Associations_1.associatedTypesOf(this.field.type);
     }
     prepareImportings() {
+        if (this.associatedTypes.length !== 0) {
+            this.importStatement("import {replaceNullValues} from 'graphql-ts-client-api';");
+        }
         this.importStatement("import {graphQLClient} from '../GraphQLClient';");
         this.importFieldTypes(this.field);
     }
@@ -24,7 +27,8 @@ class OperationWriter extends Writer_1.Writer {
         if (this.associatedTypes.length !== 0) {
             t("<X>");
         }
-        this.enter("PARAMETERS");
+        this.enter("PARAMETERS", this.field.args.length !== 0 &&
+            this.associatedTypes.length !== 0);
         if (this.field.args.length !== 0) {
             this.separator(", ");
             if (this.argsWrapperName !== undefined) {
@@ -68,20 +72,18 @@ class OperationWriter extends Writer_1.Writer {
         t("> ");
         this.enter("BLOCK", true);
         this.writeGQL();
-        t("return await graphQLClient().request(gql");
-        if (this.field.args.length !== 0) {
-            t(", ");
-            if (this.argsWrapperName !== undefined) {
-                t("args");
-            }
-            else {
-                const arg = this.field.args[0];
-                t("{");
-                t(arg.name);
-                t("}");
-            }
+        if (this.associatedTypes.length !== 0) {
+            t("const fetchedObj = ");
+            this.writeRequestExpression();
+            t(";\n");
+            t("replaceNullValues(fetchedObj);\n");
+            t("return fetchedObj");
         }
-        t(") as ");
+        else {
+            t("return ");
+            this.writeRequestExpression();
+        }
+        t(" as ");
         if (this.associatedTypes.length !== 0) {
             t("X");
         }
@@ -152,6 +154,23 @@ class OperationWriter extends Writer_1.Writer {
         }
         this.leave("\n");
         this.leave("`;\n");
+    }
+    writeRequestExpression() {
+        const t = this.text.bind(this);
+        t("await graphQLClient().request(gql");
+        if (this.field.args.length !== 0) {
+            t(", ");
+            if (this.argsWrapperName !== undefined) {
+                t("args");
+            }
+            else {
+                const arg = this.field.args[0];
+                t("{");
+                t(arg.name);
+                t("}");
+            }
+        }
+        t(")");
     }
     writeGQLTypeRef(type) {
         if (type instanceof graphql_1.GraphQLNonNull) {
