@@ -3,7 +3,9 @@ import {EmployeeInput} from '../inputs';
 
 export async function createEmployee(input: EmployeeInput): Promise<number> {
 	const gql = `
-		mutation createEmployee($input: EmployeeInput!)
+		mutation($input: EmployeeInput!) {
+			createEmployee(input: $input)
+		}
 	`;
 	return await graphQLClient().request(gql, {input}) as number;
 }

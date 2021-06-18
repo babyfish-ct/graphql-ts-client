@@ -3,7 +3,9 @@ import {EmployeeFetcher} from '../fetchers';
 
 export async function employee<X>(id: number, fetcher: EmployeeFetcher<X>): Promise<X> {
 	const gql = `
-		query employee($id: Long!) ${fetcher.toString()}
+		query($id: Long!) {
+			employee(id: $id) ${fetcher.toString()}
+		}
 	`;
 	return await graphQLClient().request(gql, {id}) as X;
 }

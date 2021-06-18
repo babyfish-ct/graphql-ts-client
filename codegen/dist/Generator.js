@@ -27,9 +27,9 @@ class Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const schema = yield this.parseSchema();
             if (this.config.recreateTargetDir) {
-                this.rmdirIfNecessary();
+                yield this.rmdirIfNecessary();
             }
-            this.mkdirIfNecessary();
+            yield this.mkdirIfNecessary();
             const queryType = schema.getQueryType();
             const mutationType = schema.getMutationType();
             const fetcherTypes = [];
@@ -182,7 +182,11 @@ class Generator {
             const writeIndex = () => __awaiter(this, void 0, void 0, function* () {
                 const stream = fs_1.createWriteStream(path_1.join(this.config.targetDir, subDir, "index.ts"));
                 for (const field of fields) {
-                    stream.write(`export {${field.name}} from './${OperationWriter_1.argsWrapperTypeName(field)}';\n`);
+                    stream.write(`export {${field.name}} from './${field.name}';\n`);
+                    const argsWrapperName = OperationWriter_1.argsWrapperTypeName(field);
+                    if (argsWrapperName !== undefined) {
+                        stream.write(`export type {${argsWrapperName}} from './${field.name}';\n`);
+                    }
                 }
                 stream.end();
             });
@@ -214,8 +218,8 @@ class Generator {
                 }
                 throw ex;
             }
-            console.log(`Delete directory "${dir}" and recreate it then`);
-            yield rmdirAsync(dir);
+            console.log(`Delete directory "${dir}" and recreate it later`);
+            yield rmdirAsync(dir, { recursive: true });
         });
     }
     mkdirIfNecessary(subDir) {

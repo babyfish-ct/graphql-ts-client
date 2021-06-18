@@ -33,12 +33,17 @@ class OperationWriter extends Writer_1.Writer {
             }
             else {
                 const arg = this.field.args[0];
+                const nullable = !(arg.type instanceof graphql_1.GraphQLNonNull);
+                const isLast = this.associatedTypes.length === 0;
                 t(arg.name);
-                if (!(arg.type instanceof graphql_1.GraphQLNonNull)) {
+                if (nullable && isLast) {
                     t("?");
                 }
                 t(": ");
                 this.typeRef(arg.type);
+                if (nullable && !isLast) {
+                    t(" | undefined");
+                }
             }
         }
         if (this.associatedTypes.length !== 0) {
@@ -96,7 +101,19 @@ class OperationWriter extends Writer_1.Writer {
         t("export interface ");
         t(name);
         t(" ");
-        this.enter("BLOCK");
+        this.enter("BLOCK", true);
+        for (const arg of this.field.args) {
+            if (!this.config.modelEditable) {
+                t("readonly ");
+            }
+            t(arg.name);
+            if (!(arg.type instanceof graphql_1.GraphQLNonNull)) {
+                t("?");
+            }
+            t(": ");
+            this.typeRef(arg.type);
+            t(";\n");
+        }
         this.leave("\n");
     }
     writeGQL() {
@@ -105,7 +122,6 @@ class OperationWriter extends Writer_1.Writer {
         t("const gql = ");
         this.enter("BLANK", true, "`");
         t(this.mutation ? "mutation" : "query");
-        t(" ");
         if (args.length !== 0) {
             this.enter("PARAMETERS", args.length > 2);
             for (const arg of args) {
@@ -117,6 +133,7 @@ class OperationWriter extends Writer_1.Writer {
             }
             this.leave();
         }
+        t(" ");
         this.enter("BLOCK", true);
         t(this.field.name);
         if (args.length !== 0) {

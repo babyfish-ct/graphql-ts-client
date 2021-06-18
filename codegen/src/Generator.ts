@@ -19,9 +19,9 @@ export class Generator {
         
         const schema = await this.parseSchema();
         if (this.config.recreateTargetDir) {
-            this.rmdirIfNecessary();
+            await this.rmdirIfNecessary();
         }
-        this.mkdirIfNecessary();
+        await this.mkdirIfNecessary();
 
         const queryType = schema.getQueryType();
         const mutationType = schema.getMutationType();
@@ -196,7 +196,11 @@ export class Generator {
                 join(this.config.targetDir, subDir, "index.ts")
             );
             for (const field of fields) {
-                stream.write(`export {${field.name}} from './${argsWrapperTypeName(field)}';\n`);
+                stream.write(`export {${field.name}} from './${field.name}';\n`);
+                const argsWrapperName = argsWrapperTypeName(field);
+                if (argsWrapperName !== undefined) {
+                    stream.write(`export type {${argsWrapperName}} from './${field.name}';\n`);
+                }
             }
             stream.end();
         };
@@ -227,8 +231,8 @@ export class Generator {
             }
             throw ex;
         }
-        console.log(`Delete directory "${dir}" and recreate it then`);
-        await rmdirAsync(dir);
+        console.log(`Delete directory "${dir}" and recreate it later`);
+        await rmdirAsync(dir, { recursive: true});
     }
 
     private async mkdirIfNecessary(subDir?: string) {

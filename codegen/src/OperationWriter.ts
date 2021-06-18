@@ -1,5 +1,5 @@
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
+import { FieldDefinitionNode, GraphQLField, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
 import { associatedTypesOf } from "./Associations";
 import { generatedFetcherTypeName } from "./FetcherWriter";
 import { GeneratorConfig } from "./GeneratorConfig";
@@ -31,7 +31,6 @@ export class OperationWriter extends Writer {
 
         const t = this.text.bind(this);
         
-        
         t("export async function ")
         t(this.field.name);
         if (this.associatedTypes.length !== 0) {
@@ -46,12 +45,17 @@ export class OperationWriter extends Writer {
                 t(this.argsWrapperName!);
             } else {
                 const arg = this.field.args[0];
+                const nullable = !(arg.type instanceof GraphQLNonNull);
+                const isLast = this.associatedTypes.length === 0;
                 t(arg.name);
-                if (!(arg.type instanceof GraphQLNonNull)) {
+                if (nullable && isLast) {
                     t("?");
                 }
                 t(": ");
                 this.typeRef(arg.type);
+                if (nullable && !isLast) {
+                    t(" | undefined");
+                }
             }
         }
         if (this.associatedTypes.length !== 0) {
@@ -115,7 +119,21 @@ export class OperationWriter extends Writer {
         t("export interface ");
         t(name);
         t(" ")
-        this.enter("BLOCK");
+        this.enter("BLOCK", true);
+
+        for (const arg of this.field.args) {
+            if (!this.config.modelEditable) {
+                t("readonly ");
+            }
+            t(arg.name);
+            if (!(arg.type instanceof GraphQLNonNull)) {
+                t("?");
+            }
+            t(": ");
+            this.typeRef(arg.type);
+            t(";\n");
+        }
+
         this.leave("\n");
     }
 
@@ -127,7 +145,6 @@ export class OperationWriter extends Writer {
         t("const gql = ");
         this.enter("BLANK", true, "`");
         t(this.mutation ? "mutation" : "query");
-        t(" ");
         if (args.length !== 0) {
             this.enter("PARAMETERS", args.length > 2);
             for (const arg of args) {
@@ -140,6 +157,7 @@ export class OperationWriter extends Writer {
             this.leave();
         }
 
+        t(" ");
         this.enter("BLOCK", true);
         t(this.field.name);
         if (args.length !== 0) {
