@@ -28,7 +28,7 @@ class GraphQLClientWriter extends Writer_1.Writer {
         t("\n");
         t("export function setGraphQLClient(c: GraphQLClient, overrideIfExists: boolean = false) ");
         this.enter("BLOCK", true);
-        t("if (client !== undefined)");
+        t("if (client !== undefined && !overrideIfExists)");
         {
             this.enter("BLOCK", true);
             t("throw new Error(\"'setGraphQLClient' cannot be invoked when the argument 'overrideIfExists' is false and it has been inovked yet.\");");

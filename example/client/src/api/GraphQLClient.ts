@@ -38,7 +38,7 @@ export function graphQLClient(): GraphQLClient {
 }
 
 export function setGraphQLClient(c: GraphQLClient, overrideIfExists: boolean = false) {
-	if (client !== undefined){
+	if (client !== undefined && !overrideIfExists){
 		throw new Error("'setGraphQLClient' cannot be invoked when the argument 'overrideIfExists' is false and it has been inovked yet.");
 	}
 	client = c;
