@@ -10,9 +10,8 @@ export interface LoginResultFetcher<T> extends Fetcher<T> {
 	readonly "~user": LoginResultFetcher<Omit<T, 'user'>>;
 }
 
-export const LoginResult$ = createFetcher<LoginResultFetcher<{}>>('user');
+export const loginResult$ = createFetcher<LoginResultFetcher<{}>>('user');
 
-export const LoginResult$$ = LoginResult$
+export const loginResult$$ = loginResult$
 	.token
-
 ;

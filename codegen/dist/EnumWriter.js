@@ -20,8 +20,7 @@ class EnumWriter extends Writer_1.Writer {
             t(value.name);
             t("'");
         }
-        this.leave();
-        t(";\n");
+        this.leave(";\n");
     }
 }
 exports.EnumWriter = EnumWriter;

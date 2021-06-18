@@ -44,7 +44,7 @@ class InputWriter extends Writer_1.Writer {
             this.typeRef(field.type);
             t(";\n");
         }
-        this.leave();
+        this.leave("\n");
     }
 }
 exports.InputWriter = InputWriter;

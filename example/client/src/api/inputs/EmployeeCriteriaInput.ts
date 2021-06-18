@@ -6,5 +6,4 @@ export interface EmployeeCriteriaInput {
 	readonly maxSalary?: number;
 	readonly minSalary?: number;
 	readonly name?: string;
-
 }

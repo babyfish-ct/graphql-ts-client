@@ -113,7 +113,10 @@ export abstract class Writer {
         return "OTHER_DIR";
     }
 
-    protected enter(type: ScopeType, multiLines: boolean = false) {
+    protected enter(type: ScopeType, multiLines: boolean = false, prefix?: string) {
+        if (prefix !== undefined) {
+            this.text(prefix);
+        }
         switch (type) {
             case "BLOCK":
                 this.text("{");
@@ -128,9 +131,9 @@ export abstract class Writer {
         this.scopes.push({ type, multiLines, dirty: false });
     }
 
-    protected leave() {
+    protected leave(suffix?: string) {
         const scope = this.scopes.pop();
-        if (scope.multiLines) {
+        if (scope.multiLines && !this.needIndent) {
             this.text("\n");
         }
         switch (scope.type) {
@@ -140,6 +143,9 @@ export abstract class Writer {
             case "PARAMETERS":
                 this.text(")");
                 break;
+        }
+        if (suffix !== undefined) {
+            this.text(suffix);
         }
     }
 
@@ -248,7 +254,7 @@ const GLOBAL_SCOPE: Scope = {
 }
 
 const SCALAR_MAP: {[key: string]: "string" | "number" | "boolean"} = {
-    "Boolean": "number",
+    "Boolean": "boolean",
     "Byte": "number",
     "Short": "number",
     "Int": "number",
@@ -262,4 +268,5 @@ const SCALAR_MAP: {[key: string]: "string" | "number" | "boolean"} = {
     "DateTime": "string",
     "LocalDate": "string",
     "LocalDateTime": "string",
+    "UUID": "string"
 };

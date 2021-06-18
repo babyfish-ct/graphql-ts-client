@@ -1,19 +1,49 @@
 import { WriteStream } from "fs";
 import { GraphQLField, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
+import { associatedTypesOf } from "./Associations";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { ImportingBehavior, Writer } from "./Writer";
 
 export class FetcherWriter extends Writer {
 
-    private genartedName: string;
+    private readonly generatedName: string;
+
+    private readonly methodNames: string[];
+
+    private readonly propNames: string[];
+
+    readonly emptyFetcherName: string;
+
+    readonly defaultFetcherName: string | undefined;
 
     constructor(
-        private modelType: GraphQLObjectType | GraphQLInterfaceType,
+        private readonly modelType: GraphQLObjectType | GraphQLInterfaceType,
         stream: WriteStream,
         config: GeneratorConfig
     ) {
         super(stream, config);
-        this.genartedName = generatedFetcherTypeName(modelType, config);
+        this.generatedName = generatedFetcherTypeName(modelType, config);
+        
+        const fieldMap = this.modelType.getFields();
+        const methodNames = [];
+        const propNames = [];
+        for (const fieldName in fieldMap) {
+            const field = fieldMap[fieldName]!;
+            if (associatedTypesOf(field.type).length !== 0) {
+                methodNames.push(fieldName);
+            } else if (field.args.length === 0) {
+                propNames.push(fieldName);
+            }
+        }
+        this.methodNames = methodNames;
+        this.propNames = propNames;
+
+        let instanceName = this.modelType.name;
+        instanceName = 
+            instanceName.substring(0, 1).toLowerCase() +
+            instanceName.substring(1);
+        this.emptyFetcherName = `${instanceName}$`;
+        this.defaultFetcherName = propNames.length !== 0 ? `${instanceName}$$` : undefined;
     }
 
     protected prepareImportings() {
@@ -40,58 +70,45 @@ export class FetcherWriter extends Writer {
         const t = this.text.bind(this);
 
         t("export interface ");
-        t(this.genartedName);
+        t(this.generatedName);
         t("<T> extends Fetcher<T> ");
         this.enter("BLOCK");
         t("\n");
-
         const fieldMap = this.modelType.getFields();
-        const methodNames = [];
-        const propNames = [];
         for (const fieldName in fieldMap) {
             t("\n");
             const field = fieldMap[fieldName]!;
             this.writePositiveProp(field);
             this.writeNegativeProp(field);
-            if (associatedTypesOf(field.type).length !== 0) {
-                methodNames.push(fieldName);
-            } else if (field.args.length === 0) {
-                propNames.push(fieldName);
-            }
         }
-
-        this.leave();
-        t("\n");
+        this.leave("\n");
 
         t("\nexport const ");
-        t(this.modelType.name);
-        t("$ = createFetcher<");
+        t(this.emptyFetcherName);
+        t(" = createFetcher<");
         t(generatedFetcherTypeName(this.modelType, this.config))
         t("<{}>>")
-        this.enter("PARAMETERS", methodNames.length > 3);
-        for (const methodName of methodNames) {
+        this.enter("PARAMETERS", this.methodNames.length > 3);
+        for (const methodName of this.methodNames) {
             this.separator(", ");
             t("'");
             t(methodName);
             t("'");
         }
-        this.leave();
-        t(";\n");
+        this.leave(";\n");
 
-        if (propNames.length !== 0) {
+        if (this.defaultFetcherName !== undefined) {
             t("\nexport const ");
-            t(this.modelType.name);
-            t("$$ = ");
-            t(this.modelType.name);
-            t("$");
+            t(this.defaultFetcherName);
+            t(" = ");
+            t(this.emptyFetcherName);
             this.enter("BLANK", true);
-            for (const propName of propNames) {
+            for (const propName of this.propNames) {
                 t(".");
                 t(propName);
                 t("\n");
             }
-            this.leave();
-            t(";\n");
+            this.leave(";\n");
         }
     }
 
@@ -148,7 +165,7 @@ export class FetcherWriter extends Writer {
         }
 
         t(": ");
-        t(this.genartedName);
+        t(this.generatedName);
         t("<T & {");
         if (!this.config.modelEditable) {
             t("readonly ");
@@ -169,27 +186,11 @@ export class FetcherWriter extends Writer {
         t('readonly "~');
         t(field.name);
         t('": ');
-        t(this.genartedName);
+        t(this.generatedName);
         t("<Omit<T, '");
         t(field.name);
         t("'>>;\n");
     }
-}
-
-function associatedTypesOf(type: GraphQLType): Array<GraphQLObjectType | GraphQLInterfaceType> {
-    if (type instanceof GraphQLNonNull) {
-        return associatedTypesOf(type.ofType);
-    }
-    if (type instanceof GraphQLList) {
-        return associatedTypesOf(type.ofType);
-    }
-    if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType) {
-        return [type];
-    }
-    if (type instanceof GraphQLUnionType) {
-        return type.getTypes();
-    }
-    return [];
 }
 
 export function generatedFetcherTypeName(

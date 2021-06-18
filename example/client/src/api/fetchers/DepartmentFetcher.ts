@@ -16,11 +16,10 @@ export interface DepartmentFetcher<T> extends Fetcher<T> {
 	readonly "~name": DepartmentFetcher<Omit<T, 'name'>>;
 }
 
-export const Department$ = createFetcher<DepartmentFetcher<{}>>('employees');
+export const department$ = createFetcher<DepartmentFetcher<{}>>('employees');
 
-export const Department$$ = Department$
+export const department$$ = department$
 	.avgSalary
 	.id
 	.name
-
 ;

@@ -4,8 +4,12 @@ import { GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType } from "graph
 import { GeneratorConfig } from "./GeneratorConfig";
 import { ImportingBehavior, Writer } from "./Writer";
 export declare class FetcherWriter extends Writer {
-    private modelType;
-    private genartedName;
+    private readonly modelType;
+    private readonly generatedName;
+    private readonly methodNames;
+    private readonly propNames;
+    readonly emptyFetcherName: string;
+    readonly defaultFetcherName: string | undefined;
     constructor(modelType: GraphQLObjectType | GraphQLInterfaceType, stream: WriteStream, config: GeneratorConfig);
     protected prepareImportings(): void;
     protected importingBehavior(type: GraphQLNamedType): ImportingBehavior;

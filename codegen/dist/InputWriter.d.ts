@@ -4,7 +4,7 @@ import { GraphQLInputObjectType, GraphQLNamedType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { ImportingBehavior, Writer } from "./Writer";
 export declare class InputWriter extends Writer {
-    private inputType;
+    private readonly inputType;
     constructor(inputType: GraphQLInputObjectType, stream: WriteStream, config: GeneratorConfig);
     protected prepareImportings(): void;
     protected importingBehavior(type: GraphQLNamedType): ImportingBehavior;

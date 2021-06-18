@@ -4,9 +4,13 @@ export declare class Generator {
     constructor(config: GeneratorConfig);
     generate(): Promise<void>;
     private parseSchema;
-    private recreateTargetDir;
     private generateFetcherTypes;
     private generateInputTypes;
     private generateEnumTypes;
+    private generateGraphQLClient;
+    private generateOperations;
     private writeSimpleIndex;
+    private rmdirIfNecessary;
+    private mkdirIfNecessary;
+    private objFields;
 }

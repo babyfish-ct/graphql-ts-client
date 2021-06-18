@@ -26,12 +26,11 @@ export interface EmployeeFetcher<T> extends Fetcher<T> {
 	readonly "~supervisor": EmployeeFetcher<Omit<T, 'supervisor'>>;
 }
 
-export const Employee$ = createFetcher<EmployeeFetcher<{}>>('department', 'subordinates', 'supervisor');
+export const employee$ = createFetcher<EmployeeFetcher<{}>>('department', 'subordinates', 'supervisor');
 
-export const Employee$$ = Employee$
+export const employee$$ = employee$
 	.gender
 	.id
 	.name
 	.salary
-
 ;

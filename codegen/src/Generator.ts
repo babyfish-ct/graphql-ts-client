@@ -1,11 +1,14 @@
-import { buildSchema, GraphQLEnumType, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema } from "graphql";
+import { buildSchema, GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
-import { mkdir, rmdir, exists, createWriteStream } from "fs";
+import { mkdir, rmdir, access, createWriteStream } from "fs";
 import { promisify } from "util";
 import { join } from "path";
 import { FetcherWriter, generatedFetcherTypeName } from "./FetcherWriter";
 import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
+import { Maybe } from "graphql/jsutils/Maybe";
+import { argsWrapperTypeName, OperationWriter } from "./OperationWriter";
+import { GraphQLClientWriter } from "./GraphQLClientWriter";
 
 export class Generator {
 
@@ -13,8 +16,13 @@ export class Generator {
     }
 
     async generate() {
+        
         const schema = await this.parseSchema();
-        await this.recreateTargetDir();
+        if (this.config.recreateTargetDir) {
+            this.rmdirIfNecessary();
+        }
+        this.mkdirIfNecessary();
+
         const queryType = schema.getQueryType();
         const mutationType = schema.getMutationType();
         const fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType> = [];
@@ -37,15 +45,35 @@ export class Generator {
                 }
             }
         }
+        const promises: Promise<any>[] = [];
         if (fetcherTypes.length !== 0) {
-            this.generateFetcherTypes(fetcherTypes);
+            await this.mkdirIfNecessary("fetchers");
+            promises.push(this.generateFetcherTypes(fetcherTypes));
         }
         if (inputTypes.length !== 0) {
-            this.generateInputTypes(inputTypes);
+            await this.mkdirIfNecessary("inputs");
+            promises.push(this.generateInputTypes(inputTypes));
         }
         if (enumTypes.length !== 0) {
-            this.generateEnumTypes(enumTypes);
+            await this.mkdirIfNecessary("enums");
+            promises.push(this.generateEnumTypes(enumTypes));
         }
+
+        const queryFields = this.objFields(queryType);
+        const mutationFields = this.objFields(mutationType);
+        if (this.config.generateOperations && queryFields.length !== 0 && mutationFields.length !== 0) {
+            promises.push(this.generateGraphQLClient());
+            if (queryFields.length !== 0) {
+                await this.mkdirIfNecessary("queries");
+                promises.push(this.generateOperations(false, queryFields));
+            }
+            if (mutationFields.length !== 0) {
+                await this.mkdirIfNecessary("mutations");
+                promises.push(this.generateOperations(true, mutationFields));
+            }
+        }
+
+        await Promise.all(promises);
     }
 
     private async parseSchema(): Promise<GraphQLSchema> {
@@ -68,49 +96,44 @@ export class Generator {
         }
     }
 
-    private async recreateTargetDir() {
-        console.log(this.config.targetDir);
-        if (this.config.recreateTargetDir && await existsAsync(this.config.targetDir)) {
-            try {
-                rmdirAsync(this.config.targetDir);
-            } catch (ex) {
-                console.error(`'recreateTargetDir' is configured to be true but failed to remove target directory "${this.config.targetDir}"`);
-                throw ex;
-            }
-        }
-        if (!await existsAsync(this.config.targetDir)) {
-            try {
-                mkdirAsync(this.config.targetDir);
-            } catch (ex) {
-                console.error(`Failed to create target directory "${this.config.targetDir}"`);
-                throw ex;
-            }
-        }
-    }
-
     private async generateFetcherTypes(
         fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType>
     ) {
         const dir = join(this.config.targetDir, "fetchers");
-        if (!await existsAsync(dir)) {
-            await mkdirAsync(dir);
-        }
+        const emptyFetcherNameMap = new Map<GraphQLType, string>();
+        const defaultFetcherNameMap = new Map<GraphQLType, string>();
         const promises = fetcherTypes
             .map(async type => {
                 const stream = createWriteStream(
                     join(dir, `${generatedFetcherTypeName(type, this.config)}.ts`)
                 );
-                new FetcherWriter(type, stream, this.config).write();
+                const writer = new FetcherWriter(type, stream, this.config);
+                emptyFetcherNameMap.set(type, writer.emptyFetcherName);
+                if (writer.defaultFetcherName !== undefined) {
+                    defaultFetcherNameMap.set(type, writer.defaultFetcherName);
+                }
+                writer.write();
                 await stream.end();
             });
+        
         await Promise.all([
             ...promises,
-            (async () => {
+            (async() => {
                 const stream = createWriteStream(join(dir, "index.ts"));
                 for (const type of fetcherTypes) {
                     const generatedName = generatedFetcherTypeName(type, this.config);
                     stream.write(
                         `export type {${generatedName}} from './${generatedName}';\n`
+                    );
+                    const defaultFetcherName = defaultFetcherNameMap.get(type);
+                    stream.write(
+                        `export {${
+                            emptyFetcherNameMap.get(type)
+                        }${
+                            defaultFetcherName !== undefined ?
+                            `, ${defaultFetcherName}` :
+                            ''
+                        }} from './${generatedName}';\n`
                     );
                 }
                 await stream.end();
@@ -120,9 +143,6 @@ export class Generator {
 
     private async generateInputTypes(inputTypes: GraphQLInputObjectType[]) {
         const dir = join(this.config.targetDir, "inputs");
-        if (!await existsAsync(dir)) {
-            await mkdirAsync(dir);
-        }
         const promises = inputTypes.map(async type => {
             const stream = createWriteStream(
                 join(dir, `${type.name}.ts`)
@@ -138,9 +158,6 @@ export class Generator {
 
     private async generateEnumTypes(enumTypes: GraphQLEnumType[]) {
         const dir = join(this.config.targetDir, "enums");
-        if (!await existsAsync(dir)) {
-            await mkdirAsync(dir);
-        }
         const promises = enumTypes.map(async type => {
             const stream = createWriteStream(
                 join(dir, `${type.name}.ts`)
@@ -154,6 +171,41 @@ export class Generator {
         ]);
     }
 
+    private async generateGraphQLClient() {
+        const stream = createWriteStream(
+            join(this.config.targetDir, "GraphQLClient.ts")
+        );
+        new GraphQLClientWriter(stream, this.config).write();
+        await stream.end();
+    }
+
+    private async generateOperations(
+        mutation: boolean,
+        fields: GraphQLField<unknown, unknown>[]
+    ) {
+        const subDir = mutation ? "mutations" : "queries";
+        const promises = fields.map(async field => {
+            const stream = createWriteStream(
+                join(this.config.targetDir, subDir, `${field.name}.ts`)
+            );
+            new OperationWriter(mutation, field, stream, this.config).write();
+            await stream.end();
+        });
+        const writeIndex = async() => {
+            const stream = createWriteStream(
+                join(this.config.targetDir, subDir, "index.ts")
+            );
+            for (const field of fields) {
+                stream.write(`export {${field.name}} from './${argsWrapperTypeName(field)}';\n`);
+            }
+            stream.end();
+        };
+        await Promise.all([
+            ...promises,
+            writeIndex()
+        ]);
+    }
+
     private async writeSimpleIndex(dir: string, types: GraphQLNamedType[]) {
         const stream = createWriteStream(join(dir, "index.ts"));
         for (const type of types) {
@@ -163,8 +215,54 @@ export class Generator {
         }
         await stream.end();
     }
+
+    private async rmdirIfNecessary() {
+        const dir = this.config.targetDir;
+        try {
+            await accessAsync(dir);
+        } catch(ex) {
+            const error = ex as NodeJS.ErrnoException;
+            if (error.code === "ENOENT") {
+                return;
+            }
+            throw ex;
+        }
+        console.log(`Delete directory "${dir}" and recreate it then`);
+        await rmdirAsync(dir);
+    }
+
+    private async mkdirIfNecessary(subDir?: string) {
+        const dir = subDir !== undefined ?
+            join(this.config.targetDir, subDir) :
+            this.config.targetDir;
+        try {
+            await accessAsync(dir);
+        } catch(ex) {
+            const error = ex as NodeJS.ErrnoException;
+            if (error.code === "ENOENT") {
+                console.log(`No directory "${dir}", create it`);
+                await mkdirAsync(dir);
+            } else {
+                throw ex;
+            }
+        }
+    }
+
+    private objFields(
+        type: Maybe<GraphQLObjectType>
+    ): GraphQLField<unknown, unknown>[] {
+        if (type === undefined || type === null) {
+            return [];
+        }
+        const fieldMap = type.getFields();
+        const fields = [];
+        for (const fieldName in fieldMap) {
+            fields.push(fieldMap[fieldName]!!);
+        }
+        return fields;
+    }
 }
 
 const mkdirAsync = promisify(mkdir);
 const rmdirAsync = promisify(rmdir);
-const existsAsync = promisify(exists);
+const accessAsync = promisify(access);

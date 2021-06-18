@@ -19,8 +19,8 @@ export declare abstract class Writer {
     protected importType(type: GraphQLType): void;
     protected importStatement(statement: string): void;
     protected importingBehavior(type: GraphQLNamedType): ImportingBehavior;
-    protected enter(type: ScopeType, multiLines?: boolean): void;
-    protected leave(): void;
+    protected enter(type: ScopeType, multiLines?: boolean, prefix?: string): void;
+    protected leave(suffix?: string): void;
     protected text(value: string): void;
     protected separator(value?: string): void;
     protected typeRef(type: GraphQLType, overrideObjectTypeName?: string): void;

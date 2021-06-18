@@ -6,7 +6,7 @@ import { ImportingBehavior, Writer } from "./Writer";
 export class InputWriter extends Writer {
 
     constructor(
-        private inputType: GraphQLInputObjectType,
+        private readonly inputType: GraphQLInputObjectType,
         stream: WriteStream,
         config: GeneratorConfig
     ) {
@@ -55,6 +55,6 @@ export class InputWriter extends Writer {
             t(";\n");
         }
 
-        this.leave();
+        this.leave("\n");
     }
 }

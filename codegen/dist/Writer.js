@@ -104,7 +104,10 @@ class Writer {
     importingBehavior(type) {
         return "OTHER_DIR";
     }
-    enter(type, multiLines = false) {
+    enter(type, multiLines = false, prefix) {
+        if (prefix !== undefined) {
+            this.text(prefix);
+        }
         switch (type) {
             case "BLOCK":
                 this.text("{");
@@ -118,9 +121,9 @@ class Writer {
         }
         this.scopes.push({ type, multiLines, dirty: false });
     }
-    leave() {
+    leave(suffix) {
         const scope = this.scopes.pop();
-        if (scope.multiLines) {
+        if (scope.multiLines && !this.needIndent) {
             this.text("\n");
         }
         switch (scope.type) {
@@ -130,6 +133,9 @@ class Writer {
             case "PARAMETERS":
                 this.text(")");
                 break;
+        }
+        if (suffix !== undefined) {
+            this.text(suffix);
         }
     }
     text(value) {
@@ -225,7 +231,7 @@ const GLOBAL_SCOPE = {
     dirty: true
 };
 const SCALAR_MAP = {
-    "Boolean": "number",
+    "Boolean": "boolean",
     "Byte": "number",
     "Short": "number",
     "Int": "number",
@@ -239,4 +245,5 @@ const SCALAR_MAP = {
     "DateTime": "string",
     "LocalDate": "string",
     "LocalDateTime": "string",
+    "UUID": "string"
 };

@@ -9,10 +9,9 @@ export interface UserFetcher<T> extends Fetcher<T> {
 	readonly "~nickName": UserFetcher<Omit<T, 'nickName'>>;
 }
 
-export const User$ = createFetcher<UserFetcher<{}>>();
+export const user$ = createFetcher<UserFetcher<{}>>();
 
-export const User$$ = User$
+export const user$$ = user$
 	.loginName
 	.nickName
-
 ;

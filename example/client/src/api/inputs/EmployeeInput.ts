@@ -6,5 +6,4 @@ export interface EmployeeInput {
 	readonly name: string;
 	readonly salary: number;
 	readonly supervisorId?: number;
-
 }

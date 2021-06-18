@@ -6,7 +6,7 @@ import { Writer } from "./Writer";
 export class EnumWriter extends Writer {
 
     constructor(
-        private enumType: GraphQLEnumType,
+        private readonly enumType: GraphQLEnumType,
         stream: WriteStream,
         config: GeneratorConfig
     ) {
@@ -29,8 +29,6 @@ export class EnumWriter extends Writer {
             t(value.name);
             t("'");
         }
-        this.leave();
-
-        t(";\n");
+        this.leave(";\n");
     }
 }

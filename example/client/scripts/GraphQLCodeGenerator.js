@@ -1,7 +1,6 @@
-const codegen = require("graphql-ts-client-codegen");
-const fs = require("fs");
+const {Generator} = require("graphql-ts-client-codegen");
 const path = require("path");
-const generator = new codegen.Generator({
+const generator = new Generator({
     schemaExtractor: async() => {
         return `
         schema {
@@ -106,6 +105,9 @@ const generator = new codegen.Generator({
         directive @deprecated(reason: String = "No longer supported") on FIELD_DEFINITION | ENUM_VALUE
         `;
     },
-    targetDir: path.join(__dirname, "../src/api")
+    targetDir: path.join(__dirname, "../src/api"),
+    generateOperations: true,
+    recreateTargetDir: true
 });
+
 generator.generate();
