@@ -51,7 +51,7 @@ export class Table<R extends object> {
         return this.scan(row => row[prop] === value);
     }
 
-    scan(predicate?: (row: R) => boolean): R[] {
+    scan(predicate?: Predicate<R>): R[] {
         const rows: R[] = [];
         for (const row of this.uniqueIndexMap.get(this.metadata.idProp)!.values()) {
             if (predicate === undefined || predicate(row)) {
@@ -149,6 +149,8 @@ export interface TableMetadata<R> {
     readonly uniqueIndexs?: Array<keyof R>; // Just a demo, each index has only one column
     readonly indexes?: Array<keyof R>; // Just a demo, each index has only one column
 }
+
+export type Predicate<R> = (row: R) => boolean;
 
 function rowValue<R>(row: R | undefined, prop: keyof R): any {
     if (row === undefined) {
