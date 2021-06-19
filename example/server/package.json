@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "ChenTao",
   "license": "MIT",
+  "scripts": {
+    "start": "ts-node src/App.ts"
+  },
   "dependencies": {
     "@types/express": "^4.17.12",
     "express": "^4.17.1",

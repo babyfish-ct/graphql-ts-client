@@ -90,17 +90,29 @@ export class OperationWriter extends Writer {
 
         this.writeGQL();
 
-        if (this.associatedTypes.length !== 0) {
-            t("const fetchedObj = ");
-            this.writeRequestExpression();
-            t(";\n"); 
-            t("replaceNullValues(fetchedObj);\n");
-            t("return fetchedObj");
-        } else {
-            t("return ");
-            this.writeRequestExpression();
+        t("const { data, errors } = await graphQLClient().request(gql");
+        if (this.field.args.length !== 0) {
+            t(", ");
+            if (this.argsWrapperName !== undefined) {
+                t("args");
+            } else {
+                const arg = this.field.args[0];
+                t("{");
+                t(arg.name);
+                t("}");
+            }
         }
-        t(" as ");
+        t(");\n");
+
+        t("if (errors !== undefined && errors.length !== 0) ");
+        this.enter("BLOCK", true);
+        t("throw errors[0];\n");
+        this.leave("\n");
+
+        if (this.associatedTypes.length !== 0) {
+            t("replaceNullValues(data);\n");
+        }
+        t("return data as ");
         if (this.associatedTypes.length !== 0) {
             t("X");
         } else {
@@ -182,25 +194,6 @@ export class OperationWriter extends Writer {
         this.leave("\n");
 
         this.leave("`;\n");
-    }
-
-    private writeRequestExpression() {
-
-        const t = this.text.bind(this);
-
-        t("await graphQLClient().request(gql");
-        if (this.field.args.length !== 0) {
-            t(", ");
-            if (this.argsWrapperName !== undefined) {
-                t("args");
-            } else {
-                const arg = this.field.args[0];
-                t("{");
-                t(arg.name);
-                t("}");
-            }
-        }
-        t(")");
     }
 
     private writeGQLTypeRef(type: GraphQLType) {

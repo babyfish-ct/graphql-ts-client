@@ -3,7 +3,7 @@ export declare class Generator {
     private config;
     constructor(config: GeneratorConfig);
     generate(): Promise<void>;
-    private parseSchema;
+    private loadSchema;
     private generateFetcherTypes;
     private generateInputTypes;
     private generateEnumTypes;

@@ -25,7 +25,7 @@ class Generator {
     }
     generate() {
         return __awaiter(this, void 0, void 0, function* () {
-            const schema = yield this.parseSchema();
+            const schema = yield this.loadSchema();
             if (this.config.recreateTargetDir) {
                 yield this.rmdirIfNecessary();
             }
@@ -68,7 +68,7 @@ class Generator {
             }
             const queryFields = this.objFields(queryType);
             const mutationFields = this.objFields(mutationType);
-            if (this.config.generateOperations && queryFields.length !== 0 && mutationFields.length !== 0) {
+            if (this.config.generateOperations && (queryFields.length !== 0 || mutationFields.length !== 0)) {
                 promises.push(this.generateGraphQLClient());
                 if (queryFields.length !== 0) {
                     yield this.mkdirIfNecessary("queries");
@@ -82,23 +82,14 @@ class Generator {
             yield Promise.all(promises);
         });
     }
-    parseSchema() {
+    loadSchema() {
         return __awaiter(this, void 0, void 0, function* () {
-            let schemaDefinition;
             try {
-                schemaDefinition = yield this.config.schemaExtractor();
-                console.log("Get graphql graphql schema definition successfully");
-                console.log(schemaDefinition);
+                return yield this.config.schemaLoader();
+                console.log("Load graphql graphql schema successfully");
             }
             catch (ex) {
-                console.error("Cannot get graphql schema definition");
-                throw ex;
-            }
-            try {
-                return graphql_1.buildSchema(schemaDefinition);
-            }
-            catch (ex) {
-                console.error("Failed to parse graphql schema");
+                console.error("Cannot load graphql schema");
                 throw ex;
             }
         });

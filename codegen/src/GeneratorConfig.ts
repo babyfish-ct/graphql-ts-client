@@ -1,5 +1,7 @@
+import { GraphQLSchema } from "graphql";
+
 export interface GeneratorConfig {
-    readonly schemaExtractor: () => Promise<string>,
+    readonly schemaLoader: () => Promise<GraphQLSchema>,
     readonly targetDir: string;
     readonly recreateTargetDir?: boolean;
     readonly indent?: string;

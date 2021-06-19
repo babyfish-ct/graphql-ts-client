@@ -1,4 +1,4 @@
-import { buildSchema, GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType } from "graphql";
+import { buildSchema, GraphQLEnumType, GraphQLError, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { mkdir, rmdir, access, createWriteStream } from "fs";
 import { promisify } from "util";
@@ -17,7 +17,7 @@ export class Generator {
 
     async generate() {
         
-        const schema = await this.parseSchema();
+        const schema = await this.loadSchema();
         if (this.config.recreateTargetDir) {
             await this.rmdirIfNecessary();
         }
@@ -61,7 +61,7 @@ export class Generator {
 
         const queryFields = this.objFields(queryType);
         const mutationFields = this.objFields(mutationType);
-        if (this.config.generateOperations && queryFields.length !== 0 && mutationFields.length !== 0) {
+        if (this.config.generateOperations && (queryFields.length !== 0 || mutationFields.length !== 0)) {
             promises.push(this.generateGraphQLClient());
             if (queryFields.length !== 0) {
                 await this.mkdirIfNecessary("queries");
@@ -76,22 +76,12 @@ export class Generator {
         await Promise.all(promises);
     }
 
-    private async parseSchema(): Promise<GraphQLSchema> {
-        
-        let schemaDefinition: string; 
+    private async loadSchema(): Promise<GraphQLSchema> {
         try {
-            schemaDefinition = await this.config.schemaExtractor(); 
-            console.log("Get graphql graphql schema definition successfully");
-            console.log(schemaDefinition);
+            return await this.config.schemaLoader(); 
+            console.log("Load graphql graphql schema successfully");
         } catch (ex) {
-            console.error("Cannot get graphql schema definition");
-            throw ex;
-        }
-
-        try {
-            return buildSchema(schemaDefinition);
-        } catch (ex) {
-            console.error("Failed to parse graphql schema");
+            console.error("Cannot load graphql schema");
             throw ex;
         }
     }

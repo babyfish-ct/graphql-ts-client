@@ -1,11 +1,1 @@
-export {department} from './department';
-export {departmentCount} from './departmentCount';
-export {departments} from './departments';
-export type {DepartmentsArgs} from './departments';
-export {employee} from './employee';
-export {employeeCount} from './employeeCount';
-export {employees} from './employees';
-export type {EmployeesArgs} from './employees';
-export {login} from './login';
-export type {LoginArgs} from './login';
-export {user} from './user';
+export {findDepartmentsLikeName} from './findDepartmentsLikeName';

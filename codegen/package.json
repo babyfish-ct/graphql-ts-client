@@ -6,7 +6,9 @@
   "license": "MIT",
   "dependencies": {
     "@types/node": "^15.12.2",
+    "@types/node-fetch": "^2.5.10",
     "graphql": "^15.5.0",
+    "node-fetch": "^2.6.1",
     "typescript": "^4.3.2"
   },
   "main": "dist/index.js",
