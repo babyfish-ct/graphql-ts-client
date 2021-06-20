@@ -5,17 +5,14 @@ import {DepartmentFetchable} from '../fetchers';
 export async function findDepartmentsLikeName<X extends object>(
 	name: string | undefined, 
 	fetcher: Fetcher<DepartmentFetchable, X>
-): Promise<X> {
+): Promise<readonly X[]> {
 	const gql = `
 		query($name: String) {
 			findDepartmentsLikeName(name: $name) ${fetcher.toString()}
 		}
 	`;
-	const { data, errors } = await graphQLClient().request(gql, {name});
-	if (errors !== undefined && errors.length !== 0) {
-		throw errors[0];
-	}
-	replaceNullValues(data);
-	return data as X;
+	const result = (await graphQLClient().request(gql, {name}))['findDepartmentsLikeName'];
+	replaceNullValues(result);
+	return result as readonly X[];
 }
 

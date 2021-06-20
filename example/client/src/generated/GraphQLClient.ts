@@ -31,15 +31,19 @@ let client: GraphQLClient | undefined = undefined;
 
 export function graphQLClient(): GraphQLClient {
 	const c = client;
-	if (c === undefined){
-		throw new Error("Can not invoke 'graphQLClient' because 'setGraphQLClient' has never been invocated");
+	if (c === undefined) {
+		const message = "Cannot invoke 'graphQLClient' because 'setGraphQLClient' has never been invoked";
+		throw console.error(message);
+		throw new Error(message);
 	}
 	return c;
 }
 
 export function setGraphQLClient(c: GraphQLClient, overrideIfExists: boolean = false) {
-	if (client !== undefined && !overrideIfExists){
-		throw new Error("'setGraphQLClient' cannot be invoked when the argument 'overrideIfExists' is false and it has been inovked yet.");
+	if (client !== undefined && !overrideIfExists) {
+		const message = "'setGraphQLClient' cannot be invoked when the argument 'overrideIfExists' is false and it has been inovked yet.";
+		throw console.error(message);
+		throw new Error(message);
 	}
 	client = c;
 }

@@ -1,43 +1,101 @@
 import { GetRecoilValue, RecoilValue, RecoilValueReadOnly, selectorFamily, SerializableParam } from "recoil";
 import { Fetcher } from 'graphql-ts-client-api';
 
-export function fetchableSelectorFamily<
+export const fetchableSelectorFamily = {
+    required,
+    optional,
+    list
+};
+
+function required<
+    A,
     P extends SerializableParam,
-    A
 >(
-    options: FetchableSelectorFamilyOptions<P, A>
-): FetchableFamily<P, A> {
+    options: {
+        key: string;
+        get: <
+            T extends object
+        >(
+            p: P, fetcher: Fetcher<A, T>
+        ) => (
+            opts: { get: GetRecoilValue }
+        ) => Promise<T> | RecoilValue<T> | T
+        dangerouslyAllowMutability?: boolean
+    }
+): <
+    T extends object
+>(p: P, fetcher: Fetcher<A, T>) => RecoilValueReadOnly<T> {
     const recoilFamily = selectorFamily<any, {param: P, fetcher: Fetcher<A, any>}>({
         key: options.key,
-        get: p => async(opts: { get: GetRecoilValue }) => {
+        get: p => (opts: { get: GetRecoilValue }) => {
             const {param, fetcher} = p; 
-            return options.get(param, fetcher);
+            return options.get(param, fetcher)(opts);
         },
         dangerouslyAllowMutability: options.dangerouslyAllowMutability
     });
-    return <T extends object, F extends Fetcher<A, T>>(param: P, fetcher: F) => {
+    return <T extends object>(param: P, fetcher: Fetcher<A, T>) => {
         return recoilFamily({param, fetcher});
     };
 }
 
-export interface FetchableSelectorFamilyOptions<P extends SerializableParam, A> {
-    readonly key: string;
-    readonly get: FetchableGetter<P, A>;
-    readonly dangerouslyAllowMutability?: boolean;
+function optional<
+    A,
+    P extends SerializableParam,
+>(
+    options: {
+        key: string;
+        get: <
+            T extends object
+        >(
+            p: P, fetcher: Fetcher<A, T>
+        ) => (
+            opts: { get: GetRecoilValue }
+        ) => Promise<T | undefined> | RecoilValue<T | undefined> | T | undefined
+        dangerouslyAllowMutability?: boolean
+    }
+): <
+    T extends object
+>(p: P, fetcher: Fetcher<A, T>) => RecoilValueReadOnly<T | undefined> {
+    const recoilFamily = selectorFamily<any, {param: P, fetcher: Fetcher<A, any>}>({
+        key: options.key,
+        get: p => (opts: { get: GetRecoilValue }) => {
+            const {param, fetcher} = p; 
+            return options.get(param, fetcher)(opts);
+        },
+        dangerouslyAllowMutability: options.dangerouslyAllowMutability
+    });
+    return <T extends object>(param: P, fetcher: Fetcher<A, T>) => {
+        return recoilFamily({param, fetcher});
+    };
 }
 
-export type FetchableFamily<
+function list<
+    A,
     P extends SerializableParam,
-    A
-> = <
-    T extends object, 
-    F extends Fetcher<A, T>
->(p: P, fetcher: F) => RecoilValueReadOnly<T>
-
-export type FetchableGetter<
-    P extends SerializableParam,
-    A
-> = <
-    T extends object, 
-    F extends Fetcher<A, T>
->(param: P, fetcher: F) => (opts: { get: GetRecoilValue }) => Promise<T> | RecoilValue<T> | T;
+>(
+    options: {
+        key: string;
+        get: <
+            T extends object
+        >(
+            p: P, fetcher: Fetcher<A, T>
+        ) => (
+            opts: { get: GetRecoilValue }
+        ) => Promise<readonly T[]> | RecoilValue<readonly T[]> | readonly T[]
+        dangerouslyAllowMutability?: boolean
+    }
+): <
+    T extends object
+>(p: P, fetcher: Fetcher<A, T>) => RecoilValueReadOnly<readonly T[]> {
+    const recoilFamily = selectorFamily<any, {param: P, fetcher: Fetcher<A, any>}>({
+        key: options.key,
+        get: p => (opts: { get: GetRecoilValue }) => {
+            const {param, fetcher} = p; 
+            return options.get(param, fetcher)(opts);
+        },
+        dangerouslyAllowMutability: options.dangerouslyAllowMutability
+    });
+    return <T extends object>(param: P, fetcher: Fetcher<A, T>) => {
+        return recoilFamily({param, fetcher});
+    };
+}

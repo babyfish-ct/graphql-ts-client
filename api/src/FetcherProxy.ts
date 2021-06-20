@@ -113,8 +113,8 @@ const FETCHER_TARGET = new FetcherTarget(undefined, false, "");
 const BUILT_IN_FIELDS = new Set<string>(
     [
         ...Object.keys(FETCHER_TARGET),
-        ...Reflect.ownKeys(AbstractFetcher.prototype) as string[]
+        ...Reflect.ownKeys(AbstractFetcher.prototype) as string[],
+        "_str",
+        "_json"
     ]
 );
-
-console.log(BUILT_IN_FIELDS);

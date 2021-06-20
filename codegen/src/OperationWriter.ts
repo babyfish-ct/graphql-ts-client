@@ -80,18 +80,14 @@ export class OperationWriter extends Writer {
         this.leave();
 
         t(": Promise<");
-        if (this.associatedTypes.length !== 0) {
-            t("X");
-        } else {
-            this.typeRef(this.field.type);
-        }
+        this.typeRef(this.field.type, "X");
         t("> ");
 
         this.enter("BLOCK", true);
 
         this.writeGQL();
 
-        t("const { data, errors } = await graphQLClient().request(gql");
+        t("const result = (await graphQLClient().request(gql");
         if (this.field.args.length !== 0) {
             t(", ");
             if (this.argsWrapperName !== undefined) {
@@ -103,22 +99,15 @@ export class OperationWriter extends Writer {
                 t("}");
             }
         }
-        t(");\n");
-
-        t("if (errors !== undefined && errors.length !== 0) ");
-        this.enter("BLOCK", true);
-        t("throw errors[0];\n");
-        this.leave("\n");
+        t("))['");
+        t(this.field.name);
+        t("'];\n");
 
         if (this.associatedTypes.length !== 0) {
-            t("replaceNullValues(data);\n");
+            t("replaceNullValues(result);\n");
         }
-        t("return data as ");
-        if (this.associatedTypes.length !== 0) {
-            t("X");
-        } else {
-            this.typeRef(this.field.type);
-        }
+        t("return result as ");
+        this.typeRef(this.field.type, "X");
         t(";");
         this.leave("\n");
 

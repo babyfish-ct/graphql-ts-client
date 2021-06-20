@@ -23,10 +23,12 @@ export class GraphQLClientWriter extends Writer {
         t("export function graphQLClient(): GraphQLClient ");
         this.enter("BLOCK", true);
         t("const c = client;\n");
-        t("if (c === undefined)"); 
+        t("if (c === undefined) "); 
         {
             this.enter("BLOCK", true);
-            t("throw new Error(\"Can not invoke 'graphQLClient' because 'setGraphQLClient' has never been invocated\");");
+            t(`const message = "${NO_CLIENT}";\n`);
+            t("throw console.error(message);\n");
+            t("throw new Error(message);\n");
             this.leave("\n");
         }
         t("return c;\n");
@@ -36,10 +38,12 @@ export class GraphQLClientWriter extends Writer {
         
         t("export function setGraphQLClient(c: GraphQLClient, overrideIfExists: boolean = false) ");
         this.enter("BLOCK", true);
-        t("if (client !== undefined && !overrideIfExists)"); 
+        t("if (client !== undefined && !overrideIfExists) "); 
         {
             this.enter("BLOCK", true);
-            t("throw new Error(\"'setGraphQLClient' cannot be invoked when the argument 'overrideIfExists' is false and it has been inovked yet.\");");
+            t(`const message = "${EXISTS_CLIENT}";\n`);
+            t("throw console.error(message);\n");
+            t("throw new Error(message);\n");
             this.leave("\n");
         }
         t("client = c;\n");
@@ -76,3 +80,6 @@ const COMMENT =
  * 2. react-query(https://github.com/tannerlinsley/react-query)
  */
 `;
+
+const NO_CLIENT = "Cannot invoke 'graphQLClient' because 'setGraphQLClient' has never been invoked";
+const EXISTS_CLIENT = "'setGraphQLClient' cannot be invoked when the argument 'overrideIfExists' is false and it has been inovked yet.";

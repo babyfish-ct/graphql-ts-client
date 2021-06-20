@@ -7,10 +7,7 @@ export async function mergeDepartment(input: DepartmentInput): Promise<number> {
 			mergeDepartment(input: $input)
 		}
 	`;
-	const { data, errors } = await graphQLClient().request(gql, {input});
-	if (errors !== undefined && errors.length !== 0) {
-		throw errors[0];
-	}
-	return data as number;
+	const result = (await graphQLClient().request(gql, {input}))['mergeDepartment'];
+	return result as number;
 }
 

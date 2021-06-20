@@ -65,6 +65,7 @@ function dummyTargetMethod() { }
 const FETCHER_TARGET = new FetcherTarget(undefined, false, "");
 const BUILT_IN_FIELDS = new Set([
     ...Object.keys(FETCHER_TARGET),
-    ...Reflect.ownKeys(Fetcher_1.AbstractFetcher.prototype)
+    ...Reflect.ownKeys(Fetcher_1.AbstractFetcher.prototype),
+    "_str",
+    "_json"
 ]);
-console.log(BUILT_IN_FIELDS);

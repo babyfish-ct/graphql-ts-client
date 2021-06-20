@@ -1,6 +1,6 @@
 import { GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType, validate } from "graphql";
 import { GeneratorConfig, validateConfig, validateConfigAndSchema } from "./GeneratorConfig";
-import { mkdir, rmdir, access, createWriteStream } from "fs";
+import { mkdir, rmdir, access, createWriteStream, WriteStream } from "fs";
 import { promisify } from "util";
 import { join } from "path";
 import { FetcherWriter, generatedFetchableTypeName, generatedFetcherTypeName } from "./FetcherWriter";
@@ -96,7 +96,7 @@ export class Generator {
         const defaultFetcherNameMap = new Map<GraphQLType, string>();
         const promises = fetcherTypes
             .map(async type => {
-                const stream = createWriteStream(
+                const stream = createStreamAndLog(
                     join(dir, `${generatedFetcherTypeName(type, this.config)}.ts`)
                 );
                 const writer = new FetcherWriter(type, stream, this.config);
@@ -111,7 +111,7 @@ export class Generator {
         await Promise.all([
             ...promises,
             (async() => {
-                const stream = createWriteStream(join(dir, "index.ts"));
+                const stream = createStreamAndLog(join(dir, "index.ts"));
                 for (const type of fetcherTypes) {
                     const fetcherTypeName = generatedFetcherTypeName(type, this.config);
                     const fetchableTypeName = generatedFetchableTypeName(type, this.config);
@@ -137,7 +137,7 @@ export class Generator {
     private async generateInputTypes(inputTypes: GraphQLInputObjectType[]) {
         const dir = join(this.config.targetDir, "inputs");
         const promises = inputTypes.map(async type => {
-            const stream = createWriteStream(
+            const stream = createStreamAndLog(
                 join(dir, `${type.name}.ts`)
             );
             new InputWriter(type, stream, this.config).write();
@@ -152,7 +152,7 @@ export class Generator {
     private async generateEnumTypes(enumTypes: GraphQLEnumType[]) {
         const dir = join(this.config.targetDir, "enums");
         const promises = enumTypes.map(async type => {
-            const stream = createWriteStream(
+            const stream = createStreamAndLog(
                 join(dir, `${type.name}.ts`)
             );
             new EnumWriter(type, stream, this.config).write();
@@ -165,7 +165,7 @@ export class Generator {
     }
 
     private async generateGraphQLClient() {
-        const stream = createWriteStream(
+        const stream = createStreamAndLog(
             join(this.config.targetDir, "GraphQLClient.ts")
         );
         new GraphQLClientWriter(stream, this.config).write();
@@ -178,14 +178,14 @@ export class Generator {
     ) {
         const subDir = mutation ? "mutations" : "queries";
         const promises = fields.map(async field => {
-            const stream = createWriteStream(
+            const stream = createStreamAndLog(
                 join(this.config.targetDir, subDir, `${field.name}.ts`)
             );
             new OperationWriter(mutation, field, stream, this.config).write();
             await stream.end();
         });
         const writeIndex = async() => {
-            const stream = createWriteStream(
+            const stream = createStreamAndLog(
                 join(this.config.targetDir, subDir, "index.ts")
             );
             for (const field of fields) {
@@ -204,7 +204,7 @@ export class Generator {
     }
 
     private async writeSimpleIndex(dir: string, types: GraphQLNamedType[]) {
-        const stream = createWriteStream(join(dir, "index.ts"));
+        const stream = createStreamAndLog(join(dir, "index.ts"));
         for (const type of types) {
             stream.write(
                 `export type {${type.name}} from './${type.name}';\n`
@@ -258,6 +258,11 @@ export class Generator {
         }
         return fields;
     }
+}
+
+function createStreamAndLog(path: string): WriteStream {
+    console.log(`Write code into file: ${path}`);
+    return createWriteStream(path);
 }
 
 const mkdirAsync = promisify(mkdir);

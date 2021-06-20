@@ -1,5 +1,6 @@
 import { buildSchemaSync, registerEnumType } from "type-graphql";
 import express from 'express';
+import cors from "cors";
 import { graphqlHTTP } from 'express-graphql';
 import { DepartmentService } from "./bll/DepartmentService";
 import { DepartmentResolver } from "./model/Department";
@@ -21,6 +22,7 @@ const schema = buildSchemaSync({
 });
 
 express()
+    .use(cors())
     .use(
         '/graphql', 
         graphqlHTTP({

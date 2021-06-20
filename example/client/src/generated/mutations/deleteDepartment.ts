@@ -6,10 +6,7 @@ export async function deleteDepartment(id: number): Promise<number> {
 			deleteDepartment(id: $id)
 		}
 	`;
-	const { data, errors } = await graphQLClient().request(gql, {id});
-	if (errors !== undefined && errors.length !== 0) {
-		throw errors[0];
-	}
-	return data as number;
+	const result = (await graphQLClient().request(gql, {id}))['deleteDepartment'];
+	return result as number;
 }
 

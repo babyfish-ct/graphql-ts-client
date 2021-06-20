@@ -104,7 +104,7 @@ class Generator {
             const defaultFetcherNameMap = new Map();
             const promises = fetcherTypes
                 .map((type) => __awaiter(this, void 0, void 0, function* () {
-                const stream = fs_1.createWriteStream(path_1.join(dir, `${FetcherWriter_1.generatedFetcherTypeName(type, this.config)}.ts`));
+                const stream = createStreamAndLog(path_1.join(dir, `${FetcherWriter_1.generatedFetcherTypeName(type, this.config)}.ts`));
                 const writer = new FetcherWriter_1.FetcherWriter(type, stream, this.config);
                 emptyFetcherNameMap.set(type, writer.emptyFetcherName);
                 if (writer.defaultFetcherName !== undefined) {
@@ -116,7 +116,7 @@ class Generator {
             yield Promise.all([
                 ...promises,
                 (() => __awaiter(this, void 0, void 0, function* () {
-                    const stream = fs_1.createWriteStream(path_1.join(dir, "index.ts"));
+                    const stream = createStreamAndLog(path_1.join(dir, "index.ts"));
                     for (const type of fetcherTypes) {
                         const fetcherTypeName = FetcherWriter_1.generatedFetcherTypeName(type, this.config);
                         const fetchableTypeName = FetcherWriter_1.generatedFetchableTypeName(type, this.config);
@@ -135,7 +135,7 @@ class Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const dir = path_1.join(this.config.targetDir, "inputs");
             const promises = inputTypes.map((type) => __awaiter(this, void 0, void 0, function* () {
-                const stream = fs_1.createWriteStream(path_1.join(dir, `${type.name}.ts`));
+                const stream = createStreamAndLog(path_1.join(dir, `${type.name}.ts`));
                 new InputWriter_1.InputWriter(type, stream, this.config).write();
                 yield stream.end();
             }));
@@ -149,7 +149,7 @@ class Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const dir = path_1.join(this.config.targetDir, "enums");
             const promises = enumTypes.map((type) => __awaiter(this, void 0, void 0, function* () {
-                const stream = fs_1.createWriteStream(path_1.join(dir, `${type.name}.ts`));
+                const stream = createStreamAndLog(path_1.join(dir, `${type.name}.ts`));
                 new EnumWriter_1.EnumWriter(type, stream, this.config).write();
                 yield stream.end();
             }));
@@ -161,7 +161,7 @@ class Generator {
     }
     generateGraphQLClient() {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = fs_1.createWriteStream(path_1.join(this.config.targetDir, "GraphQLClient.ts"));
+            const stream = createStreamAndLog(path_1.join(this.config.targetDir, "GraphQLClient.ts"));
             new GraphQLClientWriter_1.GraphQLClientWriter(stream, this.config).write();
             yield stream.end();
         });
@@ -170,12 +170,12 @@ class Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const subDir = mutation ? "mutations" : "queries";
             const promises = fields.map((field) => __awaiter(this, void 0, void 0, function* () {
-                const stream = fs_1.createWriteStream(path_1.join(this.config.targetDir, subDir, `${field.name}.ts`));
+                const stream = createStreamAndLog(path_1.join(this.config.targetDir, subDir, `${field.name}.ts`));
                 new OperationWriter_1.OperationWriter(mutation, field, stream, this.config).write();
                 yield stream.end();
             }));
             const writeIndex = () => __awaiter(this, void 0, void 0, function* () {
-                const stream = fs_1.createWriteStream(path_1.join(this.config.targetDir, subDir, "index.ts"));
+                const stream = createStreamAndLog(path_1.join(this.config.targetDir, subDir, "index.ts"));
                 for (const field of fields) {
                     stream.write(`export {${field.name}} from './${field.name}';\n`);
                     const argsWrapperName = OperationWriter_1.argsWrapperTypeName(field);
@@ -193,7 +193,7 @@ class Generator {
     }
     writeSimpleIndex(dir, types) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = fs_1.createWriteStream(path_1.join(dir, "index.ts"));
+            const stream = createStreamAndLog(path_1.join(dir, "index.ts"));
             for (const type of types) {
                 stream.write(`export type {${type.name}} from './${type.name}';\n`);
             }
@@ -250,6 +250,10 @@ class Generator {
     }
 }
 exports.Generator = Generator;
+function createStreamAndLog(path) {
+    console.log(`Write code into file: ${path}`);
+    return fs_1.createWriteStream(path);
+}
 const mkdirAsync = util_1.promisify(fs_1.mkdir);
 const rmdirAsync = util_1.promisify(fs_1.rmdir);
 const accessAsync = util_1.promisify(fs_1.access);

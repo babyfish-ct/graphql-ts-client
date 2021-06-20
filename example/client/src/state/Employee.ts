@@ -2,12 +2,12 @@ import { EmployeeFetchable } from "../generated/fetchers";
 import { findEmployees, FindEmployeesArgs } from "../generated/queries";
 import { fetchableSelectorFamily } from "./FetchableSelectorFamily";
 
-export const employeeQuery = fetchableSelectorFamily<
-    FindEmployeesArgs, 
-    EmployeeFetchable
+export const selectEmployees = fetchableSelectorFamily.list<
+    EmployeeFetchable, 
+    FindEmployeesArgs 
 >({
-    key: "employeeQuery",
-    get: (args, fetcher) => () => {
-        return findEmployees(args, fetcher);
+    key: "selectEmployees",
+    get: (param, fetcher) => () => {
+        return findEmployees(param, fetcher);
     }
 });
