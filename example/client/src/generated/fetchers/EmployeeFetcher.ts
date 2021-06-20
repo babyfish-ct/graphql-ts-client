@@ -9,7 +9,7 @@ import {DepartmentFetcher} from '.';
  * 
  * So any instance of this interface is reuseable.
  */
-export interface EmployeeFetcher<T> extends Fetcher<T> {
+export interface EmployeeFetcher<T extends object> extends Fetcher<T> {
 
 	readonly __typename: EmployeeFetcher<T & {__typename: 'Employee'}>;
 	readonly "~__typename": EmployeeFetcher<Omit<T, '__typename'>>;
@@ -29,13 +29,13 @@ export interface EmployeeFetcher<T> extends Fetcher<T> {
 	readonly salary: EmployeeFetcher<T & {readonly salary: number}>;
 	readonly "~salary": EmployeeFetcher<Omit<T, 'salary'>>;
 
-	department<X>(child: DepartmentFetcher<X>): EmployeeFetcher<T & {readonly department: X}>;
+	department<X extends object>(child: DepartmentFetcher<X>): EmployeeFetcher<T & {readonly department: X}>;
 	readonly "~department": EmployeeFetcher<Omit<T, 'department'>>;
 
-	supervisor<X>(child: EmployeeFetcher<X>): EmployeeFetcher<T & {readonly supervisor?: X}>;
+	supervisor<X extends object>(child: EmployeeFetcher<X>): EmployeeFetcher<T & {readonly supervisor?: X}>;
 	readonly "~supervisor": EmployeeFetcher<Omit<T, 'supervisor'>>;
 
-	subordinates<X>(child: EmployeeFetcher<X>): EmployeeFetcher<T & {readonly subordinates: X[]}>;
+	subordinates<X extends object>(child: EmployeeFetcher<X>): EmployeeFetcher<T & {readonly subordinates: X[]}>;
 	readonly "~subordinates": EmployeeFetcher<Omit<T, 'subordinates'>>;
 }
 

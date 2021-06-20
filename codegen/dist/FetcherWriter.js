@@ -58,7 +58,7 @@ class FetcherWriter extends Writer_1.Writer {
         t(COMMENT);
         t("export interface ");
         t(this.generatedName);
-        t("<T> extends Fetcher<T> ");
+        t("<T extends object> extends Fetcher<T> ");
         this.enter("BLOCK", true);
         t("\n");
         t("readonly __typename: ");
@@ -92,7 +92,7 @@ class FetcherWriter extends Writer_1.Writer {
                 > 1;
             t(field.name);
             if (associatedTypes.length !== 0) {
-                t("<X>");
+                t("<X extends object>");
             }
             this.enter("PARAMETERS", multiLines);
             {

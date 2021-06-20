@@ -17,27 +17,28 @@ export class EmployeeService {
     ): Promise<Employee[]> {
 
         /*
-         * Mock the network delay of database
+         * Mock the network delay
          */
         await delay(1000);
         
         const lowercaseName = namePattern?.toLocaleLowerCase();
-        const predicate: Predicate<TEmployee> | undefined = 
-            lowercaseName !== undefined && lowercaseName !== "" ?
-            d => (
-                d.firstName.toLowerCase().indexOf(lowercaseName) !== -1 ||
-                d.lastName.toLowerCase().indexOf(lowercaseName) !== -1
-            ) :
-            undefined;
         return employeeTable
-            .find([
-                departmentId !== undefined ? 
-                { prop: "departmentId", value: departmentId } :
-                undefined,
-                supervisorId !== undefined ? 
-                { prop: "supervisorId", value: supervisorId } :
-                undefined,
-            ], predicate)
+            .find(
+                [
+                    departmentId !== undefined ? 
+                    { prop: "departmentId", value: departmentId } :
+                    undefined,
+                    supervisorId !== undefined ? 
+                    { prop: "supervisorId", value: supervisorId } :
+                    undefined,
+                ], 
+                lowercaseName !== undefined && lowercaseName !== "" ?
+                d => (
+                    d.firstName.toLowerCase().indexOf(lowercaseName) !== -1 ||
+                    d.lastName.toLowerCase().indexOf(lowercaseName) !== -1
+                ) :
+                undefined
+            )
             .map(row => new Employee(row));
     }
 

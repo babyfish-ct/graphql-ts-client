@@ -14,7 +14,7 @@ export class DepartmentService {
     ): Promise<Department[]> {
 
         /*
-         * Mock the network delay of database
+         * Mock the network delay
          */
         await delay(1000);
 

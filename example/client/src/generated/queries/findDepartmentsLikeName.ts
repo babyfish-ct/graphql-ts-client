@@ -2,7 +2,7 @@ import {replaceNullValues} from 'graphql-ts-client-api';
 import {graphQLClient} from '../GraphQLClient';
 import {DepartmentFetcher} from '../fetchers';
 
-export async function findDepartmentsLikeName<X>(
+export async function findDepartmentsLikeName<X extends object>(
 	name: string | undefined, 
 	fetcher: DepartmentFetcher<X>
 ): Promise<X> {

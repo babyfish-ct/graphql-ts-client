@@ -2,7 +2,7 @@ import {replaceNullValues} from 'graphql-ts-client-api';
 import {graphQLClient} from '../GraphQLClient';
 import {EmployeeFetcher} from '../fetchers';
 
-export async function findEmployees<X>(
+export async function findEmployees<X extends object>(
 	args: FindEmployeesArgs, 
 	fetcher: EmployeeFetcher<X>
 ): Promise<X> {

@@ -1,4 +1,4 @@
-export interface Fetcher<T> {
+export interface Fetcher<T extends object> {
     __supressWarnings__(value: T): never;
 }
 
@@ -7,22 +7,22 @@ export type ModelType<F> =
     M : 
     never;
 
-export abstract class AbstractFetcher<T> implements Fetcher<T> {
+export abstract class AbstractFetcher<T extends object> implements Fetcher<T> {
 
     private str?: string;
 
     constructor(
-        private prev: AbstractFetcher<unknown> | undefined,
+        private prev: AbstractFetcher<any> | undefined,
         private negative: boolean,
         private field: string,
         private args?: {[key: string]: any},
-        private child?: AbstractFetcher<unknown>
+        private child?: AbstractFetcher<any>
     ) {}
 
-    protected addField<F extends AbstractFetcher<unknown>>(
+    protected addField<F extends AbstractFetcher<any>>(
         field: string, 
         args?: {[key: string]: any},
-        child?: AbstractFetcher<unknown>
+        child?: AbstractFetcher<any>
     ): F {
         return this.createFetcher(
             this,
@@ -33,7 +33,7 @@ export abstract class AbstractFetcher<T> implements Fetcher<T> {
         ) as F;
     }
 
-    protected removeField<F extends AbstractFetcher<unknown>>(field: string): F {
+    protected removeField<F extends AbstractFetcher<any>>(field: string): F {
         return this.createFetcher(
             this,
             true,
@@ -42,12 +42,12 @@ export abstract class AbstractFetcher<T> implements Fetcher<T> {
     }
 
     protected abstract createFetcher(
-        prev: AbstractFetcher<unknown> | undefined,
+        prev: AbstractFetcher<any> | undefined,
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<unknown>
-    ): AbstractFetcher<unknown>;
+        child?: AbstractFetcher<any>
+    ): AbstractFetcher<any>;
 
     toString(): string {
         let s = this.str;
@@ -58,8 +58,8 @@ export abstract class AbstractFetcher<T> implements Fetcher<T> {
     }
 
     private toString0(indent: number): string {
-        const fetchers: AbstractFetcher<unknown>[] = [];
-        for (let AbstractFetcher: AbstractFetcher<unknown> | undefined = this; 
+        const fetchers: AbstractFetcher<any>[] = [];
+        for (let AbstractFetcher: AbstractFetcher<any> | undefined = this; 
             AbstractFetcher !== undefined; 
             AbstractFetcher = AbstractFetcher.prev
         ) {
@@ -138,7 +138,7 @@ export abstract class AbstractFetcher<T> implements Fetcher<T> {
 
 interface Field {
     readonly args?: {[key: string]: any};
-    readonly child?: AbstractFetcher<unknown>;
+    readonly child?: AbstractFetcher<any>;
 }
 
 interface Ref<T> {

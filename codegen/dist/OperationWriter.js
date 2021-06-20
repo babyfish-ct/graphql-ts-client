@@ -25,7 +25,7 @@ class OperationWriter extends Writer_1.Writer {
         t("export async function ");
         t(this.field.name);
         if (this.associatedTypes.length !== 0) {
-            t("<X>");
+            t("<X extends object>");
         }
         this.enter("PARAMETERS", this.field.args.length !== 0 &&
             this.associatedTypes.length !== 0);
