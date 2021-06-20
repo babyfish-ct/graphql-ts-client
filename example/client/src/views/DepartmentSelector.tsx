@@ -1,10 +1,13 @@
-import { FC, memo } from "react";
-import { Select, MenuItem } from "@material-ui/core";
+import { ChangeEvent, FC, memo, useCallback } from "react";
+import { Select, MenuItem, FormControl, InputLabel, CircularProgress } from "@material-ui/core";
 import { useRecoilValueLoadable } from "recoil";
-import { selectDepartmentsLikeName } from "../state/Department";
+import { selectDepartmentsLikeName } from "../state/DepartmentSelector";
 import { department$$ } from "../generated/fetchers";
 
-export const DepartmentSelector: FC = memo(() => {
+export const DepartmentSelector: FC<{
+    value?: number,
+    onChange: (value?: number) => void
+}> = memo(({value, onChange}) => {
 
     const loadable = useRecoilValueLoadable(
         selectDepartmentsLikeName(
@@ -12,24 +15,46 @@ export const DepartmentSelector: FC = memo(() => {
             department$$
         )
     );
+
+    const onSelectChange = useCallback((e: ChangeEvent<{value: unknown}>) => {
+        onChange(e.target.value as number | undefined);
+    }, [onChange]);
+
     return (
-        <Select disabled={loadable.state !== 'hasValue'}>
-            {
-                [
-                    <MenuItem key="None" value={0}>--Any--</MenuItem>,
-                    ...(
-                        loadable.state === 'hasValue' ?
-                        loadable.getValue().map(department => {
-                            return (
-                                <MenuItem key={department.id} value={department.id}>
-                                    {department.name}
-                                </MenuItem>
-                            ); 
-                        }) :
-                        []
-                    )
-                ]
-            }
-        </Select>
+        <FormControl fullWidth={true}>
+            <InputLabel>
+                Choose the department of employees
+                {
+                    loadable.state === 'loading' ?
+                    <CircularProgress size="1rem"/> :
+                    undefined
+                }
+            </InputLabel>
+            <Select 
+            disabled={loadable.state !== 'hasValue'} 
+            error={loadable.state === 'hasError'}
+            value={value}
+            onChange={onSelectChange}
+            fullWidth={true}>
+                {
+                    [
+                        <MenuItem key="None" value={undefined}>
+                            <em>Unspecified</em>
+                        </MenuItem>,
+                        ...(
+                            loadable.state === 'hasValue' ?
+                            loadable.getValue().map(department => {
+                                return (
+                                    <MenuItem key={department.id} value={department.id}>
+                                        {department.name}
+                                    </MenuItem>
+                                ); 
+                            }) :
+                            []
+                        )
+                    ]
+                }
+            </Select>
+        </FormControl>
     );
 });

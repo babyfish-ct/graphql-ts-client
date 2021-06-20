@@ -8,14 +8,16 @@ export async function findEmployees<X extends object>(
 ): Promise<readonly X[]> {
 	const gql = `
 		query(
-			$namePattern: String, 
+			$mockedErrorProbability: Int, 
 			$supervisorId: Int, 
-			$departmentId: Int
+			$departmentId: Int, 
+			$namePattern: String
 		) {
 			findEmployees(
-				namePattern: $namePattern, 
+				mockedErrorProbability: $mockedErrorProbability, 
 				supervisorId: $supervisorId, 
-				departmentId: $departmentId
+				departmentId: $departmentId, 
+				namePattern: $namePattern
 			) ${fetcher.toString()}
 		}
 	`;
@@ -29,7 +31,8 @@ export async function findEmployees<X extends object>(
  * do not satisfy the constraint 'SerializableParam' or recoil
  */
 export type FindEmployeesArgs = {
-	readonly namePattern?: string;
+	readonly mockedErrorProbability?: number;
 	readonly supervisorId?: number;
 	readonly departmentId?: number;
+	readonly namePattern?: string;
 }

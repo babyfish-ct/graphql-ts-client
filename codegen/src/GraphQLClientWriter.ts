@@ -27,7 +27,7 @@ export class GraphQLClientWriter extends Writer {
         {
             this.enter("BLOCK", true);
             t(`const message = "${NO_CLIENT}";\n`);
-            t("throw console.error(message);\n");
+            t("console.error(message);\n");
             t("throw new Error(message);\n");
             this.leave("\n");
         }
@@ -42,7 +42,7 @@ export class GraphQLClientWriter extends Writer {
         {
             this.enter("BLOCK", true);
             t(`const message = "${EXISTS_CLIENT}";\n`);
-            t("throw console.error(message);\n");
+            t("console.error(message);\n");
             t("throw new Error(message);\n");
             this.leave("\n");
         }

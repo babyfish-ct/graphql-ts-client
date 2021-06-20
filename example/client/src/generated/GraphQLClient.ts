@@ -33,7 +33,7 @@ export function graphQLClient(): GraphQLClient {
 	const c = client;
 	if (c === undefined) {
 		const message = "Cannot invoke 'graphQLClient' because 'setGraphQLClient' has never been invoked";
-		throw console.error(message);
+		console.error(message);
 		throw new Error(message);
 	}
 	return c;
@@ -42,7 +42,7 @@ export function graphQLClient(): GraphQLClient {
 export function setGraphQLClient(c: GraphQLClient, overrideIfExists: boolean = false) {
 	if (client !== undefined && !overrideIfExists) {
 		const message = "'setGraphQLClient' cannot be invoked when the argument 'overrideIfExists' is false and it has been inovked yet.";
-		throw console.error(message);
+		console.error(message);
 		throw new Error(message);
 	}
 	client = c;
