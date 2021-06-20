@@ -42,7 +42,7 @@ export class InputWriter extends Writer {
         
         const fieldMap = this.inputType.getFields();
         for (const fieldName in fieldMap) {
-            if (!this.config.modelEditable) {
+            if (!this.config.objectEditable) {
                 t("readonly ");
             }
             const field = fieldMap[fieldName]!;

@@ -1,5 +1,5 @@
-import { buildSchema, GraphQLEnumType, GraphQLError, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType } from "graphql";
-import { GeneratorConfig } from "./GeneratorConfig";
+import { GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType, validate } from "graphql";
+import { GeneratorConfig, validateConfig, validateConfigAndSchema } from "./GeneratorConfig";
 import { mkdir, rmdir, access, createWriteStream } from "fs";
 import { promisify } from "util";
 import { join } from "path";
@@ -13,11 +13,13 @@ import { GraphQLClientWriter } from "./GraphQLClientWriter";
 export class Generator {
 
     constructor(private config: GeneratorConfig) {
+        validateConfig(config);
     }
 
     async generate() {
         
         const schema = await this.loadSchema();
+        validateConfigAndSchema(this.config, schema);
         if (this.config.recreateTargetDir) {
             await this.rmdirIfNecessary();
         }

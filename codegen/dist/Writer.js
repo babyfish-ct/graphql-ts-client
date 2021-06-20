@@ -201,10 +201,16 @@ class Writer {
         }
         else if (type instanceof graphql_1.GraphQLList) {
             if (type.ofType instanceof graphql_1.GraphQLNonNull) {
+                if (!this.config.arrayEditable) {
+                    this.text("readonly ");
+                }
                 this.typeRef(type.ofType, overrideObjectTypeName);
                 this.text("[]");
             }
             else {
+                if (!this.config.arrayEditable) {
+                    this.text("Readonly");
+                }
                 this.text("Array<");
                 this.typeRef(type.ofType, overrideObjectTypeName);
                 this.text(" | undefined>");

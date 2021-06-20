@@ -212,9 +212,15 @@ export abstract class Writer {
             this.typeRef(type.ofType, overrideObjectTypeName);
         } else if (type instanceof GraphQLList) {
             if (type.ofType instanceof GraphQLNonNull) {
+                if (!this.config.arrayEditable) {
+                    this.text("readonly ");
+                }
                 this.typeRef(type.ofType, overrideObjectTypeName);
                 this.text("[]");
             } else {
+                if (!this.config.arrayEditable) {
+                    this.text("Readonly");
+                }
                 this.text("Array<");
                 this.typeRef(type.ofType, overrideObjectTypeName);
                 this.text(" | undefined>");

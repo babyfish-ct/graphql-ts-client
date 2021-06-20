@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractFetcher = void 0;
 class AbstractFetcher {
-    constructor(prev, negative, field, args, child) {
-        this.prev = prev;
-        this.negative = negative;
-        this.field = field;
-        this.args = args;
-        this.child = child;
+    constructor(_prev, _negative, _field, _args, _child) {
+        this._prev = _prev;
+        this._negative = _negative;
+        this._field = _field;
+        this._args = _args;
+        this._child = _child;
     }
     addField(field, args, child) {
         return this.createFetcher(this, false, field, args, child);
@@ -15,44 +15,42 @@ class AbstractFetcher {
     removeField(field) {
         return this.createFetcher(this, true, field);
     }
-    toString() {
+    get graphql() {
         let s = this.str;
         if (s === undefined) {
-            this.str = s = this.toString0(0);
+            this.str = s = this.graphql0(0);
         }
         return s;
     }
-    toString0(indent) {
+    graphql0(indent) {
         const fetchers = [];
-        for (let AbstractFetcher = this; AbstractFetcher !== undefined; AbstractFetcher = AbstractFetcher.prev) {
-            if (AbstractFetcher.field !== "") {
-                fetchers.push(AbstractFetcher);
+        for (let fetcher = this; fetcher !== undefined; fetcher = fetcher._prev) {
+            if (fetcher._field !== "") {
+                fetchers.push(fetcher);
             }
         }
         if (fetchers.length === 0) {
             return "";
         }
-        const fieldMap = {};
+        const fieldMap = new Map();
         for (let i = fetchers.length - 1; i >= 0; --i) {
-            const AbstractFetcher = fetchers[i];
-            if (AbstractFetcher.negative) {
-                delete fieldMap[AbstractFetcher.field];
+            const fetcher = fetchers[i];
+            if (fetcher._negative) {
+                fieldMap.delete(fetcher._field);
             }
             else {
-                fieldMap[AbstractFetcher.field] = {
-                    args: AbstractFetcher.args,
-                    child: AbstractFetcher.child
-                };
+                fieldMap.set(fetcher._field, {
+                    args: fetcher._args,
+                    child: fetcher._child
+                });
             }
         }
-        const fieldNames = Object.keys(fieldMap);
-        if (fieldNames.length === 0) {
+        if (fieldMap.size === 0) {
             return "";
         }
         const resultRef = { value: "" };
         resultRef.value += "{\n";
-        for (const fieldName of fieldNames) {
-            const field = fieldMap[fieldName];
+        for (const [fieldName, field] of fieldMap) {
             AbstractFetcher.appendIndentTo(indent + 1, resultRef);
             AbstractFetcher.appendFieldTo(indent + 1, fieldName, field, resultRef);
         }
@@ -83,7 +81,7 @@ class AbstractFetcher {
             }
         }
         if (field.child !== undefined) {
-            const childStr = field.child.toString0(indent);
+            const childStr = field.child.graphql0(indent);
             if (childStr !== "") {
                 targetStr.value += " ";
                 targetStr.value += childStr;

@@ -14,16 +14,15 @@ class FetcherTarget extends Fetcher_1.AbstractFetcher {
 function proxyHandler(methodNames) {
     const handler = {
         get: (target, p, receiver) => {
-            const field = p.toString();
-            if (BUILT_IN_FIELDS.has(field)) {
-                return Reflect.get(target, field);
+            if (typeof p !== 'string' || BUILT_IN_FIELDS.has(p)) {
+                return Reflect.get(target, p);
             }
-            if (field.startsWith("~")) {
+            if (p.startsWith("~")) {
                 const removeField = Reflect.get(target, "removeField");
-                return new Proxy(removeField.call(target, field.substring(1)), handler);
+                return new Proxy(removeField.call(target, p.substring(1)), handler);
             }
-            if (methodNames.has(field)) {
-                return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, field));
+            if (methodNames.has(p)) {
+                return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, p));
             }
             const addField = Reflect.get(target, "addField");
             return new Proxy(addField.call(target, p.toString()), handler);
@@ -64,3 +63,4 @@ const BUILT_IN_FIELDS = new Set([
     ...Object.keys(FETCHER_TARGET),
     ...Reflect.ownKeys(Fetcher_1.AbstractFetcher.prototype)
 ]);
+console.log(BUILT_IN_FIELDS);

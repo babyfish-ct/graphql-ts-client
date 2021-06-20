@@ -8,7 +8,7 @@ export async function findDepartmentsLikeName<X extends object>(
 ): Promise<X> {
 	const gql = `
 		query($name: String) {
-			findDepartmentsLikeName(name: $name) ${fetcher.toString()}
+			findDepartmentsLikeName(name: $name) ${fetcher.graphql}
 		}
 	`;
 	const { data, errors } = await graphQLClient().request(gql, {name});

@@ -16,7 +16,7 @@ export async function findEmployees<X extends object>(
 				namePattern: $namePattern, 
 				supervisorId: $supervisorId, 
 				departmentId: $departmentId
-			) ${fetcher.toString()}
+			) ${fetcher.graphql}
 		}
 	`;
 	const { data, errors } = await graphQLClient().request(gql, args);

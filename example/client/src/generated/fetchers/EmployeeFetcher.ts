@@ -35,7 +35,7 @@ export interface EmployeeFetcher<T extends object> extends Fetcher<T> {
 	supervisor<X extends object>(child: EmployeeFetcher<X>): EmployeeFetcher<T & {readonly supervisor?: X}>;
 	readonly "~supervisor": EmployeeFetcher<Omit<T, 'supervisor'>>;
 
-	subordinates<X extends object>(child: EmployeeFetcher<X>): EmployeeFetcher<T & {readonly subordinates: X[]}>;
+	subordinates<X extends object>(child: EmployeeFetcher<X>): EmployeeFetcher<T & {readonly subordinates: readonly X[]}>;
 	readonly "~subordinates": EmployeeFetcher<Omit<T, 'subordinates'>>;
 }
 

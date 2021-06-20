@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Generator = void 0;
 const graphql_1 = require("graphql");
+const GeneratorConfig_1 = require("./GeneratorConfig");
 const fs_1 = require("fs");
 const util_1 = require("util");
 const path_1 = require("path");
@@ -22,10 +23,12 @@ const GraphQLClientWriter_1 = require("./GraphQLClientWriter");
 class Generator {
     constructor(config) {
         this.config = config;
+        GeneratorConfig_1.validateConfig(config);
     }
     generate() {
         return __awaiter(this, void 0, void 0, function* () {
             const schema = yield this.loadSchema();
+            GeneratorConfig_1.validateConfigAndSchema(this.config, schema);
             if (this.config.recreateTargetDir) {
                 yield this.rmdirIfNecessary();
             }

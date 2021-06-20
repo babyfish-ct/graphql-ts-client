@@ -139,7 +139,7 @@ export class OperationWriter extends Writer {
         this.enter("BLOCK", true);
 
         for (const arg of this.field.args) {
-            if (!this.config.modelEditable) {
+            if (!this.config.objectEditable) {
                 t("readonly ");
             }
             t(arg.name);
@@ -189,7 +189,7 @@ export class OperationWriter extends Writer {
         }
         if (this.associatedTypes.length !== 0) {
             t(" ");
-            t("${fetcher.toString()}");
+            t("${fetcher.graphql}");
         }
         this.leave("\n");
 

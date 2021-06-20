@@ -19,7 +19,7 @@ export interface DepartmentFetcher<T extends object> extends Fetcher<T> {
 	readonly name: DepartmentFetcher<T & {readonly name: string}>;
 	readonly "~name": DepartmentFetcher<Omit<T, 'name'>>;
 
-	employees<X extends object>(child: EmployeeFetcher<X>): DepartmentFetcher<T & {readonly employees: X[]}>;
+	employees<X extends object>(child: EmployeeFetcher<X>): DepartmentFetcher<T & {readonly employees: readonly X[]}>;
 	readonly "~employees": DepartmentFetcher<Omit<T, 'employees'>>;
 
 	readonly avgSalary: DepartmentFetcher<T & {readonly avgSalary: number}>;

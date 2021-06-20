@@ -130,7 +130,7 @@ class FetcherWriter extends Writer_1.Writer {
         t(": ");
         t(this.generatedName);
         t("<T & {");
-        if (!this.config.modelEditable) {
+        if (!this.config.objectEditable) {
             t("readonly ");
         }
         t(field.name);

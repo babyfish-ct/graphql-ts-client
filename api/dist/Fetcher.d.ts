@@ -1,17 +1,18 @@
 export interface Fetcher<T extends object> {
     __supressWarnings__(value: T): never;
+    readonly graphql: string;
 }
 export declare type ModelType<F> = F extends Fetcher<infer M> ? M : never;
 export declare abstract class AbstractFetcher<T extends object> implements Fetcher<T> {
-    private prev;
-    private negative;
-    private field;
-    private args?;
-    private child?;
+    private _prev;
+    private _negative;
+    private _field;
+    private _args?;
+    private _child?;
     private str?;
-    constructor(prev: AbstractFetcher<any> | undefined, negative: boolean, field: string, args?: {
+    constructor(_prev: AbstractFetcher<any> | undefined, _negative: boolean, _field: string, _args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<any>);
+    }, _child?: AbstractFetcher<any>);
     protected addField<F extends AbstractFetcher<any>>(field: string, args?: {
         [key: string]: any;
     }, child?: AbstractFetcher<any>): F;
@@ -19,8 +20,8 @@ export declare abstract class AbstractFetcher<T extends object> implements Fetch
     protected abstract createFetcher(prev: AbstractFetcher<any> | undefined, negative: boolean, field: string, args?: {
         [key: string]: any;
     }, child?: AbstractFetcher<any>): AbstractFetcher<any>;
-    toString(): string;
-    private toString0;
+    get graphql(): string;
+    private graphql0;
     private static appendIndentTo;
     private static appendFieldTo;
     __supressWarnings__(value: T): never;
