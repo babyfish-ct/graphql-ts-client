@@ -6,7 +6,9 @@ import { ImportingBehavior, Writer } from "./Writer";
 
 export class FetcherWriter extends Writer {
 
-    private readonly generatedName: string;
+    private readonly fetcherTypeName: string;
+
+    private readonly fetchableTypeName: string;
 
     private readonly methodNames: string[];
 
@@ -22,8 +24,9 @@ export class FetcherWriter extends Writer {
         config: GeneratorConfig
     ) {
         super(stream, config);
-        this.generatedName = generatedFetcherTypeName(modelType, config);
-        
+        this.fetcherTypeName = generatedFetcherTypeName(modelType, config);
+        this.fetchableTypeName = generatedFetchableTypeName(modelType, config);
+
         const fieldMap = this.modelType.getFields();
         const methodNames = [];
         const defaultFetcherProps = [];
@@ -77,18 +80,20 @@ export class FetcherWriter extends Writer {
 
         t(COMMENT);
         t("export interface ");
-        t(this.generatedName);
-        t("<T extends object> extends Fetcher<T> ");
+        t(this.fetcherTypeName);
+        t("<T extends object> extends Fetcher<");
+        t(this.fetchableTypeName);
+        t(", T> ");
         this.enter("BLOCK", true);
         
         t("\n");
         t("readonly __typename: ");
-        t(this.generatedName);
+        t(this.fetcherTypeName);
         t("<T & {__typename: '");
         t(this.modelType.name);
         t("'}>;\n");
         t('readonly "~__typename": ');
-        t(this.generatedName);
+        t(this.fetcherTypeName);
         t("<Omit<T, '__typename'>>;\n");
 
         const fieldMap = this.modelType.getFields();
@@ -99,6 +104,8 @@ export class FetcherWriter extends Writer {
             this.writeNegativeProp(field);
         }
         this.leave("\n");
+
+        this.writeFetchable();
 
         this.writeInstances();
     }
@@ -146,8 +153,9 @@ export class FetcherWriter extends Writer {
                     this.enter("BLANK");
                     for (const associatedType of associatedTypes) {
                         this.separator(" | ");
-                        t(generatedFetcherTypeName(associatedType, this.config));
-                        t("<X>");
+                        t("Fetcher<");
+                        t(generatedFetchableTypeName(associatedType, this.config));
+                        t(", X>");
                     }
                     this.leave();
                 }
@@ -156,7 +164,7 @@ export class FetcherWriter extends Writer {
         }
 
         t(": ");
-        t(this.generatedName);
+        t(this.fetcherTypeName);
         t("<T & {");
         if (!this.config.objectEditable) {
             t("readonly ");
@@ -177,10 +185,24 @@ export class FetcherWriter extends Writer {
         t('readonly "~');
         t(field.name);
         t('": ');
-        t(this.generatedName);
+        t(this.fetcherTypeName);
         t("<Omit<T, '");
         t(field.name);
         t("'>>;\n");
+    }
+
+    private writeFetchable() {
+        
+        const t = this.text.bind(this);
+        
+        t("\nexport interface ");
+        t(this.fetchableTypeName);
+        t(" ");
+        this.enter("BLOCK", true);
+        t("readonly type: '");
+        t(this.modelType.name);
+        t("';\n");
+        this.leave("\n");
     }
 
     private writeInstances() {
@@ -189,11 +211,11 @@ export class FetcherWriter extends Writer {
 
         t("\nexport const ");
         t(this.emptyFetcherName);
-        t(" = ");
-        this.enter("BLANK", true);
-        t("createFetcher<");
+        t(": ");
         t(generatedFetcherTypeName(this.modelType, this.config))
-        t("<{}>>")
+        t("<{}> = ")
+        this.enter("BLANK", true);
+        t("createFetcher")
         this.enter("PARAMETERS", this.methodNames.length > 1);
         for (const methodName of this.methodNames) {
             this.separator(", ");
@@ -227,6 +249,14 @@ export function generatedFetcherTypeName(
     config: GeneratorConfig
 ): string {
     const suffix = config.fetcherSuffix ?? "Fetcher";
+    return `${fetcherType.name}${suffix}`;
+}
+
+export function generatedFetchableTypeName(
+    fetcherType: GraphQLObjectType | GraphQLInterfaceType,
+    config: GeneratorConfig
+): string {
+    const suffix = config.fetchableSuffix ?? "Fetchable";
     return `${fetcherType.name}${suffix}`;
 }
 

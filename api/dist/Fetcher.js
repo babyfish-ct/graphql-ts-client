@@ -15,22 +15,58 @@ class AbstractFetcher {
     removeField(field) {
         return this.createFetcher(this, true, field);
     }
-    get graphql() {
-        let s = this.str;
+    toString() {
+        let s = this._str;
         if (s === undefined) {
-            this.str = s = this.graphql0(0);
+            this._str = s = this._toString0(0);
         }
         return s;
     }
-    graphql0(indent) {
+    _toString0(indent) {
+        const fieldMap = this._getFieldMap();
+        if (fieldMap.size === 0) {
+            return "";
+        }
+        const resultRef = { value: "" };
+        resultRef.value += "{\n";
+        for (const [fieldName, field] of fieldMap) {
+            AbstractFetcher.appendIndentTo(indent + 1, resultRef);
+            AbstractFetcher.appendFieldTo(indent + 1, fieldName, field, resultRef);
+        }
+        AbstractFetcher.appendIndentTo(indent, resultRef);
+        resultRef.value += "}";
+        return resultRef.value;
+    }
+    toJSON() {
+        let j = this._json;
+        if (j === undefined) {
+            this._json = j = JSON.stringify(this._toJSON0());
+        }
+        return j;
+    }
+    _toJSON0() {
+        var _a;
+        const fieldMap = this._getFieldMap();
+        if (fieldMap.size === 0) {
+            return {};
+        }
+        const arr = [];
+        for (const [name, field] of fieldMap) {
+            let obj = {
+                name,
+                args: field.args,
+                child: (_a = field.child) === null || _a === void 0 ? void 0 : _a._toJSON0()
+            };
+            arr.push(obj);
+        }
+        return arr;
+    }
+    _getFieldMap() {
         const fetchers = [];
         for (let fetcher = this; fetcher !== undefined; fetcher = fetcher._prev) {
             if (fetcher._field !== "") {
                 fetchers.push(fetcher);
             }
-        }
-        if (fetchers.length === 0) {
-            return "";
         }
         const fieldMap = new Map();
         for (let i = fetchers.length - 1; i >= 0; --i) {
@@ -45,18 +81,7 @@ class AbstractFetcher {
                 });
             }
         }
-        if (fieldMap.size === 0) {
-            return "";
-        }
-        const resultRef = { value: "" };
-        resultRef.value += "{\n";
-        for (const [fieldName, field] of fieldMap) {
-            AbstractFetcher.appendIndentTo(indent + 1, resultRef);
-            AbstractFetcher.appendFieldTo(indent + 1, fieldName, field, resultRef);
-        }
-        AbstractFetcher.appendIndentTo(indent, resultRef);
-        resultRef.value += "}";
-        return resultRef.value;
+        return fieldMap;
     }
     static appendIndentTo(indent, targetStr) {
         for (let i = indent; i > 0; --i) {
@@ -81,7 +106,7 @@ class AbstractFetcher {
             }
         }
         if (field.child !== undefined) {
-            const childStr = field.child.graphql0(indent);
+            const childStr = field.child._toString0(indent);
             if (childStr !== "") {
                 targetStr.value += " ";
                 targetStr.value += childStr;
@@ -89,7 +114,7 @@ class AbstractFetcher {
         }
         targetStr.value += "\n";
     }
-    __supressWarnings__(value) {
+    __supressWarnings__(_1, _2) {
         throw new Error("__supressWarnings is not supported");
     }
 }

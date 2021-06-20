@@ -8,6 +8,7 @@ function validateConfig(
  * so declare this parameter as 'any'
  */
 config) {
+    var _a, _b;
     if (typeof config !== "object") {
         throw new Error("The argument 'config' must be an object");
     }
@@ -57,11 +58,21 @@ config) {
                 break;
             case 'fetcherSuffix':
                 if (value != undefined) {
-                    if (typeof value !== 'string') {
-                        throw new Error('"confg.fetcherSuffix" must be undefined or string');
+                    if (typeof value !== 'string' || value === "") {
+                        throw new Error('"confg.fetcherSuffix" must be undefined or string whose length is not zero');
                     }
                     if (!INDENT_REGEXP.test(value)) {
                         throw new Error('"confg.fetcherSuffix" canonly contains "_", "$", english letters and digits when its specified');
+                    }
+                }
+                break;
+            case 'fetchableSuffix':
+                if (value != undefined) {
+                    if (typeof value !== 'string' || value === "") {
+                        throw new Error('"confg.fetchableSuffix" must be undefined or string whose length is not zero');
+                    }
+                    if (!INDENT_REGEXP.test(value)) {
+                        throw new Error('"confg.fetchableSuffix" canonly contains "_", "$", english letters and digits when its specified');
                     }
                 }
                 break;
@@ -78,12 +89,17 @@ config) {
             default:
                 throw new Error(`unsupported configuration property: ${key}`);
         }
-        if (config.schemaLoader === undefined) {
-            throw new Error('config.schemaLoader is required');
-        }
-        if (config.targetDir === undefined) {
-            throw new Error('config.targetDir is required');
-        }
+    }
+    if (config.schemaLoader === undefined) {
+        throw new Error('config.schemaLoader is required');
+    }
+    if (config.targetDir === undefined) {
+        throw new Error('config.targetDir is required');
+    }
+    const fetcherSuffiex = (_a = config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher";
+    const fetchableSuffix = (_b = config.fetchableSuffix) !== null && _b !== void 0 ? _b : "Fetchable";
+    if (fetcherSuffiex === fetchableSuffix) {
+        throw new Error('config.fetcherSuffiex and config.fetchableSuffix are conflict');
     }
 }
 exports.validateConfig = validateConfig;
@@ -140,7 +156,12 @@ const BUILT_IN_FEILDS = new Set([
     "constructor",
     "addField",
     "removeField",
-    "graphql",
-    "graphql0",
+    "toString",
+    "_toString0",
+    "_str",
+    "toJSON",
+    "_toJSON0",
+    "_json",
+    "_getFieldMap",
     "__supressWarnings__"
 ]);

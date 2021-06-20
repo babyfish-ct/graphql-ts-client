@@ -118,12 +118,13 @@ class Generator {
                 (() => __awaiter(this, void 0, void 0, function* () {
                     const stream = fs_1.createWriteStream(path_1.join(dir, "index.ts"));
                     for (const type of fetcherTypes) {
-                        const generatedName = FetcherWriter_1.generatedFetcherTypeName(type, this.config);
-                        stream.write(`export type {${generatedName}} from './${generatedName}';\n`);
+                        const fetcherTypeName = FetcherWriter_1.generatedFetcherTypeName(type, this.config);
+                        const fetchableTypeName = FetcherWriter_1.generatedFetchableTypeName(type, this.config);
+                        stream.write(`export type {${fetcherTypeName}, ${fetchableTypeName}} from './${fetcherTypeName}';\n`);
                         const defaultFetcherName = defaultFetcherNameMap.get(type);
                         stream.write(`export {${emptyFetcherNameMap.get(type)}${defaultFetcherName !== undefined ?
                             `, ${defaultFetcherName}` :
-                            ''}} from './${generatedName}';\n`);
+                            ''}} from './${fetcherTypeName}';\n`);
                     }
                     yield stream.end();
                 }))()

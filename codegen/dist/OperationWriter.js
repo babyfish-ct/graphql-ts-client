@@ -15,7 +15,7 @@ class OperationWriter extends Writer_1.Writer {
     }
     prepareImportings() {
         if (this.associatedTypes.length !== 0) {
-            this.importStatement("import {replaceNullValues} from 'graphql-ts-client-api';");
+            this.importStatement("import {Fetcher, replaceNullValues} from 'graphql-ts-client-api';");
         }
         this.importStatement("import {graphQLClient} from '../GraphQLClient';");
         this.importFieldTypes(this.field);
@@ -56,8 +56,9 @@ class OperationWriter extends Writer_1.Writer {
             this.enter("BLANK");
             for (const associatedType of this.associatedTypes) {
                 this.separator(" | ");
-                t(FetcherWriter_1.generatedFetcherTypeName(associatedType, this.config));
-                t("<X>");
+                t("Fetcher<");
+                t(FetcherWriter_1.generatedFetchableTypeName(associatedType, this.config));
+                t(", X>");
             }
             this.leave();
         }
@@ -110,9 +111,10 @@ class OperationWriter extends Writer_1.Writer {
     writeArgsWrapperType() {
         const t = this.text.bind(this);
         const name = this.argsWrapperName;
-        t("export interface ");
+        t(ARGS_COMMENT);
+        t("export type ");
         t(name);
-        t(" ");
+        t(" = ");
         this.enter("BLOCK", true);
         for (const arg of this.field.args) {
             if (!this.config.objectEditable) {
@@ -160,7 +162,7 @@ class OperationWriter extends Writer_1.Writer {
         }
         if (this.associatedTypes.length !== 0) {
             t(" ");
-            t("${fetcher.graphql}");
+            t("${fetcher.toString()}");
         }
         this.leave("\n");
         this.leave("`;\n");
@@ -197,3 +199,8 @@ function argsWrapperTypeName(field) {
     return (`${name.substring(0, 1).toUpperCase()}${name.substring(1)}Args`);
 }
 exports.argsWrapperTypeName = argsWrapperTypeName;
+const ARGS_COMMENT = `/*
+ * This argument wrapper type is not interface, because interfaces 
+ * do not satisfy the constraint 'SerializableParam' or recoil
+ */
+`;

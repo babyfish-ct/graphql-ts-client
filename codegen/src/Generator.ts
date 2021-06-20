@@ -3,7 +3,7 @@ import { GeneratorConfig, validateConfig, validateConfigAndSchema } from "./Gene
 import { mkdir, rmdir, access, createWriteStream } from "fs";
 import { promisify } from "util";
 import { join } from "path";
-import { FetcherWriter, generatedFetcherTypeName } from "./FetcherWriter";
+import { FetcherWriter, generatedFetchableTypeName, generatedFetcherTypeName } from "./FetcherWriter";
 import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
 import { Maybe } from "graphql/jsutils/Maybe";
@@ -113,9 +113,10 @@ export class Generator {
             (async() => {
                 const stream = createWriteStream(join(dir, "index.ts"));
                 for (const type of fetcherTypes) {
-                    const generatedName = generatedFetcherTypeName(type, this.config);
+                    const fetcherTypeName = generatedFetcherTypeName(type, this.config);
+                    const fetchableTypeName = generatedFetchableTypeName(type, this.config);
                     stream.write(
-                        `export type {${generatedName}} from './${generatedName}';\n`
+                        `export type {${fetcherTypeName}, ${fetchableTypeName}} from './${fetcherTypeName}';\n`
                     );
                     const defaultFetcherName = defaultFetcherNameMap.get(type);
                     stream.write(
@@ -125,7 +126,7 @@ export class Generator {
                             defaultFetcherName !== undefined ?
                             `, ${defaultFetcherName}` :
                             ''
-                        }} from './${generatedName}';\n`
+                        }} from './${fetcherTypeName}';\n`
                     );
                 }
                 await stream.end();

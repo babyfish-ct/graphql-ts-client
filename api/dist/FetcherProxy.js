@@ -15,7 +15,11 @@ function proxyHandler(methodNames) {
     const handler = {
         get: (target, p, receiver) => {
             if (typeof p !== 'string' || BUILT_IN_FIELDS.has(p)) {
-                return Reflect.get(target, p);
+                const value = Reflect.get(target, p);
+                if (typeof value === "function") {
+                    return value.bind(target);
+                }
+                return value;
             }
             if (p.startsWith("~")) {
                 const removeField = Reflect.get(target, "removeField");

@@ -1,31 +1,37 @@
-export interface Fetcher<T extends object> {
+export interface Fetchable {}
 
-    __supressWarnings__(value: T): never;
+export interface Fetcher<A, T extends object> {
 
-    readonly graphql: string;
+    __supressWarnings__(source: A, value: T): never;
+
+    toString(): string; // for query/mutation
+
+    toJSON(): string; // for recoil
 }
 
 export type ModelType<F> = 
-    F extends Fetcher<infer M> ? 
+    F extends Fetcher<unknown, infer M> ? 
     M : 
     never;
 
-export abstract class AbstractFetcher<T extends object> implements Fetcher<T> {
+export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A, T> {
 
-    private str?: string;
+    private _str?: string;
+
+    private _json?: string;
 
     constructor(
-        private _prev: AbstractFetcher<any> | undefined,
+        private _prev: AbstractFetcher<unknown, any> | undefined,
         private _negative: boolean,
         private _field: string,
         private _args?: {[key: string]: any},
-        private _child?: AbstractFetcher<any>
+        private _child?: AbstractFetcher<unknown, any>
     ) {}
 
-    protected addField<F extends AbstractFetcher<any>>(
+    protected addField<F extends AbstractFetcher<unknown, any>>(
         field: string, 
         args?: {[key: string]: any},
-        child?: AbstractFetcher<any>
+        child?: AbstractFetcher<unknown, any>
     ): F {
         return this.createFetcher(
             this,
@@ -36,7 +42,7 @@ export abstract class AbstractFetcher<T extends object> implements Fetcher<T> {
         ) as F;
     }
 
-    protected removeField<F extends AbstractFetcher<any>>(field: string): F {
+    protected removeField<F extends AbstractFetcher<unknown, any>>(field: string): F {
         return this.createFetcher(
             this,
             true,
@@ -45,33 +51,71 @@ export abstract class AbstractFetcher<T extends object> implements Fetcher<T> {
     }
 
     protected abstract createFetcher(
-        prev: AbstractFetcher<any> | undefined,
+        prev: AbstractFetcher<unknown, any> | undefined,
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<any>
-    ): AbstractFetcher<any>;
+        child?: AbstractFetcher<unknown, any>
+    ): AbstractFetcher<unknown, any>;
 
-    get graphql(): string {
-        let s = this.str;
+    toString(): string {
+        let s = this._str;
         if (s === undefined) {
-            this.str = s = this.graphql0(0);
+            this._str = s = this._toString0(0);
         }
         return s;
     }
 
-    private graphql0(indent: number): string {
-        const fetchers: AbstractFetcher<any>[] = [];
-        for (let fetcher: AbstractFetcher<any> | undefined = this; 
+    private _toString0(indent: number): string {
+        const fieldMap = this._getFieldMap();
+        if (fieldMap.size === 0) {
+            return "";
+        }
+        const resultRef: Ref<string> = { value: ""};
+        resultRef.value += "{\n";
+        for (const [fieldName, field] of fieldMap) {
+            AbstractFetcher.appendIndentTo(indent + 1, resultRef);
+            AbstractFetcher.appendFieldTo(indent + 1, fieldName, field, resultRef);
+        }
+        AbstractFetcher.appendIndentTo(indent, resultRef);
+        resultRef.value += "}";
+        return resultRef.value;
+    }
+
+    toJSON(): string {
+        let j = this._json;
+        if (j === undefined) {
+            this._json = j = JSON.stringify(this._toJSON0());
+        }
+        return j;
+    }
+
+    private _toJSON0(): object {
+        const fieldMap = this._getFieldMap();
+        if (fieldMap.size === 0) {
+            return {};
+        }
+        const arr = [];
+        for (const [name, field] of fieldMap) {
+            let obj = { 
+                name, 
+                args: field.args,
+                child: field.child?._toJSON0() 
+            };
+            arr.push(obj);
+        }
+        return arr;
+    }
+
+    private _getFieldMap(): Map<string, Field> {
+        const fetchers: AbstractFetcher<unknown, any>[] = [];
+        for (let fetcher: AbstractFetcher<unknown, any> | undefined = this; 
             fetcher !== undefined; 
             fetcher = fetcher._prev
         ) {
             if (fetcher._field !== "") {
                 fetchers.push(fetcher);
             }
-        }
-        if (fetchers.length === 0) {
-            return "";
         }
         const fieldMap = new Map<string, Field>();
         for (let i = fetchers.length - 1; i >= 0; --i) {
@@ -85,18 +129,7 @@ export abstract class AbstractFetcher<T extends object> implements Fetcher<T> {
                 });
             }
         }
-        if (fieldMap.size === 0) {
-            return "";
-        }
-        const resultRef: Ref<string> = { value: ""};
-        resultRef.value += "{\n";
-        for (const [fieldName, field] of fieldMap) {
-            AbstractFetcher.appendIndentTo(indent + 1, resultRef);
-            AbstractFetcher.appendFieldTo(indent + 1, fieldName, field, resultRef);
-        }
-        AbstractFetcher.appendIndentTo(indent, resultRef);
-        resultRef.value += "}";
-        return resultRef.value;
+        return fieldMap;
     }
 
     private static appendIndentTo(indent: number, targetStr: Ref<string>) {
@@ -123,7 +156,7 @@ export abstract class AbstractFetcher<T extends object> implements Fetcher<T> {
             }
         }
         if (field.child !== undefined) {
-            const childStr = field.child.graphql0(indent);
+            const childStr = field.child._toString0(indent);
             if (childStr !== "") {
                 targetStr.value += " ";
                 targetStr.value += childStr;
@@ -132,14 +165,14 @@ export abstract class AbstractFetcher<T extends object> implements Fetcher<T> {
         targetStr.value += "\n";
     }
 
-    __supressWarnings__(value: T): never {
+    __supressWarnings__(_1: A, _2: T): never {
         throw new Error("__supressWarnings is not supported");
     }
 }
 
 interface Field {
     readonly args?: {[key: string]: any};
-    readonly child?: AbstractFetcher<any>;
+    readonly child?: AbstractFetcher<unknown, any>;
 }
 
 interface Ref<T> {

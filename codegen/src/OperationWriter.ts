@@ -1,7 +1,7 @@
 import { WriteStream } from "fs";
 import { GraphQLField, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
 import { associatedTypesOf } from "./Associations";
-import { generatedFetcherTypeName } from "./FetcherWriter";
+import { generatedFetchableTypeName } from "./FetcherWriter";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { Writer } from "./Writer";
 
@@ -24,7 +24,7 @@ export class OperationWriter extends Writer {
 
     protected prepareImportings() {
         if (this.associatedTypes.length !== 0) {
-            this.importStatement("import {replaceNullValues} from 'graphql-ts-client-api';");
+            this.importStatement("import {Fetcher, replaceNullValues} from 'graphql-ts-client-api';");
         }
         this.importStatement("import {graphQLClient} from '../GraphQLClient';");
         this.importFieldTypes(this.field);
@@ -71,8 +71,9 @@ export class OperationWriter extends Writer {
             this.enter("BLANK");
             for (const associatedType of this.associatedTypes) {
                 this.separator(" | ");
-                t(generatedFetcherTypeName(associatedType, this.config));
-                t("<X>");
+                t("Fetcher<");
+                t(generatedFetchableTypeName(associatedType, this.config));
+                t(", X>");
             }
             this.leave();
         }
@@ -133,9 +134,10 @@ export class OperationWriter extends Writer {
         const t = this.text.bind(this);
         const name = this.argsWrapperName!;
 
-        t("export interface ");
+        t(ARGS_COMMENT);
+        t("export type ");
         t(name);
-        t(" ")
+        t(" = ")
         this.enter("BLOCK", true);
 
         for (const arg of this.field.args) {
@@ -189,7 +191,7 @@ export class OperationWriter extends Writer {
         }
         if (this.associatedTypes.length !== 0) {
             t(" ");
-            t("${fetcher.graphql}");
+            t("${fetcher.toString()}");
         }
         this.leave("\n");
 
@@ -232,3 +234,9 @@ export function argsWrapperTypeName(
         }Args`
     );
 }
+
+const ARGS_COMMENT = `/*
+ * This argument wrapper type is not interface, because interfaces 
+ * do not satisfy the constraint 'SerializableParam' or recoil
+ */
+`;

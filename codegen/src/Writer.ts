@@ -1,6 +1,6 @@
 import { WriteStream } from "fs";
 import { GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLType, GraphQLUnionType } from "graphql";
-import { generatedFetcherTypeName } from "./FetcherWriter";
+import { generatedFetchableTypeName } from "./FetcherWriter";
 import { GeneratorConfig } from "./GeneratorConfig";
 
 export abstract class Writer {
@@ -39,7 +39,7 @@ export abstract class Writer {
             const importedName = 
                 importedType instanceof GraphQLObjectType ||
                 importedType instanceof GraphQLInterfaceType ?
-                generatedFetcherTypeName(importedType, this.config) :
+                generatedFetchableTypeName(importedType, this.config) :
                 importedType.name;
             if (behavior === 'SAME_DIR') {
                 this.stream.write(`import {${importedName}} from '.';\n`);

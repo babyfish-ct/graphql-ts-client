@@ -1,21 +1,21 @@
 import { AbstractFetcher, Fetcher } from './Fetcher';
 
-export function createFetcher<F extends Fetcher<{}>>(...methodNames: string[]) {
+export function createFetcher<A, F extends Fetcher<A, object>>(...methodNames: string[]) {
     return new Proxy(
         FETCHER_TARGET,
         proxyHandler(new Set<string>(methodNames))
     ) as F;
 }
 
-class FetcherTarget extends AbstractFetcher<{}> {
+class FetcherTarget extends AbstractFetcher<unknown, object> {
 
     protected createFetcher(
-        prev: AbstractFetcher<any> | undefined,
+        prev: AbstractFetcher<unknown, any> | undefined,
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<any>
-    ): AbstractFetcher<any> {
+        child?: AbstractFetcher<unknown, any>
+    ): AbstractFetcher<unknown, any> {
         return new FetcherTarget(
             prev,
             negative,
@@ -26,12 +26,16 @@ class FetcherTarget extends AbstractFetcher<{}> {
     }
 }
 
-function proxyHandler(methodNames: Set<string>): ProxyHandler<Fetcher<{}>> {
+function proxyHandler(methodNames: Set<string>): ProxyHandler<Fetcher<unknown, object>> {
 
     const handler = {
-        get: (target: AbstractFetcher<{}>, p: string | symbol, receiver: any): any => {
+        get: (target: AbstractFetcher<unknown, object>, p: string | symbol, receiver: any): any => {
             if (typeof p !== 'string' || BUILT_IN_FIELDS.has(p)) {
-                return Reflect.get(target, p);
+                const value = Reflect.get(target, p);
+                if (typeof value === "function") {
+                    return value.bind(target);
+                }
+                return value;
             }
             if (p.startsWith("~")) {
                 const removeField = Reflect.get(target, "removeField") as REMOVE_FILED;
@@ -57,15 +61,15 @@ function proxyHandler(methodNames: Set<string>): ProxyHandler<Fetcher<{}>> {
 };
 
 function methodProxyHandler(
-    targetFetcher: AbstractFetcher<any>, 
-    handler: ProxyHandler<Fetcher<{}>>,
+    targetFetcher: AbstractFetcher<unknown, any>, 
+    handler: ProxyHandler<Fetcher<unknown, object>>,
     field: string
 ): ProxyHandler<Function> {
 
     return {
         apply: (_1: Function, _2: any, argArray: any[]): any => {
             let args: {[key: string]: any} | undefined = undefined;
-            let child: AbstractFetcher<any> | undefined = undefined;
+            let child: AbstractFetcher<unknown, any> | undefined = undefined;
             switch (argArray.length) {
                 case 1:
                     if (argArray[0] instanceof AbstractFetcher) {
@@ -93,14 +97,14 @@ function methodProxyHandler(
 type ADD_FILED = (
     field: string, 
     args?: {[key: string]: any}, 
-    child?: (AbstractFetcher<any>)
-) => AbstractFetcher<any>;
+    child?: (AbstractFetcher<unknown, any>)
+) => AbstractFetcher<unknown, any>;
 
 type REMOVE_FILED = (
     field: string, 
     args?: {[key: string]: any}, 
-    child?: (AbstractFetcher<any>)
-) => AbstractFetcher<any>;
+    child?: (AbstractFetcher<unknown, any>)
+) => AbstractFetcher<unknown, any>;
 
 function dummyTargetMethod() {}
 

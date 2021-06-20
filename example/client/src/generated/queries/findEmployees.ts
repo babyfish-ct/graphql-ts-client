@@ -1,10 +1,10 @@
-import {replaceNullValues} from 'graphql-ts-client-api';
+import {Fetcher, replaceNullValues} from 'graphql-ts-client-api';
 import {graphQLClient} from '../GraphQLClient';
-import {EmployeeFetcher} from '../fetchers';
+import {EmployeeFetchable} from '../fetchers';
 
 export async function findEmployees<X extends object>(
 	args: FindEmployeesArgs, 
-	fetcher: EmployeeFetcher<X>
+	fetcher: Fetcher<EmployeeFetchable, X>
 ): Promise<X> {
 	const gql = `
 		query(
@@ -16,7 +16,7 @@ export async function findEmployees<X extends object>(
 				namePattern: $namePattern, 
 				supervisorId: $supervisorId, 
 				departmentId: $departmentId
-			) ${fetcher.graphql}
+			) ${fetcher.toString()}
 		}
 	`;
 	const { data, errors } = await graphQLClient().request(gql, args);
@@ -27,7 +27,11 @@ export async function findEmployees<X extends object>(
 	return data as X;
 }
 
-export interface FindEmployeesArgs {
+/*
+ * This argument wrapper type is not interface, because interfaces 
+ * do not satisfy the constraint 'SerializableParam' or recoil
+ */
+export type FindEmployeesArgs = {
 	readonly namePattern?: string;
 	readonly supervisorId?: number;
 	readonly departmentId?: number;

@@ -1,28 +1,35 @@
-export interface Fetcher<T extends object> {
-    __supressWarnings__(value: T): never;
-    readonly graphql: string;
+export interface Fetchable {
 }
-export declare type ModelType<F> = F extends Fetcher<infer M> ? M : never;
-export declare abstract class AbstractFetcher<T extends object> implements Fetcher<T> {
+export interface Fetcher<A, T extends object> {
+    __supressWarnings__(source: A, value: T): never;
+    toString(): string;
+    toJSON(): string;
+}
+export declare type ModelType<F> = F extends Fetcher<unknown, infer M> ? M : never;
+export declare abstract class AbstractFetcher<A, T extends object> implements Fetcher<A, T> {
     private _prev;
     private _negative;
     private _field;
     private _args?;
     private _child?;
-    private str?;
-    constructor(_prev: AbstractFetcher<any> | undefined, _negative: boolean, _field: string, _args?: {
+    private _str?;
+    private _json?;
+    constructor(_prev: AbstractFetcher<unknown, any> | undefined, _negative: boolean, _field: string, _args?: {
         [key: string]: any;
-    }, _child?: AbstractFetcher<any>);
-    protected addField<F extends AbstractFetcher<any>>(field: string, args?: {
+    }, _child?: AbstractFetcher<unknown, any>);
+    protected addField<F extends AbstractFetcher<unknown, any>>(field: string, args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<any>): F;
-    protected removeField<F extends AbstractFetcher<any>>(field: string): F;
-    protected abstract createFetcher(prev: AbstractFetcher<any> | undefined, negative: boolean, field: string, args?: {
+    }, child?: AbstractFetcher<unknown, any>): F;
+    protected removeField<F extends AbstractFetcher<unknown, any>>(field: string): F;
+    protected abstract createFetcher(prev: AbstractFetcher<unknown, any> | undefined, negative: boolean, field: string, args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<any>): AbstractFetcher<any>;
-    get graphql(): string;
-    private graphql0;
+    }, child?: AbstractFetcher<unknown, any>): AbstractFetcher<unknown, any>;
+    toString(): string;
+    private _toString0;
+    toJSON(): string;
+    private _toJSON0;
+    private _getFieldMap;
     private static appendIndentTo;
     private static appendFieldTo;
-    __supressWarnings__(value: T): never;
+    __supressWarnings__(_1: A, _2: T): never;
 }

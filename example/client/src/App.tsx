@@ -1,21 +1,20 @@
 import './App.css';
 import { department$$, employee$$ } from './generated/fetchers';
 
+const fetcher = 
+  department$$
+  .employees(
+    employee$$
+    .subordinates(
+      employee$$
+    )
+  );
 function App() {
   return (
     <div className="App">
       <header className="App-header">
         <pre style={{textAlign: 'left'}}>
-          {
-            department$$
-            .employees(
-              employee$$
-              .subordinates(
-                employee$$
-              )
-            )
-            .graphql
-          }
+          { fetcher.toString() }
         </pre>
       </header>
     </div>

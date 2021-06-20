@@ -26,9 +26,10 @@ class InputWriter extends Writer_1.Writer {
     }
     writeCode() {
         const t = this.text.bind(this);
-        t("export interface ");
+        t(COMMENT);
+        t("export type ");
         t(this.inputType.name);
-        t(" ");
+        t(" = ");
         this.enter("BLOCK", true);
         const fieldMap = this.inputType.getFields();
         for (const fieldName in fieldMap) {
@@ -48,3 +49,8 @@ class InputWriter extends Writer_1.Writer {
     }
 }
 exports.InputWriter = InputWriter;
+const COMMENT = `/*
+ * This input type is not interface, because interfaces 
+ * do not satisfy the constraint 'SerializableParam' or recoil
+ */
+`;

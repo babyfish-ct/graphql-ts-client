@@ -29,7 +29,7 @@ class Writer {
             }
             const importedName = importedType instanceof graphql_1.GraphQLObjectType ||
                 importedType instanceof graphql_1.GraphQLInterfaceType ?
-                FetcherWriter_1.generatedFetcherTypeName(importedType, this.config) :
+                FetcherWriter_1.generatedFetchableTypeName(importedType, this.config) :
                 importedType.name;
             if (behavior === 'SAME_DIR') {
                 this.stream.write(`import {${importedName}} from '.';\n`);

@@ -8,6 +8,7 @@ export interface GeneratorConfig {
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
+    readonly fetchableSuffix?: string;
     readonly generateOperations?: boolean;
     readonly defaultFetcherExcludeMap?: {[key: string]: string[]}
 }
@@ -68,11 +69,21 @@ export function validateConfig(
                 break;
             case 'fetcherSuffix':
                 if (value != undefined) {
-                    if (typeof value !== 'string') {
-                        throw new Error('"confg.fetcherSuffix" must be undefined or string');
+                    if (typeof value !== 'string' || value === "") {
+                        throw new Error('"confg.fetcherSuffix" must be undefined or string whose length is not zero');
                     }
                     if (!INDENT_REGEXP.test(value)) {
                         throw new Error('"confg.fetcherSuffix" canonly contains "_", "$", english letters and digits when its specified');
+                    }
+                }
+                break;
+            case 'fetchableSuffix':
+                if (value != undefined) {
+                    if (typeof value !== 'string' || value === "") {
+                        throw new Error('"confg.fetchableSuffix" must be undefined or string whose length is not zero');
+                    }
+                    if (!INDENT_REGEXP.test(value)) {
+                        throw new Error('"confg.fetchableSuffix" canonly contains "_", "$", english letters and digits when its specified');
                     }
                 }
                 break;
@@ -88,13 +99,18 @@ export function validateConfig(
                 break;
             default:
                 throw new Error(`unsupported configuration property: ${key}`);
-        }
-        if (config.schemaLoader === undefined) {
-            throw new Error('config.schemaLoader is required');
-        }
-        if (config.targetDir === undefined) {
-            throw new Error('config.targetDir is required');
-        }
+        }   
+    }
+    if (config.schemaLoader === undefined) {
+        throw new Error('config.schemaLoader is required');
+    }
+    if (config.targetDir === undefined) {
+        throw new Error('config.targetDir is required');
+    }
+    const fetcherSuffiex = config.fetcherSuffix ?? "Fetcher";
+    const fetchableSuffix = config.fetchableSuffix ?? "Fetchable";
+    if (fetcherSuffiex === fetchableSuffix) {
+        throw new Error('config.fetcherSuffiex and config.fetchableSuffix are conflict');
     }
 }
 
@@ -160,7 +176,12 @@ const BUILT_IN_FEILDS = new Set<string>([
     "constructor",
     "addField",
     "removeField",
-    "graphql",
-    "graphql0",
+    "toString",
+    "_toString0",
+    "_str",
+    "toJSON",
+    "_toJSON0",
+    "_json",
+    "_getFieldMap",
     "__supressWarnings__"
 ]);
