@@ -1,10 +1,10 @@
-import { Department } from "../model/Department";
 import { Table } from "./Table";
 
 export const departmentTable =
     new Table<TDepartment>({
+        name: "department",
         idProp: "id",
-        uniqueIndexs: ["name"],
+        uniqueIndexs: ["name"]
     })
     .batchInsert([
         {id: 1, name: "Develop"},

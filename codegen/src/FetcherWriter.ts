@@ -10,7 +10,7 @@ export class FetcherWriter extends Writer {
 
     private readonly methodNames: string[];
 
-    private readonly propNames: string[];
+    private readonly defaultFetcherProps: string[];
 
     readonly emptyFetcherName: string;
 
@@ -26,24 +26,30 @@ export class FetcherWriter extends Writer {
         
         const fieldMap = this.modelType.getFields();
         const methodNames = [];
-        const propNames = [];
+        const defaultFetcherProps = [];
         for (const fieldName in fieldMap) {
             const field = fieldMap[fieldName]!;
             if (associatedTypesOf(field.type).length !== 0) {
                 methodNames.push(fieldName);
             } else if (field.args.length === 0) {
-                propNames.push(fieldName);
+                if (config.defaultFetcherExcludeMap !== undefined) {
+                    const excludeProps = config.defaultFetcherExcludeMap[modelType.name];
+                    if (excludeProps !== undefined && excludeProps.filter(name => name === fieldName).length !== 0) {
+                        continue;
+                    }
+                }
+                defaultFetcherProps.push(fieldName);
             }
         }
         this.methodNames = methodNames;
-        this.propNames = propNames;
+        this.defaultFetcherProps = defaultFetcherProps;
 
         let instanceName = this.modelType.name;
         instanceName = 
             instanceName.substring(0, 1).toLowerCase() +
             instanceName.substring(1);
         this.emptyFetcherName = `${instanceName}$`;
-        this.defaultFetcherName = propNames.length !== 0 ? `${instanceName}$$` : undefined;
+        this.defaultFetcherName = defaultFetcherProps.length !== 0 ? `${instanceName}$$` : undefined;
     }
 
     protected prepareImportings() {
@@ -69,6 +75,7 @@ export class FetcherWriter extends Writer {
         
         const t = this.text.bind(this);
 
+        t(COMMENT);
         t("export interface ");
         t(this.generatedName);
         t("<T> extends Fetcher<T> ");
@@ -93,38 +100,7 @@ export class FetcherWriter extends Writer {
         }
         this.leave("\n");
 
-        t("\nexport const ");
-        t(this.emptyFetcherName);
-        t(" = ");
-        this.enter("BLANK", true);
-        t("createFetcher<");
-        t(generatedFetcherTypeName(this.modelType, this.config))
-        t("<{}>>")
-        this.enter("PARAMETERS", this.methodNames.length > 1);
-        for (const methodName of this.methodNames) {
-            this.separator(", ");
-            t("'");
-            t(methodName);
-            t("'");
-        }
-        this.leave(";");
-        this.leave();
-
-        if (this.defaultFetcherName !== undefined) {
-            t("\nexport const ");
-            t(this.defaultFetcherName);
-            t(" = ");
-            this.enter("BLANK", true);
-            t(this.emptyFetcherName);
-            this.enter("BLANK", true);
-            for (const propName of this.propNames) {
-                t(".");
-                t(propName);
-                t("\n");
-            }
-            this.leave(";");
-            this.leave();
-        }
+        this.writeInstances();
     }
 
     private writePositiveProp(field: GraphQLField<unknown, unknown>) {
@@ -206,6 +182,44 @@ export class FetcherWriter extends Writer {
         t(field.name);
         t("'>>;\n");
     }
+
+    private writeInstances() {
+
+        const t = this.text.bind(this);
+
+        t("\nexport const ");
+        t(this.emptyFetcherName);
+        t(" = ");
+        this.enter("BLANK", true);
+        t("createFetcher<");
+        t(generatedFetcherTypeName(this.modelType, this.config))
+        t("<{}>>")
+        this.enter("PARAMETERS", this.methodNames.length > 1);
+        for (const methodName of this.methodNames) {
+            this.separator(", ");
+            t("'");
+            t(methodName);
+            t("'");
+        }
+        this.leave(";");
+        this.leave();
+
+        if (this.defaultFetcherName !== undefined) {
+            t("\nexport const ");
+            t(this.defaultFetcherName);
+            t(" = ");
+            this.enter("BLANK", true);
+            t(this.emptyFetcherName);
+            this.enter("BLANK", true);
+            for (const propName of this.defaultFetcherProps) {
+                t(".");
+                t(propName);
+                t("\n");
+            }
+            this.leave(";");
+            this.leave();
+        }
+    }
 }
 
 export function generatedFetcherTypeName(
@@ -215,3 +229,12 @@ export function generatedFetcherTypeName(
     const suffix = config.fetcherSuffix ?? "Fetcher";
     return `${fetcherType.name}${suffix}`;
 }
+
+const COMMENT = `/*
+ * Any instance of this interface is immutable,
+ * all the properties and functions can only be used to create new instances,
+ * they cannot modify the current instance.
+ * 
+ * So any instance of this interface is reuseable.
+ */
+`;

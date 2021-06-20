@@ -1,1 +1,0 @@
-export {findDepartmentsLikeName} from './findDepartmentsLikeName';

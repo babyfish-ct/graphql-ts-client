@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { Field, FieldResolver, Float, Int, ObjectType, Resolver, Root } from 'type-graphql';
+import { TDepartment } from '../dal/DepartmentRepostiory';
 import { employeeTable } from '../dal/EmployeeRepository';
 import { Employee } from './Employee';
 
@@ -12,12 +13,9 @@ export class Department {
     @Field(() => String)
     readonly name: string;
 
-    constructor(args: {
-        readonly id: number,
-        readonly name: string
-    }) {
-        this.id = args.id;
-        this.name = args.name;
+    constructor(row: TDepartment) {
+        this.id = row.id;
+        this.name = row.name;
     }
 }
 

@@ -1,10 +1,15 @@
 import { Gender } from "../model/Gender";
-import { Table } from "./Table";
+import { departmentTable } from "./DepartmentRepostiory";
+import { ForeignKeys, Table } from "./Table";
 
 export const employeeTable =
     new Table<TEmployee>({
+        name: 'employee',
         idProp: "id",
-        indexes: ["departmentId", "supervisorId"]
+        indexes: ["departmentId", "supervisorId"],
+        foreignKeys: new ForeignKeys<TEmployee>()
+            .add("departmentId", departmentTable)
+            .add("supervisorId", undefined)
     })
     .batchInsert([
         {

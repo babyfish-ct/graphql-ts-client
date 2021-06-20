@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Field, FieldResolver, Float, Int, ObjectType, Resolver, Root } from 'type-graphql';
 import { departmentTable } from '../dal/DepartmentRepostiory';
-import { employeeTable } from '../dal/EmployeeRepository';
+import { employeeTable, TEmployee } from '../dal/EmployeeRepository';
 import { Department } from './Department';
 import { Gender } from './Gender';
 
@@ -27,22 +27,14 @@ export class Employee {
     
     readonly supervisorId?: number;
 
-    constructor(args: {
-        readonly id: number,
-        readonly firstName: string,
-        readonly lastName: string,
-        readonly gender: Gender,
-        readonly salary: number,
-        readonly departmentId: number,
-        readonly supervisorId?: number
-    }) {
-        this.id = args.id;
-        this.firstName = args.firstName;
-        this.lastName = args.lastName;
-        this.gender = args.gender;
-        this.salary = args.salary;
-        this.departmentId = args.departmentId;
-        this.supervisorId = args.supervisorId;
+    constructor(row: TEmployee) {
+        this.id = row.id;
+        this.firstName = row.firstName;
+        this.lastName = row.lastName;
+        this.gender = row.gender;
+        this.salary = row.salary;
+        this.departmentId = row.departmentId;
+        this.supervisorId = row.supervisorId;
     }
 }
 
@@ -57,11 +49,7 @@ export class EmployeeResolver {
 
     @FieldResolver(() => Department)
     department(@Root() self: Employee): Department {
-        const row = departmentTable.findById(self.departmentId);
-        if (row === undefined) {
-            throw new Error("Illegal data that broken foreign key constriant");
-        }
-        return new Department(row);
+        return new Department(departmentTable.findNonNullById(self.departmentId)!);
     }
 
     @FieldResolver(() => Employee, {nullable: true})
@@ -69,11 +57,7 @@ export class EmployeeResolver {
         if (self.supervisorId === undefined) {
             return undefined;
         }
-        const row = employeeTable.findById(self.supervisorId);
-        if (row === undefined) {
-            throw new Error("Illegal data that broken foreign key constriant");
-        }
-        return new Employee(row);
+        return new Employee(employeeTable.findNonNullById(self.supervisorId)!);
     }
 
     @FieldResolver(() => [Employee])

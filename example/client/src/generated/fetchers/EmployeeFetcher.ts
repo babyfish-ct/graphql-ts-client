@@ -2,6 +2,13 @@ import { Fetcher, createFetcher } from 'graphql-ts-client-api';
 import {Gender} from '../enums';
 import {DepartmentFetcher} from '.';
 
+/*
+ * Any instance of this interface is immutable,
+ * all the properties and functions can only be used to create new instances,
+ * they cannot modify the current instance.
+ * 
+ * So any instance of this interface is reuseable.
+ */
 export interface EmployeeFetcher<T> extends Fetcher<T> {
 
 	readonly __typename: EmployeeFetcher<T & {__typename: 'Employee'}>;

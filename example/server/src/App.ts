@@ -1,15 +1,23 @@
 import { buildSchemaSync, registerEnumType } from "type-graphql";
 import express from 'express';
 import { graphqlHTTP } from 'express-graphql';
-import { DepartmentQuery } from "./bll/DepartmentQuery";
+import { DepartmentService } from "./bll/DepartmentService";
 import { DepartmentResolver } from "./model/Department";
 import { EmployeeResolver } from "./model/Employee";
 import { Gender } from "./model/Gender";
+import { EmployeeService } from "./bll/EmployeeService";
 
 registerEnumType(Gender, { name: "Gender" });
 
 const schema = buildSchemaSync({
-    resolvers: [DepartmentQuery, DepartmentResolver, EmployeeResolver]
+    resolvers: [
+        
+        DepartmentResolver, 
+        EmployeeResolver,
+
+        DepartmentService, 
+        EmployeeService
+    ]
 });
 
 express()

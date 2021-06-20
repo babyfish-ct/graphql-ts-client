@@ -7,7 +7,7 @@ export declare class FetcherWriter extends Writer {
     private readonly modelType;
     private readonly generatedName;
     private readonly methodNames;
-    private readonly propNames;
+    private readonly defaultFetcherProps;
     readonly emptyFetcherName: string;
     readonly defaultFetcherName: string | undefined;
     constructor(modelType: GraphQLObjectType | GraphQLInterfaceType, stream: WriteStream, config: GeneratorConfig);
@@ -16,5 +16,6 @@ export declare class FetcherWriter extends Writer {
     protected writeCode(): void;
     private writePositiveProp;
     private writeNegativeProp;
+    private writeInstances;
 }
 export declare function generatedFetcherTypeName(fetcherType: GraphQLObjectType | GraphQLInterfaceType, config: GeneratorConfig): string;

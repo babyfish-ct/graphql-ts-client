@@ -1,6 +1,13 @@
 import { Fetcher, createFetcher } from 'graphql-ts-client-api';
 import {EmployeeFetcher} from '.';
 
+/*
+ * Any instance of this interface is immutable,
+ * all the properties and functions can only be used to create new instances,
+ * they cannot modify the current instance.
+ * 
+ * So any instance of this interface is reuseable.
+ */
 export interface DepartmentFetcher<T> extends Fetcher<T> {
 
 	readonly __typename: DepartmentFetcher<T & {__typename: 'Department'}>;
@@ -26,5 +33,4 @@ export const department$$ =
 	department$
 		.id
 		.name
-		.avgSalary
 	;
