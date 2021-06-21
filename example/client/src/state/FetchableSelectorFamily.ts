@@ -11,7 +11,7 @@
 
 This is an experimental functionality,
 that's why it's is declared here, not in the 'graphql-ts-client-api'.
-You can copy this file into your project it's helpful for you
+You can copy this file into your project if it's helpful for you
 
 'graphql-ts-client' infers type of returned by strongly type graphql query,
 different queries return data with different types.
@@ -19,8 +19,8 @@ different queries return data with different types.
 'selectorFamily' of 'recoil' returns fixed type, 
 no matter what type of parameter is passed in.
 
-'graphql-ts-client' supports three wapper functions base on 'selectorFamily',
-you can use them when the last argument of query/mutation is Fetcher.
+This file supports three wrapper functions base on 'selectorFamily',
+you can use them when the last argument of query/mutation function is Fetcher.
 
 Comparsion:
 
