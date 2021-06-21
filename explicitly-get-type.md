@@ -19,7 +19,7 @@ const fetcher =
 export type DepartmentDetailInfo = ModelType<typeof fetcher>;
 ```
 
-Now, you can use the explict type 'DepartmentDetailInfo ' to design your API.
+Now, you can use the explicit type 'DepartmentDetailInfo ' to design your API.
 
 
 ____________________
