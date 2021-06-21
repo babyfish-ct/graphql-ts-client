@@ -1,4 +1,4 @@
-import {graphQLClient} from '../GraphQLClient';
+import {graphQLClient} from '../Environment';
 import {EmployeeInput} from '../inputs';
 
 export async function mergeEmployee(input: EmployeeInput): Promise<number> {

@@ -1,3 +1,9 @@
+/**
+ * @author ChenTao
+ * 
+ * Client-side of example of 'graphql-ts-client' 
+ */
+
 import { useCallback } from "react";
 import { atom, useSetRecoilState } from "recoil";
 import { EmployeeFetchable } from "../generated/fetchers";
@@ -10,7 +16,10 @@ export const selectEmployees = fetchableSelectorFamily.list<
 >({
     key: "selectEmployees",
     get: (param, fetcher) => ({get}) => {
+        
         get(selectEmployeesRequestId);
+
+        // Please view the invocation of "setGraphQLClient" in '../../index.tsx'
         return findEmployees(param, fetcher);
     }
 });

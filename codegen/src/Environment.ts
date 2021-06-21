@@ -1,23 +1,39 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.GraphQLClientWriter = void 0;
-const Writer_1 = require("./Writer");
-class GraphQLClientWriter extends Writer_1.Writer {
-    constructor(stream, config) {
+/**
+ * @author ChenTao
+ * 
+ * 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
+ * 
+ * 1. Supports GraphQL queries with strongly typed code
+ *
+ * 2. Automatically infers the type of the returned data according to the strongly typed query
+ */
+
+import { WriteStream } from "fs";
+import { GeneratorConfig } from "./GeneratorConfig";
+import { Writer } from "./Writer";
+
+export class EnvironmentWriter extends Writer {
+
+    constructor(stream: WriteStream, config: GeneratorConfig) {
         super(stream, config);
     }
-    prepareImportings() {
+
+    protected prepareImportings() {
         this.importStatement("import {GraphQLClient} from 'graphql-request';");
     }
-    writeCode() {
+
+    protected writeCode() {
         const t = this.text.bind(this);
+        
         t(COMMENT);
+        
         t("let client: GraphQLClient | undefined = undefined;\n");
         t("\n");
+
         t("export function graphQLClient(): GraphQLClient ");
         this.enter("BLOCK", true);
         t("const c = client;\n");
-        t("if (c === undefined) ");
+        t("if (c === undefined) "); 
         {
             this.enter("BLOCK", true);
             t(`const message = "${NO_CLIENT}";\n`);
@@ -27,10 +43,12 @@ class GraphQLClientWriter extends Writer_1.Writer {
         }
         t("return c;\n");
         this.leave("\n");
+
         t("\n");
+        
         t("export function setGraphQLClient(c: GraphQLClient, overrideIfExists: boolean = false) ");
         this.enter("BLOCK", true);
-        t("if (client !== undefined && !overrideIfExists) ");
+        t("if (client !== undefined && !overrideIfExists) "); 
         {
             this.enter("BLOCK", true);
             t(`const message = "${EXISTS_CLIENT}";\n`);
@@ -42,8 +60,9 @@ class GraphQLClientWriter extends Writer_1.Writer {
         this.leave("\n");
     }
 }
-exports.GraphQLClientWriter = GraphQLClientWriter;
-const COMMENT = `
+
+const COMMENT =
+`
 /*
  * 1. Control the version of 'graphql-request' by your self.
  * 
@@ -71,5 +90,6 @@ const COMMENT = `
  * 2. react-query(https://github.com/tannerlinsley/react-query)
  */
 `;
+
 const NO_CLIENT = "Cannot invoke 'graphQLClient' because 'setGraphQLClient' has never been invoked";
 const EXISTS_CLIENT = "'setGraphQLClient' cannot be invoked when the argument 'overrideIfExists' is false and it has been inovked yet.";

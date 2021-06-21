@@ -1,4 +1,13 @@
 "use strict";
+/**
+ * @author ChenTao
+ *
+ * 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
+ *
+ * 1. Supports GraphQL queries with strongly typed code
+ *
+ * 2. Automatically infers the type of the returned data according to the strongly typed query
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {

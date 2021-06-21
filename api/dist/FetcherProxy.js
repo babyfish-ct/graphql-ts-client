@@ -1,7 +1,24 @@
 "use strict";
+/**
+ * @author ChenTao
+ *
+ * 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
+ *
+ * 1. Supports GraphQL queries with strongly typed code
+ *
+ * 2. Automatically infers the type of the returned data according to the strongly typed query
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createFetcher = void 0;
 const Fetcher_1 = require("./Fetcher");
+/*
+ * In order to reduce compacity of compiled target code,
+ * the code generator does not generate derived classes of AbstractFetcher.
+ *
+ * Code generator only generates derived interfaces of Fetcher(
+ * interfaces cannot affect the capacity of compilied targe code
+ * ), and this "createFetcher" method uses proxies to create instances of those interfaces.
+ */
 function createFetcher(...methodNames) {
     return new Proxy(FETCHER_TARGET, proxyHandler(new Set(methodNames)));
 }

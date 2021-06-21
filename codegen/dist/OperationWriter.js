@@ -1,4 +1,13 @@
 "use strict";
+/**
+ * @author ChenTao
+ *
+ * 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
+ *
+ * 1. Supports GraphQL queries with strongly typed code
+ *
+ * 2. Automatically infers the type of the returned data according to the strongly typed query
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.argsWrapperTypeName = exports.OperationWriter = void 0;
 const graphql_1 = require("graphql");
@@ -17,7 +26,7 @@ class OperationWriter extends Writer_1.Writer {
         if (this.associatedTypes.length !== 0) {
             this.importStatement("import {Fetcher, replaceNullValues} from 'graphql-ts-client-api';");
         }
-        this.importStatement("import {graphQLClient} from '../GraphQLClient';");
+        this.importStatement("import {graphQLClient} from '../Environment';");
         this.importFieldTypes(this.field);
     }
     writeCode() {

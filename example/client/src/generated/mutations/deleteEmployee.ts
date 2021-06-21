@@ -1,4 +1,4 @@
-import {graphQLClient} from '../GraphQLClient';
+import {graphQLClient} from '../Environment';
 
 export async function deleteEmployee(id: number): Promise<number> {
 	const gql = `

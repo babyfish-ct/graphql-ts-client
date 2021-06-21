@@ -1,3 +1,9 @@
+/**
+ * @author ChenTao
+ * 
+ * Server-side of example of 'graphql-ts-client'
+ */
+
 import 'reflect-metadata';
 import { Arg, Int, Mutation, Query } from 'type-graphql';
 import { employeeTable } from '../dal/EmployeeRepository';

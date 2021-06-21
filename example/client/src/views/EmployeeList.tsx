@@ -1,3 +1,9 @@
+/**
+ * @author ChenTao
+ * 
+ * Client-side of example of 'graphql-ts-client' 
+ */
+
 import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { 
     Grid, 
@@ -70,7 +76,7 @@ export const EmployeeList: FC = memo(() => {
                     <TextField 
                     value={namePattern}
                     onChange={onNameChange}
-                    label="Enter firstName or lastname" 
+                    label="FirstName/lastname" 
                     fullWidth={true}/>
                 </Grid>
                 <Grid item xs={3}>
@@ -84,7 +90,7 @@ export const EmployeeList: FC = memo(() => {
                     InputProps={{
                         endAdornment: <InputAdornment position="end">%</InputAdornment>,
                     }}
-                    label="Enter the mocked error probablity"
+                    label="Mocked error probablity"
                     fullWidth={true}/>
                 </Grid>
                 <Grid item xs={2}>

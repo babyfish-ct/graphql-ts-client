@@ -1,3 +1,10 @@
+/**
+ * @author ChenTao
+ * 
+ * Server-side of example of 'graphql-ts-client'
+ */
+
+
 /*
  * This helper function is used to mock the network delay
  */

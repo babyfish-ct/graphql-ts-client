@@ -1,3 +1,13 @@
+/**
+ * @author ChenTao
+ * 
+ * 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
+ * 
+ * 1. Supports GraphQL queries with strongly typed code
+ *
+ * 2. Automatically infers the type of the returned data according to the strongly typed query
+ */
+
 import { GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType, validate } from "graphql";
 import { GeneratorConfig, validateConfig, validateConfigAndSchema } from "./GeneratorConfig";
 import { mkdir, rmdir, access, createWriteStream, WriteStream } from "fs";
@@ -8,7 +18,7 @@ import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
 import { Maybe } from "graphql/jsutils/Maybe";
 import { argsWrapperTypeName, OperationWriter } from "./OperationWriter";
-import { GraphQLClientWriter } from "./GraphQLClientWriter";
+import { EnvironmentWriter } from "./Environment";
 
 export class Generator {
 
@@ -64,7 +74,7 @@ export class Generator {
         const queryFields = this.objFields(queryType);
         const mutationFields = this.objFields(mutationType);
         if (this.config.generateOperations && (queryFields.length !== 0 || mutationFields.length !== 0)) {
-            promises.push(this.generateGraphQLClient());
+            promises.push(this.generateEnvironment());
             if (queryFields.length !== 0) {
                 await this.mkdirIfNecessary("queries");
                 promises.push(this.generateOperations(false, queryFields));
@@ -164,11 +174,11 @@ export class Generator {
         ]);
     }
 
-    private async generateGraphQLClient() {
+    private async generateEnvironment() {
         const stream = createStreamAndLog(
-            join(this.config.targetDir, "GraphQLClient.ts")
+            join(this.config.targetDir, "Environment.ts")
         );
-        new GraphQLClientWriter(stream, this.config).write();
+        new EnvironmentWriter(stream, this.config).write();
         await stream.end();
     }
 

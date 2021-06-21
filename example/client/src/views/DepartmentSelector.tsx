@@ -1,3 +1,9 @@
+/**
+ * @author ChenTao
+ * 
+ * Client-side of example of 'graphql-ts-client' 
+ */
+
 import { ChangeEvent, FC, memo, useCallback } from "react";
 import { Select, MenuItem, FormControl, InputLabel, CircularProgress } from "@material-ui/core";
 import { useRecoilValueLoadable } from "recoil";
@@ -23,7 +29,7 @@ export const DepartmentSelector: FC<{
     return (
         <FormControl fullWidth={true}>
             <InputLabel>
-                Choose the department of employees
+                Department
                 {
                     loadable.state === 'loading' ?
                     <CircularProgress size="1rem"/> :

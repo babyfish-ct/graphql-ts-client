@@ -1,5 +1,5 @@
 import {Fetcher, replaceNullValues} from 'graphql-ts-client-api';
-import {graphQLClient} from '../GraphQLClient';
+import {graphQLClient} from '../Environment';
 import {EmployeeFetchable} from '../fetchers';
 
 export async function findEmployees<X extends object>(

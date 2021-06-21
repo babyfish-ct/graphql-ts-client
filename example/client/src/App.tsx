@@ -1,5 +1,10 @@
+/**
+ * @author ChenTao
+ * 
+ * Client-side of example of 'graphql-ts-client' 
+ */
+
 import { RecoilRoot } from 'recoil';
-import './App.css';
 import { EmployeeList } from './views/EmployeeList';
 
 function App() {

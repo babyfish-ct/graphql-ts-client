@@ -1,3 +1,9 @@
+/**
+ * @author ChenTao
+ * 
+ * Server-side of example of 'graphql-ts-client'
+ */
+
 export class Table<R extends object> {
 
     private name: string;

@@ -1,3 +1,9 @@
+/**
+ * @author ChenTao
+ * 
+ * Server-side of example of 'graphql-ts-client'
+ */
+
 import { Gender } from "../model/Gender";
 import { departmentTable } from "./DepartmentRepostiory";
 import { ForeignKeys, Table } from "./Table";

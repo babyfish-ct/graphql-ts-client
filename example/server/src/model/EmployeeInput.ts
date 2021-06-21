@@ -1,3 +1,9 @@
+/**
+ * @author ChenTao
+ * 
+ * Server-side of example of 'graphql-ts-client'
+ */
+
 import "reflect-metadata";
 import { Field, Float, InputType, Int } from "type-graphql";
 import { TEmployee } from "../dal/EmployeeRepository";

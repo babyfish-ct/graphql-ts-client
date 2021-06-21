@@ -1,3 +1,9 @@
+/**
+ * @author ChenTao
+ * 
+ * Server-side of example of 'graphql-ts-client'
+ */
+
 import { buildSchemaSync, registerEnumType } from "type-graphql";
 import express from 'express';
 import cors from "cors";

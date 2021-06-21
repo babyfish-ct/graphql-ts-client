@@ -1,4 +1,13 @@
 "use strict";
+/**
+ * @author ChenTao
+ *
+ * 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
+ *
+ * 1. Supports GraphQL queries with strongly typed code
+ *
+ * 2. Automatically infers the type of the returned data according to the strongly typed query
+ */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -19,7 +28,7 @@ const FetcherWriter_1 = require("./FetcherWriter");
 const EnumWriter_1 = require("./EnumWriter");
 const InputWriter_1 = require("./InputWriter");
 const OperationWriter_1 = require("./OperationWriter");
-const GraphQLClientWriter_1 = require("./GraphQLClientWriter");
+const Environment_1 = require("./Environment");
 class Generator {
     constructor(config) {
         this.config = config;
@@ -72,7 +81,7 @@ class Generator {
             const queryFields = this.objFields(queryType);
             const mutationFields = this.objFields(mutationType);
             if (this.config.generateOperations && (queryFields.length !== 0 || mutationFields.length !== 0)) {
-                promises.push(this.generateGraphQLClient());
+                promises.push(this.generateEnvironment());
                 if (queryFields.length !== 0) {
                     yield this.mkdirIfNecessary("queries");
                     promises.push(this.generateOperations(false, queryFields));
@@ -159,10 +168,10 @@ class Generator {
             ]);
         });
     }
-    generateGraphQLClient() {
+    generateEnvironment() {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = createStreamAndLog(path_1.join(this.config.targetDir, "GraphQLClient.ts"));
-            new GraphQLClientWriter_1.GraphQLClientWriter(stream, this.config).write();
+            const stream = createStreamAndLog(path_1.join(this.config.targetDir, "Environment.ts"));
+            new Environment_1.EnvironmentWriter(stream, this.config).write();
             yield stream.end();
         });
     }

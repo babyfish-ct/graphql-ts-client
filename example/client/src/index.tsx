@@ -1,9 +1,15 @@
+/**
+ * @author ChenTao
+ * 
+ * Client-side of example of 'graphql-ts-client' 
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { setGraphQLClient } from './generated/GraphQLClient';
+import { setGraphQLClient } from './generated/Environment';
 import { GraphQLClient } from 'graphql-request';
 
 setGraphQLClient(
