@@ -1,7 +1,7 @@
 # All the configurable properties
 
 |property|type|required|default value|
-|--------|----|--------|-------------|-----------|
+|--------|----|--------|-------------|
 |schemaLoader|()=>Promise<GraphQLSchema>|true||
 |targetDir|string|true||
 |recreateTargetDir|boolean|false|false|
