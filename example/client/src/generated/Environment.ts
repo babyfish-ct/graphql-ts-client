@@ -20,7 +20,7 @@ import {GraphQLClient} from 'graphql-request';
  * 
  * You can choose some powrful state mengement framework to resolve this problem,
  * use powerful state mengement framework to wrap the functions under './queries' and './mutations',
- * this is better than using some http-client framework with simplest state managment functionalities.
+ * this is better than use some http-client framework with simple state managment functionalities.
  * 
  * Two powerful solutations are suggestioned:
  * 
