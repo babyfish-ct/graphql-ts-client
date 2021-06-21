@@ -4,4 +4,4 @@
 
 2. Automatically infers the type of the returned data according to the strongly typed query
 
-![ImageText](https://github.com/babyfish-ct/graphql-ts-client/graphql-ts-client.gif)
+![ImageText](https://github.com/babyfish-ct/graphql-ts-client/blob/master/graphql-ts-client.gif)
