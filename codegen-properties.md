@@ -2,15 +2,16 @@
 
 |property|type|required|default value|
 |--------|----|--------|-------------|
-|schemaLoader|()=>Promise<GraphQLSchema>|true||
+|schemaLoader|()=>Promise&lt;GraphQLSchema&gt;|true||
 |targetDir|string|true||
 |recreateTargetDir|boolean|false|false|
-|indent|string|false|\t|
+|indent|string|false|"\t"|
 |objectEditable|boolean|false|false|
 |arrayEditable|boolean|false|false|
-|fetcherSuffix|string|false|Fetcher|
-|fetchableSuffix|string|false|Fetchable|
+|fetcherSuffix|string|false|"Fetcher"|
+|fetchableSuffix|string|false|"Fetchable"|
 |generateOperations|boolean|false|false|
+|scalarTypeMap|{[key:string:] "string" \| "number" \| "boolean"}|false||
 |defaultFetcherExcludeMap|{[key:string]: string[]}|false||
 
 # Description
@@ -34,6 +35,10 @@ will come soon
 
 
 ## generateOperations
+will come soon
+
+# scalarTypeMap
+
 will come soon
 
 
