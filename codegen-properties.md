@@ -62,7 +62,7 @@ readonly items: readonly Item[];
 ```
 The first "readonly" can be disabled by "objectEditable", the second "readonly" can be disabled by "arrayEditable".
 
-There is a situation where you have to let "arrayEditable" to be true. The API of [antd](https://ant.design/) does not accept the second "readonly", such as the property "dataSource" of <Table/>.
+There is a situation where you have to let "arrayEditable" to be true. The API of [antd](https://ant.design/) does not accept the second "readonly", such as the property "dataSource" of &lt;Table/&gt;
 
 
 ## generateOperations
