@@ -195,7 +195,9 @@ export abstract class Writer {
         overrideObjectTypeName?: string
     ) {
         if (type instanceof GraphQLScalarType) {
-            const mappedTypeName = SCALAR_MAP[type.name];
+            const mappedTypeName = 
+                (this.config.scalarTypeMap ?? EMPTY_MAP)[type.name] 
+                ?? SCALAR_MAP[type.name];
             if (mappedTypeName === undefined) {
                 throw new Error(`Unknown scalar type ${type.name}`);
             }
@@ -284,5 +286,8 @@ const SCALAR_MAP: {[key: string]: "string" | "number" | "boolean"} = {
     "DateTime": "string",
     "LocalDate": "string",
     "LocalDateTime": "string",
+    "ID": "number",
     "UUID": "string"
 };
+
+const EMPTY_MAP = {};

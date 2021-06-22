@@ -20,6 +20,7 @@ export interface GeneratorConfig {
     readonly fetcherSuffix?: string;
     readonly fetchableSuffix?: string;
     readonly generateOperations?: boolean;
+    readonly scalarTypeMap: {[key: string]: 'string' | 'number' | 'boolean'};
     readonly defaultFetcherExcludeMap?: {[key: string]: string[]}
 }
 
@@ -100,6 +101,22 @@ export function validateConfig(
             case 'generateOperations':
                 if (value !== undefined && typeof value !== 'boolean') {
                     throw new Error('"confg.generateOperations" must be undefined or boolean');
+                }
+                break;
+            case 'scalarTypeMap':
+                if (value !== undefined) {
+                    if (typeof value !== 'object') {
+                        throw new Error('"confg.scalarTypeMap" must be undefined or object');
+                    }
+                    for (const scalarTypeName in value) {
+                        const mappedType = value[scalarTypeName];
+                        if (typeof mappedType !== 'string') {
+                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must be string`);
+                        }
+                        if (mappedType !== 'string' && mappedType !== 'number' && mappedType !== 'boolean') {
+                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" is illegal value '${mappedType}', its value must be 'string' | 'number' | 'boolean'`);
+                        }
+                    }
                 }
                 break;
             case 'defaultFetcherExcludeMap':

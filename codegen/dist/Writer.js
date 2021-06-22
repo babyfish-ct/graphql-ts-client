@@ -177,8 +177,9 @@ class Writer {
         }
     }
     typeRef(type, overrideObjectTypeName) {
+        var _a, _b;
         if (type instanceof graphql_1.GraphQLScalarType) {
-            const mappedTypeName = SCALAR_MAP[type.name];
+            const mappedTypeName = (_b = ((_a = this.config.scalarTypeMap) !== null && _a !== void 0 ? _a : EMPTY_MAP)[type.name]) !== null && _b !== void 0 ? _b : SCALAR_MAP[type.name];
             if (mappedTypeName === undefined) {
                 throw new Error(`Unknown scalar type ${type.name}`);
             }
@@ -260,5 +261,7 @@ const SCALAR_MAP = {
     "DateTime": "string",
     "LocalDate": "string",
     "LocalDateTime": "string",
+    "ID": "number",
     "UUID": "string"
 };
+const EMPTY_MAP = {};

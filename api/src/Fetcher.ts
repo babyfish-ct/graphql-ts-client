@@ -159,7 +159,15 @@ export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A,
                     targetStr.value += argName;
                     targetStr.value += ": ";
                     const arg = field.args[argName];
-                    targetStr += arg;
+                    if (arg === undefined || arg === null) {
+                        targetStr.value += "null";
+                    } else if (typeof arg === 'number' || typeof arg === 'boolean') {
+                        targetStr.value += arg;
+                    } else {
+                        targetStr.value += '"';
+                        targetStr.value += arg;
+                        targetStr.value += '"';
+                    }
                     separator = ", ";
                 }
                 targetStr.value += ")";

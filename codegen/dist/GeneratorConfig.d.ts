@@ -18,6 +18,9 @@ export interface GeneratorConfig {
     readonly fetcherSuffix?: string;
     readonly fetchableSuffix?: string;
     readonly generateOperations?: boolean;
+    readonly scalarTypeMap: {
+        [key: string]: 'string' | 'number' | 'boolean';
+    };
     readonly defaultFetcherExcludeMap?: {
         [key: string]: string[];
     };
