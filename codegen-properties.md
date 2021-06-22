@@ -43,7 +43,7 @@ Indicates whether the target directory should be deleted before generating code 
 
 Its default value is false, but the suggested value is true. 
 
-You cannot save your own code under the target directory so that it is mixed with the generated code,  you must known what you're doing when this configuration property is true.
+You cannot save your own code under the target directory so that it is mixed with the generated code,  you must know what you're doing when this configuration property is true.
 
 
 ## objectEditable
