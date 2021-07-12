@@ -11,7 +11,6 @@
 import { WriteStream } from "fs";
 import { GraphQLField, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
 import { associatedTypesOf } from "./Associations";
-import { generatedFetchableTypeName } from "./FetcherWriter";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { Writer } from "./Writer";
 
@@ -81,9 +80,9 @@ export class OperationWriter extends Writer {
             this.enter("BLANK");
             for (const associatedType of this.associatedTypes) {
                 this.separator(" | ");
-                t("Fetcher<");
-                t(generatedFetchableTypeName(associatedType, this.config));
-                t(", X>");
+                t("Fetcher<'");
+                t(associatedType.name);
+                t("', X>");
             }
             this.leave();
         }

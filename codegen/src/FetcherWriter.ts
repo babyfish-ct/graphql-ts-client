@@ -9,7 +9,7 @@
  */
 
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
+import { GraphQLField, GraphQLInterfaceType, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
 import { associatedTypesOf } from "./Associations";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { ImportingBehavior, Writer } from "./Writer";
@@ -17,8 +17,6 @@ import { ImportingBehavior, Writer } from "./Writer";
 export class FetcherWriter extends Writer {
 
     private readonly fetcherTypeName: string;
-
-    private readonly fetchableTypeName: string;
 
     private readonly methodNames: string[];
 
@@ -35,7 +33,6 @@ export class FetcherWriter extends Writer {
     ) {
         super(stream, config);
         this.fetcherTypeName = generatedFetcherTypeName(modelType, config);
-        this.fetchableTypeName = generatedFetchableTypeName(modelType, config);
 
         const fieldMap = this.modelType.getFields();
         const methodNames = [];
@@ -91,10 +88,15 @@ export class FetcherWriter extends Writer {
         t(COMMENT);
         t("export interface ");
         t(this.fetcherTypeName);
-        t("<T extends object> extends Fetcher<");
-        t(this.fetchableTypeName);
-        t(", T> ");
+        t("<T extends object> extends Fetcher<'");
+        t(this.modelType.name);
+        t("', T> ");
         this.enter("BLOCK", true);
+
+        t("\n");
+        t("readonly fetchedEntityType: '");
+        t(this.modelType.name);
+        t("';\n");
         
         t("\n");
         t("readonly __typename: ");
@@ -114,8 +116,6 @@ export class FetcherWriter extends Writer {
             this.writeNegativeProp(field);
         }
         this.leave("\n");
-
-        this.writeFetchable();
 
         this.writeInstances();
     }
@@ -163,9 +163,9 @@ export class FetcherWriter extends Writer {
                     this.enter("BLANK");
                     for (const associatedType of associatedTypes) {
                         this.separator(" | ");
-                        t("Fetcher<");
-                        t(generatedFetchableTypeName(associatedType, this.config));
-                        t(", X>");
+                        t("Fetcher<'");
+                        t(associatedType.name);
+                        t("', X>");
                     }
                     this.leave();
                 }
@@ -201,20 +201,6 @@ export class FetcherWriter extends Writer {
         t("'>>;\n");
     }
 
-    private writeFetchable() {
-        
-        const t = this.text.bind(this);
-        
-        t("\nexport interface ");
-        t(this.fetchableTypeName);
-        t(" ");
-        this.enter("BLOCK", true);
-        t("readonly type: '");
-        t(this.modelType.name);
-        t("';\n");
-        this.leave("\n");
-    }
-
     private writeInstances() {
 
         const t = this.text.bind(this);
@@ -227,6 +213,9 @@ export class FetcherWriter extends Writer {
         this.enter("BLANK", true);
         t("createFetcher")
         this.enter("PARAMETERS", this.methodNames.length > 1);
+        t("'")
+        t(this.modelType.name);
+        t("'");
         for (const methodName of this.methodNames) {
             this.separator(", ");
             t("'");
@@ -259,14 +248,6 @@ export function generatedFetcherTypeName(
     config: GeneratorConfig
 ): string {
     const suffix = config.fetcherSuffix ?? "Fetcher";
-    return `${fetcherType.name}${suffix}`;
-}
-
-export function generatedFetchableTypeName(
-    fetcherType: GraphQLObjectType | GraphQLInterfaceType,
-    config: GeneratorConfig
-): string {
-    const suffix = config.fetchableSuffix ?? "Fetchable";
     return `${fetcherType.name}${suffix}`;
 }
 

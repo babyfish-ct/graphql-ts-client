@@ -15,7 +15,6 @@ import { ImportingBehavior, Writer } from "./Writer";
 export declare class FetcherWriter extends Writer {
     private readonly modelType;
     private readonly fetcherTypeName;
-    private readonly fetchableTypeName;
     private readonly methodNames;
     private readonly defaultFetcherProps;
     readonly emptyFetcherName: string;
@@ -26,8 +25,6 @@ export declare class FetcherWriter extends Writer {
     protected writeCode(): void;
     private writePositiveProp;
     private writeNegativeProp;
-    private writeFetchable;
     private writeInstances;
 }
 export declare function generatedFetcherTypeName(fetcherType: GraphQLObjectType | GraphQLInterfaceType, config: GeneratorConfig): string;
-export declare function generatedFetchableTypeName(fetcherType: GraphQLObjectType | GraphQLInterfaceType, config: GeneratorConfig): string;

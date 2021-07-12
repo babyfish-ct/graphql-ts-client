@@ -1,10 +1,9 @@
 import {Fetcher, replaceNullValues} from 'graphql-ts-client-api';
 import {graphQLClient} from '../Environment';
-import {DepartmentFetchable} from '../fetchers';
 
 export async function findDepartmentsLikeName<X extends object>(
 	name: string | undefined, 
-	fetcher: Fetcher<DepartmentFetchable, X>
+	fetcher: Fetcher<'Department', X>
 ): Promise<readonly X[]> {
 	const gql = `
 		query($name: String) {

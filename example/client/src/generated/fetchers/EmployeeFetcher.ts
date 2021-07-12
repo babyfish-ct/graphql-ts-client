@@ -1,6 +1,5 @@
 import { Fetcher, createFetcher } from 'graphql-ts-client-api';
 import {Gender} from '../enums';
-import {DepartmentFetchable} from '.';
 
 /*
  * Any instance of this interface is immutable,
@@ -9,7 +8,9 @@ import {DepartmentFetchable} from '.';
  * 
  * So any instance of this interface is reuseable.
  */
-export interface EmployeeFetcher<T extends object> extends Fetcher<EmployeeFetchable, T> {
+export interface EmployeeFetcher<T extends object> extends Fetcher<'Employee', T> {
+
+	readonly fetchedEntityType: 'Employee';
 
 	readonly __typename: EmployeeFetcher<T & {__typename: 'Employee'}>;
 	readonly "~__typename": EmployeeFetcher<Omit<T, '__typename'>>;
@@ -29,22 +30,19 @@ export interface EmployeeFetcher<T extends object> extends Fetcher<EmployeeFetch
 	readonly salary: EmployeeFetcher<T & {readonly salary: number}>;
 	readonly "~salary": EmployeeFetcher<Omit<T, 'salary'>>;
 
-	department<X extends object>(child: Fetcher<DepartmentFetchable, X>): EmployeeFetcher<T & {readonly department: X}>;
+	department<X extends object>(child: Fetcher<'Department', X>): EmployeeFetcher<T & {readonly department: X}>;
 	readonly "~department": EmployeeFetcher<Omit<T, 'department'>>;
 
-	supervisor<X extends object>(child: Fetcher<EmployeeFetchable, X>): EmployeeFetcher<T & {readonly supervisor?: X}>;
+	supervisor<X extends object>(child: Fetcher<'Employee', X>): EmployeeFetcher<T & {readonly supervisor?: X}>;
 	readonly "~supervisor": EmployeeFetcher<Omit<T, 'supervisor'>>;
 
-	subordinates<X extends object>(child: Fetcher<EmployeeFetchable, X>): EmployeeFetcher<T & {readonly subordinates: readonly X[]}>;
+	subordinates<X extends object>(child: Fetcher<'Employee', X>): EmployeeFetcher<T & {readonly subordinates: readonly X[]}>;
 	readonly "~subordinates": EmployeeFetcher<Omit<T, 'subordinates'>>;
-}
-
-export interface EmployeeFetchable {
-	readonly type: 'Employee';
 }
 
 export const employee$: EmployeeFetcher<{}> = 
 	createFetcher(
+		'Employee', 
 		'department', 
 		'supervisor', 
 		'subordinates'

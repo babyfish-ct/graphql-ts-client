@@ -75,19 +75,33 @@ config) {
                     }
                 }
                 break;
-            case 'fetchableSuffix':
-                if (value != undefined) {
-                    if (typeof value !== 'string' || value === "") {
-                        throw new Error('"confg.fetchableSuffix" must be undefined or string whose length is not zero');
-                    }
-                    if (!INDENT_REGEXP.test(value)) {
-                        throw new Error('"confg.fetchableSuffix" canonly contains "_", "$", english letters and digits when its specified');
-                    }
-                }
-                break;
             case 'generateOperations':
                 if (value !== undefined && typeof value !== 'boolean') {
                     throw new Error('"confg.generateOperations" must be undefined or boolean');
+                }
+                break;
+            case 'excludedTypes':
+                if (value !== undefined) {
+                    if (!Array.isArray(value)) {
+                        throw new Error('"confg.excludedTypes" must be undefined or array');
+                    }
+                    for (let i = 0; i < value.length; i++) {
+                        if (typeof (value[i]) !== 'string') {
+                            throw new Error(`"confg.excludedTypes[${i}]" must be string`);
+                        }
+                    }
+                }
+                break;
+            case 'excludedOperations':
+                if (value !== undefined) {
+                    if (!Array.isArray(value)) {
+                        throw new Error('"confg.excludedOperations" must be undefined or array');
+                    }
+                    for (let i = 0; i < value.length; i++) {
+                        if (typeof (value[i]) !== 'string') {
+                            throw new Error(`"confg.excludedOperations[${i}]" must be string`);
+                        }
+                    }
                 }
                 break;
             case 'scalarTypeMap':
@@ -129,6 +143,7 @@ config) {
 }
 exports.validateConfig = validateConfig;
 function validateConfigAndSchema(config, schema) {
+    var _a, _b, _c, _d;
     const typeMap = schema.getTypeMap();
     for (const typeName in typeMap) {
         const type = typeMap[typeName];
@@ -139,6 +154,43 @@ function validateConfigAndSchema(config, schema) {
                 if (BUILT_IN_FEILDS.has(field.name)) {
                     throw new Error(`Illegal field '${field.name}' of type '${type.name}', ` +
                         "it's name is protected by 'graphql-ts-client-api', please change the server-side app");
+                }
+            }
+        }
+    }
+    const excludedTypes = config.excludedTypes;
+    if (excludedTypes !== undefined) {
+        for (let i = 0; i < excludedTypes.length; i++) {
+            const type = typeMap[excludedTypes[i]];
+            if (type === undefined) {
+                throw new Error(`config.excludedTypes[${i}] has an illlegal value '${excludedTypes[i]}' ` +
+                    "that is not a valid graphql type name");
+            }
+        }
+    }
+    const excludedOperations = config.excludedOperations;
+    if (excludedOperations !== undefined) {
+        const queryFields = (_b = (_a = schema.getQueryType()) === null || _a === void 0 ? void 0 : _a.getFields()) !== null && _b !== void 0 ? _b : {};
+        const mutationFields = (_d = (_c = schema.getMutationType()) === null || _c === void 0 ? void 0 : _c.getFields()) !== null && _d !== void 0 ? _d : {};
+        for (let i = 0; i < excludedOperations.length; i++) {
+            const operation = excludedOperations[i];
+            let matched = false;
+            for (const name in queryFields) {
+                if (operation === name) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                for (const name in mutationFields) {
+                    if (operation === name) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) {
+                    throw new Error(`config.excludedTypes[${i}] has an illegal value '${excludedTypes[i]}' ` +
+                        "that is not a valid field name graphql query/mutation");
                 }
             }
         }
@@ -171,8 +223,8 @@ function validateConfigAndSchema(config, schema) {
 }
 exports.validateConfigAndSchema = validateConfigAndSchema;
 const INDENT_REGEXP = /^( |\t)+$/;
-const FETCHER_SUFFIX_REGEXP = /^[A-Za-z0-9_\$]$/;
 const BUILT_IN_FEILDS = new Set([
+    "fetchedEntityType",
     "_prev",
     "_negative",
     "_field",
@@ -187,6 +239,7 @@ const BUILT_IN_FEILDS = new Set([
     "toJSON",
     "_toJSON0",
     "_json",
-    "_getFieldMap",
+    "fieldMap",
+    "_getFieldMap0",
     "__supressWarnings__"
 ]);

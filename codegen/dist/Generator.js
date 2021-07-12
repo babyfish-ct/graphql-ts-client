@@ -31,8 +31,11 @@ const OperationWriter_1 = require("./OperationWriter");
 const Environment_1 = require("./Environment");
 class Generator {
     constructor(config) {
+        var _a, _b;
         this.config = config;
         GeneratorConfig_1.validateConfig(config);
+        this.excludedTypeNames = new Set((_a = config.excludedTypes) !== null && _a !== void 0 ? _a : []);
+        this.excludedOperationNames = new Set((_b = config.excludedOperations) !== null && _b !== void 0 ? _b : []);
     }
     generate() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -49,7 +52,7 @@ class Generator {
             const enumTypes = [];
             const typeMap = schema.getTypeMap();
             for (const typeName in typeMap) {
-                if (!typeName.startsWith("__")) {
+                if (!typeName.startsWith("__") && !this.excludedTypeNames.has(typeName)) {
                     const type = typeMap[typeName];
                     if (type !== queryType && type !== mutationType) {
                         if (type instanceof graphql_1.GraphQLObjectType ||
@@ -78,8 +81,8 @@ class Generator {
                 yield this.mkdirIfNecessary("enums");
                 promises.push(this.generateEnumTypes(enumTypes));
             }
-            const queryFields = this.objFields(queryType);
-            const mutationFields = this.objFields(mutationType);
+            const queryFields = this.operationFields(queryType);
+            const mutationFields = this.operationFields(mutationType);
             if (this.config.generateOperations && (queryFields.length !== 0 || mutationFields.length !== 0)) {
                 promises.push(this.generateEnvironment());
                 if (queryFields.length !== 0) {
@@ -97,8 +100,9 @@ class Generator {
     loadSchema() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.config.schemaLoader();
+                const schema = yield this.config.schemaLoader();
                 console.log("Load graphql graphql schema successfully");
+                return schema;
             }
             catch (ex) {
                 console.error("Cannot load graphql schema");
@@ -128,8 +132,7 @@ class Generator {
                     const stream = createStreamAndLog(path_1.join(dir, "index.ts"));
                     for (const type of fetcherTypes) {
                         const fetcherTypeName = FetcherWriter_1.generatedFetcherTypeName(type, this.config);
-                        const fetchableTypeName = FetcherWriter_1.generatedFetchableTypeName(type, this.config);
-                        stream.write(`export type {${fetcherTypeName}, ${fetchableTypeName}} from './${fetcherTypeName}';\n`);
+                        stream.write(`export type {${fetcherTypeName}} from './${fetcherTypeName}';\n`);
                         const defaultFetcherName = defaultFetcherNameMap.get(type);
                         stream.write(`export {${emptyFetcherNameMap.get(type)}${defaultFetcherName !== undefined ?
                             `, ${defaultFetcherName}` :
@@ -246,14 +249,16 @@ class Generator {
             }
         });
     }
-    objFields(type) {
+    operationFields(type) {
         if (type === undefined || type === null) {
             return [];
         }
         const fieldMap = type.getFields();
         const fields = [];
         for (const fieldName in fieldMap) {
-            fields.push(fieldMap[fieldName]);
+            if (!this.excludedOperationNames.has(fieldName)) {
+                fields.push(fieldMap[fieldName]);
+            }
         }
         return fields;
     }

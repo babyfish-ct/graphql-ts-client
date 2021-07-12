@@ -11,7 +11,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Writer = void 0;
 const graphql_1 = require("graphql");
-const FetcherWriter_1 = require("./FetcherWriter");
 class Writer {
     constructor(stream, config) {
         var _a;
@@ -36,12 +35,8 @@ class Writer {
             if (behavior === 'SELF') {
                 continue;
             }
-            const importedName = importedType instanceof graphql_1.GraphQLObjectType ||
-                importedType instanceof graphql_1.GraphQLInterfaceType ?
-                FetcherWriter_1.generatedFetchableTypeName(importedType, this.config) :
-                importedType.name;
             if (behavior === 'SAME_DIR') {
-                this.stream.write(`import {${importedName}} from '.';\n`);
+                this.stream.write(`import {${importedType.name}} from '.';\n`);
             }
             else {
                 let subDir;
@@ -54,7 +49,7 @@ class Writer {
                 else {
                     subDir = "fetchers";
                 }
-                this.stream.write(`import {${importedName}} from '../${subDir}';\n`);
+                this.stream.write(`import {${importedType.name}} from '../${subDir}';\n`);
             }
         }
         if (this.importStatements.size !== 0 || this.importedTypes.size !== 0) {
@@ -81,14 +76,8 @@ class Writer {
         }
         else if (type instanceof graphql_1.GraphQLUnionType) {
             for (const itemType of type.getTypes()) {
-                this.importedTypes.add(itemType);
+                this.importType(itemType);
             }
-        }
-        else if (type instanceof graphql_1.GraphQLObjectType) {
-            this.importedTypes.add(type);
-        }
-        else if (type instanceof graphql_1.GraphQLInterfaceType) {
-            this.importedTypes.add(type);
         }
         else if (type instanceof graphql_1.GraphQLInputObjectType) {
             this.importedTypes.add(type);

@@ -18,8 +18,9 @@ export interface GeneratorConfig {
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
-    readonly fetchableSuffix?: string;
     readonly generateOperations?: boolean;
+    readonly excludedTypes?: string[];
+    readonly excludedOperations?: string[];
     readonly scalarTypeMap: {[key: string]: 'string' | 'number' | 'boolean'};
     readonly defaultFetcherExcludeMap?: {[key: string]: string[]}
 }
@@ -88,19 +89,33 @@ export function validateConfig(
                     }
                 }
                 break;
-            case 'fetchableSuffix':
-                if (value != undefined) {
-                    if (typeof value !== 'string' || value === "") {
-                        throw new Error('"confg.fetchableSuffix" must be undefined or string whose length is not zero');
-                    }
-                    if (!INDENT_REGEXP.test(value)) {
-                        throw new Error('"confg.fetchableSuffix" canonly contains "_", "$", english letters and digits when its specified');
-                    }
-                }
-                break;
             case 'generateOperations':
                 if (value !== undefined && typeof value !== 'boolean') {
                     throw new Error('"confg.generateOperations" must be undefined or boolean');
+                }
+                break;
+            case 'excludedTypes':
+                if (value !== undefined) {
+                    if (!Array.isArray(value)) {
+                        throw new Error('"confg.excludedTypes" must be undefined or array');
+                    }
+                    for (let i = 0; i < value.length; i++) {
+                        if (typeof(value[i]) !== 'string') {
+                            throw new Error(`"confg.excludedTypes[${i}]" must be string`);
+                        }
+                    }
+                }
+                break;
+            case 'excludedOperations':
+                if (value !== undefined) {
+                    if (!Array.isArray(value)) {
+                        throw new Error('"confg.excludedOperations" must be undefined or array');
+                    }
+                    for (let i = 0; i < value.length; i++) {
+                        if (typeof(value[i]) !== 'string') {
+                            throw new Error(`"confg.excludedOperations[${i}]" must be string`);
+                        }
+                    }
                 }
                 break;
             case 'scalarTypeMap':
@@ -161,6 +176,47 @@ export function validateConfigAndSchema(
             }
         }
     }
+    const excludedTypes = config.excludedTypes;
+    if (excludedTypes !== undefined) {
+        for (let i = 0; i < excludedTypes.length; i++) {
+            const type = typeMap[excludedTypes[i]];
+            if (type === undefined) {
+                throw new Error(
+                    `config.excludedTypes[${i}] has an illlegal value '${excludedTypes[i]}' ` +
+                    "that is not a valid graphql type name"
+                );
+            }
+        }
+    }
+    const excludedOperations = config.excludedOperations;
+    if (excludedOperations !== undefined) {
+        const queryFields = schema.getQueryType()?.getFields() ?? {};
+        const mutationFields = schema.getMutationType()?.getFields() ?? {};
+        for (let i = 0; i < excludedOperations.length; i++) {
+            const operation = excludedOperations[i];
+            let matched = false;
+            for (const name in queryFields) {
+                if (operation === name) {
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched) {
+                for (const name in mutationFields) {
+                    if (operation === name) {
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) {
+                    throw new Error(
+                        `config.excludedTypes[${i}] has an illegal value '${excludedTypes[i]}' ` +
+                        "that is not a valid field name graphql query/mutation"
+                    );
+                }
+            }
+        }
+    }
     const excludeMap = config.defaultFetcherExcludeMap;
     if (excludeMap !== undefined) {
         for (const typeName in excludeMap) {
@@ -193,8 +249,8 @@ export function validateConfigAndSchema(
 }
 
 const INDENT_REGEXP = /^( |\t)+$/;
-const FETCHER_SUFFIX_REGEXP = /^[A-Za-z0-9_\$]$/;
 const BUILT_IN_FEILDS = new Set<string>([
+    "fetchedEntityType",
     "_prev",
     "_negative",
     "_field",
@@ -209,6 +265,7 @@ const BUILT_IN_FEILDS = new Set<string>([
     "toJSON",
     "_toJSON0",
     "_json",
-    "_getFieldMap",
+    "fieldMap",
+    "_getFieldMap0",
     "__supressWarnings__"
 ]);

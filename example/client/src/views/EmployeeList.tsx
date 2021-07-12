@@ -20,9 +20,10 @@ import {
 } from "@material-ui/core";
 import { DepartmentSelector } from "./DepartmentSelector";
 import { useRecoilValueLoadable } from "recoil";
-import { selectEmployees, useRefresherForSelectEmployees } from "../state/EmployeeSelector";
+import { selectEmployees } from "../state/EmployeeSelector";
 import { department$, employee$, employee$$ } from "../generated/fetchers";
 import { ClientError } from "graphql-request";
+import { useReferesher } from "../state/common/Dependency";
 
 export const EmployeeList: FC = memo(() => {
 
@@ -61,7 +62,7 @@ export const EmployeeList: FC = memo(() => {
         )
     );
 
-    const refresh = useRefresherForSelectEmployees();
+    const refresh = useReferesher("Employee");
 
     const onRefreshClick = useCallback(() => {
         refresh();

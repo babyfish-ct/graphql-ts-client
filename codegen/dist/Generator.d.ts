@@ -10,6 +10,8 @@
 import { GeneratorConfig } from "./GeneratorConfig";
 export declare class Generator {
     private config;
+    private excludedTypeNames;
+    private excludedOperationNames;
     constructor(config: GeneratorConfig);
     generate(): Promise<void>;
     private loadSchema;
@@ -21,5 +23,5 @@ export declare class Generator {
     private writeSimpleIndex;
     private rmdirIfNecessary;
     private mkdirIfNecessary;
-    private objFields;
+    private operationFields;
 }

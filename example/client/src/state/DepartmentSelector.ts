@@ -4,18 +4,20 @@
  * Client-side of example of 'graphql-ts-client' 
  */
 
-import { DepartmentFetchable } from "../generated/fetchers";
 import { findDepartmentsLikeName } from "../generated/queries";
-import { fetchableSelectorFamily } from "./FetchableSelectorFamily";
+import { determineDependencies } from "./common/Dependency";
+import { fetchableSelectorFamily } from "./common/FetchableSelectorFamily";
 
 export const selectDepartmentsLikeName = fetchableSelectorFamily.list<
-    DepartmentFetchable,
+    "Department",
     string | undefined
 >({
     key: "selectDepartmentsLikeName",
-    get: (param, fetcher) => () => {
+    get: (param, fetcher) => ({get}) => {
 
-        // Please view the invocation of "setGraphQLClient" in '../../index.tsx'
+        determineDependencies(get, fetcher);
+
+        // Please view the invocation of "setGraphQLClient" in '../index.tsx'
         return findDepartmentsLikeName(param, fetcher);
     }
 });

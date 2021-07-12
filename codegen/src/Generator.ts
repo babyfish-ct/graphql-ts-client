@@ -13,7 +13,7 @@ import { GeneratorConfig, validateConfig, validateConfigAndSchema } from "./Gene
 import { mkdir, rmdir, access, createWriteStream, WriteStream } from "fs";
 import { promisify } from "util";
 import { join } from "path";
-import { FetcherWriter, generatedFetchableTypeName, generatedFetcherTypeName } from "./FetcherWriter";
+import { FetcherWriter, generatedFetcherTypeName } from "./FetcherWriter";
 import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
 import { Maybe } from "graphql/jsutils/Maybe";
@@ -22,8 +22,14 @@ import { EnvironmentWriter } from "./Environment";
 
 export class Generator {
 
+    private excludedTypeNames: Set<string>;
+
+    private excludedOperationNames: Set<string>;
+
     constructor(private config: GeneratorConfig) {
         validateConfig(config);
+        this.excludedTypeNames = new Set<string>(config.excludedTypes ?? []);
+        this.excludedOperationNames = new Set<string>(config.excludedOperations ?? []);
     }
 
     async generate() {
@@ -42,7 +48,7 @@ export class Generator {
         const enumTypes: GraphQLEnumType[] = [];
         const typeMap = schema.getTypeMap();
         for (const typeName in typeMap) {
-            if (!typeName.startsWith("__")) {
+            if (!typeName.startsWith("__") && !this.excludedTypeNames.has(typeName)) {
                 const type = typeMap[typeName]!;
                 if (type !== queryType && type !== mutationType) {
                     if (type instanceof GraphQLObjectType || 
@@ -71,8 +77,8 @@ export class Generator {
             promises.push(this.generateEnumTypes(enumTypes));
         }
 
-        const queryFields = this.objFields(queryType);
-        const mutationFields = this.objFields(mutationType);
+        const queryFields = this.operationFields(queryType);
+        const mutationFields = this.operationFields(mutationType);
         if (this.config.generateOperations && (queryFields.length !== 0 || mutationFields.length !== 0)) {
             promises.push(this.generateEnvironment());
             if (queryFields.length !== 0) {
@@ -90,8 +96,9 @@ export class Generator {
 
     private async loadSchema(): Promise<GraphQLSchema> {
         try {
-            return await this.config.schemaLoader(); 
+            const schema = await this.config.schemaLoader(); 
             console.log("Load graphql graphql schema successfully");
+            return schema;
         } catch (ex) {
             console.error("Cannot load graphql schema");
             throw ex;
@@ -124,9 +131,8 @@ export class Generator {
                 const stream = createStreamAndLog(join(dir, "index.ts"));
                 for (const type of fetcherTypes) {
                     const fetcherTypeName = generatedFetcherTypeName(type, this.config);
-                    const fetchableTypeName = generatedFetchableTypeName(type, this.config);
                     stream.write(
-                        `export type {${fetcherTypeName}, ${fetchableTypeName}} from './${fetcherTypeName}';\n`
+                        `export type {${fetcherTypeName}} from './${fetcherTypeName}';\n`
                     );
                     const defaultFetcherName = defaultFetcherNameMap.get(type);
                     stream.write(
@@ -255,7 +261,7 @@ export class Generator {
         }
     }
 
-    private objFields(
+    private operationFields(
         type: Maybe<GraphQLObjectType>
     ): GraphQLField<unknown, unknown>[] {
         if (type === undefined || type === null) {
@@ -264,7 +270,9 @@ export class Generator {
         const fieldMap = type.getFields();
         const fields = [];
         for (const fieldName in fieldMap) {
-            fields.push(fieldMap[fieldName]!!);
+            if (!this.excludedOperationNames.has(fieldName)) {
+                fields.push(fieldMap[fieldName]!!);
+            }
         }
         return fields;
     }

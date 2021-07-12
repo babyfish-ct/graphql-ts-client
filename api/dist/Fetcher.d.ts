@@ -7,15 +7,22 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
-export interface Fetchable {
-}
-export interface Fetcher<A, T extends object> {
-    __supressWarnings__(source: A, value: T): never;
+export interface Fetcher<E extends string, T extends object> {
+    readonly fetchedEntityType: E;
+    readonly fieldMap: Map<string, FetcherField>;
+    /**
+     * For query/mutation
+     */
     toString(): string;
+    /**
+     * For recoild
+     */
     toJSON(): string;
+    __supressWarnings__(value: T): never;
 }
-export declare type ModelType<F> = F extends Fetcher<unknown, infer M> ? M : never;
-export declare abstract class AbstractFetcher<A, T extends object> implements Fetcher<A, T> {
+export declare type ModelType<F> = F extends Fetcher<string, infer M> ? M : never;
+export declare abstract class AbstractFetcher<E extends string, T extends object> implements Fetcher<E, T> {
+    readonly fetchedEntityType: E;
     private _prev;
     private _negative;
     private _field;
@@ -23,22 +30,31 @@ export declare abstract class AbstractFetcher<A, T extends object> implements Fe
     private _child?;
     private _str?;
     private _json?;
-    constructor(_prev: AbstractFetcher<unknown, any> | undefined, _negative: boolean, _field: string, _args?: {
+    private _fieldMap?;
+    constructor(fetchedEntityType: E, _prev: AbstractFetcher<string, any> | undefined, _negative: boolean, _field: string, _args?: {
         [key: string]: any;
-    }, _child?: AbstractFetcher<unknown, any>);
-    protected addField<F extends AbstractFetcher<unknown, any>>(field: string, args?: {
+    }, _child?: AbstractFetcher<string, any>);
+    protected addField<F extends AbstractFetcher<string, any>>(field: string, args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<unknown, any>): F;
-    protected removeField<F extends AbstractFetcher<unknown, any>>(field: string): F;
-    protected abstract createFetcher(prev: AbstractFetcher<unknown, any> | undefined, negative: boolean, field: string, args?: {
+    }, child?: AbstractFetcher<string, any>): F;
+    protected removeField<F extends AbstractFetcher<string, any>>(field: string): F;
+    protected abstract createFetcher(prev: AbstractFetcher<string, any> | undefined, negative: boolean, field: string, args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<unknown, any>): AbstractFetcher<unknown, any>;
+    }, child?: AbstractFetcher<string, any>): AbstractFetcher<string, any>;
     toString(): string;
     private _toString0;
     toJSON(): string;
     private _toJSON0;
-    private _getFieldMap;
+    get fieldMap(): Map<string, FetcherField>;
+    private _getFieldMap0;
     private static appendIndentTo;
     private static appendFieldTo;
-    __supressWarnings__(_1: A, _2: T): never;
+    __supressWarnings__(_: T): never;
 }
+interface FetcherField {
+    readonly args?: {
+        [key: string]: any;
+    };
+    readonly child?: AbstractFetcher<string, any>;
+}
+export {};

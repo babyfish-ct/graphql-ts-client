@@ -1,4 +1,4 @@
-This is an experimental functionality, that's why it's is declared in [https://github.com/babyfish-ct/graphql-ts-client/blob/master/example/client/src/state/FetchableSelectorFamily.ts](https://github.com/babyfish-ct/graphql-ts-client/blob/master/example/client/src/state/FetchableSelectorFamily.ts), not in the 'graphql-ts-client-api'.
+This is an experimental functionality, that's why it's is declared in [https://github.com/babyfish-ct/graphql-ts-client/blob/master/example/client/src/state/common/FetchableSelectorFamily.ts](https://github.com/babyfish-ct/graphql-ts-client/blob/master/example/client/src/state/common/FetchableSelectorFamily.ts), not in the 'graphql-ts-client-api'.
 
 You can copy this file into your project if it's helpful for you.
 

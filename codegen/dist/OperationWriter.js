@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.argsWrapperTypeName = exports.OperationWriter = void 0;
 const graphql_1 = require("graphql");
 const Associations_1 = require("./Associations");
-const FetcherWriter_1 = require("./FetcherWriter");
 const Writer_1 = require("./Writer");
 class OperationWriter extends Writer_1.Writer {
     constructor(mutation, field, stream, config) {
@@ -65,9 +64,9 @@ class OperationWriter extends Writer_1.Writer {
             this.enter("BLANK");
             for (const associatedType of this.associatedTypes) {
                 this.separator(" | ");
-                t("Fetcher<");
-                t(FetcherWriter_1.generatedFetchableTypeName(associatedType, this.config));
-                t(", X>");
+                t("Fetcher<'");
+                t(associatedType.name);
+                t("', X>");
             }
             this.leave();
         }

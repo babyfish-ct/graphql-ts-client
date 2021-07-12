@@ -10,7 +10,6 @@
 
 import { WriteStream } from "fs";
 import { GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLScalarType, GraphQLType, GraphQLUnionType } from "graphql";
-import { generatedFetchableTypeName } from "./FetcherWriter";
 import { GeneratorConfig } from "./GeneratorConfig";
 
 export abstract class Writer {
@@ -46,13 +45,8 @@ export abstract class Writer {
             if (behavior === 'SELF') {
                 continue;
             }
-            const importedName = 
-                importedType instanceof GraphQLObjectType ||
-                importedType instanceof GraphQLInterfaceType ?
-                generatedFetchableTypeName(importedType, this.config) :
-                importedType.name;
             if (behavior === 'SAME_DIR') {
-                this.stream.write(`import {${importedName}} from '.';\n`);
+                this.stream.write(`import {${importedType.name}} from '.';\n`);
             } else {
                 let subDir: string;
                 if (importedType instanceof GraphQLInputObjectType) {
@@ -62,7 +56,7 @@ export abstract class Writer {
                 } else {
                     subDir = "fetchers";
                 }
-                this.stream.write(`import {${importedName}} from '../${subDir}';\n`);
+                this.stream.write(`import {${importedType.name}} from '../${subDir}';\n`);
             }
         }
         if (this.importStatements.size !== 0 || this.importedTypes.size !== 0) {
@@ -92,12 +86,8 @@ export abstract class Writer {
             this.importType(type.ofType);
         } else if (type instanceof GraphQLUnionType) {
             for (const itemType of type.getTypes()) {
-                this.importedTypes.add(itemType);
+                this.importType(itemType);
             }
-        } else if (type instanceof GraphQLObjectType) {
-            this.importedTypes.add(type);
-        } else if (type instanceof GraphQLInterfaceType) {
-            this.importedTypes.add(type);
         } else if (type instanceof GraphQLInputObjectType) {
             this.importedTypes.add(type);
         } else if (type instanceof GraphQLEnumType) {

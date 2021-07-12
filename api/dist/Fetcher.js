@@ -11,12 +11,16 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractFetcher = void 0;
 class AbstractFetcher {
-    constructor(_prev, _negative, _field, _args, _child) {
+    constructor(fetchedEntityType, _prev, _negative, _field, _args, _child) {
+        this.fetchedEntityType = fetchedEntityType;
         this._prev = _prev;
         this._negative = _negative;
         this._field = _field;
         this._args = _args;
         this._child = _child;
+        if (_prev !== undefined && _prev.fetchedEntityType !== fetchedEntityType) {
+            throw new Error("prev fetch has bad fetchable");
+        }
     }
     addField(field, args, child) {
         return this.createFetcher(this, false, field, args, child);
@@ -32,7 +36,7 @@ class AbstractFetcher {
         return s;
     }
     _toString0(indent) {
-        const fieldMap = this._getFieldMap();
+        const fieldMap = this.fieldMap;
         if (fieldMap.size === 0) {
             return "";
         }
@@ -55,7 +59,7 @@ class AbstractFetcher {
     }
     _toJSON0() {
         var _a;
-        const fieldMap = this._getFieldMap();
+        const fieldMap = this.fieldMap;
         if (fieldMap.size === 0) {
             return {};
         }
@@ -70,7 +74,14 @@ class AbstractFetcher {
         }
         return arr;
     }
-    _getFieldMap() {
+    get fieldMap() {
+        let m = this._fieldMap;
+        if (m === undefined) {
+            this._fieldMap = m = this._getFieldMap0();
+        }
+        return m;
+    }
+    _getFieldMap0() {
         const fetchers = [];
         for (let fetcher = this; fetcher !== undefined; fetcher = fetcher._prev) {
             if (fetcher._field !== "") {
@@ -133,7 +144,7 @@ class AbstractFetcher {
         }
         targetStr.value += "\n";
     }
-    __supressWarnings__(_1, _2) {
+    __supressWarnings__(_) {
         throw new Error("__supressWarnings is not supported");
     }
 }

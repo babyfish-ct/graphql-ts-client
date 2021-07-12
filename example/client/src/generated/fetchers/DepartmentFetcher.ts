@@ -1,5 +1,4 @@
 import { Fetcher, createFetcher } from 'graphql-ts-client-api';
-import {EmployeeFetchable} from '.';
 
 /*
  * Any instance of this interface is immutable,
@@ -8,7 +7,9 @@ import {EmployeeFetchable} from '.';
  * 
  * So any instance of this interface is reuseable.
  */
-export interface DepartmentFetcher<T extends object> extends Fetcher<DepartmentFetchable, T> {
+export interface DepartmentFetcher<T extends object> extends Fetcher<'Department', T> {
+
+	readonly fetchedEntityType: 'Department';
 
 	readonly __typename: DepartmentFetcher<T & {__typename: 'Department'}>;
 	readonly "~__typename": DepartmentFetcher<Omit<T, '__typename'>>;
@@ -19,19 +20,15 @@ export interface DepartmentFetcher<T extends object> extends Fetcher<DepartmentF
 	readonly name: DepartmentFetcher<T & {readonly name: string}>;
 	readonly "~name": DepartmentFetcher<Omit<T, 'name'>>;
 
-	employees<X extends object>(child: Fetcher<EmployeeFetchable, X>): DepartmentFetcher<T & {readonly employees: readonly X[]}>;
+	employees<X extends object>(child: Fetcher<'Employee', X>): DepartmentFetcher<T & {readonly employees: readonly X[]}>;
 	readonly "~employees": DepartmentFetcher<Omit<T, 'employees'>>;
 
 	readonly avgSalary: DepartmentFetcher<T & {readonly avgSalary: number}>;
 	readonly "~avgSalary": DepartmentFetcher<Omit<T, 'avgSalary'>>;
 }
 
-export interface DepartmentFetchable {
-	readonly type: 'Department';
-}
-
 export const department$: DepartmentFetcher<{}> = 
-	createFetcher('employees');
+	createFetcher('Department', 'employees');
 
 export const department$$ = 
 	department$

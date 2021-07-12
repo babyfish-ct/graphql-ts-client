@@ -18,23 +18,27 @@ import { AbstractFetcher, Fetcher } from './Fetcher';
  * interfaces cannot affect the capacity of compilied targe code
  * ), and this "createFetcher" method uses proxies to create instances of those interfaces.
  */
-export function createFetcher<A, F extends Fetcher<A, object>>(...methodNames: string[]) {
+export function createFetcher<E extends string, F extends Fetcher<E, object>>(
+    fetchedEntityType: E,
+    ...methodNames: string[]
+) {
     return new Proxy(
-        FETCHER_TARGET,
-        proxyHandler(new Set<string>(methodNames))
+        new FetcherTarget(fetchedEntityType, undefined, false, ""),
+        proxyHandler(fetchedEntityType, new Set<string>(methodNames))
     ) as F;
 }
 
-class FetcherTarget extends AbstractFetcher<unknown, object> {
+class FetcherTarget<E extends string> extends AbstractFetcher<E, object> {
 
     protected createFetcher(
-        prev: AbstractFetcher<unknown, any> | undefined,
+        prev: AbstractFetcher<string, any> | undefined,
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<unknown, any>
-    ): AbstractFetcher<unknown, any> {
+        child?: AbstractFetcher<string, any>
+    ): AbstractFetcher<string, any> {
         return new FetcherTarget(
+            this.fetchedEntityType,
             prev,
             negative,
             field,
@@ -44,16 +48,22 @@ class FetcherTarget extends AbstractFetcher<unknown, object> {
     }
 }
 
-function proxyHandler(methodNames: Set<string>): ProxyHandler<Fetcher<unknown, object>> {
+function proxyHandler(
+    fetchedEntityType: string, 
+    methodNames: Set<string>
+): ProxyHandler<Fetcher<string, object>> {
 
     const handler = {
-        get: (target: AbstractFetcher<unknown, object>, p: string | symbol, receiver: any): any => {
+        get: (target: AbstractFetcher<string, object>, p: string | symbol, receiver: any): any => {
             if (typeof p !== 'string' || BUILT_IN_FIELDS.has(p)) {
                 const value = Reflect.get(target, p);
                 if (typeof value === "function") {
                     return value.bind(target);
                 }
                 return value;
+            }
+            if (p === "fetchedEntityType") {
+                return fetchedEntityType;
             }
             if (p.startsWith("~")) {
                 const removeField = Reflect.get(target, "removeField") as REMOVE_FILED;
@@ -79,15 +89,15 @@ function proxyHandler(methodNames: Set<string>): ProxyHandler<Fetcher<unknown, o
 };
 
 function methodProxyHandler(
-    targetFetcher: AbstractFetcher<unknown, any>, 
-    handler: ProxyHandler<Fetcher<unknown, object>>,
+    targetFetcher: AbstractFetcher<string, any>, 
+    handler: ProxyHandler<Fetcher<string, object>>,
     field: string
 ): ProxyHandler<Function> {
 
     return {
         apply: (_1: Function, _2: any, argArray: any[]): any => {
             let args: {[key: string]: any} | undefined = undefined;
-            let child: AbstractFetcher<unknown, any> | undefined = undefined;
+            let child: AbstractFetcher<string, any> | undefined = undefined;
             switch (argArray.length) {
                 case 1:
                     if (argArray[0] instanceof AbstractFetcher) {
@@ -115,18 +125,18 @@ function methodProxyHandler(
 type ADD_FILED = (
     field: string, 
     args?: {[key: string]: any}, 
-    child?: (AbstractFetcher<unknown, any>)
-) => AbstractFetcher<unknown, any>;
+    child?: (AbstractFetcher<string, any>)
+) => AbstractFetcher<string, any>;
 
 type REMOVE_FILED = (
     field: string, 
     args?: {[key: string]: any}, 
-    child?: (AbstractFetcher<unknown, any>)
-) => AbstractFetcher<unknown, any>;
+    child?: (AbstractFetcher<string, any>)
+) => AbstractFetcher<string, any>;
 
 function dummyTargetMethod() {}
 
-const FETCHER_TARGET = new FetcherTarget(undefined, false, "");
+const FETCHER_TARGET = new FetcherTarget("Any", undefined, false, "");
 
 const BUILT_IN_FIELDS = new Set<string>(
     [

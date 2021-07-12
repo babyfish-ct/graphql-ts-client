@@ -1,4 +1,4 @@
-export type {DepartmentFetcher, DepartmentFetchable} from './DepartmentFetcher';
+export type {DepartmentFetcher} from './DepartmentFetcher';
 export {department$, department$$} from './DepartmentFetcher';
-export type {EmployeeFetcher, EmployeeFetchable} from './EmployeeFetcher';
+export type {EmployeeFetcher} from './EmployeeFetcher';
 export {employee$, employee$$} from './EmployeeFetcher';

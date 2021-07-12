@@ -8,40 +8,55 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-export interface Fetchable {}
+export interface Fetcher<E extends string, T extends object> {
 
-export interface Fetcher<A, T extends object> {
+    readonly fetchedEntityType: E;
 
-    __supressWarnings__(source: A, value: T): never;
+    readonly fieldMap: Map<string, FetcherField>;
 
-    toString(): string; // for query/mutation
+    /**
+     * For query/mutation
+     */
+    toString(): string;
 
-    toJSON(): string; // for recoil
+    /**
+     * For recoild
+     */
+    toJSON(): string;
+
+    __supressWarnings__(value: T): never;
 }
 
 export type ModelType<F> = 
-    F extends Fetcher<unknown, infer M> ? 
+    F extends Fetcher<string, infer M> ? 
     M : 
     never;
 
-export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A, T> {
+export abstract class AbstractFetcher<E extends string, T extends object> implements Fetcher<E, T> {
 
     private _str?: string;
 
     private _json?: string;
 
+    private _fieldMap?: Map<string, FetcherField>;
+
     constructor(
-        private _prev: AbstractFetcher<unknown, any> | undefined,
+        readonly fetchedEntityType: E,
+        private _prev: AbstractFetcher<string, any> | undefined,
         private _negative: boolean,
         private _field: string,
         private _args?: {[key: string]: any},
-        private _child?: AbstractFetcher<unknown, any>
-    ) {}
+        private _child?: AbstractFetcher<string, any>
+    ) {
+        if (_prev !== undefined && _prev.fetchedEntityType !== fetchedEntityType) {
+            throw new Error("prev fetch has bad fetchable");
+        }
+    }
 
-    protected addField<F extends AbstractFetcher<unknown, any>>(
+    protected addField<F extends AbstractFetcher<string, any>>(
         field: string, 
         args?: {[key: string]: any},
-        child?: AbstractFetcher<unknown, any>
+        child?: AbstractFetcher<string, any>
     ): F {
         return this.createFetcher(
             this,
@@ -52,7 +67,7 @@ export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A,
         ) as F;
     }
 
-    protected removeField<F extends AbstractFetcher<unknown, any>>(field: string): F {
+    protected removeField<F extends AbstractFetcher<string, any>>(field: string): F {
         return this.createFetcher(
             this,
             true,
@@ -61,12 +76,12 @@ export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A,
     }
 
     protected abstract createFetcher(
-        prev: AbstractFetcher<unknown, any> | undefined,
+        prev: AbstractFetcher<string, any> | undefined,
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<unknown, any>
-    ): AbstractFetcher<unknown, any>;
+        child?: AbstractFetcher<string, any>
+    ): AbstractFetcher<string, any>;
 
     toString(): string {
         let s = this._str;
@@ -77,7 +92,7 @@ export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A,
     }
 
     private _toString0(indent: number): string {
-        const fieldMap = this._getFieldMap();
+        const fieldMap = this.fieldMap;
         if (fieldMap.size === 0) {
             return "";
         }
@@ -101,7 +116,7 @@ export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A,
     }
 
     private _toJSON0(): object {
-        const fieldMap = this._getFieldMap();
+        const fieldMap = this.fieldMap;
         if (fieldMap.size === 0) {
             return {};
         }
@@ -117,9 +132,17 @@ export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A,
         return arr;
     }
 
-    private _getFieldMap(): Map<string, Field> {
-        const fetchers: AbstractFetcher<unknown, any>[] = [];
-        for (let fetcher: AbstractFetcher<unknown, any> | undefined = this; 
+    get fieldMap(): Map<string, FetcherField> {
+        let m = this._fieldMap;
+        if (m === undefined) {
+            this._fieldMap = m = this._getFieldMap0();
+        }
+        return m;
+    }
+
+    private _getFieldMap0(): Map<string, FetcherField> {
+        const fetchers: AbstractFetcher<string, any>[] = [];
+        for (let fetcher: AbstractFetcher<string, any> | undefined = this; 
             fetcher !== undefined; 
             fetcher = fetcher._prev
         ) {
@@ -127,7 +150,7 @@ export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A,
                 fetchers.push(fetcher);
             }
         }
-        const fieldMap = new Map<string, Field>();
+        const fieldMap = new Map<string, FetcherField>();
         for (let i = fetchers.length - 1; i >= 0; --i) {
             const fetcher = fetchers[i];
             if (fetcher._negative) {
@@ -148,7 +171,12 @@ export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A,
         }
     }
     
-    private static appendFieldTo(indent: number, fieldName: string, field: Field, targetStr: Ref<string>) {
+    private static appendFieldTo(
+        indent: number, 
+        fieldName: string, 
+        field: FetcherField, 
+        targetStr: Ref<string>
+    ) {
         targetStr.value += fieldName;
         if (field.args !== undefined) {
             const argNames = Object.keys(field.args);
@@ -183,14 +211,14 @@ export abstract class AbstractFetcher<A, T extends object> implements Fetcher<A,
         targetStr.value += "\n";
     }
 
-    __supressWarnings__(_1: A, _2: T): never {
+    __supressWarnings__(_: T): never {
         throw new Error("__supressWarnings is not supported");
     }
 }
 
-interface Field {
+interface FetcherField {
     readonly args?: {[key: string]: any};
-    readonly child?: AbstractFetcher<unknown, any>;
+    readonly child?: AbstractFetcher<string, any>;
 }
 
 interface Ref<T> {

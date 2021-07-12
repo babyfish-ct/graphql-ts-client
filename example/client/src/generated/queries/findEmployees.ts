@@ -1,10 +1,9 @@
 import {Fetcher, replaceNullValues} from 'graphql-ts-client-api';
 import {graphQLClient} from '../Environment';
-import {EmployeeFetchable} from '../fetchers';
 
 export async function findEmployees<X extends object>(
 	args: FindEmployeesArgs, 
-	fetcher: Fetcher<EmployeeFetchable, X>
+	fetcher: Fetcher<'Employee', X>
 ): Promise<readonly X[]> {
 	const gql = `
 		query(

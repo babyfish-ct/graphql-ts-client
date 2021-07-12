@@ -9,7 +9,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generatedFetchableTypeName = exports.generatedFetcherTypeName = exports.FetcherWriter = void 0;
+exports.generatedFetcherTypeName = exports.FetcherWriter = void 0;
 const graphql_1 = require("graphql");
 const Associations_1 = require("./Associations");
 const Writer_1 = require("./Writer");
@@ -18,7 +18,6 @@ class FetcherWriter extends Writer_1.Writer {
         super(stream, config);
         this.modelType = modelType;
         this.fetcherTypeName = generatedFetcherTypeName(modelType, config);
-        this.fetchableTypeName = generatedFetchableTypeName(modelType, config);
         const fieldMap = this.modelType.getFields();
         const methodNames = [];
         const defaultFetcherProps = [];
@@ -68,10 +67,14 @@ class FetcherWriter extends Writer_1.Writer {
         t(COMMENT);
         t("export interface ");
         t(this.fetcherTypeName);
-        t("<T extends object> extends Fetcher<");
-        t(this.fetchableTypeName);
-        t(", T> ");
+        t("<T extends object> extends Fetcher<'");
+        t(this.modelType.name);
+        t("', T> ");
         this.enter("BLOCK", true);
+        t("\n");
+        t("readonly fetchedEntityType: '");
+        t(this.modelType.name);
+        t("';\n");
         t("\n");
         t("readonly __typename: ");
         t(this.fetcherTypeName);
@@ -89,7 +92,6 @@ class FetcherWriter extends Writer_1.Writer {
             this.writeNegativeProp(field);
         }
         this.leave("\n");
-        this.writeFetchable();
         this.writeInstances();
     }
     writePositiveProp(field) {
@@ -132,9 +134,9 @@ class FetcherWriter extends Writer_1.Writer {
                     this.enter("BLANK");
                     for (const associatedType of associatedTypes) {
                         this.separator(" | ");
-                        t("Fetcher<");
-                        t(generatedFetchableTypeName(associatedType, this.config));
-                        t(", X>");
+                        t("Fetcher<'");
+                        t(associatedType.name);
+                        t("', X>");
                     }
                     this.leave();
                 }
@@ -165,17 +167,6 @@ class FetcherWriter extends Writer_1.Writer {
         t(field.name);
         t("'>>;\n");
     }
-    writeFetchable() {
-        const t = this.text.bind(this);
-        t("\nexport interface ");
-        t(this.fetchableTypeName);
-        t(" ");
-        this.enter("BLOCK", true);
-        t("readonly type: '");
-        t(this.modelType.name);
-        t("';\n");
-        this.leave("\n");
-    }
     writeInstances() {
         const t = this.text.bind(this);
         t("\nexport const ");
@@ -186,6 +177,9 @@ class FetcherWriter extends Writer_1.Writer {
         this.enter("BLANK", true);
         t("createFetcher");
         this.enter("PARAMETERS", this.methodNames.length > 1);
+        t("'");
+        t(this.modelType.name);
+        t("'");
         for (const methodName of this.methodNames) {
             this.separator(", ");
             t("'");
@@ -218,12 +212,6 @@ function generatedFetcherTypeName(fetcherType, config) {
     return `${fetcherType.name}${suffix}`;
 }
 exports.generatedFetcherTypeName = generatedFetcherTypeName;
-function generatedFetchableTypeName(fetcherType, config) {
-    var _a;
-    const suffix = (_a = config.fetchableSuffix) !== null && _a !== void 0 ? _a : "Fetchable";
-    return `${fetcherType.name}${suffix}`;
-}
-exports.generatedFetchableTypeName = generatedFetchableTypeName;
 const COMMENT = `/*
  * Any instance of this interface is immutable,
  * all the properties and functions can only be used to create new instances,

@@ -9,8 +9,9 @@
 |objectEditable|boolean|false|false|
 |arrayEditable|boolean|false|false|
 |fetcherSuffix|string|false|"Fetcher"|
-|fetchableSuffix|string|false|"Fetchable"|
 |generateOperations|boolean|false|false|
+|excludedTypes|string[]|false||
+|excludedOperations|string[]|false||
 |scalarTypeMap|{[key:string:] "string" \| "number" \| "boolean"}|false||
 |defaultFetcherExcludeMap|{[key:string]: string[]}|false||
 
@@ -73,6 +74,16 @@ Indicates whether the queries and mutations should be generated.
 This functionality is very important, but its default value is false. Why?
 
 Be careful, "yarn add graphql-client" should be execute by yourself when this configuration property is true.
+
+## excludedTypes
+Indicates the graphql types that should be ignored.
+
+This configuration will be validated by the GraphQL schema, all the spelling errors will be found and reported, please don't worry about spelling errors.
+ 
+## excludedOperations
+Indicates the operations(field of Query or Mutation) that should be ignored.
+
+This configuration will be validated by the GraphQL schema, all the spelling errors will be found and reported, please don't worry about spelling errors.
 
 ## scalarTypeMap
 
