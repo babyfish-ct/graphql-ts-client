@@ -8,6 +8,6 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-export {Fetcher, AbstractFetcher} from './Fetcher';
+export {Fetcher, AbstractFetcher, ModelType} from './Fetcher';
 export {createFetcher} from './FetcherProxy';
 export {replaceNullValues} from './util';
