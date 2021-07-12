@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { atomFamily, GetRecoilValue, useSetRecoilState } from "recoil";
-import { Fetcher } from "../../../../../api/dist";
+import { Fetcher } from "graphql-ts-client-api";
 
 export type AbstractModelType = "Department" | "Employee";
 
