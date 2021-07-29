@@ -16,7 +16,7 @@ export declare class OperationWriter extends Writer {
     private readonly mutation;
     private readonly field;
     private readonly argsWrapperName?;
-    private readonly associatedTypes;
+    private readonly associatedType;
     constructor(mutation: boolean, field: GraphQLField<unknown, unknown>, stream: WriteStream, config: GeneratorConfig);
     protected prepareImportings(): void;
     protected writeCode(): void;

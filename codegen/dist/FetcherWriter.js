@@ -15,18 +15,41 @@ const Associations_1 = require("./Associations");
 const Writer_1 = require("./Writer");
 class FetcherWriter extends Writer_1.Writer {
     constructor(modelType, stream, config) {
+        var _a;
         super(stream, config);
         this.modelType = modelType;
         this.fetcherTypeName = generatedFetcherTypeName(modelType, config);
-        const fieldMap = this.modelType.getFields();
+        if (modelType instanceof graphql_1.GraphQLUnionType) {
+            const map = {};
+            const itemCount = modelType.getTypes().length;
+            if (itemCount !== 0) {
+                const fieldCountMap = new Map();
+                for (const type of modelType.getTypes()) {
+                    for (const fieldName in type.getFields()) {
+                        fieldCountMap.set(fieldName, ((_a = fieldCountMap.get(fieldName)) !== null && _a !== void 0 ? _a : 0) + 1);
+                    }
+                }
+                const firstTypeFieldMap = modelType.getTypes()[0].getFields();
+                for (const fieldName in firstTypeFieldMap) {
+                    if (fieldCountMap.get(fieldName) === itemCount) {
+                        map[fieldName] = firstTypeFieldMap[fieldName];
+                    }
+                }
+            }
+            this.fieldMap = map;
+        }
+        else {
+            this.fieldMap = modelType.getFields();
+        }
         const methodNames = [];
         const defaultFetcherProps = [];
-        for (const fieldName in fieldMap) {
-            const field = fieldMap[fieldName];
-            if (Associations_1.associatedTypesOf(field.type).length !== 0) {
+        for (const fieldName in this.fieldMap) {
+            const field = this.fieldMap[fieldName];
+            const associatedType = Associations_1.associatedTypeOf(field.type);
+            if (associatedType !== undefined) {
                 methodNames.push(fieldName);
             }
-            else if (field.args.length === 0) {
+            else {
                 if (config.defaultFetcherExcludeMap !== undefined) {
                     const excludeProps = config.defaultFetcherExcludeMap[modelType.name];
                     if (excludeProps !== undefined && excludeProps.filter(name => name === fieldName).length !== 0) {
@@ -47,9 +70,9 @@ class FetcherWriter extends Writer_1.Writer {
     }
     prepareImportings() {
         this.importStatement("import { Fetcher, createFetcher } from 'graphql-ts-client-api';");
-        const fieldMap = this.modelType.getFields();
-        for (const fieldName in fieldMap) {
-            const field = fieldMap[fieldName];
+        this.importStatement("import { WithTypeName, ImplementationType } from '../CommonTypes';");
+        for (const fieldName in this.fieldMap) {
+            const field = this.fieldMap[fieldName];
             this.importFieldTypes(field);
         }
     }
@@ -78,16 +101,43 @@ class FetcherWriter extends Writer_1.Writer {
         t("\n");
         t("readonly __typename: ");
         t(this.fetcherTypeName);
-        t("<T & {__typename: '");
+        t("<T & {__typename: ImplementationType<'");
         t(this.modelType.name);
-        t("'}>;\n");
-        t('readonly "~__typename": ');
+        t("'>}>;\n");
+        t("\non<XName extends ImplementationType<'");
+        t(this.modelType.name);
+        t("'>, X extends object>");
+        this.enter("PARAMETERS", true);
+        t("child: Fetcher<XName, X>");
+        this.leave();
+        t(": ");
         t(this.fetcherTypeName);
-        t("<Omit<T, '__typename'>>;\n");
-        const fieldMap = this.modelType.getFields();
-        for (const fieldName in fieldMap) {
+        t("<");
+        this.enter("BLANK");
+        t("XName extends '");
+        t(this.modelType.name);
+        t("' ?\n");
+        t("T & X :\n");
+        t("WithTypeName<T, ImplementationType<'");
+        t(this.modelType.name);
+        t("'>> & ");
+        this.enter("PARAMETERS", true);
+        t("WithTypeName<X, ImplementationType<XName>>");
+        this.separator(" | ");
+        t("{__typename: Exclude<ImplementationType<'");
+        t(this.modelType.name);
+        t("'>, ImplementationType<XName>>}");
+        this.leave();
+        this.leave();
+        t(">;\n");
+        if (!(this.modelType instanceof graphql_1.GraphQLUnionType)) {
+            t("\nasFragment(name: string): Fetcher<");
+            this.str(this.modelType.name);
+            t(", T>;\n");
+        }
+        for (const fieldName in this.fieldMap) {
             t("\n");
-            const field = fieldMap[fieldName];
+            const field = this.fieldMap[fieldName];
             this.writePositiveProp(field);
             this.writeNegativeProp(field);
         }
@@ -96,17 +146,17 @@ class FetcherWriter extends Writer_1.Writer {
     }
     writePositiveProp(field) {
         const t = this.text.bind(this);
-        const associatedTypes = Associations_1.associatedTypesOf(field.type);
-        if (field.args.length === 0 && associatedTypes.length === 0) {
+        const associatedType = Associations_1.associatedTypeOf(field.type);
+        if (field.args.length === 0 && associatedType === undefined) {
             t("readonly ");
             t(field.name);
         }
         else {
             const multiLines = field.args.length +
-                (associatedTypes.length !== 0 ? 1 : 0)
+                (associatedType !== undefined ? 1 : 0)
                 > 1;
             t(field.name);
-            if (associatedTypes.length !== 0) {
+            if (associatedType !== undefined) {
                 t("<X extends object>");
             }
             this.enter("PARAMETERS", multiLines);
@@ -128,17 +178,12 @@ class FetcherWriter extends Writer_1.Writer {
                     }
                     this.leave();
                 }
-                if (associatedTypes.length !== 0) {
+                if (associatedType !== undefined) {
                     this.separator(", ");
                     t("child: ");
-                    this.enter("BLANK");
-                    for (const associatedType of associatedTypes) {
-                        this.separator(" | ");
-                        t("Fetcher<'");
-                        t(associatedType.name);
-                        t("', X>");
-                    }
-                    this.leave();
+                    t("Fetcher<'");
+                    t(associatedType.name);
+                    t("', X>");
                 }
             }
             this.leave();
@@ -154,7 +199,7 @@ class FetcherWriter extends Writer_1.Writer {
             t("?");
         }
         t(": ");
-        this.typeRef(field.type, associatedTypes.length !== 0 ? "X" : undefined);
+        this.typeRef(field.type, associatedType !== undefined ? "X" : undefined);
         t("}>;\n");
     }
     writeNegativeProp(field) {
@@ -169,25 +214,37 @@ class FetcherWriter extends Writer_1.Writer {
     }
     writeInstances() {
         const t = this.text.bind(this);
+        const itemTypes = this.modelType instanceof graphql_1.GraphQLUnionType ? this.modelType.getTypes() : [];
         t("\nexport const ");
         t(this.emptyFetcherName);
         t(": ");
         t(generatedFetcherTypeName(this.modelType, this.config));
         t("<{}> = ");
-        this.enter("BLANK", true);
-        t("createFetcher");
-        this.enter("PARAMETERS", this.methodNames.length > 1);
-        t("'");
-        t(this.modelType.name);
-        t("'");
-        for (const methodName of this.methodNames) {
-            this.separator(", ");
-            t("'");
-            t(methodName);
-            t("'");
-        }
-        this.leave(";");
-        this.leave();
+        this.scope({ type: "BLANK", multiLines: true, suffix: ";\n" }, () => {
+            t("createFetcher");
+            this.scope({ type: "PARAMETERS", multiLines: true }, () => {
+                this.str(this.modelType.name);
+                this.separator(", ");
+                if (itemTypes.length === 0) {
+                    t("undefined");
+                }
+                else {
+                    this.scope({ type: "ARRAY", multiLines: itemTypes.length >= 2 }, () => {
+                        for (const itemType of itemTypes) {
+                            this.separator(", ");
+                            this.str(itemType.name);
+                        }
+                    });
+                }
+                this.separator(", ");
+                this.scope({ type: "ARRAY", multiLines: this.methodNames.length >= 2 }, () => {
+                    for (const methodName of this.methodNames) {
+                        this.separator(", ");
+                        this.str(methodName);
+                    }
+                });
+            });
+        });
         if (this.defaultFetcherName !== undefined) {
             t("\nexport const ");
             t(this.defaultFetcherName);
@@ -200,8 +257,8 @@ class FetcherWriter extends Writer_1.Writer {
                 t(propName);
                 t("\n");
             }
-            this.leave(";");
             this.leave();
+            this.leave(";");
         }
     }
 }

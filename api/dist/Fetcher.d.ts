@@ -9,11 +9,12 @@
  */
 export interface Fetcher<E extends string, T extends object> {
     readonly fetchedEntityType: E;
-    readonly fieldMap: Map<string, FetcherField>;
+    readonly fieldMap: ReadonlyMap<string, FetcherField>;
     /**
      * For query/mutation
      */
     toString(): string;
+    toFragmentString(): string;
     /**
      * For recoild
      */
@@ -22,39 +23,47 @@ export interface Fetcher<E extends string, T extends object> {
 }
 export declare type ModelType<F> = F extends Fetcher<string, infer M> ? M : never;
 export declare abstract class AbstractFetcher<E extends string, T extends object> implements Fetcher<E, T> {
-    readonly fetchedEntityType: E;
-    private _prev;
     private _negative;
     private _field;
     private _args?;
     private _child?;
+    private _fragmentName?;
+    private _fetchedEntityType;
+    private _unionItemTypes?;
+    private _prev?;
     private _str?;
+    private _fragmentStr?;
     private _json?;
     private _fieldMap?;
-    constructor(fetchedEntityType: E, _prev: AbstractFetcher<string, any> | undefined, _negative: boolean, _field: string, _args?: {
+    constructor(ctx: AbstractFetcher<string, any> | [E, string[] | undefined], _negative: boolean, _field: string, _args?: {
         [key: string]: any;
-    }, _child?: AbstractFetcher<string, any>);
+    }, _child?: AbstractFetcher<string, any>, _fragmentName?: string);
+    get fetchedEntityType(): E;
     protected addField<F extends AbstractFetcher<string, any>>(field: string, args?: {
         [key: string]: any;
     }, child?: AbstractFetcher<string, any>): F;
     protected removeField<F extends AbstractFetcher<string, any>>(field: string): F;
-    protected abstract createFetcher(prev: AbstractFetcher<string, any> | undefined, negative: boolean, field: string, args?: {
+    protected addEmbbeddable<F extends AbstractFetcher<string, any>>(child: AbstractFetcher<string, any>): F;
+    protected addFragment(name: string): Fetcher<E, T>;
+    protected abstract createFetcher(negative: boolean, field: string, args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<string, any>): AbstractFetcher<string, any>;
+    }, child?: AbstractFetcher<string, any>, fragmentName?: string): AbstractFetcher<string, any>;
     toString(): string;
+    toFragmentString(): string;
     private _toString0;
+    private _toString1;
     toJSON(): string;
     private _toJSON0;
-    get fieldMap(): Map<string, FetcherField>;
+    get fieldMap(): ReadonlyMap<string, FetcherField>;
     private _getFieldMap0;
     private static appendIndentTo;
     private static appendFieldTo;
+    private static _appendFieldTo0;
     __supressWarnings__(_: T): never;
 }
-interface FetcherField {
+export interface FetcherField {
     readonly args?: {
-        [key: string]: any;
+        readonly [key: string]: any;
     };
-    readonly child?: AbstractFetcher<string, any>;
+    readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, any>>;
 }
-export {};

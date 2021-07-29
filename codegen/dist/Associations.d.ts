@@ -7,5 +7,5 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
-import { GraphQLInterfaceType, GraphQLObjectType, GraphQLType } from "graphql";
-export declare function associatedTypesOf(type: GraphQLType): Array<GraphQLObjectType | GraphQLInterfaceType>;
+import { GraphQLInterfaceType, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
+export declare function associatedTypeOf(type: GraphQLType): GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType | undefined;

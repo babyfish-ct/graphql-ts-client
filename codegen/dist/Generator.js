@@ -28,7 +28,8 @@ const FetcherWriter_1 = require("./FetcherWriter");
 const EnumWriter_1 = require("./EnumWriter");
 const InputWriter_1 = require("./InputWriter");
 const OperationWriter_1 = require("./OperationWriter");
-const Environment_1 = require("./Environment");
+const EnvironmentWriter_1 = require("./EnvironmentWriter");
+const CommonTypesWriter_1 = require("./CommonTypesWriter");
 class Generator {
     constructor(config) {
         var _a, _b;
@@ -56,7 +57,8 @@ class Generator {
                     const type = typeMap[typeName];
                     if (type !== queryType && type !== mutationType) {
                         if (type instanceof graphql_1.GraphQLObjectType ||
-                            type instanceof graphql_1.GraphQLInterfaceType) {
+                            type instanceof graphql_1.GraphQLInterfaceType ||
+                            type instanceof graphql_1.GraphQLUnionType) {
                             fetcherTypes.push(type);
                         }
                         else if (type instanceof graphql_1.GraphQLInputObjectType) {
@@ -83,6 +85,7 @@ class Generator {
             }
             const queryFields = this.operationFields(queryType);
             const mutationFields = this.operationFields(mutationType);
+            promises.push(this.generateImplementationType(schema));
             if (this.config.generateOperations && (queryFields.length !== 0 || mutationFields.length !== 0)) {
                 promises.push(this.generateEnvironment());
                 if (queryFields.length !== 0) {
@@ -174,7 +177,14 @@ class Generator {
     generateEnvironment() {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = createStreamAndLog(path_1.join(this.config.targetDir, "Environment.ts"));
-            new Environment_1.EnvironmentWriter(stream, this.config).write();
+            new EnvironmentWriter_1.EnvironmentWriter(stream, this.config).write();
+            yield stream.end();
+        });
+    }
+    generateImplementationType(schema) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const stream = createStreamAndLog(path_1.join(this.config.targetDir, "CommonTypes.ts"));
+            new CommonTypesWriter_1.CommonTypesWriter(schema, stream, this.config).write();
             yield stream.end();
         });
     }

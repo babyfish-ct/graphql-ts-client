@@ -9,21 +9,18 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.associatedTypesOf = void 0;
+exports.associatedTypeOf = void 0;
 const graphql_1 = require("graphql");
-function associatedTypesOf(type) {
+function associatedTypeOf(type) {
     if (type instanceof graphql_1.GraphQLNonNull) {
-        return associatedTypesOf(type.ofType);
+        return associatedTypeOf(type.ofType);
     }
     if (type instanceof graphql_1.GraphQLList) {
-        return associatedTypesOf(type.ofType);
+        return associatedTypeOf(type.ofType);
     }
-    if (type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType) {
-        return [type];
+    if (type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType || type instanceof graphql_1.GraphQLUnionType) {
+        return type;
     }
-    if (type instanceof graphql_1.GraphQLUnionType) {
-        return type.getTypes();
-    }
-    return [];
+    return undefined;
 }
-exports.associatedTypesOf = associatedTypesOf;
+exports.associatedTypeOf = associatedTypeOf;

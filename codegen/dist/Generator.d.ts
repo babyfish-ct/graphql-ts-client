@@ -19,6 +19,7 @@ export declare class Generator {
     private generateInputTypes;
     private generateEnumTypes;
     private generateEnvironment;
+    private generateImplementationType;
     private generateOperations;
     private writeSimpleIndex;
     private rmdirIfNecessary;

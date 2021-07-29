@@ -30,11 +30,19 @@ export declare abstract class Writer {
     protected importingBehavior(type: GraphQLNamedType): ImportingBehavior;
     protected enter(type: ScopeType, multiLines?: boolean, prefix?: string): void;
     protected leave(suffix?: string): void;
+    protected scope(args: ScopeArgs, scopeAction: () => void): void;
     protected text(value: string): void;
+    protected str(value: string): void;
     protected separator(value?: string): void;
     protected typeRef(type: GraphQLType, overrideObjectTypeName?: string): void;
     private writeIndent;
     private get currentScope();
 }
-export declare type ScopeType = "BLANK" | "BLOCK" | "PARAMETERS";
+export declare type ScopeType = "BLANK" | "BLOCK" | "PARAMETERS" | "ARRAY" | "GENERIC";
 export declare type ImportingBehavior = "SELF" | "SAME_DIR" | "OTHER_DIR";
+export interface ScopeArgs {
+    readonly type: ScopeType;
+    readonly multiLines?: boolean;
+    readonly prefix?: string;
+    readonly suffix?: string;
+}

@@ -10,7 +10,7 @@
 
 import { WriteStream } from "fs";
 import { GraphQLField, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
-import { associatedTypesOf } from "./Associations";
+import { associatedTypeOf } from "./Associations";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { Writer } from "./Writer";
 
@@ -18,7 +18,7 @@ export class OperationWriter extends Writer {
 
     private readonly argsWrapperName?: string;
 
-    private readonly associatedTypes: ReadonlyArray<GraphQLObjectType | GraphQLInterfaceType>;
+    private readonly associatedType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType;
 
     constructor(
         private readonly mutation: boolean,
@@ -28,11 +28,11 @@ export class OperationWriter extends Writer {
     ) {
         super(stream, config);
         this.argsWrapperName = argsWrapperTypeName(field);
-        this.associatedTypes = associatedTypesOf(this.field.type);
+        this.associatedType = associatedTypeOf(this.field.type);
     }
 
     protected prepareImportings() {
-        if (this.associatedTypes.length !== 0) {
+        if (this.associatedType !== undefined) {
             this.importStatement("import {Fetcher, replaceNullValues} from 'graphql-ts-client-api';");
         }
         this.importStatement("import {graphQLClient} from '../Environment';");
@@ -45,14 +45,14 @@ export class OperationWriter extends Writer {
         
         t("export async function ")
         t(this.field.name);
-        if (this.associatedTypes.length !== 0) {
+        if (this.associatedType !== undefined) {
             t("<X extends object>");
         }
         
         this.enter(
             "PARAMETERS", 
             this.field.args.length !== 0 && 
-            this.associatedTypes.length !== 0
+            this.associatedType !== undefined
         );
         if (this.field.args.length !== 0) {
             this.separator(", ");
@@ -62,7 +62,7 @@ export class OperationWriter extends Writer {
             } else {
                 const arg = this.field.args[0];
                 const nullable = !(arg.type instanceof GraphQLNonNull);
-                const isLast = this.associatedTypes.length === 0;
+                const isLast = this.associatedType === undefined;
                 t(arg.name);
                 if (nullable && isLast) {
                     t("?");
@@ -74,17 +74,12 @@ export class OperationWriter extends Writer {
                 }
             }
         }
-        if (this.associatedTypes.length !== 0) {
+        if (this.associatedType !== undefined) {
             this.separator(", ");
             t("fetcher: ");
-            this.enter("BLANK");
-            for (const associatedType of this.associatedTypes) {
-                this.separator(" | ");
-                t("Fetcher<'");
-                t(associatedType.name);
-                t("', X>");
-            }
-            this.leave();
+            t("Fetcher<'");
+            t(this.associatedType.name);
+            t("', X>");
         }
         this.leave();
 
@@ -112,7 +107,7 @@ export class OperationWriter extends Writer {
         t(this.field.name);
         t("'];\n");
 
-        if (this.associatedTypes.length !== 0) {
+        if (this.associatedType !== undefined) {
             t("replaceNullValues(result);\n");
         }
         t("return result as ");
@@ -159,41 +154,41 @@ export class OperationWriter extends Writer {
         const t = this.text.bind(this);
         const args = this.field.args;
 
-        t("const gql = ");
-        this.enter("BLANK", true, "`");
-        t(this.mutation ? "mutation" : "query");
-        if (args.length !== 0) {
-            this.enter("PARAMETERS", args.length > 2);
-            for (const arg of args) {
-                this.separator(", ");
-                t("$");
-                t(arg.name);
-                t(": ");
-                this.writeGQLTypeRef(arg.type);
+        this.scope({type: 'BLANK', multiLines: true, prefix: "const gql = `", suffix: "`;\n"}, () => {
+            t(this.mutation ? "mutation" : "query");
+            if (args.length !== 0) {
+                this.enter("PARAMETERS", args.length > 2);
+                for (const arg of args) {
+                    this.separator(", ");
+                    t("$");
+                    t(arg.name);
+                    t(": ");
+                    this.writeGQLTypeRef(arg.type);
+                }
+                this.leave();
             }
-            this.leave();
-        }
-
-        t(" ");
-        this.enter("BLOCK", true);
-        t(this.field.name);
-        if (args.length !== 0) {
-            this.enter("PARAMETERS", args.length > 2);
-            for (const arg of args) {
-                this.separator(", ");
-                t(arg.name);
-                t(": $");
-                t(arg.name);
-            }
-            this.leave();
-        }
-        if (this.associatedTypes.length !== 0) {
             t(" ");
-            t("${fetcher.toString()}");
-        }
-        this.leave("\n");
-
-        this.leave("`;\n");
+            this.scope({type: "BLOCK", multiLines: true, suffix: '\n'}, () => {
+                t(this.field.name);
+                if (args.length !== 0) {
+                    this.scope({type: "PARAMETERS", multiLines: args.length > 2}, () => {
+                        for (const arg of args) {
+                            this.separator(", ");
+                            t(arg.name);
+                            t(": $");
+                            t(arg.name);
+                        }
+                    });
+                }
+                if (this.associatedType !== undefined) {
+                    t(" ");
+                    t("${fetcher.toString()}");
+                }
+            });
+            if (this.associatedType !== undefined) {
+                t("${fetcher.toFragmentString()}");
+            }
+        });
     }
 
     private writeGQLTypeRef(type: GraphQLType) {

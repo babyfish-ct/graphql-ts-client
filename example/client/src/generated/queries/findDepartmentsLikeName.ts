@@ -9,6 +9,7 @@ export async function findDepartmentsLikeName<X extends object>(
 		query($name: String) {
 			findDepartmentsLikeName(name: $name) ${fetcher.toString()}
 		}
+		${fetcher.toFragmentString()}
 	`;
 	const result = (await graphQLClient().request(gql, {name}))['findDepartmentsLikeName'];
 	replaceNullValues(result);

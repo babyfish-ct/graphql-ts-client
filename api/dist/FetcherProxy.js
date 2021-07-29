@@ -19,13 +19,13 @@ const Fetcher_1 = require("./Fetcher");
  * interfaces cannot affect the capacity of compilied targe code
  * ), and this "createFetcher" method uses proxies to create instances of those interfaces.
  */
-function createFetcher(fetchedEntityType, ...methodNames) {
-    return new Proxy(new FetcherTarget(fetchedEntityType, undefined, false, ""), proxyHandler(fetchedEntityType, new Set(methodNames)));
+function createFetcher(fetchedEntityType, unionEntityTypes, methodNames) {
+    return new Proxy(new FetcherTarget([fetchedEntityType, unionEntityTypes], false, ""), proxyHandler(fetchedEntityType, new Set(methodNames)));
 }
 exports.createFetcher = createFetcher;
 class FetcherTarget extends Fetcher_1.AbstractFetcher {
-    createFetcher(prev, negative, field, args, child) {
-        return new FetcherTarget(this.fetchedEntityType, prev, negative, field, args, child);
+    createFetcher(negative, field, args, child, fragmentName) {
+        return new FetcherTarget(this, negative, field, args, child, fragmentName);
     }
 }
 function proxyHandler(fetchedEntityType, methodNames) {
@@ -45,7 +45,7 @@ function proxyHandler(fetchedEntityType, methodNames) {
                 const removeField = Reflect.get(target, "removeField");
                 return new Proxy(removeField.call(target, p.substring(1)), handler);
             }
-            if (methodNames.has(p)) {
+            if (p === "on" || p === "asFragment" || methodNames.has(p)) {
                 return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, p));
             }
             const addField = Reflect.get(target, "addField");
@@ -58,6 +58,16 @@ function proxyHandler(fetchedEntityType, methodNames) {
 function methodProxyHandler(targetFetcher, handler, field) {
     return {
         apply: (_1, _2, argArray) => {
+            if (field === "on") {
+                let child = argArray[0];
+                const addEmbbeddable = Reflect.get(targetFetcher, "addEmbbeddable");
+                return new Proxy(addEmbbeddable.call(targetFetcher, child), handler);
+            }
+            if (field === "asFragment") {
+                let name = argArray[0];
+                const addFragment = Reflect.get(targetFetcher, "addFragment");
+                return new Proxy(addFragment.call(targetFetcher, name), handler);
+            }
             let args = undefined;
             let child = undefined;
             switch (argArray.length) {
@@ -82,7 +92,7 @@ function methodProxyHandler(targetFetcher, handler, field) {
     };
 }
 function dummyTargetMethod() { }
-const FETCHER_TARGET = new FetcherTarget("Any", undefined, false, "");
+const FETCHER_TARGET = new FetcherTarget(["Any", undefined], false, "");
 const BUILT_IN_FIELDS = new Set([
     ...Object.keys(FETCHER_TARGET),
     ...Reflect.ownKeys(Fetcher_1.AbstractFetcher.prototype),

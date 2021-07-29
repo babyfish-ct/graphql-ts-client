@@ -35,8 +35,10 @@ function collectTypeNames(
 ) {
     outputSet.add(fetcher.fetchedEntityType);
     for (const [, field] of fetcher.fieldMap) {
-        if (field.child !== undefined) {
-            collectTypeNames(field.child, outputSet);
+        if (field.childFetchers !== undefined) {
+            for (const child of field.childFetchers) {
+                collectTypeNames(child, outputSet);
+            }
         }
     }
 }

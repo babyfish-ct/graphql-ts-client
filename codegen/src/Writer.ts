@@ -84,10 +84,6 @@ export abstract class Writer {
             this.importType(type.ofType);
         } else if (type instanceof GraphQLList) {
             this.importType(type.ofType);
-        } else if (type instanceof GraphQLUnionType) {
-            for (const itemType of type.getTypes()) {
-                this.importType(itemType);
-            }
         } else if (type instanceof GraphQLInputObjectType) {
             this.importedTypes.add(type);
         } else if (type instanceof GraphQLEnumType) {
@@ -124,6 +120,12 @@ export abstract class Writer {
             case "PARAMETERS":
                 this.text("(");
                 break;
+            case "ARRAY":
+                this.text("[");
+                break;
+            case "GENERIC":
+                this.text("<");
+                break;
         }
         if (multiLines) {
             this.text("\n");
@@ -143,10 +145,22 @@ export abstract class Writer {
             case "PARAMETERS":
                 this.text(")");
                 break;
+            case "ARRAY":
+                this.text("]");
+                break;
+            case "GENERIC":
+                this.text(">");
+                break;
         }
         if (suffix !== undefined) {
             this.text(suffix);
         }
+    }
+
+    protected scope(args: ScopeArgs, scopeAction: () => void) {
+        this.enter(args.type, args.multiLines === true, args.prefix);
+        scopeAction();
+        this.leave(args.suffix);
     }
 
     protected text(value: string) {
@@ -166,6 +180,12 @@ export abstract class Writer {
                 this.needIndent = true;
             }
         }
+    }
+
+    protected str(value: string) {
+        this.text("'");
+        this.text(value);
+        this.text("'");
     }
 
     protected separator(value?: string) {
@@ -245,9 +265,16 @@ export abstract class Writer {
     }
 }
 
-export type ScopeType = "BLANK" | "BLOCK" | "PARAMETERS";
+export type ScopeType = "BLANK" | "BLOCK" | "PARAMETERS" | "ARRAY" | "GENERIC";
 
 export type ImportingBehavior = "SELF" | "SAME_DIR" | "OTHER_DIR";
+
+export interface ScopeArgs {
+    readonly type: ScopeType;
+    readonly multiLines?: boolean;
+    readonly prefix?: string;
+    readonly suffix?: string;
+}
 
 interface Scope {
     readonly type: ScopeType;

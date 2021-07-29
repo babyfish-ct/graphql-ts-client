@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType, validate } from "graphql";
+import { GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType, GraphQLUnionType, validate } from "graphql";
 import { GeneratorConfig, validateConfig, validateConfigAndSchema } from "./GeneratorConfig";
 import { mkdir, rmdir, access, createWriteStream, WriteStream } from "fs";
 import { promisify } from "util";
@@ -18,7 +18,8 @@ import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
 import { Maybe } from "graphql/jsutils/Maybe";
 import { argsWrapperTypeName, OperationWriter } from "./OperationWriter";
-import { EnvironmentWriter } from "./Environment";
+import { EnvironmentWriter } from "./EnvironmentWriter";
+import { CommonTypesWriter } from "./CommonTypesWriter";
 
 export class Generator {
 
@@ -43,7 +44,7 @@ export class Generator {
 
         const queryType = schema.getQueryType();
         const mutationType = schema.getMutationType();
-        const fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType> = [];
+        const fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType> = [];
         const inputTypes: GraphQLInputObjectType[] = [];
         const enumTypes: GraphQLEnumType[] = [];
         const typeMap = schema.getTypeMap();
@@ -52,7 +53,8 @@ export class Generator {
                 const type = typeMap[typeName]!;
                 if (type !== queryType && type !== mutationType) {
                     if (type instanceof GraphQLObjectType || 
-                        type instanceof GraphQLInterfaceType
+                        type instanceof GraphQLInterfaceType ||
+                        type instanceof GraphQLUnionType
                     ) {
                         fetcherTypes.push(type);
                     } else if (type instanceof GraphQLInputObjectType) {
@@ -79,6 +81,7 @@ export class Generator {
 
         const queryFields = this.operationFields(queryType);
         const mutationFields = this.operationFields(mutationType);
+        promises.push(this.generateImplementationType(schema));
         if (this.config.generateOperations && (queryFields.length !== 0 || mutationFields.length !== 0)) {
             promises.push(this.generateEnvironment());
             if (queryFields.length !== 0) {
@@ -106,7 +109,7 @@ export class Generator {
     }
 
     private async generateFetcherTypes(
-        fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType>
+        fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType>
     ) {
         const dir = join(this.config.targetDir, "fetchers");
         const emptyFetcherNameMap = new Map<GraphQLType, string>();
@@ -185,6 +188,14 @@ export class Generator {
             join(this.config.targetDir, "Environment.ts")
         );
         new EnvironmentWriter(stream, this.config).write();
+        await stream.end();
+    }
+
+    private async generateImplementationType(schema: GraphQLSchema) {
+        const stream = createStreamAndLog(
+            join(this.config.targetDir, "CommonTypes.ts")
+        );
+        new CommonTypesWriter(schema, stream, this.config).write();
         await stream.end();
     }
 

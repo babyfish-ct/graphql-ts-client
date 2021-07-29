@@ -20,10 +20,11 @@ import { AbstractFetcher, Fetcher } from './Fetcher';
  */
 export function createFetcher<E extends string, F extends Fetcher<E, object>>(
     fetchedEntityType: E,
-    ...methodNames: string[]
+    unionEntityTypes: string[] | undefined,
+    methodNames: string[]
 ) {
     return new Proxy(
-        new FetcherTarget(fetchedEntityType, undefined, false, ""),
+        new FetcherTarget([fetchedEntityType, unionEntityTypes], false, ""),
         proxyHandler(fetchedEntityType, new Set<string>(methodNames))
     ) as F;
 }
@@ -31,19 +32,19 @@ export function createFetcher<E extends string, F extends Fetcher<E, object>>(
 class FetcherTarget<E extends string> extends AbstractFetcher<E, object> {
 
     protected createFetcher(
-        prev: AbstractFetcher<string, any> | undefined,
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<string, any>
+        child?: AbstractFetcher<string, any>,
+        fragmentName?: string
     ): AbstractFetcher<string, any> {
         return new FetcherTarget(
-            this.fetchedEntityType,
-            prev,
+            this,
             negative,
             field,
             args,
-            child
+            child,
+            fragmentName
         );
     }
 }
@@ -72,7 +73,7 @@ function proxyHandler(
                     handler
                 );
             }
-            if (methodNames.has(p)) {
+            if (p === "on" || p === "asFragment" || methodNames.has(p)) {
                 return new Proxy(
                     dummyTargetMethod,
                     methodProxyHandler(target, handler, p)
@@ -96,6 +97,22 @@ function methodProxyHandler(
 
     return {
         apply: (_1: Function, _2: any, argArray: any[]): any => {
+            if (field === "on") {
+                let child = argArray[0] as AbstractFetcher<string, any>;
+                const addEmbbeddable = Reflect.get(targetFetcher, "addEmbbeddable") as ADD_EMBBEDDABLE;
+                return new Proxy(
+                    addEmbbeddable.call(targetFetcher, child),
+                    handler
+                );
+            }
+            if (field === "asFragment") {
+                let name = argArray[0] as string;
+                const addFragment = Reflect.get(targetFetcher, "addFragment") as ADD_FRAGMENT;
+                return new Proxy(
+                    addFragment.call(targetFetcher, name),
+                    handler
+                );
+            }
             let args: {[key: string]: any} | undefined = undefined;
             let child: AbstractFetcher<string, any> | undefined = undefined;
             switch (argArray.length) {
@@ -134,9 +151,17 @@ type REMOVE_FILED = (
     child?: (AbstractFetcher<string, any>)
 ) => AbstractFetcher<string, any>;
 
+type ADD_EMBBEDDABLE = (
+    child: AbstractFetcher<string, any>
+) => AbstractFetcher<string, any>;
+
+type ADD_FRAGMENT = (
+    name: string
+) => AbstractFetcher<string, any>;
+
 function dummyTargetMethod() {}
 
-const FETCHER_TARGET = new FetcherTarget("Any", undefined, false, "");
+const FETCHER_TARGET = new FetcherTarget(["Any", undefined], false, "");
 
 const BUILT_IN_FIELDS = new Set<string>(
     [

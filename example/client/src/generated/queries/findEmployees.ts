@@ -19,6 +19,7 @@ export async function findEmployees<X extends object>(
 				namePattern: $namePattern
 			) ${fetcher.toString()}
 		}
+		${fetcher.toFragmentString()}
 	`;
 	const result = (await graphQLClient().request(gql, args))['findEmployees'];
 	replaceNullValues(result);

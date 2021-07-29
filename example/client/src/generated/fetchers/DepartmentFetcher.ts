@@ -1,4 +1,5 @@
 import { Fetcher, createFetcher } from 'graphql-ts-client-api';
+import { WithTypeName, ImplementationType } from '../CommonTypes';
 
 /*
  * Any instance of this interface is immutable,
@@ -11,8 +12,18 @@ export interface DepartmentFetcher<T extends object> extends Fetcher<'Department
 
 	readonly fetchedEntityType: 'Department';
 
-	readonly __typename: DepartmentFetcher<T & {__typename: 'Department'}>;
-	readonly "~__typename": DepartmentFetcher<Omit<T, '__typename'>>;
+	readonly __typename: DepartmentFetcher<T & {__typename: ImplementationType<'Department'>}>;
+
+	on<XName extends ImplementationType<'Department'>, X extends object>(
+		child: Fetcher<XName, X>
+	): DepartmentFetcher<XName extends 'Department' ?
+		T & X :
+		WithTypeName<T, ImplementationType<'Department'>> & (
+			WithTypeName<X, ImplementationType<XName>> | 
+			{__typename: Exclude<ImplementationType<'Department'>, ImplementationType<XName>>}
+		)>;
+
+	asFragment(name: string): Fetcher<'Department', T>;
 
 	readonly id: DepartmentFetcher<T & {readonly id: number}>;
 	readonly "~id": DepartmentFetcher<Omit<T, 'id'>>;
@@ -28,10 +39,15 @@ export interface DepartmentFetcher<T extends object> extends Fetcher<'Department
 }
 
 export const department$: DepartmentFetcher<{}> = 
-	createFetcher('Department', 'employees');
+	createFetcher(
+		'Department', 
+		undefined, 
+		['employees']
+	)
+;
 
 export const department$$ = 
 	department$
 		.id
 		.name
-	;
+;

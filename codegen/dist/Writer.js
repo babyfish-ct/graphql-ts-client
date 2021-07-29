@@ -74,11 +74,6 @@ class Writer {
         else if (type instanceof graphql_1.GraphQLList) {
             this.importType(type.ofType);
         }
-        else if (type instanceof graphql_1.GraphQLUnionType) {
-            for (const itemType of type.getTypes()) {
-                this.importType(itemType);
-            }
-        }
         else if (type instanceof graphql_1.GraphQLInputObjectType) {
             this.importedTypes.add(type);
         }
@@ -113,6 +108,12 @@ class Writer {
             case "PARAMETERS":
                 this.text("(");
                 break;
+            case "ARRAY":
+                this.text("[");
+                break;
+            case "GENERIC":
+                this.text("<");
+                break;
         }
         if (multiLines) {
             this.text("\n");
@@ -131,10 +132,21 @@ class Writer {
             case "PARAMETERS":
                 this.text(")");
                 break;
+            case "ARRAY":
+                this.text("]");
+                break;
+            case "GENERIC":
+                this.text(">");
+                break;
         }
         if (suffix !== undefined) {
             this.text(suffix);
         }
+    }
+    scope(args, scopeAction) {
+        this.enter(args.type, args.multiLines === true, args.prefix);
+        scopeAction();
+        this.leave(args.suffix);
     }
     text(value) {
         const lines = value.split("\n");
@@ -153,6 +165,11 @@ class Writer {
                 this.needIndent = true;
             }
         }
+    }
+    str(value) {
+        this.text("'");
+        this.text(value);
+        this.text("'");
     }
     separator(value) {
         const scope = this.currentScope;
