@@ -14,3 +14,4 @@ Learn more
 3. [Code generator configuration](https://github.com/babyfish-ct/graphql-ts-client/blob/master/codegen-properties.md)
 4. [Get inferred type explicitly](https://github.com/babyfish-ct/graphql-ts-client/blob/master/explicitly-get-type.md)
 5. [Experimental](https://github.com/babyfish-ct/graphql-ts-client/blob/master/experimental.md)
+6. [Polymorphism query&Fragment since 2.0.0](https://github.com/babyfish-ct/graphql-ts-client/blob/master/2.0.0.md)
