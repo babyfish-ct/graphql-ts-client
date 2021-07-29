@@ -1,7 +1,7 @@
 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
 
 1. Supports GraphQL queries with strongly typed code.
-2. Automatically infers the type of the returned data according to the strongly typed query(This is the essential difference between this framework and other similar frameworks, and it is also the reason why I created it).
+2. **Automatically infers the type of the returned data according to the strongly typed query request**(This is the essential difference between this framework and other similar frameworks, and it is also the reason why I created it).
 
 ![ImageText](https://github.com/babyfish-ct/graphql-ts-client/blob/master/graphql-ts-client.gif)
 
