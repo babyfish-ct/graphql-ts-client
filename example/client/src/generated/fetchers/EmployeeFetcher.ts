@@ -15,18 +15,18 @@ export interface EmployeeFetcher<T extends object> extends Fetcher<'Employee', T
 
 	readonly __typename: EmployeeFetcher<T & {__typename: ImplementationType<'Employee'>}>;
 
-	on<XName extends ImplementationType<'Employee'>, X extends object>(
-		child: Fetcher<XName, X>
-	): EmployeeFetcher<XName extends 'Employee' ?
+	on<XName extends ImplementationType<'Employee'>, X extends object>(child: Fetcher<XName, X>): EmployeeFetcher<
+		XName extends 'Employee' ?
 		T & X :
 		WithTypeName<T, ImplementationType<'Employee'>> & (
 			WithTypeName<X, ImplementationType<XName>> | 
 			{__typename: Exclude<ImplementationType<'Employee'>, ImplementationType<XName>>}
-		)>;
+		)
+	>;
 
 	asFragment(name: string): Fetcher<'Employee', T>;
 
-	readonly id: EmployeeFetcher<T & {readonly id: number}>;
+	readonly id: EmployeeFetcher<T & {readonly id: string}>;
 	readonly "~id": EmployeeFetcher<Omit<T, 'id'>>;
 
 	readonly firstName: EmployeeFetcher<T & {readonly firstName: string}>;

@@ -1,0 +1,17 @@
+/**
+ * @author ChenTao
+ *
+ * Server-side of example of 'graphql-ts-client'
+ */
+import { Gender } from "../model/Gender";
+import { Table } from "./Table";
+export declare const employeeTable: Table<TEmployee>;
+export interface TEmployee {
+    readonly id: string;
+    readonly firstName: string;
+    readonly lastName: string;
+    readonly gender: Gender;
+    readonly salary: number;
+    readonly departmentId: number;
+    readonly supervisorId?: string;
+}

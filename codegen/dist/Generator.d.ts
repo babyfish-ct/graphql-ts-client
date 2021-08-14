@@ -7,9 +7,12 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
+/// <reference types="node" />
+import { GraphQLField, GraphQLSchema } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
+import { WriteStream } from "fs";
 export declare class Generator {
-    private config;
+    protected config: GeneratorConfig;
     private excludedTypeNames;
     private excludedOperationNames;
     constructor(config: GeneratorConfig);
@@ -18,11 +21,13 @@ export declare class Generator {
     private generateFetcherTypes;
     private generateInputTypes;
     private generateEnumTypes;
-    private generateEnvironment;
     private generateImplementationType;
-    private generateOperations;
     private writeSimpleIndex;
     private rmdirIfNecessary;
-    private mkdirIfNecessary;
+    protected mkdirIfNecessary(subDir?: string): Promise<void>;
+    protected generateServices(queryFields: GraphQLField<unknown, unknown>[], mutationFields: GraphQLField<unknown, unknown>[], promises: Promise<void>[]): Promise<void>;
     private operationFields;
+    private writeIndex;
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
 }
+export declare function createStreamAndLog(path: string): WriteStream;

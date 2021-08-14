@@ -19,7 +19,7 @@ export const employeeTable =
     })
     .batchInsert([
         {
-            id: 1, 
+            id: "1", 
             firstName: "Malloy", 
             lastName: "Carter", 
             gender: Gender.MALE,
@@ -27,26 +27,26 @@ export const employeeTable =
             departmentId: 1
         },
         {
-            id: 2, 
+            id: "2", 
             firstName: "Teresa", 
             lastName: "Longman", 
             gender: Gender.FEMALE,
             salary: 0,
             departmentId: 1,
-            supervisorId: 1
+            supervisorId: "1"
         },
         {
-            id: 3, 
+            id: "3", 
             firstName: "Benjamin", 
             lastName: "Hawk", 
             gender: Gender.MALE,
             salary: 0,
             departmentId: 1,
-            supervisorId: 1
+            supervisorId: "1"
         },
 
         {
-            id: 4, 
+            id: "4", 
             firstName: "Kelley", 
             lastName: "White", 
             gender: Gender.FEMALE,
@@ -54,26 +54,26 @@ export const employeeTable =
             departmentId: 2
         },
         {
-            id: 5, 
+            id: "5", 
             firstName: "Foster", 
             lastName: "Churchill", 
             gender: Gender.MALE,
             salary: 0,
             departmentId: 2,
-            supervisorId: 4
+            supervisorId: "4"
         },
         {
-            id: 6, 
+            id: "6", 
             firstName: "Juliana", 
             lastName: "Wood", 
             gender: Gender.FEMALE,
             salary: 0,
             departmentId: 2,
-            supervisorId: 4
+            supervisorId: "4"
         },
 
         {
-            id: 7, 
+            id: "7", 
             firstName: "Alexander", 
             lastName: "Sterling", 
             gender: Gender.MALE,
@@ -81,26 +81,26 @@ export const employeeTable =
             departmentId: 3
         },
         {
-            id: 8, 
+            id: "8", 
             firstName: "Victoria", 
             lastName: "London", 
             gender: Gender.FEMALE,
             salary: 0,
             departmentId: 3,
-            supervisorId: 7
+            supervisorId: "7"
         },
         {
-            id: 9, 
+            id: "9", 
             firstName: "Phillips", 
             lastName: "Bush", 
             gender: Gender.MALE,
             salary: 0,
             departmentId: 3,
-            supervisorId: 7
+            supervisorId: "7"
         },
 
         {
-            id: 10, 
+            id: "10", 
             firstName: "Gillian", 
             lastName: "Reed", 
             gender: Gender.FEMALE,
@@ -108,26 +108,26 @@ export const employeeTable =
             departmentId: 4
         },
         {
-            id: 11, 
+            id: "11", 
             firstName: "Reynolds", 
             lastName: "Atkinson", 
             gender: Gender.MALE,
             salary: 0,
             departmentId: 4,
-            supervisorId: 10
+            supervisorId: "10"
         },
         {
-            id: 12, 
+            id: "12", 
             firstName: "Stephanie", 
             lastName: "Forest", 
             gender: Gender.FEMALE,
             salary: 0,
             departmentId: 4,
-            supervisorId: 10
+            supervisorId: "10"
         },
 
         {
-            id: 13, 
+            id: "13", 
             firstName: "Eaton", 
             lastName: "Webster", 
             gender: Gender.MALE,
@@ -135,31 +135,31 @@ export const employeeTable =
             departmentId: 5
         },
         {
-            id: 14, 
+            id: "14", 
             firstName: "Zenobia", 
             lastName: "Sharp", 
             gender: Gender.FEMALE,
             salary: 0,
             departmentId: 5,
-            supervisorId: 13
+            supervisorId: "13"
         },
         {
-            id: 15, 
+            id: "15", 
             firstName: "Norton", 
             lastName: "Cotton", 
             gender: Gender.MALE,
             salary: 0,
             departmentId: 5,
-            supervisorId: 13
+            supervisorId: "13"
         },
     ]);
 
 export interface TEmployee {
-    readonly id: number;
+    readonly id: string;
     readonly firstName: string;
     readonly lastName: string;
     readonly gender: Gender,
     readonly salary: number;
     readonly departmentId: number;
-    readonly supervisorId?: number;
+    readonly supervisorId?: string;
 }

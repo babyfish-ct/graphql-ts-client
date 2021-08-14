@@ -1,13 +1,19 @@
+import {Fetcher, replaceNullValues} from 'graphql-ts-client-api';
 import {graphQLClient} from '../Environment';
 import {DepartmentInput} from '../inputs';
 
-export async function mergeDepartment(input: DepartmentInput): Promise<number> {
+export async function mergeDepartment<X extends object>(
+	input: DepartmentInput, 
+	fetcher: Fetcher<'Department', X>
+): Promise<X> {
 	const gql = `
 		mutation($input: DepartmentInput!) {
-			mergeDepartment(input: $input)
+			mergeDepartment(input: $input) ${fetcher.toString()}
 		}
+		${fetcher.toFragmentString()}
 	`;
 	const result = (await graphQLClient().request(gql, {input}))['mergeDepartment'];
-	return result as number;
+	replaceNullValues(result);
+	return result as X;
 }
 

@@ -56,7 +56,7 @@ export class CommonTypesWriter extends Writer {
         }
         CommonTypesWriter._removeSuperfluous(implementationTypeMap);
 
-        t(IMPLEMENTATION_TYPE_COMMENT);
+        t(DOWNCAST_TYPE_COMMENT);
         t("export type ImplementationType<T> = ");
         this.enter("BLANK", true);
         for (const [type, implementationTypes] of implementationTypeMap) {
@@ -72,7 +72,7 @@ export class CommonTypesWriter extends Writer {
             for (const implementationType of implementationTypes) {
                 this.separator(" | ");
                 t("ImplementationType<'");
-                t(implementationType);
+                t(implementationTypes);
                 t("'>");
             }
             this.leave();
@@ -129,7 +129,7 @@ export type WithTypeName<T, TypeName extends string> =
 ;
 `;
 
-const IMPLEMENTATION_TYPE_COMMENT =
+const DOWNCAST_TYPE_COMMENT =
 `
 /**
  * 

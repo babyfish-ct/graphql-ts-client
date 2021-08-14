@@ -34,18 +34,29 @@ export class DepartmentService {
             .map(row => new Department(row));
     }
 
-    @Mutation(() => Int)
-    mergeDepartment(
+    @Mutation(() => Department)
+    async mergeDepartment(
         @Arg("input", () => DepartmentInput) input: DepartmentInput
-    ): number {
+    ): Promise<Department> {
+        /*
+         * Mock the network delay
+         */
+        await delay(1000);
+
         departmentTable.insert(input, true);
-        return 1;
+        return new Department(input);
     }
 
-    @Mutation(() => Int)
-    deleteDepartment(
+    @Mutation(() => Boolean)
+    async deleteDepartment(
         @Arg("id", () => Int) id: number
-    ): number {
-        return departmentTable.delete(id);
+    ): Promise<boolean> {
+        
+        /*
+         * Mock the network delay
+         */
+        await delay(1000);
+
+        return departmentTable.delete(id) !== 0;
     }
 }

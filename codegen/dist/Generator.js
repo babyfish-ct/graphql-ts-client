@@ -18,7 +18,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Generator = void 0;
+exports.createStreamAndLog = exports.Generator = void 0;
 const graphql_1 = require("graphql");
 const GeneratorConfig_1 = require("./GeneratorConfig");
 const fs_1 = require("fs");
@@ -27,8 +27,6 @@ const path_1 = require("path");
 const FetcherWriter_1 = require("./FetcherWriter");
 const EnumWriter_1 = require("./EnumWriter");
 const InputWriter_1 = require("./InputWriter");
-const OperationWriter_1 = require("./OperationWriter");
-const EnvironmentWriter_1 = require("./EnvironmentWriter");
 const CommonTypesWriter_1 = require("./CommonTypesWriter");
 class Generator {
     constructor(config) {
@@ -83,20 +81,13 @@ class Generator {
                 yield this.mkdirIfNecessary("enums");
                 promises.push(this.generateEnumTypes(enumTypes));
             }
+            promises.push(this.generateImplementationType(schema));
             const queryFields = this.operationFields(queryType);
             const mutationFields = this.operationFields(mutationType);
-            promises.push(this.generateImplementationType(schema));
-            if (this.config.generateOperations && (queryFields.length !== 0 || mutationFields.length !== 0)) {
-                promises.push(this.generateEnvironment());
-                if (queryFields.length !== 0) {
-                    yield this.mkdirIfNecessary("queries");
-                    promises.push(this.generateOperations(false, queryFields));
-                }
-                if (mutationFields.length !== 0) {
-                    yield this.mkdirIfNecessary("mutations");
-                    promises.push(this.generateOperations(true, mutationFields));
-                }
+            if (queryFields.length !== 0 || mutationFields.length !== 0) {
+                this.generateServices(queryFields, mutationFields, promises);
             }
+            promises.push(this.writeIndex(schema));
             yield Promise.all(promises);
         });
     }
@@ -174,43 +165,11 @@ class Generator {
             ]);
         });
     }
-    generateEnvironment() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const stream = createStreamAndLog(path_1.join(this.config.targetDir, "Environment.ts"));
-            new EnvironmentWriter_1.EnvironmentWriter(stream, this.config).write();
-            yield stream.end();
-        });
-    }
     generateImplementationType(schema) {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = createStreamAndLog(path_1.join(this.config.targetDir, "CommonTypes.ts"));
             new CommonTypesWriter_1.CommonTypesWriter(schema, stream, this.config).write();
             yield stream.end();
-        });
-    }
-    generateOperations(mutation, fields) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const subDir = mutation ? "mutations" : "queries";
-            const promises = fields.map((field) => __awaiter(this, void 0, void 0, function* () {
-                const stream = createStreamAndLog(path_1.join(this.config.targetDir, subDir, `${field.name}.ts`));
-                new OperationWriter_1.OperationWriter(mutation, field, stream, this.config).write();
-                yield stream.end();
-            }));
-            const writeIndex = () => __awaiter(this, void 0, void 0, function* () {
-                const stream = createStreamAndLog(path_1.join(this.config.targetDir, subDir, "index.ts"));
-                for (const field of fields) {
-                    stream.write(`export {${field.name}} from './${field.name}';\n`);
-                    const argsWrapperName = OperationWriter_1.argsWrapperTypeName(field);
-                    if (argsWrapperName !== undefined) {
-                        stream.write(`export type {${argsWrapperName}} from './${field.name}';\n`);
-                    }
-                }
-                stream.end();
-            });
-            yield Promise.all([
-                ...promises,
-                writeIndex()
-            ]);
         });
     }
     writeSimpleIndex(dir, types) {
@@ -259,6 +218,9 @@ class Generator {
             }
         });
     }
+    generateServices(queryFields, mutationFields, promises) {
+        return __awaiter(this, void 0, void 0, function* () { });
+    }
     operationFields(type) {
         if (type === undefined || type === null) {
             return [];
@@ -272,12 +234,25 @@ class Generator {
         }
         return fields;
     }
+    writeIndex(schema) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const stream = createStreamAndLog(path_1.join(this.config.targetDir, "index.ts"));
+            this.writeIndexCode(stream, schema);
+            yield stream.end();
+        });
+    }
+    writeIndexCode(stream, schema) {
+        return __awaiter(this, void 0, void 0, function* () {
+            stream.write("export type {ImplementationType} from './CommonTypes';\n");
+        });
+    }
 }
 exports.Generator = Generator;
 function createStreamAndLog(path) {
     console.log(`Write code into file: ${path}`);
     return fs_1.createWriteStream(path);
 }
+exports.createStreamAndLog = createStreamAndLog;
 const mkdirAsync = util_1.promisify(fs_1.mkdir);
 const rmdirAsync = util_1.promisify(fs_1.rmdir);
 const accessAsync = util_1.promisify(fs_1.access);

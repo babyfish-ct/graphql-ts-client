@@ -34,7 +34,10 @@ export declare abstract class Writer {
     protected text(value: string): void;
     protected str(value: string): void;
     protected separator(value?: string): void;
+    protected varableDecl(name: string, type: GraphQLType, overrideObjectTypeName?: string): void;
     protected typeRef(type: GraphQLType, overrideObjectTypeName?: string): void;
+    protected gqlTypeRef(type: GraphQLType): void;
+    protected isUnderGlobalDir(): boolean;
     private writeIndent;
     private get currentScope();
 }

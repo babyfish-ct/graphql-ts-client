@@ -16,7 +16,6 @@ export interface GeneratorConfig {
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
-    readonly generateOperations?: boolean;
     readonly excludedTypes?: string[];
     readonly excludedOperations?: string[];
     readonly scalarTypeMap: {

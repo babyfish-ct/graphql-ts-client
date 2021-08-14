@@ -1,6 +1,7 @@
-const {Generator, loadRemoteSchema} = require("graphql-ts-client-codegen");
+const {AsyncGenerator, loadRemoteSchema} = require("graphql-ts-client-codegen");
 const path = require("path");
-const generator = new Generator({
+
+const generator = new AsyncGenerator({
     schemaLoader: async() => {
       return loadRemoteSchema("http://localhost:8080/graphql");
     },
@@ -17,15 +18,7 @@ const generator = new Generator({
      */
     defaultFetcherExcludeMap: {
       "Department": ["avgSalary"]
-    },
-
-    /*
-     * Generate queries and mutations.
-     *
-     * "yarn add graphql-request" should be 
-     * executed by yourself when this flag is enabled.
-     */
-    generateOperations: true
+    }
 });
 
 generator.generate();

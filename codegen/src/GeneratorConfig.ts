@@ -18,7 +18,6 @@ export interface GeneratorConfig {
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
-    readonly generateOperations?: boolean;
     readonly excludedTypes?: string[];
     readonly excludedOperations?: string[];
     readonly scalarTypeMap: {[key: string]: 'string' | 'number' | 'boolean'};
@@ -87,11 +86,6 @@ export function validateConfig(
                     if (!INDENT_REGEXP.test(value)) {
                         throw new Error('"confg.fetcherSuffix" canonly contains "_", "$", english letters and digits when its specified');
                     }
-                }
-                break;
-            case 'generateOperations':
-                if (value !== undefined && typeof value !== 'boolean') {
-                    throw new Error('"confg.generateOperations" must be undefined or boolean');
                 }
                 break;
             case 'excludedTypes':
@@ -210,7 +204,7 @@ export function validateConfigAndSchema(
                 }
                 if (!matched) {
                     throw new Error(
-                        `config.excludedTypes[${i}] has an illegal value '${excludedTypes[i]}' ` +
+                        `config.excludedTypes[${i}] has an illegal value '${excludedTypes !== undefined ? excludedTypes[i] : undefined}' ` +
                         "that is not a valid field name graphql query/mutation"
                     );
                 }

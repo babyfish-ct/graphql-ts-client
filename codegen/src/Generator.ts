@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType, GraphQLUnionType, validate } from "graphql";
+import { GraphQLEnumType, GraphQLField, GraphQLFieldMap, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType, GraphQLUnionType, validate } from "graphql";
 import { GeneratorConfig, validateConfig, validateConfigAndSchema } from "./GeneratorConfig";
 import { mkdir, rmdir, access, createWriteStream, WriteStream } from "fs";
 import { promisify } from "util";
@@ -17,8 +17,6 @@ import { FetcherWriter, generatedFetcherTypeName } from "./FetcherWriter";
 import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
 import { Maybe } from "graphql/jsutils/Maybe";
-import { argsWrapperTypeName, OperationWriter } from "./OperationWriter";
-import { EnvironmentWriter } from "./EnvironmentWriter";
 import { CommonTypesWriter } from "./CommonTypesWriter";
 
 export class Generator {
@@ -27,7 +25,7 @@ export class Generator {
 
     private excludedOperationNames: Set<string>;
 
-    constructor(private config: GeneratorConfig) {
+    constructor(protected config: GeneratorConfig) {
         validateConfig(config);
         this.excludedTypeNames = new Set<string>(config.excludedTypes ?? []);
         this.excludedOperationNames = new Set<string>(config.excludedOperations ?? []);
@@ -79,20 +77,15 @@ export class Generator {
             promises.push(this.generateEnumTypes(enumTypes));
         }
 
+        promises.push(this.generateImplementationType(schema));
+
         const queryFields = this.operationFields(queryType);
         const mutationFields = this.operationFields(mutationType);
-        promises.push(this.generateImplementationType(schema));
-        if (this.config.generateOperations && (queryFields.length !== 0 || mutationFields.length !== 0)) {
-            promises.push(this.generateEnvironment());
-            if (queryFields.length !== 0) {
-                await this.mkdirIfNecessary("queries");
-                promises.push(this.generateOperations(false, queryFields));
-            }
-            if (mutationFields.length !== 0) {
-                await this.mkdirIfNecessary("mutations");
-                promises.push(this.generateOperations(true, mutationFields));
-            }
+        if (queryFields.length !== 0 || mutationFields.length !== 0) {
+            this.generateServices(queryFields, mutationFields, promises);
         }
+
+        promises.push(this.writeIndex(schema));
 
         await Promise.all(promises);
     }
@@ -183,51 +176,12 @@ export class Generator {
         ]);
     }
 
-    private async generateEnvironment() {
-        const stream = createStreamAndLog(
-            join(this.config.targetDir, "Environment.ts")
-        );
-        new EnvironmentWriter(stream, this.config).write();
-        await stream.end();
-    }
-
     private async generateImplementationType(schema: GraphQLSchema) {
         const stream = createStreamAndLog(
             join(this.config.targetDir, "CommonTypes.ts")
         );
         new CommonTypesWriter(schema, stream, this.config).write();
         await stream.end();
-    }
-
-    private async generateOperations(
-        mutation: boolean,
-        fields: GraphQLField<unknown, unknown>[]
-    ) {
-        const subDir = mutation ? "mutations" : "queries";
-        const promises = fields.map(async field => {
-            const stream = createStreamAndLog(
-                join(this.config.targetDir, subDir, `${field.name}.ts`)
-            );
-            new OperationWriter(mutation, field, stream, this.config).write();
-            await stream.end();
-        });
-        const writeIndex = async() => {
-            const stream = createStreamAndLog(
-                join(this.config.targetDir, subDir, "index.ts")
-            );
-            for (const field of fields) {
-                stream.write(`export {${field.name}} from './${field.name}';\n`);
-                const argsWrapperName = argsWrapperTypeName(field);
-                if (argsWrapperName !== undefined) {
-                    stream.write(`export type {${argsWrapperName}} from './${field.name}';\n`);
-                }
-            }
-            stream.end();
-        };
-        await Promise.all([
-            ...promises,
-            writeIndex()
-        ]);
     }
 
     private async writeSimpleIndex(dir: string, types: GraphQLNamedType[]) {
@@ -255,7 +209,7 @@ export class Generator {
         await rmdirAsync(dir, { recursive: true});
     }
 
-    private async mkdirIfNecessary(subDir?: string) {
+    protected async mkdirIfNecessary(subDir?: string) {
         const dir = subDir !== undefined ?
             join(this.config.targetDir, subDir) :
             this.config.targetDir;
@@ -272,6 +226,12 @@ export class Generator {
         }
     }
 
+    protected async generateServices(
+        queryFields: GraphQLField<unknown, unknown>[],
+        mutationFields: GraphQLField<unknown, unknown>[],
+        promises: Promise<void>[]
+    ) {}
+
     private operationFields(
         type: Maybe<GraphQLObjectType>
     ): GraphQLField<unknown, unknown>[] {
@@ -279,17 +239,27 @@ export class Generator {
             return [];
         }
         const fieldMap = type.getFields();
-        const fields = [];
+        const fields: GraphQLField<any, any>[] = [];
         for (const fieldName in fieldMap) {
             if (!this.excludedOperationNames.has(fieldName)) {
-                fields.push(fieldMap[fieldName]!!);
+                fields.push(fieldMap[fieldName]!);
             }
         }
         return fields;
     }
+
+    private async writeIndex(schema: GraphQLSchema) {
+        const stream = createStreamAndLog(join(this.config.targetDir, "index.ts"));
+        this.writeIndexCode(stream, schema);
+        await stream.end();
+    }
+
+    protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
+        stream.write("export type {ImplementationType} from './CommonTypes';\n");
+    }
 }
 
-function createStreamAndLog(path: string): WriteStream {
+export function createStreamAndLog(path: string): WriteStream {
     console.log(`Write code into file: ${path}`);
     return createWriteStream(path);
 }

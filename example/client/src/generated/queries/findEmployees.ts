@@ -8,7 +8,7 @@ export async function findEmployees<X extends object>(
 	const gql = `
 		query(
 			$mockedErrorProbability: Int, 
-			$supervisorId: Int, 
+			$supervisorId: String, 
 			$departmentId: Int, 
 			$namePattern: String
 		) {
@@ -32,7 +32,7 @@ export async function findEmployees<X extends object>(
  */
 export type FindEmployeesArgs = {
 	readonly mockedErrorProbability?: number;
-	readonly supervisorId?: number;
+	readonly supervisorId?: string;
 	readonly departmentId?: number;
 	readonly namePattern?: string;
 }

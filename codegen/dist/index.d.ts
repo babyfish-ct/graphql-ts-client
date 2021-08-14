@@ -8,5 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 export { Generator } from './Generator';
+export { AsyncGenerator } from './async/AsyncGenerator';
+export { ApolloGenerator } from './apollo/ApolloGenerator';
 export type { GeneratorConfig } from './GeneratorConfig';
 export { loadRemoteSchema } from './RemoteSchemaLoader';

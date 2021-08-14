@@ -17,7 +17,7 @@ export class EmployeeService {
     async findEmployees(
         @Arg("namePattern", () => String, {nullable: true}) namePattern?: string,
         @Arg("departmentId", () => Int, {nullable: true}) departmentId?: number,
-        @Arg("supervisorId", () => Int, {nullable: true}) supervisorId?: number,
+        @Arg("supervisorId", () => String, {nullable: true}) supervisorId?: string,
         @Arg("mockedErrorProbability", () => Int, {nullable: true}) mockedErrorProbability?: number
     ): Promise<Employee[]> {
 
@@ -57,18 +57,28 @@ export class EmployeeService {
             .map(row => new Employee(row));
     }
 
-    @Mutation(() => Int)
-    mergeEmployee(
+    @Mutation(() => Employee)
+    async mergeEmployee(
         @Arg("input", () => EmployeeInput) input: EmployeeInput
-    ): number {
+    ): Promise<Employee> {
+        
+        /*
+         * Mock the network delay
+         */
+        await delay(1000);
+
         employeeTable.insert(input, true);
-        return 1;
+        return new Employee(input);
     }
 
-    @Mutation(() => Int)
-    deleteEmployee(
+    @Mutation(() => Boolean)
+    async deleteEmployee(
         @Arg("id", () => Int) id: number
-    ): number {
-        return employeeTable.delete(id);
+    ): Promise<boolean> {
+
+        /*
+         * Mock the network delay
+         */
+        return employeeTable.delete(id) !== 0;
     }
 }

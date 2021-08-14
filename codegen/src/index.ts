@@ -9,5 +9,7 @@
  */
 
 export {Generator} from './Generator';
+export {AsyncGenerator} from './async/AsyncGenerator';
+export {ApolloGenerator} from './apollo/ApolloGenerator';
 export type {GeneratorConfig} from './GeneratorConfig';
 export {loadRemoteSchema} from './RemoteSchemaLoader';

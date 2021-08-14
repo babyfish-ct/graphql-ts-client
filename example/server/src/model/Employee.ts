@@ -5,7 +5,7 @@
  */
 
 import 'reflect-metadata';
-import { Field, FieldResolver, Float, Int, ObjectType, Resolver, Root } from 'type-graphql';
+import { Field, FieldResolver, Float, ObjectType, Resolver, Root } from 'type-graphql';
 import { departmentTable } from '../dal/DepartmentRepostiory';
 import { employeeTable, TEmployee } from '../dal/EmployeeRepository';
 import { Department } from './Department';
@@ -14,8 +14,8 @@ import { Gender } from './Gender';
 @ObjectType()
 export class Employee {
 
-    @Field(() => Int)
-    readonly id: number;
+    @Field(() => String)
+    readonly id: string;
 
     @Field(() => String)
     readonly firstName: string;
@@ -31,7 +31,7 @@ export class Employee {
 
     readonly departmentId: number;
     
-    readonly supervisorId?: number;
+    readonly supervisorId?: string;
 
     constructor(row: TEmployee) {
         this.id = row.id;

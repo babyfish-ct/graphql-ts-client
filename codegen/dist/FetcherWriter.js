@@ -104,32 +104,22 @@ class FetcherWriter extends Writer_1.Writer {
         t("<T & {__typename: ImplementationType<'");
         t(this.modelType.name);
         t("'>}>;\n");
-        t("\non<XName extends ImplementationType<'");
-        t(this.modelType.name);
-        t("'>, X extends object>");
-        this.enter("PARAMETERS", true);
-        t("child: Fetcher<XName, X>");
-        this.leave();
-        t(": ");
-        t(this.fetcherTypeName);
-        t("<");
-        this.enter("BLANK");
-        t("XName extends '");
-        t(this.modelType.name);
-        t("' ?\n");
-        t("T & X :\n");
-        t("WithTypeName<T, ImplementationType<'");
-        t(this.modelType.name);
-        t("'>> & ");
-        this.enter("PARAMETERS", true);
-        t("WithTypeName<X, ImplementationType<XName>>");
-        this.separator(" | ");
-        t("{__typename: Exclude<ImplementationType<'");
-        t(this.modelType.name);
-        t("'>, ImplementationType<XName>>}");
-        this.leave();
-        this.leave();
-        t(">;\n");
+        t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object>`);
+        this.scope({ type: "PARAMETERS" }, () => {
+            t("child: Fetcher<XName, X>");
+        });
+        t(`: ${this.fetcherTypeName}`);
+        this.scope({ type: "GENERIC", multiLines: true }, () => {
+            t(`XName extends '${this.modelType.name}' ?\n`);
+            t("T & X :\n");
+            t(`WithTypeName<T, ImplementationType<'${this.modelType.name}'>> & `);
+            this.scope({ type: "BLANK", multiLines: true, prefix: "(", suffix: ")" }, () => {
+                t("WithTypeName<X, ImplementationType<XName>>");
+                this.separator(" | ");
+                t(`{__typename: Exclude<ImplementationType<'${this.modelType}'>, ImplementationType<XName>>}`);
+            });
+        });
+        t(";\n");
         if (!(this.modelType instanceof graphql_1.GraphQLUnionType)) {
             t("\nasFragment(name: string): Fetcher<");
             this.str(this.modelType.name);

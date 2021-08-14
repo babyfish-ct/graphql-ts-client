@@ -1,12 +1,12 @@
 import {graphQLClient} from '../Environment';
 
-export async function deleteEmployee(id: number): Promise<number> {
+export async function deleteEmployee(id: number): Promise<boolean> {
 	const gql = `
 		mutation($id: Int!) {
 			deleteEmployee(id: $id)
 		}
 	`;
 	const result = (await graphQLClient().request(gql, {id}))['deleteEmployee'];
-	return result as number;
+	return result as boolean;
 }
 

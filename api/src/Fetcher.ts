@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-export interface Fetcher<E extends string, T extends object> {
+ export interface Fetcher<E extends string, T extends object> {
 
     readonly fetchedEntityType: E;
 

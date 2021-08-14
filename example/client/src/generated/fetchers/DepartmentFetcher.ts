@@ -14,14 +14,14 @@ export interface DepartmentFetcher<T extends object> extends Fetcher<'Department
 
 	readonly __typename: DepartmentFetcher<T & {__typename: ImplementationType<'Department'>}>;
 
-	on<XName extends ImplementationType<'Department'>, X extends object>(
-		child: Fetcher<XName, X>
-	): DepartmentFetcher<XName extends 'Department' ?
+	on<XName extends ImplementationType<'Department'>, X extends object>(child: Fetcher<XName, X>): DepartmentFetcher<
+		XName extends 'Department' ?
 		T & X :
 		WithTypeName<T, ImplementationType<'Department'>> & (
 			WithTypeName<X, ImplementationType<XName>> | 
 			{__typename: Exclude<ImplementationType<'Department'>, ImplementationType<XName>>}
-		)>;
+		)
+	>;
 
 	asFragment(name: string): Fetcher<'Department', T>;
 

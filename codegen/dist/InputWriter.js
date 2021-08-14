@@ -60,6 +60,6 @@ class InputWriter extends Writer_1.Writer {
 exports.InputWriter = InputWriter;
 const COMMENT = `/*
  * This input type is not interface, because interfaces 
- * do not satisfy the constraint 'SerializableParam' or recoil
+ * do not satisfy the constraint 'SerializableParam' of recoil
  */
 `;

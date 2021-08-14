@@ -75,11 +75,6 @@ config) {
                     }
                 }
                 break;
-            case 'generateOperations':
-                if (value !== undefined && typeof value !== 'boolean') {
-                    throw new Error('"confg.generateOperations" must be undefined or boolean');
-                }
-                break;
             case 'excludedTypes':
                 if (value !== undefined) {
                     if (!Array.isArray(value)) {
@@ -189,7 +184,7 @@ function validateConfigAndSchema(config, schema) {
                     }
                 }
                 if (!matched) {
-                    throw new Error(`config.excludedTypes[${i}] has an illegal value '${excludedTypes[i]}' ` +
+                    throw new Error(`config.excludedTypes[${i}] has an illegal value '${excludedTypes !== undefined ? excludedTypes[i] : undefined}' ` +
                         "that is not a valid field name graphql query/mutation");
                 }
             }

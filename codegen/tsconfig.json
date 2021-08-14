@@ -4,7 +4,8 @@
     "target": "es2015",
     "declaration": true,
     "outDir": "./dist",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strictNullChecks": true
   },
   "include": [
     "src/**/*"

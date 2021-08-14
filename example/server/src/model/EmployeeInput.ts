@@ -12,8 +12,8 @@ import { Gender } from "./Gender";
 @InputType()
 export class EmployeeInput implements TEmployee {
 
-    @Field(() => Int)
-    readonly id: number;
+    @Field(() => String)
+    readonly id: string;
 
     @Field(() => String)
     readonly firstName: string;
@@ -30,6 +30,6 @@ export class EmployeeInput implements TEmployee {
     @Field(() => Int)
     readonly departmentId: number;
 
-    @Field(() => Int, {nullable: true})
-    readonly supervisorId?: number;
+    @Field(() => String, {nullable: true})
+    readonly supervisorId?: string;
 }

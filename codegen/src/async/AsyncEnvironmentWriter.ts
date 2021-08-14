@@ -9,10 +9,10 @@
  */
 
 import { WriteStream } from "fs";
-import { GeneratorConfig } from "./GeneratorConfig";
-import { Writer } from "./Writer";
+import { GeneratorConfig } from "../GeneratorConfig";
+import { Writer } from "../Writer";
 
-export class EnvironmentWriter extends Writer {
+export class AsyncEnvironmentWriter extends Writer {
 
     constructor(stream: WriteStream, config: GeneratorConfig) {
         super(stream, config);

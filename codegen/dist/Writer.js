@@ -49,7 +49,12 @@ class Writer {
                 else {
                     subDir = "fetchers";
                 }
-                this.stream.write(`import {${importedType.name}} from '../${subDir}';\n`);
+                if (this.isUnderGlobalDir()) {
+                    this.stream.write(`import {${importedType.name}} from './${subDir}';\n`);
+                }
+                else {
+                    this.stream.write(`import {${importedType.name}} from '../${subDir}';\n`);
+                }
             }
         }
         if (this.importStatements.size !== 0 || this.importedTypes.size !== 0) {
@@ -122,6 +127,9 @@ class Writer {
     }
     leave(suffix) {
         const scope = this.scopes.pop();
+        if (scope === undefined) {
+            throw new Error("Illegal state");
+        }
         if (scope.multiLines && !this.needIndent) {
             this.text("\n");
         }
@@ -177,10 +185,21 @@ class Writer {
             if (value !== undefined) {
                 this.text(value);
             }
+            else if (scope.type === 'PARAMETERS' || scope.type === 'GENERIC') {
+                this.text(", ");
+            }
             if (scope.multiLines) {
                 this.text("\n");
             }
         }
+    }
+    varableDecl(name, type, overrideObjectTypeName) {
+        this.text(name);
+        if (!(type instanceof graphql_1.GraphQLNonNull)) {
+            this.text("?");
+        }
+        this.text(": ");
+        this.typeRef(type, overrideObjectTypeName);
     }
     typeRef(type, overrideObjectTypeName) {
         var _a, _b;
@@ -232,6 +251,31 @@ class Writer {
                 this.text(" | undefined>");
             }
         }
+    }
+    gqlTypeRef(type) {
+        if (type instanceof graphql_1.GraphQLNonNull) {
+            this.gqlTypeRef(type.ofType);
+            this.text("!");
+        }
+        else if (type instanceof graphql_1.GraphQLList) {
+            this.text("[");
+            this.gqlTypeRef(type.ofType);
+            this.text("]");
+        }
+        else if (type instanceof graphql_1.GraphQLUnionType) {
+            this.enter("BLANK");
+            for (const itemType of type.getTypes()) {
+                this.separator(" | ");
+                this.text(itemType.name);
+            }
+            this.leave();
+        }
+        else {
+            this.text(type.name);
+        }
+    }
+    isUnderGlobalDir() {
+        return false;
     }
     writeIndent() {
         for (let i = this.scopes.length; i > 0; --i) {

@@ -45,7 +45,7 @@ class CommonTypesWriter extends Writer_1.Writer {
             }
         }
         CommonTypesWriter._removeSuperfluous(implementationTypeMap);
-        t(IMPLEMENTATION_TYPE_COMMENT);
+        t(DOWNCAST_TYPE_COMMENT);
         t("export type ImplementationType<T> = ");
         this.enter("BLANK", true);
         for (const [type, implementationTypes] of implementationTypeMap) {
@@ -61,7 +61,7 @@ class CommonTypesWriter extends Writer_1.Writer {
             for (const implementationType of implementationTypes) {
                 this.separator(" | ");
                 t("ImplementationType<'");
-                t(implementationType);
+                t(implementationTypes);
                 t("'>");
             }
             this.leave();
@@ -104,7 +104,7 @@ export type WithTypeName<T, TypeName extends string> =
     T & {readonly __typename: TypeName};
 ;
 `;
-const IMPLEMENTATION_TYPE_COMMENT = `
+const DOWNCAST_TYPE_COMMENT = `
 /**
  * 
  * This 'ImplementationType' is used for inheritance, let's see an example, if graphql schema is:
