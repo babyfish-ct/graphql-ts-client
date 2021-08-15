@@ -25,7 +25,7 @@ export interface DepartmentFetcher<T extends object> extends Fetcher<'Department
 
 	asFragment(name: string): Fetcher<'Department', T>;
 
-	readonly id: DepartmentFetcher<T & {readonly id: number}>;
+	readonly id: DepartmentFetcher<T & {readonly id: string}>;
 	readonly "~id": DepartmentFetcher<Omit<T, 'id'>>;
 
 	readonly name: DepartmentFetcher<T & {readonly name: string}>;

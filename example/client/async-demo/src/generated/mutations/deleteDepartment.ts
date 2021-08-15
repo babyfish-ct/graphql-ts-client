@@ -1,8 +1,8 @@
 import {graphQLClient} from '../Environment';
 
-export async function deleteDepartment(id: number): Promise<boolean> {
+export async function deleteDepartment(id: string): Promise<boolean> {
 	const gql = `
-		mutation($id: Int!) {
+		mutation($id: String!) {
 			deleteDepartment(id: $id)
 		}
 	`;

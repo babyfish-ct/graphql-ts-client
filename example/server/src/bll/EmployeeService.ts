@@ -15,7 +15,7 @@ export class EmployeeService {
 
     @Query(() => [Employee])
     async findEmployees(
-        @Arg("namePattern", () => String, {nullable: true}) namePattern?: string,
+        @Arg("name", () => String, {nullable: true}) name?: string,
         @Arg("departmentId", () => Int, {nullable: true}) departmentId?: number,
         @Arg("supervisorId", () => String, {nullable: true}) supervisorId?: string,
         @Arg("mockedErrorProbability", () => Int, {nullable: true}) mockedErrorProbability?: number
@@ -36,7 +36,7 @@ export class EmployeeService {
             }
         }
         
-        const lowercaseName = namePattern?.toLocaleLowerCase();
+        const lowercaseName = name?.toLocaleLowerCase();
         return employeeTable
             .find(
                 [
@@ -54,7 +54,8 @@ export class EmployeeService {
                 ) :
                 undefined
             )
-            .map(row => new Employee(row));
+            .map(row => new Employee(row))
+            .sort((a, b) => a.firstName > b.firstName ? + 1 : a.firstName < b.firstName ? -1 :0);;
     }
 
     @Mutation(() => Employee)
@@ -73,7 +74,7 @@ export class EmployeeService {
 
     @Mutation(() => Boolean)
     async deleteEmployee(
-        @Arg("id", () => Int) id: number
+        @Arg("id", () => String) id: string
     ): Promise<boolean> {
 
         /*

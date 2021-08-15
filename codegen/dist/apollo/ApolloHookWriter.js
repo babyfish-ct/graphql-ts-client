@@ -95,7 +95,7 @@ class ApolloHookWriter extends Writer_1.Writer {
                 t("T");
             });
             this.separator();
-            t(`options: ${this.hookType}HookOptions`);
+            t(`options?: ${this.hookType}HookOptions`);
             this.scope({ type: "GENERIC" }, () => {
                 t(`Record<TDataKey, ${this.hookType}FetchedTypes<T>[T${this.hookType}Key]>`);
                 this.separator();
@@ -143,7 +143,7 @@ class ApolloHookWriter extends Writer_1.Writer {
                 t("readonly operationName?: string;\n");
             });
             this.separator();
-            t(`options: ${this.hookType}HookOptions`);
+            t(`options?: ${this.hookType}HookOptions`);
             this.scope({ type: "GENERIC" }, () => {
                 t(`Record<TDataKey, ${this.hookType}SimpleTypes[T${this.hookType}Key]>`);
                 this.separator();

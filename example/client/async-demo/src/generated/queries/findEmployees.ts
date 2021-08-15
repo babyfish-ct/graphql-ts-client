@@ -10,13 +10,13 @@ export async function findEmployees<X extends object>(
 			$mockedErrorProbability: Int, 
 			$supervisorId: String, 
 			$departmentId: Int, 
-			$namePattern: String
+			$name: String
 		) {
 			findEmployees(
 				mockedErrorProbability: $mockedErrorProbability, 
 				supervisorId: $supervisorId, 
 				departmentId: $departmentId, 
-				namePattern: $namePattern
+				name: $name
 			) ${fetcher.toString()}
 		}
 		${fetcher.toFragmentString()}
@@ -34,5 +34,5 @@ export type FindEmployeesArgs = {
 	readonly mockedErrorProbability?: number;
 	readonly supervisorId?: string;
 	readonly departmentId?: number;
-	readonly namePattern?: string;
+	readonly name?: string;
 }

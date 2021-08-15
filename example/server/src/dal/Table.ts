@@ -194,8 +194,10 @@ export class Table<R extends object> {
         for (const [prop, valueRowMap] of this.uniqueIndexMap) {
             const oldValue = rowValue(oldRow, prop);
             const newValue = rowValue(newRow, prop);
-            if (oldValue !== newValue) {
+            if (oldRow !== undefined) {
                 valueRowMap.delete(oldValue);
+            }
+            if (newRow !== undefined) {
                 valueRowMap.set(newValue, newRow);
             }
         }
@@ -222,6 +224,10 @@ export class Table<R extends object> {
                 }
             }
         }
+
+        console.log(`Table ${this.name} changed-------------------------------------`);
+        console.log(`> Old row: ${JSON.stringify(oldRow)}`);
+        console.log(`> New row: ${JSON.stringify(newRow)}`);
     }
 }
 

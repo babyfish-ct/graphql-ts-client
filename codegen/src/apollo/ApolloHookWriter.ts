@@ -120,7 +120,7 @@ export class ApolloHookWriter extends Writer {
 
             this.separator();
             
-            t(`options: ${this.hookType}HookOptions`);
+            t(`options?: ${this.hookType}HookOptions`);
             this.scope({type: "GENERIC"}, () => {
                 t(`Record<TDataKey, ${this.hookType}FetchedTypes<T>[T${this.hookType}Key]>`);
                 this.separator();
@@ -175,7 +175,7 @@ export class ApolloHookWriter extends Writer {
             
             this.separator();
 
-            t(`options: ${this.hookType}HookOptions`);
+            t(`options?: ${this.hookType}HookOptions`);
             this.scope({type: "GENERIC"}, () => {
                 t(`Record<TDataKey, ${this.hookType}SimpleTypes[T${this.hookType}Key]>`);
 

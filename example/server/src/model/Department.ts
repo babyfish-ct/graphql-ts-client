@@ -13,8 +13,8 @@ import { Employee } from './Employee';
 @ObjectType()
 export class Department {
 
-    @Field(() => Int)
-    readonly id: number;
+    @Field(() => String)
+    readonly id: string;
 
     @Field(() => String)
     readonly name: string;

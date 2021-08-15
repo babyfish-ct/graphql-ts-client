@@ -27,8 +27,8 @@ export class EmployeeInput implements TEmployee {
     @Field(() => Float)
     readonly salary: number;
 
-    @Field(() => Int)
-    readonly departmentId: number;
+    @Field(() => String)
+    readonly departmentId: string;
 
     @Field(() => String, {nullable: true})
     readonly supervisorId?: string;

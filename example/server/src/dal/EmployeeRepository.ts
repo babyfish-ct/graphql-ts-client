@@ -24,7 +24,7 @@ export const employeeTable =
             lastName: "Carter", 
             gender: Gender.MALE,
             salary: 0,
-            departmentId: 1
+            departmentId: "1"
         },
         {
             id: "2", 
@@ -32,7 +32,7 @@ export const employeeTable =
             lastName: "Longman", 
             gender: Gender.FEMALE,
             salary: 0,
-            departmentId: 1,
+            departmentId: "1",
             supervisorId: "1"
         },
         {
@@ -41,7 +41,7 @@ export const employeeTable =
             lastName: "Hawk", 
             gender: Gender.MALE,
             salary: 0,
-            departmentId: 1,
+            departmentId: "1",
             supervisorId: "1"
         },
 
@@ -51,7 +51,7 @@ export const employeeTable =
             lastName: "White", 
             gender: Gender.FEMALE,
             salary: 0,
-            departmentId: 2
+            departmentId: "2"
         },
         {
             id: "5", 
@@ -59,7 +59,7 @@ export const employeeTable =
             lastName: "Churchill", 
             gender: Gender.MALE,
             salary: 0,
-            departmentId: 2,
+            departmentId: "2",
             supervisorId: "4"
         },
         {
@@ -68,7 +68,7 @@ export const employeeTable =
             lastName: "Wood", 
             gender: Gender.FEMALE,
             salary: 0,
-            departmentId: 2,
+            departmentId: "2",
             supervisorId: "4"
         },
 
@@ -78,7 +78,7 @@ export const employeeTable =
             lastName: "Sterling", 
             gender: Gender.MALE,
             salary: 0,
-            departmentId: 3
+            departmentId: "3"
         },
         {
             id: "8", 
@@ -86,7 +86,7 @@ export const employeeTable =
             lastName: "London", 
             gender: Gender.FEMALE,
             salary: 0,
-            departmentId: 3,
+            departmentId: "3",
             supervisorId: "7"
         },
         {
@@ -95,7 +95,7 @@ export const employeeTable =
             lastName: "Bush", 
             gender: Gender.MALE,
             salary: 0,
-            departmentId: 3,
+            departmentId: "3",
             supervisorId: "7"
         },
 
@@ -105,7 +105,7 @@ export const employeeTable =
             lastName: "Reed", 
             gender: Gender.FEMALE,
             salary: 0,
-            departmentId: 4
+            departmentId: "4"
         },
         {
             id: "11", 
@@ -113,7 +113,7 @@ export const employeeTable =
             lastName: "Atkinson", 
             gender: Gender.MALE,
             salary: 0,
-            departmentId: 4,
+            departmentId: "4",
             supervisorId: "10"
         },
         {
@@ -122,7 +122,7 @@ export const employeeTable =
             lastName: "Forest", 
             gender: Gender.FEMALE,
             salary: 0,
-            departmentId: 4,
+            departmentId: "4",
             supervisorId: "10"
         },
 
@@ -132,7 +132,7 @@ export const employeeTable =
             lastName: "Webster", 
             gender: Gender.MALE,
             salary: 0,
-            departmentId: 5
+            departmentId: "5"
         },
         {
             id: "14", 
@@ -140,7 +140,7 @@ export const employeeTable =
             lastName: "Sharp", 
             gender: Gender.FEMALE,
             salary: 0,
-            departmentId: 5,
+            departmentId: "5",
             supervisorId: "13"
         },
         {
@@ -149,7 +149,7 @@ export const employeeTable =
             lastName: "Cotton", 
             gender: Gender.MALE,
             salary: 0,
-            departmentId: 5,
+            departmentId: "5",
             supervisorId: "13"
         },
     ]);
@@ -160,6 +160,6 @@ export interface TEmployee {
     readonly lastName: string;
     readonly gender: Gender,
     readonly salary: number;
-    readonly departmentId: number;
+    readonly departmentId: string;
     readonly supervisorId?: string;
 }

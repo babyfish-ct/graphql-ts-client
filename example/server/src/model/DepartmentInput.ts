@@ -11,8 +11,8 @@ import { TDepartment } from "../dal/DepartmentRepostiory";
 @InputType()
 export class DepartmentInput implements TDepartment {
 
-    @Field(() => Int)
-    readonly id: number;
+    @Field(() => String)
+    readonly id: string;
 
     @Field(() => String)
     readonly name: string;

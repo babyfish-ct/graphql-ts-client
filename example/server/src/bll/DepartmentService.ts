@@ -31,7 +31,8 @@ export class DepartmentService {
             undefined
         return departmentTable
             .find([], predicate)
-            .map(row => new Department(row));
+            .map(row => new Department(row))
+            .sort((a, b) => a.name > b.name ? + 1 : a.name < b.name ? -1 :0);
     }
 
     @Mutation(() => Department)
@@ -49,7 +50,7 @@ export class DepartmentService {
 
     @Mutation(() => Boolean)
     async deleteDepartment(
-        @Arg("id", () => Int) id: number
+        @Arg("id", () => String) id: string
     ): Promise<boolean> {
         
         /*

@@ -8,6 +8,6 @@ export type EmployeeInput = {
 	readonly lastName: string;
 	readonly gender: string;
 	readonly salary: number;
-	readonly departmentId: number;
+	readonly departmentId: string;
 	readonly supervisorId?: string;
 }
