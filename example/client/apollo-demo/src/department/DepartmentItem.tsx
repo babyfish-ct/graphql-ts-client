@@ -1,9 +1,9 @@
 import { css, cx } from "@emotion/css";
 import { FC, memo, useCallback, useState } from "react";
-import { ModelType } from "../../../../git/graphql-ts-client/api/dist";
+import { ModelType } from "graphql-ts-client-api";
 import { LABEL_CSS, TAG_CSS } from "../common/CssClasses";
 import { department$$, employee$$ } from "../__generated/fetchers";
-import { DepartmentDeleteDialog } from "./DepartmentDeleteDialog";
+import { DeleteDepartmentDialog } from "./DeleteDepartmentDialog";
 import { DepartmentDialog } from "./DepartmentDialog";
 
 export const DEPARTMENT_ITEM_FETCHER = 
@@ -67,7 +67,7 @@ export const DepartmentItem: FC<{
                 </div>
             </div>
             { dialog === 'EDIT' && <DepartmentDialog value={department} onClose={onDialogClose}/> }
-            { dialog === 'DELETE' && <DepartmentDeleteDialog value={department} onClose={onDialogClose}/>}
+            { dialog === 'DELETE' && <DeleteDepartmentDialog value={department} onClose={onDialogClose}/>}
         </div>
     );
 });

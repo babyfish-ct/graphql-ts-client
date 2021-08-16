@@ -7,5 +7,5 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
-import { Fetcher } from './Fetcher';
-export declare function createFetcher<E extends string, F extends Fetcher<E, object>>(fetchedEntityType: E, unionEntityTypes: string[] | undefined, methodNames: string[]): F;
+import { FetchableType, Fetcher } from './Fetcher';
+export declare function createFetcher<E extends string, F extends Fetcher<E, object>>(fetchableType: FetchableType<E>, unionEntityTypes: string[] | undefined, methodNames: string[]): F;

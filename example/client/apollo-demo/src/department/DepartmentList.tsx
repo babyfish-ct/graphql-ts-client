@@ -13,7 +13,7 @@ export const DepartmentList: FC = memo(() => {
     const [dialog, setDialog] = useState(false);
 
     const { loading, error, data, refetch } = useTypedQuery(
-        "findDepartmentsLikeName", 
+        { queryKey: "findDepartmentsLikeName", operationName: "abc" }, 
         DEPARTMENT_ITEM_FETCHER,
         { 
             notifyOnNetworkStatusChange: true, // consider "refetching" as "loading"
@@ -50,18 +50,17 @@ export const DepartmentList: FC = memo(() => {
             })}>
                 <div>
                     <span className={LABEL_CSS}>Name: </span> 
-                    <input value={name} onChange={onNameChange}/>
+                    <input value={name ?? ''} onChange={onNameChange}/>
                 </div>
                 <button onClick={onRefetchClick}>Refetch</button>
             </div>
-            { loading && <Loading/> }
+            { loading && <Loading mode="FLOAT"/> }
             { error && <div>Error</div> }
             {
                 data && <div className={css({margin: "1rem 0 1rem 0"})}>
                     {data.findDepartmentsLikeName.map(department => 
                         <DepartmentItem key={department.id} department={department}/>
                     )}
-                    {loading && <div className="loading-mask"></div> }
                 </div>
             }
             <div className={css({margin: "1rem 0 1rem 0"})}>

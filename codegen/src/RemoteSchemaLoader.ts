@@ -9,7 +9,7 @@
  */
 
 import { GraphQLSchema } from 'graphql';
-import { getIntrospectionQuery } from 'graphql/utilities';
+import { buildSchema, getIntrospectionQuery } from 'graphql/utilities';
 import { buildClientSchema } from 'graphql/utilities';
 import fetch from 'node-fetch';
 
@@ -33,4 +33,10 @@ export async function loadRemoteSchema(
         throw new Error();
     }
     return buildClientSchema(data);
+}
+
+export function loadLocalSchema(
+    sdl: string
+): GraphQLSchema {
+    return buildSchema(sdl);
 }

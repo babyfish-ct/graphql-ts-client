@@ -16,7 +16,7 @@ export class EmployeeService {
     @Query(() => [Employee])
     async findEmployees(
         @Arg("name", () => String, {nullable: true}) name?: string,
-        @Arg("departmentId", () => Int, {nullable: true}) departmentId?: number,
+        @Arg("departmentId", () => String, {nullable: true}) departmentId?: string,
         @Arg("supervisorId", () => String, {nullable: true}) supervisorId?: string,
         @Arg("mockedErrorProbability", () => Int, {nullable: true}) mockedErrorProbability?: number
     ): Promise<Employee[]> {

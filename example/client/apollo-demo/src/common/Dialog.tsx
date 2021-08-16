@@ -31,7 +31,6 @@ export const Dialog: FC<
                 border: "solid 1px lightgray",
                 borderRadius: ".5rem",
                 opacity: 1,
-                minWidth: "50%",
                 backgroundColor: "white",
                 position: "absolute",
                 top: 100,

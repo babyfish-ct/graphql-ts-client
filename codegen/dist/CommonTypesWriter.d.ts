@@ -11,14 +11,14 @@
 import { WriteStream } from "fs";
 import { GraphQLSchema } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
+import { InheritanceInfo } from "./InheritanceInfo";
 import { Writer } from "./Writer";
 export declare class CommonTypesWriter extends Writer {
     private schema;
-    constructor(schema: GraphQLSchema, stream: WriteStream, config: GeneratorConfig);
+    private inheritanceInfo;
+    constructor(schema: GraphQLSchema, inheritanceInfo: InheritanceInfo, stream: WriteStream, config: GeneratorConfig);
     protected writeCode(): void;
     private writeWithTypeNameType;
-    private writeImplementationType;
-    private static _add;
-    private static _removeSuperfluous;
-    private static _removeSuperfluous0;
+    private writeImplementionType;
+    private writeCastMethod;
 }

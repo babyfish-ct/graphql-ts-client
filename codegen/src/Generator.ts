@@ -18,6 +18,7 @@ import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
 import { Maybe } from "graphql/jsutils/Maybe";
 import { CommonTypesWriter } from "./CommonTypesWriter";
+import { InheritanceInfo } from "./InheritanceInfo";
 
 export class Generator {
 
@@ -40,6 +41,7 @@ export class Generator {
         }
         await this.mkdirIfNecessary();
 
+        const inheritanceInfo = new InheritanceInfo(schema);
         const queryType = schema.getQueryType();
         const mutationType = schema.getMutationType();
         const fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType> = [];
@@ -66,7 +68,7 @@ export class Generator {
         const promises: Promise<any>[] = [];
         if (fetcherTypes.length !== 0) {
             await this.mkdirIfNecessary("fetchers");
-            promises.push(this.generateFetcherTypes(fetcherTypes));
+            promises.push(this.generateFetcherTypes(fetcherTypes, inheritanceInfo));
         }
         if (inputTypes.length !== 0) {
             await this.mkdirIfNecessary("inputs");
@@ -77,7 +79,7 @@ export class Generator {
             promises.push(this.generateEnumTypes(enumTypes));
         }
 
-        promises.push(this.generateImplementationType(schema));
+        promises.push(this.generateCommonTypes(schema, inheritanceInfo));
 
         const queryFields = this.operationFields(queryType);
         const mutationFields = this.operationFields(mutationType);
@@ -102,7 +104,8 @@ export class Generator {
     }
 
     private async generateFetcherTypes(
-        fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType>
+        fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType>,
+        inheritanceInfo: InheritanceInfo
     ) {
         const dir = join(this.config.targetDir, "fetchers");
         const emptyFetcherNameMap = new Map<GraphQLType, string>();
@@ -112,7 +115,7 @@ export class Generator {
                 const stream = createStreamAndLog(
                     join(dir, `${generatedFetcherTypeName(type, this.config)}.ts`)
                 );
-                const writer = new FetcherWriter(type, stream, this.config);
+                const writer = new FetcherWriter(type, inheritanceInfo, stream, this.config);
                 emptyFetcherNameMap.set(type, writer.emptyFetcherName);
                 if (writer.defaultFetcherName !== undefined) {
                     defaultFetcherNameMap.set(type, writer.defaultFetcherName);
@@ -176,11 +179,11 @@ export class Generator {
         ]);
     }
 
-    private async generateImplementationType(schema: GraphQLSchema) {
+    private async generateCommonTypes(schema: GraphQLSchema, inheritanceInfo: InheritanceInfo) {
         const stream = createStreamAndLog(
             join(this.config.targetDir, "CommonTypes.ts")
         );
-        new CommonTypesWriter(schema, stream, this.config).write();
+        new CommonTypesWriter(schema, inheritanceInfo, stream, this.config).write();
         await stream.end();
     }
 
@@ -255,7 +258,8 @@ export class Generator {
     }
 
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
-        stream.write("export type {ImplementationType} from './CommonTypes';\n");
+        stream.write("export type { ImplementationType } from './CommonTypes';\n");
+        stream.write("export type { upcastTypes, downcastTypes } from './CommonTypes';\n");
     }
 }
 

@@ -7,6 +7,8 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
-export { Fetcher, AbstractFetcher, ModelType } from './Fetcher';
+export type { Fetcher, ModelType } from './Fetcher';
+export { AbstractFetcher } from './Fetcher';
+export { DependencyManager } from './DependencyManager';
 export { createFetcher } from './FetcherProxy';
 export { replaceNullValues } from './util';

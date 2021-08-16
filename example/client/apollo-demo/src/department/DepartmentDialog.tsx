@@ -1,17 +1,20 @@
 import { css } from "@emotion/css";
-import { ChangeEvent, FC, memo, useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, memo, useCallback, useMemo, useState } from "react";
 import UUIDClass from "uuidjs";
-import { ModelType } from "../../../../git/graphql-ts-client/api/dist";
+import { ModelType } from "graphql-ts-client-api";
 import { ERROR_CSS, FORM_CSS } from "../common/CssClasses";
 import { Dialog } from "../common/Dialog";
 import { Loading } from "../common/Loading";
 import { useTypedMutation } from "../__generated";
-import { department$$ } from "../__generated/fetchers";
+import { department$, department$$ } from "../__generated/fetchers";
 import { DepartmentInput } from "../__generated/inputs";
-import { DEPARTMENT_ITEM_FETCHER } from "./DepartmentItem";
+import { dependencyManager } from "../__generated/Queries";
+
+export const DEPARTMENT_FORM_FETCHER =
+    department$$;
 
 export const DepartmentDialog: FC<{
-    value?: ModelType<typeof DEPARTMENT_ITEM_FETCHER>,
+    value?: ModelType<typeof DEPARTMENT_FORM_FETCHER>,
     onClose: () => void
 }> = memo(({value, onClose}) => {
 
@@ -26,14 +29,19 @@ export const DepartmentDialog: FC<{
     });
 
     const valid = useMemo<boolean>(() => {
-        return input.id !== undefined && input.name !== undefined
+        return input.id !== undefined && input.name !== undefined;
     }, [input]);
 
     const [mutate, { loading, error }] = useTypedMutation(
         "mergeDepartment",
         department$$,
         { 
-            variables: {input: input as DepartmentInput} // Unsafe cast, depends on "valid" 
+            variables: { input: input as DepartmentInput }, // Unsafe cast, depends on "valid"
+            refetchQueries: () => {
+                return value === undefined ? // If create new object, refresh all the related quires
+                dependencyManager.resourcesDependOnTypes(department$, "DIRECT") :
+                []
+            }
         }
     );
 
@@ -46,10 +54,11 @@ export const DepartmentDialog: FC<{
         if (valid) {
             try {
                 await mutate();
-                onClose();
             } catch (ex) {
                 console.warn("Failed to merge department", ex);
+                return;
             }
+            onClose();
         }
     }, [valid, mutate, onClose]);
 
@@ -58,14 +67,14 @@ export const DepartmentDialog: FC<{
             <div className={FORM_CSS}>
                 <div>
                     <div>Name: </div>
-                    <div><input value={input.name} onChange={onNameChange}/></div>
+                    <div><input value={input.name ?? ''} onChange={onNameChange}/></div>
                     {input.name === undefined && <div className={ERROR_CSS}>Please input name</div> }
                 </div>
             </div>
-            { loading && <Loading title="Saving..." mode="INLINE"/> }
+            { loading && <Loading title="Saving..."/> }
             { error && <div>Error</div> }
             <div className={css({textAlign: "right"})}>
-                <button onClick={onSaveClick} disabled={!valid}>Ok</button>
+                <button onClick={onSaveClick} disabled={!valid || loading}>Ok</button>
                 &nbsp;
                 <button onClick={onClose}>Cancel</button>
             </div>

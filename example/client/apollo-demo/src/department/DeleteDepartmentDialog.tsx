@@ -1,20 +1,29 @@
 import { css } from "@emotion/css";
 import { FC, memo, useCallback } from "react";
-import { ModelType } from "../../../../git/graphql-ts-client/api/dist";
+import { ModelType } from "graphql-ts-client-api";
 import { Dialog } from "../common/Dialog";
 import { ErrorText } from "../common/ErrorText";
 import { Loading } from "../common/Loading";
 import { useSimpleMutation } from "../__generated";
-import { DEPARTMENT_ITEM_FETCHER } from "./DepartmentItem";
+import { department$ } from "../__generated/fetchers";
+import { dependencyManager } from "../__generated/Queries";
 
-export const DepartmentDeleteDialog: FC<{
-    value: ModelType<typeof DEPARTMENT_ITEM_FETCHER>,
+const DELETED_DEPARTMENT_FETCHER =
+    department$
+    .id
+    .name;
+
+export const DeleteDepartmentDialog: FC<{
+    value: ModelType<typeof DELETED_DEPARTMENT_FETCHER>,
     onClose: () => void
 }> = memo(({value, onClose}) => {
 
     const [mutate, {loading, error}] = useSimpleMutation(
         "deleteDepartment", 
-        { variables: { id: value.id } }
+        { 
+            variables: { id: value.id },
+            refetchQueries: () => dependencyManager.resourcesDependOnTypes(department$)
+        }
     );
 
     const onDeleteClick = useCallback(async () => {
@@ -28,11 +37,13 @@ export const DepartmentDeleteDialog: FC<{
 
     return (
         <Dialog title="Are you sure">
-            Are your shared to delete the department "{value.name}"?
-            { loading && <Loading title="Deleting..." mode = "INLINE"/> }
+            <div>
+                Are your shared to delete the department "{value.name}"?
+            </div>
+            { loading && <Loading title="Deleting..."/> }
             { error && <ErrorText error={error}/> }
             <div className={css({textAlign: "right"})}>
-                <button onClick={onDeleteClick}>Ok</button>
+                <button onClick={onDeleteClick} disabled={loading}>Ok</button>
                 &nbsp;
                 <button onClick={onClose}>Cancel</button>
             </div>

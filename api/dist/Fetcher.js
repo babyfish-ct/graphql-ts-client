@@ -18,17 +18,17 @@ class AbstractFetcher {
         this._child = _child;
         this._fragmentName = _fragmentName;
         if (Array.isArray(ctx)) {
-            this._fetchedEntityType = ctx[0];
+            this._fetchableType = ctx[0];
             this._unionItemTypes = ctx[1] !== undefined && ctx[1].length !== 0 ? ctx[1] : undefined;
         }
         else {
-            this._fetchedEntityType = ctx._fetchedEntityType;
+            this._fetchableType = ctx._fetchableType;
             this._unionItemTypes = ctx._unionItemTypes;
             this._prev = ctx;
         }
     }
-    get fetchedEntityType() {
-        return this._fetchedEntityType;
+    get fetchableType() {
+        return this._fetchableType;
     }
     addField(field, args, child) {
         return this.createFetcher(false, field, args, child);
@@ -44,11 +44,11 @@ class AbstractFetcher {
         if (child._fragmentName !== undefined) {
             fieldName = `... ${child._fragmentName}`;
         }
-        else if (child._fetchedEntityType === this._fetchedEntityType || child._unionItemTypes !== undefined) {
+        else if (child._fetchableType.entityName === this._fetchableType.entityName || child._unionItemTypes !== undefined) {
             fieldName = '...';
         }
         else {
-            fieldName = `... on ${child._fetchedEntityType}`;
+            fieldName = `... on ${child._fetchableType.entityName}`;
         }
         return this.createFetcher(false, fieldName, undefined, child);
     }
@@ -96,7 +96,7 @@ class AbstractFetcher {
                     fragmentCtx.value += "\nfragment ";
                     fragmentCtx.value += name;
                     fragmentCtx.value += " on ";
-                    fragmentCtx.value += fragmentFetcher._fetchedEntityType;
+                    fragmentCtx.value += fragmentFetcher._fetchableType.entityName;
                     fragmentCtx.value += " ";
                     fragmentFetcher._toString1(0, fragmentCtx);
                 }

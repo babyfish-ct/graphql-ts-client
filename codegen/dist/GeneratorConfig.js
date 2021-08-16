@@ -219,22 +219,33 @@ function validateConfigAndSchema(config, schema) {
 exports.validateConfigAndSchema = validateConfigAndSchema;
 const INDENT_REGEXP = /^( |\t)+$/;
 const BUILT_IN_FEILDS = new Set([
-    "fetchedEntityType",
-    "_prev",
+    
     "_negative",
     "_field",
     "_args",
     "_child",
+    "_fragmentName",
+    "_fetchableType",
+    "_unionItemTypes",
     "constructor",
+    "fetchableType",
     "addField",
     "removeField",
+    "addEmbbeddable",
+    "addFragment",
     "toString",
+    "toFragmentString",
     "_toString0",
-    "_str",
+    "_toString1",
     "toJSON",
     "_toJSON0",
-    "_json",
     "fieldMap",
     "_getFieldMap0",
-    "__supressWarnings__"
+    "__supressWarnings__",
+    "_str",
+    "_json",
+
+    "__typename",
+    "asFragment",
+    "on"
 ]);

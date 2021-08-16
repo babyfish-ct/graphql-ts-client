@@ -40,7 +40,11 @@ export interface DepartmentFetcher<T extends object> extends Fetcher<'Department
 
 export const department$: DepartmentFetcher<{}> = 
 	createFetcher(
-		'Department', 
+		{
+			entityName: "Department", 
+			superTypes: [], 
+			declaredFields: new Set<string>(["id", "name", "employees", "avgSalary"])
+		}, 
 		undefined, 
 		['employees']
 	)

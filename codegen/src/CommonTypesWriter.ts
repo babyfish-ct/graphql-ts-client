@@ -9,23 +9,28 @@
  */
 
 import { WriteStream } from "fs";
-import { GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
+import { GraphQLSchema, GraphQLUnionType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
+import { InheritanceInfo } from "./InheritanceInfo";
 import { Writer } from "./Writer";
 
 export class CommonTypesWriter extends Writer {
 
     constructor(
         private schema: GraphQLSchema,
+        private inheritanceInfo: InheritanceInfo,
         stream: WriteStream, 
         config: GeneratorConfig
     ) {
         super(stream, config);
+        const info = new InheritanceInfo(schema);
     }
 
     protected writeCode() {
+        this.writeImplementionType();
+        this.writeCastMethod('up');
+        this.writeCastMethod('down');
         this.writeWithTypeNameType();
-        this.writeImplementationType();
     }
 
     private writeWithTypeNameType() {
@@ -33,46 +38,27 @@ export class CommonTypesWriter extends Writer {
         this.text("\n");
     }
 
-    private writeImplementationType() {
+    private writeImplementionType() {
 
         const t = this.text.bind(this);
 
-        const implementationTypeMap = new Map<string, Set<string>>();
-        const typeMap = this.schema.getTypeMap();
-        for (const typeName in typeMap) {
-            if (!typeName.startsWith("__")) {
-                const type = typeMap[typeName];
-                if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType) {
-                    for (const itf of type.getInterfaces()) {
-                        CommonTypesWriter._add(implementationTypeMap, itf.name, typeName);
-                    }
-                }
-                if (type instanceof GraphQLUnionType) {
-                    for (const item of type.getTypes()) {
-                        CommonTypesWriter._add(implementationTypeMap, typeName, item.name);
-                    }
-                }
-            }
-        }
-        CommonTypesWriter._removeSuperfluous(implementationTypeMap);
-
-        t(DOWNCAST_TYPE_COMMENT);
+        t(IMPLEMENTANTION_TYPE_COMMENT);
         t("export type ImplementationType<T> = ");
         this.enter("BLANK", true);
-        for (const [type, implementationTypes] of implementationTypeMap) {
+        for (const [type, castTypes] of this.inheritanceInfo.downcastTypeMap) {
             t("T extends '");
-            t(type)
+            t(type.name)
             t("' ? ");
             this.enter("BLANK")
-            if (!(typeMap[type] instanceof GraphQLUnionType)) {
+            if (!(type instanceof GraphQLUnionType)) {
                 t("'");
-                t(type);
+                t(type.name);
                 t("'");
             }
-            for (const implementationType of implementationTypes) {
+            for (const castType of castTypes) {
                 this.separator(" | ");
                 t("ImplementationType<'");
-                t(implementationTypes);
+                t(castType.name);
                 t("'>");
             }
             this.leave();
@@ -83,53 +69,47 @@ export class CommonTypesWriter extends Writer {
         t(";");
     }
 
-    private static _add(
-        implementationTypeMap: Map<string, Set<string>>, 
-        type: string, 
-        implementationType: string
-    ) {
-        let set = implementationTypeMap.get(type);
-        if (set === undefined) {
-            set = new Set<string>();
-            implementationTypeMap.set(type, set);
-        }
-        set.add(implementationType);
-    }
+    private writeCastMethod(prefix: 'up' | 'down') {
 
-    private static _removeSuperfluous(
-        implementationTypeMap: ReadonlyMap<string, Set<string>>,
-    ) {
-        for (const [, set] of implementationTypeMap) {
-            CommonTypesWriter._removeSuperfluous0(set, set, implementationTypeMap);
-        }
-    }
+        const t = this.text.bind(this);
+        const castTypeMap = prefix === 'up' ? this.inheritanceInfo.upcastTypeMap : this.inheritanceInfo.downcastTypeMap;
 
-    private static _removeSuperfluous0(
-        targetImplementationTypes: Set<string>,
-        currentImplementationTypes: ReadonlySet<string>,
-        implementationTypeMap: ReadonlyMap<string, Set<string>>,
-    ) {
-        for (const currentType of currentImplementationTypes) {
-            if (targetImplementationTypes !== currentImplementationTypes) {
-                targetImplementationTypes.delete(currentType);        
-            }
-            const deeperSet = implementationTypeMap.get(currentType);
-            if (deeperSet !== undefined) {
-                CommonTypesWriter._removeSuperfluous0(targetImplementationTypes, deeperSet, implementationTypeMap);
-            }
-        }
+        t(prefix === 'up' ? UPCAST_FUNC_COMMENT : DOWNCAST_FUNC_COMMENT);
+
+        t(`\nexport function ${prefix}castTypes(typeName: string): string[] `);
+        this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
+            t("const typeNames: string[] = [];\n");
+            t(`${prefix}castTypes0(typeName, typeNames);\n`);
+            t("return typeNames;\n");
+        });
+
+        t(`\nfunction ${prefix}castTypes0(typeName: string, output: string[]) `);
+        this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
+            t("switch (typeName)");
+            this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
+                for (const [type, castTypes] of castTypeMap) {
+                    t(`case '${type.name}':`);
+                    this.scope({type: "BLANK", multiLines: true}, () => {
+                        if (!(type instanceof GraphQLUnionType)) {
+                            t(`output.push('${type.name}');\n`);
+                        }
+                        for (const castType of castTypes) {
+                            t(`${prefix}castTypes0('${castType.name}', output);\n`);
+                        }
+                        t("break;\n");
+                    });
+                }
+                t("default:");
+                this.scope({type: "BLANK", multiLines: true}, () => {
+                    t(`output.push(typeName);\n`);
+                    t("break;\n");
+                });
+            });
+        });
     }
 }
 
-const WITH_TYPE_NAME_DECLARATION = `
-export type WithTypeName<T, TypeName extends string> =
-    T extends {readonly __typename: string} ?
-    T :
-    T & {readonly __typename: TypeName};
-;
-`;
-
-const DOWNCAST_TYPE_COMMENT =
+const IMPLEMENTANTION_TYPE_COMMENT =
 `
 /**
  * 
@@ -162,12 +142,138 @@ const DOWNCAST_TYPE_COMMENT =
  */
 `;
 
-/*
-on<XName extends ImplementationType<'A'>, X extends object>(
-    child: Fetcher<XName, X>
-): AFetcher<
-    XName extends 'A' ?
-    T & X :
-    WithTypeName<T, ImplementationType<'A'>> & (WithTypeName<X, ImplementationType<XName>> | {__typename: Exclude<ImplementationType<'A'>, ImplementationType<XName>>})
->;
-*/
+const UPCAST_FUNC_COMMENT =
+`
+/**
+ * 
+ * This 'upcastTypes' is used for inheritance, let's see an example, if graphql schema is:
+ * 
+ *     interface A {}
+ *     interface B implements A {}
+ *     type C implements B & A {}
+ * 
+ * Typescript code will be generated by like this:
+ * 
+ *     export function upcastTypes(typeName: string): string[] {
+ *         const typeNames: string[] = [];
+ *         upcastTypes0(typeName, typeNames);
+ *         return typeNames;
+ *     }
+ * 
+ *     function upcastTypes0(typeName: string, output: string[]) {
+ *         switch (typeName){
+ *             case 'B':
+ *                 output.push('B');
+ *                 upcastTypes0('A', output);
+ *                 break;
+ *             case 'C':
+ *                 output.push('C');
+ *                 upcastTypes0('B', output);
+ *                 break;
+ *             default:
+ *                 output.push(typeName);
+ *                 break;
+ *         }
+ *     }    
+ * 
+ * Let's see another example with abstract type, if the graphql schema is:
+ * 
+ *     union AbstractType = Impl1 | Imple2;
+ *     type Impl1 {}
+ *     type Impl2 {}
+ * 
+ * Typescript code will be generated by like this:
+ * 
+ *     export function upcastTypes(typeName: string): string[] {
+ *         const typeNames: string[] = [];
+ *         upcastTypes0(typeName, typeNames);
+ *         return typeNames;
+ *     }
+ * 
+ *     function upcastTypes0(typeName: string, output: string[]) {
+ *         switch (typeName){
+ *             case 'Impl1':
+ *                 output.push('Impl1');
+ *                 upcastTypes0('AbstractType', output);
+ *                 break;
+ *             case 'Impl2':
+ *                 output.push('Impl2');
+ *                 upcastTypes0('AbstractType', output);
+ *                 break;
+ *             default:
+ *                 output.push(typeName);
+ *                 break;
+ *         }
+ *     }     
+ */
+`;
+
+const DOWNCAST_FUNC_COMMENT =
+`
+/**
+ * 
+ * This 'downcastTypes' is used for inheritance, let's see an example, if graphql schema is:
+ * 
+ *     interface A {}
+ *     interface B implements A {}
+ *     type C implements B & A {}
+ * 
+ * Typescript code will be generated by like this:
+ * 
+ *     export function downcastTypes(typeName: string): string[] {
+ *         const typeNames: string[] = [];
+ *         downcastTypes0(typeName, typeNames);
+ *         return typeNames;
+ *     }
+ * 
+ *     function downcastTypes0(typeName: string, output: string[]) {
+ *         switch (typeName){
+ *             case 'A':
+ *                 output.push('A');
+ *                 downcastTypes0('B', output);
+ *                 break;
+ *             case 'B':
+ *                 output.push('B');
+ *                 downcastTypes0('C', output);
+ *                 break;
+ *             default:
+ *                 output.push(typeName);
+ *                 break;
+ *         }
+ *     }
+ * 
+ * Let's see another example with abstract type, if the graphql schema is:
+ * 
+ *     union AbstractType = Impl1 | Imple2;
+ *     type Impl1 {}
+ *     type Impl2 {}
+ * 
+ * Typescript code will be generated by like this:
+ * 
+ *     export function downcastTypes(typeName: string): string[] {
+ *         const typeNames: string[] = [];
+ *         downcastTypes0(typeName, typeNames);
+ *         return typeNames;
+ *     }
+ * 
+ *     function downcastTypes0(typeName: string, output: string[]) {
+ *         switch (typeName){
+ *             case 'AbstractType':
+ *                 downcastTypes0('Impl1', output);
+ *                 downcastTypes0('Impl2', output);
+ *                 break;
+ *             default:
+ *                 output.push(typeName);
+ *                 break;
+ *         }
+ *     }   
+ */
+`;
+
+const WITH_TYPE_NAME_DECLARATION = `
+export type WithTypeName<T, TypeName extends string> =
+    T extends {readonly __typename: string} ?
+    T :
+    T & {readonly __typename: TypeName};
+;
+`;

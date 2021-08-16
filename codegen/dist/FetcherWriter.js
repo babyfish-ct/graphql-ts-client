@@ -14,10 +14,11 @@ const graphql_1 = require("graphql");
 const Associations_1 = require("./Associations");
 const Writer_1 = require("./Writer");
 class FetcherWriter extends Writer_1.Writer {
-    constructor(modelType, stream, config) {
+    constructor(modelType, inheritanceInfo, stream, config) {
         var _a;
         super(stream, config);
         this.modelType = modelType;
+        this.inheritanceInfo = inheritanceInfo;
         this.fetcherTypeName = generatedFetcherTypeName(modelType, config);
         if (modelType instanceof graphql_1.GraphQLUnionType) {
             const map = {};
@@ -61,19 +62,23 @@ class FetcherWriter extends Writer_1.Writer {
         }
         this.methodNames = methodNames;
         this.defaultFetcherProps = defaultFetcherProps;
-        let instanceName = this.modelType.name;
-        instanceName =
-            instanceName.substring(0, 1).toLowerCase() +
-                instanceName.substring(1);
-        this.emptyFetcherName = `${instanceName}$`;
-        this.defaultFetcherName = defaultFetcherProps.length !== 0 ? `${instanceName}$$` : undefined;
+        let prefix = instancePrefix(this.modelType.name);
+        this.emptyFetcherName = `${prefix}$`;
+        this.defaultFetcherName = defaultFetcherProps.length !== 0 ? `${prefix}$$` : undefined;
     }
     prepareImportings() {
+        var _a;
         this.importStatement("import { Fetcher, createFetcher } from 'graphql-ts-client-api';");
         this.importStatement("import { WithTypeName, ImplementationType } from '../CommonTypes';");
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
             this.importFieldTypes(field);
+        }
+        const upcastTypes = this.inheritanceInfo.upcastTypeMap.get(this.modelType);
+        if (upcastTypes !== undefined) {
+            for (const upcastType of upcastTypes) {
+                this.importStatement(`import { ${instancePrefix(upcastType.name)}$ } from './${upcastType.name}${(_a = this.config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher"}';`);
+            }
         }
     }
     importingBehavior(type) {
@@ -213,7 +218,29 @@ class FetcherWriter extends Writer_1.Writer {
         this.scope({ type: "BLANK", multiLines: true, suffix: ";\n" }, () => {
             t("createFetcher");
             this.scope({ type: "PARAMETERS", multiLines: true }, () => {
-                this.str(this.modelType.name);
+                this.scope({ type: "BLOCK", multiLines: true }, () => {
+                    t(`entityName: "${this.modelType.name}"`);
+                    this.separator(", ");
+                    t("superTypes: ");
+                    this.scope({ type: "ARRAY" }, () => {
+                        const upcastTypes = this.inheritanceInfo.upcastTypeMap.get(this.modelType);
+                        if (upcastTypes !== undefined) {
+                            for (const upcastType of upcastTypes) {
+                                this.separator(", ");
+                                t(`${instancePrefix(upcastType.name)}$.fetchableType`);
+                            }
+                        }
+                    });
+                    this.separator(", ");
+                    t("declaredFields: new Set<string>(");
+                    this.scope({ type: "ARRAY" }, () => {
+                        for (const declaredFieldName of this.declaredFieldNames()) {
+                            this.separator(", ");
+                            t(`"${declaredFieldName}"`);
+                        }
+                    });
+                    t(")");
+                });
                 this.separator(", ");
                 if (itemTypes.length === 0) {
                     t("undefined");
@@ -251,6 +278,30 @@ class FetcherWriter extends Writer_1.Writer {
             this.leave(";");
         }
     }
+    declaredFieldNames() {
+        const fields = new Set();
+        if (this.modelType instanceof graphql_1.GraphQLObjectType || this.modelType instanceof graphql_1.GraphQLInterfaceType) {
+            const fieldMap = this.modelType.getFields();
+            for (const fieldName in fieldMap) {
+                fields.add(fieldMap[fieldName].name);
+            }
+            this.removeSuperFieldNames(fields, this.inheritanceInfo.upcastTypeMap.get(this.modelType));
+        }
+        return fields;
+    }
+    removeSuperFieldNames(fields, superTypes) {
+        if (superTypes !== undefined) {
+            for (const superType of superTypes) {
+                if (superType instanceof graphql_1.GraphQLObjectType || superType instanceof graphql_1.GraphQLInterfaceType) {
+                    const superFieldMap = superType.getFields();
+                    for (const superFieldName in superFieldMap) {
+                        fields.delete(superFieldName);
+                    }
+                }
+                this.removeSuperFieldNames(fields, this.inheritanceInfo.upcastTypeMap.get(superType));
+            }
+        }
+    }
 }
 exports.FetcherWriter = FetcherWriter;
 function generatedFetcherTypeName(fetcherType, config) {
@@ -267,3 +318,6 @@ const COMMENT = `/*
  * So any instance of this interface is reuseable.
  */
 `;
+function instancePrefix(name) {
+    return name.substring(0, 1).toLowerCase() + name.substring(1);
+}

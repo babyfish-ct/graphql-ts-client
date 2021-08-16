@@ -28,6 +28,7 @@ const FetcherWriter_1 = require("./FetcherWriter");
 const EnumWriter_1 = require("./EnumWriter");
 const InputWriter_1 = require("./InputWriter");
 const CommonTypesWriter_1 = require("./CommonTypesWriter");
+const InheritanceInfo_1 = require("./InheritanceInfo");
 class Generator {
     constructor(config) {
         var _a, _b;
@@ -44,6 +45,7 @@ class Generator {
                 yield this.rmdirIfNecessary();
             }
             yield this.mkdirIfNecessary();
+            const inheritanceInfo = new InheritanceInfo_1.InheritanceInfo(schema);
             const queryType = schema.getQueryType();
             const mutationType = schema.getMutationType();
             const fetcherTypes = [];
@@ -71,7 +73,7 @@ class Generator {
             const promises = [];
             if (fetcherTypes.length !== 0) {
                 yield this.mkdirIfNecessary("fetchers");
-                promises.push(this.generateFetcherTypes(fetcherTypes));
+                promises.push(this.generateFetcherTypes(fetcherTypes, inheritanceInfo));
             }
             if (inputTypes.length !== 0) {
                 yield this.mkdirIfNecessary("inputs");
@@ -81,7 +83,7 @@ class Generator {
                 yield this.mkdirIfNecessary("enums");
                 promises.push(this.generateEnumTypes(enumTypes));
             }
-            promises.push(this.generateImplementationType(schema));
+            promises.push(this.generateCommonTypes(schema, inheritanceInfo));
             const queryFields = this.operationFields(queryType);
             const mutationFields = this.operationFields(mutationType);
             if (queryFields.length !== 0 || mutationFields.length !== 0) {
@@ -104,7 +106,7 @@ class Generator {
             }
         });
     }
-    generateFetcherTypes(fetcherTypes) {
+    generateFetcherTypes(fetcherTypes, inheritanceInfo) {
         return __awaiter(this, void 0, void 0, function* () {
             const dir = path_1.join(this.config.targetDir, "fetchers");
             const emptyFetcherNameMap = new Map();
@@ -112,7 +114,7 @@ class Generator {
             const promises = fetcherTypes
                 .map((type) => __awaiter(this, void 0, void 0, function* () {
                 const stream = createStreamAndLog(path_1.join(dir, `${FetcherWriter_1.generatedFetcherTypeName(type, this.config)}.ts`));
-                const writer = new FetcherWriter_1.FetcherWriter(type, stream, this.config);
+                const writer = new FetcherWriter_1.FetcherWriter(type, inheritanceInfo, stream, this.config);
                 emptyFetcherNameMap.set(type, writer.emptyFetcherName);
                 if (writer.defaultFetcherName !== undefined) {
                     defaultFetcherNameMap.set(type, writer.defaultFetcherName);
@@ -165,10 +167,10 @@ class Generator {
             ]);
         });
     }
-    generateImplementationType(schema) {
+    generateCommonTypes(schema, inheritanceInfo) {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = createStreamAndLog(path_1.join(this.config.targetDir, "CommonTypes.ts"));
-            new CommonTypesWriter_1.CommonTypesWriter(schema, stream, this.config).write();
+            new CommonTypesWriter_1.CommonTypesWriter(schema, inheritanceInfo, stream, this.config).write();
             yield stream.end();
         });
     }
@@ -243,7 +245,8 @@ class Generator {
     }
     writeIndexCode(stream, schema) {
         return __awaiter(this, void 0, void 0, function* () {
-            stream.write("export type {ImplementationType} from './CommonTypes';\n");
+            stream.write("export type { ImplementationType } from './CommonTypes';\n");
+            stream.write("export type { upcastTypes, downcastTypes } from './CommonTypes';\n");
         });
     }
 }

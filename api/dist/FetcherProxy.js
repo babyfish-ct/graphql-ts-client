@@ -19,8 +19,8 @@ const Fetcher_1 = require("./Fetcher");
  * interfaces cannot affect the capacity of compilied targe code
  * ), and this "createFetcher" method uses proxies to create instances of those interfaces.
  */
-function createFetcher(fetchedEntityType, unionEntityTypes, methodNames) {
-    return new Proxy(new FetcherTarget([fetchedEntityType, unionEntityTypes], false, ""), proxyHandler(fetchedEntityType, new Set(methodNames)));
+function createFetcher(fetchableType, unionEntityTypes, methodNames) {
+    return new Proxy(new FetcherTarget([fetchableType, unionEntityTypes], false, ""), proxyHandler(fetchableType, new Set(methodNames)));
 }
 exports.createFetcher = createFetcher;
 class FetcherTarget extends Fetcher_1.AbstractFetcher {
@@ -28,7 +28,7 @@ class FetcherTarget extends Fetcher_1.AbstractFetcher {
         return new FetcherTarget(this, negative, field, args, child, fragmentName);
     }
 }
-function proxyHandler(fetchedEntityType, methodNames) {
+function proxyHandler(fetchableType, methodNames) {
     const handler = {
         get: (target, p, receiver) => {
             if (typeof p !== 'string' || BUILT_IN_FIELDS.has(p)) {
@@ -38,8 +38,8 @@ function proxyHandler(fetchedEntityType, methodNames) {
                 }
                 return value;
             }
-            if (p === "fetchedEntityType") {
-                return fetchedEntityType;
+            if (p === "fetchableType") {
+                return fetchableType;
             }
             if (p.startsWith("~")) {
                 const removeField = Reflect.get(target, "removeField");
@@ -92,10 +92,11 @@ function methodProxyHandler(targetFetcher, handler, field) {
     };
 }
 function dummyTargetMethod() { }
-const FETCHER_TARGET = new FetcherTarget(["Any", undefined], false, "");
+const FETCHER_TARGET = new FetcherTarget([{ entityName: "Any", superTypes: [], declaredFields: new Set() }, undefined], false, "");
 const BUILT_IN_FIELDS = new Set([
     ...Object.keys(FETCHER_TARGET),
     ...Reflect.ownKeys(Fetcher_1.AbstractFetcher.prototype),
     "_str",
     "_json"
 ]);
+console.log(BUILT_IN_FIELDS);

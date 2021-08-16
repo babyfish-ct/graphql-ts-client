@@ -21,7 +21,7 @@ export declare class Generator {
     private generateFetcherTypes;
     private generateInputTypes;
     private generateEnumTypes;
-    private generateImplementationType;
+    private generateCommonTypes;
     private writeSimpleIndex;
     private rmdirIfNecessary;
     protected mkdirIfNecessary(subDir?: string): Promise<void>;

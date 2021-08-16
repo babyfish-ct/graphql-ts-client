@@ -13,10 +13,10 @@ function App() {
     return (
         <ApolloProvider client={client}>
             <div className={css`display:flex`}>
-                <div className={css`width:40%`}>
+                <div className={css`width:50%`}>
                     <DepartmentList/>
                 </div>
-                <div className={css`width:60%`}>
+                <div className={css`width:50%`}>
                     <EmployeeList/>
                 </div>
             </div>

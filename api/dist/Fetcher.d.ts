@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 export interface Fetcher<E extends string, T extends object> {
-    readonly fetchedEntityType: E;
+    readonly fetchableType: FetchableType<E>;
     readonly fieldMap: ReadonlyMap<string, FetcherField>;
     /**
      * For query/mutation
@@ -28,17 +28,17 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     private _args?;
     private _child?;
     private _fragmentName?;
-    private _fetchedEntityType;
+    private _fetchableType;
     private _unionItemTypes?;
     private _prev?;
     private _str?;
     private _fragmentStr?;
     private _json?;
     private _fieldMap?;
-    constructor(ctx: AbstractFetcher<string, any> | [E, string[] | undefined], _negative: boolean, _field: string, _args?: {
+    constructor(ctx: AbstractFetcher<string, any> | [FetchableType<E>, string[] | undefined], _negative: boolean, _field: string, _args?: {
         [key: string]: any;
     }, _child?: AbstractFetcher<string, any>, _fragmentName?: string);
-    get fetchedEntityType(): E;
+    get fetchableType(): FetchableType<E>;
     protected addField<F extends AbstractFetcher<string, any>>(field: string, args?: {
         [key: string]: any;
     }, child?: AbstractFetcher<string, any>): F;
@@ -60,6 +60,11 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     private static appendFieldTo;
     private static _appendFieldTo0;
     __supressWarnings__(_: T): never;
+}
+export interface FetchableType<E extends string> {
+    readonly entityName: E;
+    readonly superTypes: readonly FetchableType<string>[];
+    readonly declaredFields: ReadonlySet<string>;
 }
 export interface FetcherField {
     readonly args?: {

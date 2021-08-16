@@ -1,5 +1,8 @@
-import { Fetcher, replaceNullValues } from 'graphql-ts-client-api';
+import { DependencyManager, Fetcher, replaceNullValues } from 'graphql-ts-client-api';
 import { useQuery, useLazyQuery, QueryHookOptions, QueryResult, QueryTuple, gql } from '@apollo/client';
+import { useEffect } from 'react';
+
+export const dependencyManager = new DependencyManager(); 
 
 
 export function useTypedQuery<
@@ -18,12 +21,18 @@ export function useTypedQuery<
 	const queryKey = typeof key === 'string' ? key : key.queryKey;
 	const dataKey = typeof key === 'object' ? key.dataKey : undefined;
 	const operationName = typeof key === 'object' ? key.operationName : undefined;
-	const request = gql`
+	const request = `
 		query ${operationName ?? queryKey}${GQL_PARAMS[queryKey] ?? ""} {
 			${dataKey ? dataKey + ": " : ""}${queryKey}${GQL_ARGS[queryKey] ?? ""}${fetcher.toString()}}
 		${fetcher.toFragmentString()}
 	`;
-	const response = useQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(request, options);
+	useEffect(() => {
+		dependencyManager.register(operationName ?? queryKey, [fetcher]);
+		return () => {
+			dependencyManager.unregister(operationName ?? queryKey);
+		}
+	}, [request, operationName, queryKey]);
+	const response = useQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(gql(request), options);
 	replaceNullValues(response.data);
 	return response;
 }
@@ -61,7 +70,7 @@ export interface QueryVariables{
 	findEmployees: {
 		readonly mockedErrorProbability?: number, 
 		readonly supervisorId?: string, 
-		readonly departmentId?: number, 
+		readonly departmentId?: string, 
 		readonly name?: string
 	};
 }
@@ -83,7 +92,7 @@ export interface QuerySimpleTypes {
 
 const GQL_PARAMS: {[key: string]: string} = {
 	"findDepartmentsLikeName": "($name: String)", 
-	"findEmployees": "($mockedErrorProbability: Int, $supervisorId: String, $departmentId: Int, $name: String)"
+	"findEmployees": "($mockedErrorProbability: Int, $supervisorId: String, $departmentId: String, $name: String)"
 };
 
 const GQL_ARGS: {[key: string]: string} = {

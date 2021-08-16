@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
- import { AbstractFetcher, Fetcher } from './Fetcher';
+ import { AbstractFetcher, FetchableType, Fetcher } from './Fetcher';
 
  /*
   * In order to reduce compacity of compiled target code,
@@ -19,13 +19,13 @@
   * ), and this "createFetcher" method uses proxies to create instances of those interfaces.
   */
  export function createFetcher<E extends string, F extends Fetcher<E, object>>(
-     fetchedEntityType: E,
+     fetchableType: FetchableType<E>,
      unionEntityTypes: string[] | undefined,
      methodNames: string[]
  ) {
      return new Proxy(
-         new FetcherTarget([fetchedEntityType, unionEntityTypes], false, ""),
-         proxyHandler(fetchedEntityType, new Set<string>(methodNames))
+         new FetcherTarget([fetchableType, unionEntityTypes], false, ""),
+         proxyHandler(fetchableType, new Set<string>(methodNames))
      ) as F;
  }
  
@@ -50,7 +50,7 @@
  }
  
  function proxyHandler(
-     fetchedEntityType: string, 
+    fetchableType: FetchableType<string>, 
      methodNames: Set<string>
  ): ProxyHandler<Fetcher<string, object>> {
  
@@ -63,8 +63,8 @@
                  }
                  return value;
              }
-             if (p === "fetchedEntityType") {
-                 return fetchedEntityType;
+             if (p === "fetchableType") {
+                 return fetchableType;
              }
              if (p.startsWith("~")) {
                  const removeField = Reflect.get(target, "removeField") as REMOVE_FILED;
@@ -161,7 +161,11 @@
  
  function dummyTargetMethod() {}
  
- const FETCHER_TARGET = new FetcherTarget(["Any", undefined], false, "");
+ const FETCHER_TARGET = new FetcherTarget(
+     [{entityName: "Any", superTypes: [], declaredFields: new Set<string>()}, undefined], 
+     false, 
+     ""
+);
  
  const BUILT_IN_FIELDS = new Set<string>(
      [
@@ -171,3 +175,4 @@
          "_json"
      ]
  );
+ 

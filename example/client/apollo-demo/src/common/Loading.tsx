@@ -4,8 +4,8 @@ import loading from "./loading.svg";
 
 export const Loading: FC<{
     title?: string,
-    mode?: "FLOAT" | "INLINE"
-}> = memo(({title = "Loading...", mode = "FLOAT"}) => {
+    mode?: "INLINE" | "INLINE_TINY" | "FLOAT"
+}> = memo(({title = "Loading...", mode = "INLINE"}) => {
     return (
         <div className={cx({[css({position: 'relative'})]: mode === 'FLOAT'})}>
             <div className={cx({
@@ -31,9 +31,13 @@ export const Loading: FC<{
                 })}>
                     <div className={css({display: "flex"})}>
                         <div>
-                            <img src={loading} height="60" className={ANIMATION_CSS}/>
+                            <img src={loading} height={mode === 'INLINE_TINY' ? 20 : 60} className={ANIMATION_CSS}/>
                         </div>
-                        <h2>{title}</h2>
+                        {
+                            mode === 'INLINE_TINY' ?
+                            <span>{title}</span> :
+                            <h2>{title}</h2>
+                        }
                     </div>
                 </div>
             </div>

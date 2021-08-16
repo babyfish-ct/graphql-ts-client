@@ -43,14 +43,13 @@ export const EmployeeList: FC = memo(() => {
                 </div>
                 <button onClick={onRefetchClick}>Refresh</button>
             </div>
-            { loading && <Loading/> }
+            { loading && <Loading mode="FLOAT"/> }
             { error && <div>Error</div> }
             {
                 data && <div className={css({margin: "1rem 0 1rem 0"})}>
                     {data.findEmployees.map(employee => 
                         <EmployeeItem key={employee.id} employee={employee}/>
                     )}
-                    { loading && <div className="loading-mask"></div>}
                 </div>
             }
         </div>

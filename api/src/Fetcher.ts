@@ -10,7 +10,7 @@
 
  export interface Fetcher<E extends string, T extends object> {
 
-    readonly fetchedEntityType: E;
+    readonly fetchableType: FetchableType<E>;
 
     readonly fieldMap: ReadonlyMap<string, FetcherField>;
 
@@ -35,7 +35,7 @@ export type ModelType<F> =
 
 export abstract class AbstractFetcher<E extends string, T extends object> implements Fetcher<E, T> {
 
-    private _fetchedEntityType: E;
+    private _fetchableType: FetchableType<E>;
 
     private _unionItemTypes?: string[];
 
@@ -50,7 +50,7 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
     private _fieldMap?: Map<string, FetcherField>;
 
     constructor(
-        ctx: AbstractFetcher<string, any> | [E, string[] | undefined],
+        ctx: AbstractFetcher<string, any> | [FetchableType<E>, string[] | undefined],
         private _negative: boolean,
         private _field: string,
         private _args?: {[key: string]: any},
@@ -58,17 +58,17 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
         private _fragmentName?: string
     ) {
         if (Array.isArray(ctx)) {
-            this._fetchedEntityType = ctx[0];
+            this._fetchableType = ctx[0];
             this._unionItemTypes = ctx[1] !== undefined && ctx[1].length !== 0 ? ctx[1] : undefined;
         } else {
-            this._fetchedEntityType = ctx._fetchedEntityType as E;
+            this._fetchableType = ctx._fetchableType as FetchableType<E>;
             this._unionItemTypes = ctx._unionItemTypes;
             this._prev = ctx;
         }
     }
 
-    get fetchedEntityType(): E {
-        return this._fetchedEntityType;
+    get fetchableType(): FetchableType<E> {
+        return this._fetchableType;
     }
 
     protected addField<F extends AbstractFetcher<string, any>>(
@@ -100,10 +100,10 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
         let fieldName: string;
         if (child._fragmentName !== undefined) {
             fieldName = `... ${child._fragmentName}`;
-        } else if (child._fetchedEntityType === this._fetchedEntityType || child._unionItemTypes !== undefined) {
+        } else if (child._fetchableType.entityName === this._fetchableType.entityName || child._unionItemTypes !== undefined) {
             fieldName = '...';
         } else {
-            fieldName = `... on ${child._fetchedEntityType}`;
+            fieldName = `... on ${child._fetchableType.entityName}`;
         }
         return this.createFetcher(
             false,
@@ -175,7 +175,7 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
                     fragmentCtx.value += "\nfragment ";
                     fragmentCtx.value += name;
                     fragmentCtx.value += " on ";
-                    fragmentCtx.value += fragmentFetcher._fetchedEntityType;
+                    fragmentCtx.value += fragmentFetcher._fetchableType.entityName;
                     fragmentCtx.value += " ";
                     fragmentFetcher._toString1(0, fragmentCtx);
                 }
@@ -380,6 +380,12 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
     __supressWarnings__(_: T): never {
         throw new Error("__supressWarnings is not supported");
     }
+}
+
+export interface FetchableType<E extends string> {
+    readonly entityName: E;
+    readonly superTypes: readonly FetchableType<string>[];
+    readonly declaredFields: ReadonlySet<string>;
 }
 
 export interface FetcherField {
