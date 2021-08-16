@@ -35,6 +35,10 @@ export class ApolloHookWriter extends Writer {
         this.importStatement("import { Fetcher, replaceNullValues } from 'graphql-ts-client-api';");
         if (this.hookType === "Query") {
             this.importStatement(`import { useQuery, useLazyQuery, QueryHookOptions, QueryResult, QueryTuple, gql } from '@apollo/client';`);
+            if (this.hasTypedHooks) {
+                this.importStatement("import { useContext, useEffect } from 'react';");
+                this.importStatement("import { dependencyManagerContext } from './DependencyManager';");
+            }
         } else {
             this.importStatement(`import { useMutation, MutationHookOptions, DefaultContext, MutationTuple, ApolloCache, gql } from '@apollo/client';`);
         }
@@ -135,9 +139,12 @@ export class ApolloHookWriter extends Writer {
         this.writeReturnedGenericArgs("FetchedTypes<T>");
         this.scope({"type": "BLOCK", multiLines: true, prefix: " ", suffix: "\n"}, () => {
             this.writeRequestDeclaration(true);
+            if (this.hookType === 'Query') {
+                this.writeDependencyRegisitry();
+            }
             t(`const response = use${prefix}${this.hookType}`);
             this.writeReturnedGenericArgs("FetchedTypes<T>");
-            t("(request, options);\n");
+            t("(gql(request), options);\n");
             t(`replaceNullValues(response${responseDataProp}.data);\n`);
             t("return response;\n");
         });
@@ -194,7 +201,7 @@ export class ApolloHookWriter extends Writer {
             this.writeRequestDeclaration(false);
             t(`return use${prefix}${this.hookType}`);
             this.writeReturnedGenericArgs("SimpleTypes");
-            t("(request, options);\n");
+            t("(gql(request), options);\n");
         });
     }
 
@@ -224,7 +231,7 @@ export class ApolloHookWriter extends Writer {
         t(`const dataKey = typeof key === 'object' ? key.dataKey : undefined;\n`);
         t(`const operationName = typeof key === 'object' ? key.operationName : undefined;\n`);
 
-        t("const request = gql");
+        t("const request = ");
         this.scope({type: "BLANK", prefix: "`", suffix: "`;\n", multiLines: true}, () => {
             t(lowercaseHookType);
             t(` \${operationName ?? ${lowercaseHookType}Key}`);
@@ -241,6 +248,23 @@ export class ApolloHookWriter extends Writer {
                 t("${fetcher.toFragmentString()}\n");
             }
         });
+    }
+
+    private writeDependencyRegisitry() {
+
+        const t = this.text.bind(this);
+        
+        t('const dependencyManager = useContext(dependencyManagerContext);\n');
+        t("useEffect(() => ");
+        this.scope({type: "BLOCK", multiLines: true}, () => {
+            t("if (dependencyManager !== undefined) ");
+            this.scope({type: "BLOCK", multiLines: true}, () => {
+                t("dependencyManager.register(operationName ?? queryKey, [fetcher]);\n");
+                t("return () => { dependencyManager.unregister(operationName ?? queryKey); };\n");
+            });
+            t("// eslint-disable-next-line");
+        });
+        t(", [dependencyManager, operationName, queryKey, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.\n");
     }
 
     private writeVariables() {

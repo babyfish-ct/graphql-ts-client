@@ -99,4 +99,3 @@ const BUILT_IN_FIELDS = new Set([
     "_str",
     "_json"
 ]);
-console.log(BUILT_IN_FIELDS);

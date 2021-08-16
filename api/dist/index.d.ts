@@ -9,6 +9,6 @@
  */
 export type { Fetcher, ModelType } from './Fetcher';
 export { AbstractFetcher } from './Fetcher';
-export { DependencyManager } from './DependencyManager';
+export { DependencyManager, DependencyMode } from './DependencyManager';
 export { createFetcher } from './FetcherProxy';
 export { replaceNullValues } from './util';

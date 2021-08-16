@@ -27,7 +27,7 @@ export function useTypedMutation<
 	const mutationKey = typeof key === 'string' ? key : key.mutationKey;
 	const dataKey = typeof key === 'object' ? key.dataKey : undefined;
 	const operationName = typeof key === 'object' ? key.operationName : undefined;
-	const request = gql`
+	const request = `
 		mutation ${operationName ?? mutationKey}${GQL_PARAMS[mutationKey] ?? ""} {
 			${dataKey ? dataKey + ": " : ""}${mutationKey}${GQL_ARGS[mutationKey] ?? ""}${fetcher.toString()}}
 		${fetcher.toFragmentString()}
@@ -37,7 +37,7 @@ export function useTypedMutation<
 		MutationVariables[TMutationKey], 
 		TContext, 
 		TCache
-	>(request, options);
+	>(gql(request), options);
 	replaceNullValues(response[1].data);
 	return response;
 }
@@ -63,7 +63,7 @@ export function useSimpleMutation<
 	const mutationKey = typeof key === 'string' ? key : key.mutationKey;
 	const dataKey = typeof key === 'object' ? key.dataKey : undefined;
 	const operationName = typeof key === 'object' ? key.operationName : undefined;
-	const request = gql`
+	const request = `
 		mutation ${operationName ?? mutationKey}${GQL_PARAMS[mutationKey] ?? ""} {
 			${dataKey ? dataKey + ": " : ""}${mutationKey}${GQL_ARGS[mutationKey] ?? ""}}
 	`;
@@ -72,7 +72,7 @@ export function useSimpleMutation<
 		MutationVariables[TMutationKey], 
 		TContext, 
 		TCache
-	>(request, options);
+	>(gql(request), options);
 }
 
 //////////////////////////////////////////////////

@@ -5,10 +5,9 @@ import { ModelType } from "graphql-ts-client-api";
 import { ERROR_CSS, FORM_CSS } from "../common/CssClasses";
 import { Dialog } from "../common/Dialog";
 import { Loading } from "../common/Loading";
-import { useTypedMutation } from "../__generated";
+import { useRefetchQuries, useTypedMutation } from "../__generated";
 import { department$, department$$ } from "../__generated/fetchers";
 import { DepartmentInput } from "../__generated/inputs";
-import { dependencyManager } from "../__generated/Queries";
 
 export const DEPARTMENT_FORM_FETCHER =
     department$$;
@@ -17,6 +16,8 @@ export const DepartmentDialog: FC<{
     value?: ModelType<typeof DEPARTMENT_FORM_FETCHER>,
     onClose: () => void
 }> = memo(({value, onClose}) => {
+
+    const refetchQueries = useRefetchQuries();
 
     const [input, setInput] = useState<Partial<DepartmentInput>>(() => {
         if (value === undefined) {
@@ -38,9 +39,9 @@ export const DepartmentDialog: FC<{
         { 
             variables: { input: input as DepartmentInput }, // Unsafe cast, depends on "valid"
             refetchQueries: () => {
-                return value === undefined ? // If create new object, refresh all the related quires
-                dependencyManager.resourcesDependOnTypes(department$, "DIRECT") :
-                []
+                // If create new object(value === undefined), refresh all the related quires
+                // Otherwise, apollo automactically uses the returned object to update cache.
+                return refetchQueries.byTypes(department$, "DIRECT", value === undefined)
             }
         }
     );

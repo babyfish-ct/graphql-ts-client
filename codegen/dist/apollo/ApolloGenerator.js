@@ -35,6 +35,7 @@ class ApolloGenerator extends Generator_1.Generator {
             if (mutationFields.length !== 0) {
                 promises.push(this.generateMutations(mutationFields));
             }
+            promises.push(this.generateDependencyManager());
         });
     }
     generateQueries(fields) {
@@ -48,6 +49,13 @@ class ApolloGenerator extends Generator_1.Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Mutations.ts"));
             new ApolloHookWriter_1.ApolloHookWriter("Mutation", fields, stream, this.config).write();
+            yield stream.end();
+        });
+    }
+    generateDependencyManager() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "DependencyManager.tsx"));
+            stream.write(DEPENDENCY_MANAGER_CODE);
             yield stream.end();
         });
     }
@@ -99,8 +107,60 @@ class ApolloGenerator extends Generator_1.Generator {
                 const separator = hasTypedMutation && hasSimpleMutation ? ", " : "";
                 stream.write(`export {${typedMuation}${separator}${simpleMuation}} from './Mutations';\n`);
             }
+            stream.write("export { DependencyManagerProvider, useRefetchQuries } from './DependencyManager';\n");
+            stream.write("export type { RefetchQueries } from './DependencyManager';\n");
             _super.writeIndexCode.call(this, stream, schema);
         });
     }
 }
 exports.ApolloGenerator = ApolloGenerator;
+const DEPENDENCY_MANAGER_CODE = `import { createContext, FC, memo, PropsWithChildren, useContext, useMemo } from "react";
+import { DependencyManager, DependencyMode, Fetcher } from "graphql-ts-client-api";
+
+export const DependencyManagerProvider: FC<
+    PropsWithChildren<{}>
+> = memo(({children}) => {
+    const dependencyManager = useMemo<DependencyManager>(() => {
+        return new DependencyManager();
+    }, []);
+    return (
+        <dependencyManagerContext.Provider value={dependencyManager}>
+            {children}
+        </dependencyManagerContext.Provider>
+    );
+});
+
+export function useRefetchQuries() {
+    
+    const dependencyManager = useContext(dependencyManagerContext);
+    
+    // This "if statement" does not broken the rules of react-hooks because it throws exception.
+    if (dependencyManager === undefined) {
+        throw new Error("'useRefetchQuires' can only be used under <DependencyManagerProvider/>.");
+    }
+
+    return useMemo<RefetchQueries>(() => {
+        const byTypes = (fetcher: Fetcher<string, object>, mode?: DependencyMode, condition?: boolean): string[] => {
+            if (condition !== false) {
+                return dependencyManager.resourcesDependOnTypes(fetcher, mode ?? "ALL");
+            }
+            return [];
+        };
+        const byFields = (fetcher: Fetcher<string, object>, mode?: DependencyMode, condition?: boolean): string[] => {
+            if (condition !== false) {
+                return dependencyManager.resourcesDependOnFields(fetcher, mode ?? "ALL");
+            }
+            return [];
+        };
+        return { byTypes, byFields };
+    }, [dependencyManager]);
+}
+
+export interface RefetchQueries {
+    byTypes(fetcher: Fetcher<string, object>, mode?: DependencyMode, condition?: boolean): string[];
+    byFields(fetcher: Fetcher<string, object>, mode?: DependencyMode, condition?: boolean): string[];
+}
+
+// Internal, only used by useTypedQuery and useLazyTypedQuery
+export const dependencyManagerContext = createContext<DependencyManager | undefined>(undefined);
+`;

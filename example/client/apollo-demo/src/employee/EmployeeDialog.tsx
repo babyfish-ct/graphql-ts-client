@@ -7,10 +7,9 @@ import { Dialog } from "../common/Dialog";
 import { ErrorText } from "../common/ErrorText";
 import { Loading } from "../common/Loading";
 import { DepartmentSelect } from "../department/DepartmentSelect";
-import { useTypedMutation } from "../__generated";
+import { useRefetchQuries, useTypedMutation } from "../__generated";
 import { department$, employee$, employee$$ } from "../__generated/fetchers";
 import { EmployeeInput } from "../__generated/inputs";
-import { dependencyManager } from "../__generated/Queries";
 
 export const EMPLOYEE_FORM_FETCHER =
     employee$$
@@ -45,6 +44,8 @@ export const EmployeeDialog: FC<{
         return input.firstName !== undefined && input.lastName !== undefined && input.departmentId !== undefined;
     }, [input]);
 
+    const refetchQueries = useRefetchQuries();
+    
     const [mutate, {loading, error}] = useTypedMutation(
         "mergeEmployee",
         employee$$
@@ -53,13 +54,15 @@ export const EmployeeDialog: FC<{
         {
             variables: { input: input as EmployeeInput }, // Unsafe cast, depends on "valid"
             refetchQueries: () => {
-                if (value === undefined) { // Create
-                    return dependencyManager.resourcesDependOnTypes(employee$, "DIRECT");
-                }
-                if (value.salary !== input.salary) { // Update "Employee.salary", "Department.avgSalary" will be affected
-                    return dependencyManager.resourcesDependOnFields(employee$.salary);
-                }
-                return [];
+                return [
+
+                    // If create new object(value === undefined), refresh all the related quires
+                    // Otherwise, apollo automactically uses the returned object to update cache.
+                    ...refetchQueries.byTypes(employee$, "DIRECT", value === undefined),
+
+                    // Employee.salary affects Department.avgSalary
+                    //...refetchQueries.byFields(employee$.salary),
+                ];
             }
         }
     );
