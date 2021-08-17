@@ -1,6 +1,6 @@
 {
   "name": "graphql-ts-client-api",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Strongly type API for graphql client",
   "author": "ChenTao",
   "license": "MIT",
@@ -11,6 +11,7 @@
     "/dist"
   ],
   "dependencies": {
+    "immer": "^9.0.5",
     "ts-md5": "^1.2.9"
   },
   "devDependencies": {}
