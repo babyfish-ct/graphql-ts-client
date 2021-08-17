@@ -255,7 +255,7 @@ class ApolloHookWriter extends Writer_1.Writer {
             });
             t("// eslint-disable-next-line");
         });
-        t(", [register, dependencyManager, operationName, queryKey, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.\n");
+        t(", [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.\n");
     }
     writeDependencyTrigger() {
         const t = this.text.bind(this);

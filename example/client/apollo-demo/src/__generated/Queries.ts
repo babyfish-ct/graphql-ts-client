@@ -41,7 +41,7 @@ export function useTypedQuery<
 			);
 			return () => { dependencyManager!.unregister(operationName ?? queryKey); };
 		}// eslint-disable-next-line
-	}, [register, dependencyManager, operationName, queryKey, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
+	}, [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
 	const response = useQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(gql(request), options);
 	replaceNullValues(response.data);
 	return response;
@@ -84,7 +84,7 @@ export function useLazyTypedQuery<
 			);
 			return () => { dependencyManager!.unregister(operationName ?? queryKey); };
 		}// eslint-disable-next-line
-	}, [register, dependencyManager, operationName, queryKey, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
+	}, [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
 	const response = useLazyQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(gql(request), options);
 	replaceNullValues(response[1].data);
 	return response;
