@@ -9,3 +9,13 @@
  */
 import { FetchableType, Fetcher } from './Fetcher';
 export declare function createFetcher<E extends string, F extends Fetcher<E, object>>(fetchableType: FetchableType<E>, unionEntityTypes: string[] | undefined, methodNames: string[]): F;
+export declare function createFetchableType<E extends string>(entityName: string, superTypes: readonly FetchableType<string>[], declaredFields: readonly string[]): FetchableTypeImpl<string>;
+declare class FetchableTypeImpl<E extends string> implements FetchableType<E> {
+    readonly entityName: E;
+    readonly superTypes: readonly FetchableType<string>[];
+    readonly declaredFields: ReadonlySet<string>;
+    private _fields?;
+    constructor(entityName: E, superTypes: readonly FetchableType<string>[], declaredFields: ReadonlySet<string>);
+    get fields(): ReadonlySet<string>;
+}
+export {};

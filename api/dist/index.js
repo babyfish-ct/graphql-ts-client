@@ -9,12 +9,13 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replaceNullValues = exports.createFetcher = exports.DependencyManager = exports.AbstractFetcher = void 0;
+exports.replaceNullValues = exports.createFetchableType = exports.createFetcher = exports.DependencyManager = exports.AbstractFetcher = void 0;
 var Fetcher_1 = require("./Fetcher");
 Object.defineProperty(exports, "AbstractFetcher", { enumerable: true, get: function () { return Fetcher_1.AbstractFetcher; } });
 var DependencyManager_1 = require("./DependencyManager");
 Object.defineProperty(exports, "DependencyManager", { enumerable: true, get: function () { return DependencyManager_1.DependencyManager; } });
 var FetcherProxy_1 = require("./FetcherProxy");
 Object.defineProperty(exports, "createFetcher", { enumerable: true, get: function () { return FetcherProxy_1.createFetcher; } });
+Object.defineProperty(exports, "createFetchableType", { enumerable: true, get: function () { return FetcherProxy_1.createFetchableType; } });
 var util_1 = require("./util");
 Object.defineProperty(exports, "replaceNullValues", { enumerable: true, get: function () { return util_1.replaceNullValues; } });

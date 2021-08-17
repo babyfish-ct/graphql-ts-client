@@ -68,7 +68,7 @@ class FetcherWriter extends Writer_1.Writer {
     }
     prepareImportings() {
         var _a;
-        this.importStatement("import { Fetcher, createFetcher } from 'graphql-ts-client-api';");
+        this.importStatement("import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';");
         this.importStatement("import { WithTypeName, ImplementationType } from '../CommonTypes';");
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
@@ -218,10 +218,10 @@ class FetcherWriter extends Writer_1.Writer {
         this.scope({ type: "BLANK", multiLines: true, suffix: ";\n" }, () => {
             t("createFetcher");
             this.scope({ type: "PARAMETERS", multiLines: true }, () => {
-                this.scope({ type: "BLOCK", multiLines: true }, () => {
-                    t(`entityName: "${this.modelType.name}"`);
+                t("createFetchableType");
+                this.scope({ type: "PARAMETERS", multiLines: true }, () => {
+                    t(`"${this.modelType.name}"`);
                     this.separator(", ");
-                    t("superTypes: ");
                     this.scope({ type: "ARRAY" }, () => {
                         const upcastTypes = this.inheritanceInfo.upcastTypeMap.get(this.modelType);
                         if (upcastTypes !== undefined) {
@@ -232,14 +232,12 @@ class FetcherWriter extends Writer_1.Writer {
                         }
                     });
                     this.separator(", ");
-                    t("declaredFields: new Set<string>(");
                     this.scope({ type: "ARRAY" }, () => {
                         for (const declaredFieldName of this.declaredFieldNames()) {
                             this.separator(", ");
                             t(`"${declaredFieldName}"`);
                         }
                     });
-                    t(")");
                 });
                 this.separator(", ");
                 if (itemTypes.length === 0) {

@@ -5,19 +5,17 @@ import { ModelType } from "graphql-ts-client-api";
 import { ERROR_CSS, FORM_CSS } from "../common/CssClasses";
 import { Dialog } from "../common/Dialog";
 import { Loading } from "../common/Loading";
-import { useRefetchQuries, useTypedMutation } from "../__generated";
+import { useTypedMutation } from "../__generated";
 import { department$, department$$ } from "../__generated/fetchers";
 import { DepartmentInput } from "../__generated/inputs";
 
-export const DEPARTMENT_FORM_FETCHER =
+export const DEPARTMENT_MUTATION_FETCHER =
     department$$;
 
 export const DepartmentDialog: FC<{
-    value?: ModelType<typeof DEPARTMENT_FORM_FETCHER>,
+    value?: ModelType<typeof DEPARTMENT_MUTATION_FETCHER>,
     onClose: () => void
 }> = memo(({value, onClose}) => {
-
-    const refetchQueries = useRefetchQuries();
 
     const [input, setInput] = useState<Partial<DepartmentInput>>(() => {
         if (value === undefined) {
@@ -35,13 +33,11 @@ export const DepartmentDialog: FC<{
 
     const [mutate, { loading, error }] = useTypedMutation(
         "mergeDepartment",
-        department$$,
+        DEPARTMENT_MUTATION_FETCHER,
         { 
             variables: { input: input as DepartmentInput }, // Unsafe cast, depends on "valid"
-            refetchQueries: () => {
-                // If create new object(value === undefined), refresh all the related quires
-                // Otherwise, apollo automactically uses the returned object to update cache.
-                return refetchQueries.byTypes(department$, "DIRECT", value === undefined)
+            refetchDependencies: result => {
+                return result.dependencies.ofResult(value, result.data?.mergeDepartment);
             }
         }
     );

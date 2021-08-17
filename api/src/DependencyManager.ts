@@ -1,146 +1,235 @@
+/**
+ * @author ChenTao
+ * 
+ * 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
+ * 
+ * 1. Supports GraphQL queries with strongly typed code
+ *
+ * 2. Automatically infers the type of the returned data according to the strongly typed query
+ */
+
 import { FetchableType, Fetcher } from "./Fetcher";
 
 export class DependencyManager {
 
     /*
-     * Level-1-key: TypeName
-     * Level-2-key: FieldName
-     * Value: resurces
+     * key: Name the root entity type of query
+     */ 
+    private rootTypeResourceMap = new Map<string, Resources>();
+
+    /*
+     * level-1 key: FieldName
+     * level-2 key: Field name
      */
+    private fieldResourceMap = new Map<string, Map<string, Resources>>();
 
-    private directMap = new Map<string, Map<string, Set<string>>>();
+    private _idGetter: (obj: any) => any;
 
-    private indirectMap = new Map<string, Map<string, Set<string>>>();
+    constructor(idGetter?: (obj: any) => any) {
+        (window as any).dependencyManager = this;
+        this._idGetter = idGetter ?? getDefaultId;
+    }
 
-    register(resource: string, fetchers: Fetcher<string, object>[]) {
-        for (const fetcher of fetchers) {
-            this.register0(resource, fetcher, true);
+    register(resource: string, fetcher: Fetcher<string, object>, fieldDependencies?: readonly Fetcher<string, object>[]) {
+        if (fieldDependencies !== undefined) {
+            this.registerTypes(resource, [fetcher, ...fieldDependencies]);
+            this.registerFields(resource, fieldDependencies);
+        } else {
+            this.registerTypes(resource, [fetcher]);
         }
     }
 
     unregister(resource: string) {
-        this.unregister0(resource, true);
-        this.unregister0(resource, false);
+        removeResource(this.rootTypeResourceMap, resource);
+        removeResource(this.fieldResourceMap, resource);
     }
 
-    resourcesDependOnTypes(fetcher: Fetcher<string, object>, mode: DependencyMode = "ALL"): string[] {
+    resources<T extends object>(
+        fetcher: Fetcher<string, T>, 
+        oldObject: T | undefined, 
+        newObject: T | undefined
+    ): string[] {
         const resources = new Set<string>();
-        if (mode !== 'INDIRECT') {
-            this.resourcesDependOnTypes0(fetcher, true, resources);
-        }
-        if (mode !== 'DIRECT') {
-            this.resourcesDependOnTypes0(fetcher, false, resources);
-        }
+        this.collectResources(fetcher, nullToUndefined(oldObject), nullToUndefined(newObject), resources);
         return Array.from(resources);
     }
 
-    resourcesDependOnFields(fetcher: Fetcher<string, object>, mode: DependencyMode = "ALL"): string[] {
+    allResources(fetcher: Fetcher<string, any>) {
         const resources = new Set<string>();
-        if (mode !== 'INDIRECT') {
-            this.resourcesDependOnFields0(fetcher, true, resources);
-        }
-        if (mode !== 'DIRECT') {
-            this.resourcesDependOnFields0(fetcher, false, resources);
-        }
+        this.collectAllResources(fetcher, resources);
         return Array.from(resources);
     }
 
-    private register0(resource: string, fetcher: Fetcher<string, object>, direct: boolean) {
+    private registerTypes(resource: string, fetchers: readonly Fetcher<string, object>[]) {
+        for (const fetcher of fetchers) {
+            for (const [fieldName, field] of fetcher.fieldMap) {
+                const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
+                for (const declaringTypeName of declaringTypeNames) {
+                    compute(this.rootTypeResourceMap, declaringTypeName, () => new Resources()).retain(resource);
+                }
+                if (fieldName.startsWith("...")) { //only register recursivly for fragment
+                    if (field.childFetchers !== undefined) {
+                        this.registerTypes(resource, field.childFetchers);
+                    }
+                }
+            }
+        }
+    }
+
+    private registerFields(resource: string, fetchers: readonly Fetcher<string, object>[]) {
+        for (const fetcher of fetchers) {
+            for (const [fieldName, field] of fetcher.fieldMap) {
+                if (!fieldName.startsWith("...")) {
+                    const subMap = compute(this.fieldResourceMap, fieldName, () => new Map<string, Resources>());
+                    const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
+                    for (const declaringTypeName of declaringTypeNames) {
+                        compute(subMap, declaringTypeName, () => new Resources()).retain(resource);
+                    }
+                }
+                if (field.childFetchers !== undefined) {
+                    this.registerFields(resource, field.childFetchers);
+                }
+            }
+        }
+    }
+
+    private collectResources(
+        fetcher: Fetcher<string, object>, 
+        oldObject: object | undefined, 
+        newObject: object | undefined,
+        output: Set<string>
+    ) {
+        if (oldObject === newObject) { // Include both undefined
+            return;
+        }
+        
+        let objDiff =false;
+        if (oldObject === undefined || newObject === undefined) {
+            this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)?.copyTo(output);
+            objDiff = true;
+        } else {
+            const oldId = this._idGetter(oldObject);
+            const newId = this._idGetter(newObject);
+            if (oldId !== newId) {
+                this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)?.copyTo(output);
+                objDiff = true;
+            }
+        }
+
         for (const [fieldName, field] of fetcher.fieldMap) {
-            const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
-            for (const declaringTypeName of declaringTypeNames) {
-                this.register1(resource, declaringTypeName, fieldName, direct);
+            if (fieldName.startsWith("...")) { // Fragment, not assocaition
+                if (field.childFetchers !== undefined) {
+                    for (const childFetcher of field.childFetchers) {
+                        this.collectResources(childFetcher, oldObject, newObject, output);
+                    }
+                }
+            } else {
+                const oldValue = nullToUndefined(oldObject !== undefined ? oldObject[fieldName] : undefined);
+                const newValue = nullToUndefined(newObject !== undefined ? newObject[fieldName] : undefined);
+                if (field.childFetchers !== undefined && field.childFetchers.length !== 0) { // association
+                    if (oldValue !== newValue) { // Not both undefined
+                        for (const childFetcher of field.childFetchers) {
+                            this.collectResourcesByAssocaiton(fetcher, fieldName, childFetcher, oldValue, newValue, output);
+                        }
+                    }
+                } else if (!scalarEqual(oldValue, newValue)) { // scalar
+                    const subMap = this.fieldResourceMap.get(fieldName);
+                    if (subMap !== undefined) {
+                        const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
+                        for (const declaringTypeName of declaringTypeNames) {
+                            subMap.get(declaringTypeName)?.copyTo(output);
+                        }
+                    }
+                }
+            } 
+        }
+    }
+
+    private collectResourcesByAssocaiton(
+        parentFetcher: Fetcher<string, object>,
+        fieldName: string,
+        childFetcher: Fetcher<string, object>, 
+        oldAssociation: any, 
+        newAssociation: any,
+        output: Set<string>
+    ) {
+        if (oldAssociation === undefined || newAssociation === undefined || Array.isArray(oldAssociation) !== Array.isArray(newAssociation)) {
+            if (Array.isArray(oldAssociation)) {
+                for (const element of oldAssociation) {
+                    this.collectResources(childFetcher, nullToUndefined(element), undefined, output);
+                }
+            } else if (typeof oldAssociation === 'object') {
+                this.collectResources(childFetcher, oldAssociation, undefined, output);
+            }
+            if (Array.isArray(newAssociation)) {
+                for (const element of newAssociation) {
+                    this.collectResources(childFetcher, undefined, nullToUndefined(element), output);
+                }
+            } else if (typeof newAssociation === 'object') {
+                this.collectResources(childFetcher, undefined, newAssociation, output);
+            }
+        } else if (Array.isArray(oldAssociation) && Array.isArray(newAssociation)) {
+            const map1 = associatedBy(oldAssociation, this._idGetter);
+            const map2 = associatedBy(newAssociation, this._idGetter);
+            for (const [k, o1] of map1) {
+                const o2 = map2.get(k);
+                this.collectResources(childFetcher, nullToUndefined(o1), nullToUndefined(o2), output);
+            }
+            for (const [k, o2] of map2) {
+                if (!map2.has(k)) {
+                    this.collectResources(childFetcher, undefined, nullToUndefined(o2), output);
+                }
+            }
+        } else if (typeof oldAssociation === 'object' && typeof newAssociation === 'object') {
+            this.collectResources(childFetcher, oldAssociation, newAssociation, output);
+        } else {
+            const declaringType = getDeclaringTypeNames(fieldName, parentFetcher)[0];
+            console.warn(`Illegal data, cannot compare the data ${oldAssociation} and ${newAssociation} for the assocaiton ${declaringType}.${fieldName}`);
+        }
+    }
+
+    private collectAllResources(fetcher: Fetcher<string, object>, output: Set<string>) {
+        this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)?.copyTo(output);
+        for (const [fieldName, field] of fetcher.fieldMap) {
+            if (!fieldName.startsWith("...")) { // Not fragment
+                const declaringTypes = getDeclaringTypeNames(fieldName, fetcher);
+                for (const declaringType of declaringTypes) {
+                    this.rootTypeResourceMap.get(declaringType)?.copyTo(output);
+                    this.fieldResourceMap.get(fieldName)?.get(declaringType)?.copyTo(output);
+                }
             }
             if (field.childFetchers !== undefined) {
                 for (const childFetcher of field.childFetchers) {
-                    this.register0(resource, childFetcher, direct && fieldName.startsWith("..."));
-                }
-            }
-        }
-    }
-
-    private register1(resource: string, typeName: string, fieldName: string, direct: boolean) {
-        const map = direct ? this.directMap : this.indirectMap;
-        let subMap = map.get(typeName);
-        if (subMap === undefined) {
-            map.set(typeName, subMap = new Map<string, Set<string>>());
-        }
-        let resources = subMap.get(fieldName);
-        if (resources === undefined) {
-            subMap.set(fieldName, resources = new Set<string>());
-        }
-        resources.add(resource);
-    }
-
-    private unregister0(resource: string, direct: boolean) {
-        const map = direct ? this.directMap : this.indirectMap;
-        const deletedTypeNames = new Set<string>();
-        for (const [typeName, subMap] of map) {
-            const deletedFieldNames = new Set<string>();
-            for (const [fieldName, resources] of subMap) {
-                if (resources.delete(resource) && resources.size === 0) {
-                    deletedFieldNames.add(fieldName);
-                }
-            }
-            if (removeAll(subMap, deletedFieldNames) === 0) {
-                deletedTypeNames.add(typeName);
-            }
-        }
-        removeAll(map, deletedTypeNames);
-    }
-
-    private resourcesDependOnTypes0(fetcher: Fetcher<string, object>, direct: boolean, output: Set<string>) {
-        const map = direct ? this.directMap : this.indirectMap;
-        const typeNames = getAllSuperTypes(fetcher);
-        for (const typeName of typeNames) {
-            const subMap = map.get(typeName);
-            if (subMap !== undefined) {
-                for (const [, resources] of subMap) {
-                    addAll(output, resources);
-                }
-            }
-        }
-        if (direct === false) {
-            for (const [, field] of fetcher.fieldMap) {
-                if (field.childFetchers !== undefined) {
-                    for (const childFetcher of field.childFetchers) {
-                        this.resourcesDependOnTypes0(childFetcher, false, output);
-                    }
-                }
-            }
-        }
-    }
-
-    private resourcesDependOnFields0(fetcher: Fetcher<string, object>, direct: boolean, output: Set<string>) {
-        const map = direct ? this.directMap : this.indirectMap;
-        for (const [fieldName, field] of fetcher.fieldMap) {
-            const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
-            for (const declaringTypeName of declaringTypeNames) {
-                const resources = map.get(declaringTypeName)?.get(fieldName);
-                addAll(output, resources);
-                if (direct === false && field.childFetchers !== undefined) {
-                    for (const childFetcher of field.childFetchers) {
-                        this.resourcesDependOnFields0(childFetcher, false, output);
-                    }
+                    this.collectAllResources(childFetcher, output);
                 }
             }
         }
     }
 }
 
-export type DependencyMode = "DIRECT" | "INDIRECT" | "ALL";
+class Resources {
 
-function removeAll<K>(map: Map<K, any>, keys: ReadonlySet<K>): number {
-    for (const key of keys) {
-        map.delete(key);
+    private refCountMap = new Map<string, number>();
+
+    retain(resource: string) {
+        this.refCountMap.set(resource, (this.refCountMap.get(resource) ?? 0) + 1);
     }
-    return map.size;
-}
 
-function addAll<E>(target: Set<E>, source?: ReadonlySet<E>) {
-    if (source !== undefined) {
-        for (const element of source) {
-            target.add(element);
+    release(resource: string): number {
+        const refCount = this.refCountMap.get(resource);
+        if (refCount !== undefined) {
+            if (refCount > 1) {
+                this.refCountMap.set(resource, refCount - 1);
+            } else {
+                this.refCountMap.delete(resource);
+            }
+        }
+        return this.refCountMap.size;
+    }
+
+    copyTo(output: Set<string>) {
+        for (const [resource] of this.refCountMap) {
+            output.add(resource);
         }
     }
 }
@@ -163,15 +252,66 @@ function collectDeclaringTypeNames(fieldName: string, fetchableType: FetchableTy
     }
 }
 
-function getAllSuperTypes(fetcher: Fetcher<string, object>): Set<string> {
-    const allSuperTypes = new Set<string>();
-    collectAllSuperTypes(fetcher.fetchableType, allSuperTypes);
-    return allSuperTypes;
+function getDefaultId(value: any): any {
+    const id = value.id ?? value._id;
+    if (id === undefined) {
+        throw Error(`There is no id/_id in the object ${JSON.stringify(value)}`);
+    }
+    return id;
 }
 
-function collectAllSuperTypes(fetchableType: FetchableType<string>, output: Set<string>) {
-    output.add(fetchableType.entityName);
-    for (const superType of fetchableType.superTypes) {
-        collectAllSuperTypes(superType, output);
+function compute<K, V>(map: Map<K, V>, key: K, valueSupplier: (key: K) => V): V {
+    let value = map.get(key);
+    if (value === undefined) {
+        map.set(key, value = valueSupplier(key));
     }
+    return value;
+}
+
+type RecursiveResourceMap = Map<string, Resources | RecursiveResourceMap>;
+function removeResource(recursiveResourceMap: RecursiveResourceMap, resource: string) {
+    const deletedKeys = new Set<string>();
+    for (const [key, deeperValue] of recursiveResourceMap) {
+        if (deeperValue instanceof Resources) {
+            if (deeperValue.release(resource) === 0) {
+                deletedKeys.add(key);
+            }
+        } else {
+            removeResource(deeperValue, resource);
+            if (deeperValue.size === 0) {
+                deletedKeys.add(key);
+            }
+        }
+    }
+    for (const deletedKey of deletedKeys) {
+        recursiveResourceMap.delete(deletedKey);
+    }
+}
+
+function associatedBy<K, V>(values: V[], keyGetter: (value: V) => K): Map<K, V> {
+    const map = new Map<K, V>();
+    for (const value of values) {
+        const key = keyGetter(value);
+        map.set(key, value);
+    }
+    return map;
+}
+
+function scalarEqual(left: any, right: any) {
+    if (Array.isArray(left) && Array.isArray(right)) {
+        if (left.length !== right.length) {
+            return false;
+        }
+        for (let i = left.length - 1; i >= 0; --i) {
+            if (nullToUndefined(left[i]) !== nullToUndefined(right[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return left === right;
+}
+
+function nullToUndefined<T>(value: T | null | undefined): T | undefined {
+    return value === null ? undefined : value;
 }

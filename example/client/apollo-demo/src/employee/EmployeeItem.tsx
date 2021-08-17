@@ -85,14 +85,22 @@ export const EmployeeItem: FC<{
                     {
                         employee.supervisor && 
                         <div className={TAG_CSS}>
-                            {employee.firstName} {employee.lastName}
+                            {employee.supervisor.firstName} {employee.supervisor.lastName}
                         </div>
                     }    
                 </div>
             </div>
             <div>
                 <div>
-                    <span className={LABEL_CSS}>Name: </span>    
+                    <span className={LABEL_CSS}>Salary</span>
+                </div>
+                <div>
+                    {employee.salary}
+                </div>
+            </div>
+            <div>
+                <div>
+                    <span className={LABEL_CSS}>Subordinates: </span>    
                 </div>
                 <div>
                     {

@@ -15,12 +15,14 @@ export const TAG_CSS = css({
 export const FORM_CSS = css({
     "&>div": {
         display: "flex",
+        flexWrap: "nowrap",
         margin: ".5rem 0 .5rem 0",
         "&>div:first-child": {
             textAlign: "right",
             color: "gray",
-            width: "33.33333%",
-            marginRight: "1rem"
+            width: "140px",
+            marginRight: "1rem",
+            whiteSpace: "nowrap"
         }
     }
 });

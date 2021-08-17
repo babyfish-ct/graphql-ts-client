@@ -107,60 +107,49 @@ class ApolloGenerator extends Generator_1.Generator {
                 const separator = hasTypedMutation && hasSimpleMutation ? ", " : "";
                 stream.write(`export {${typedMuation}${separator}${simpleMuation}} from './Mutations';\n`);
             }
-            stream.write("export { DependencyManagerProvider, useRefetchQuries } from './DependencyManager';\n");
-            stream.write("export type { RefetchQueries } from './DependencyManager';\n");
+            stream.write("export { DependencyManagerProvider } from './DependencyManager';\n");
+            stream.write("export type { RefetchableDependencies } from './DependencyManager';\n");
             _super.writeIndexCode.call(this, stream, schema);
         });
     }
 }
 exports.ApolloGenerator = ApolloGenerator;
-const DEPENDENCY_MANAGER_CODE = `import { createContext, FC, memo, PropsWithChildren, useContext, useMemo } from "react";
-import { DependencyManager, DependencyMode, Fetcher } from "graphql-ts-client-api";
+const DEPENDENCY_MANAGER_CODE = `import { createContext, FC, memo, PropsWithChildren, useMemo, useContext } from "react";
+import { DependencyManager } from "graphql-ts-client-api";
 
 export const DependencyManagerProvider: FC<
-    PropsWithChildren<{}>
-> = memo(({children}) => {
-    const dependencyManager = useMemo<DependencyManager>(() => {
-        return new DependencyManager();
+    PropsWithChildren<DependencyManagerProviderConfig>
+> = memo(({children, defaultRegisterDependencies}) => {
+    const arr = useMemo<[DependencyManager, DependencyManagerProviderConfig]>(() => {
+        return [
+            new DependencyManager(),
+            { defaultRegisterDependencies } 
+        ];
     }, []);
     return (
-        <dependencyManagerContext.Provider value={dependencyManager}>
+        <dependencyManagerContext.Provider value={arr}>
             {children}
         </dependencyManagerContext.Provider>
     );
 });
 
-export function useRefetchQuries() {
-    
-    const dependencyManager = useContext(dependencyManagerContext);
-    
-    // This "if statement" does not broken the rules of react-hooks because it throws exception.
+export function useDependencyManager(): DependencyManager {
+    const dependencyManager = useContext(dependencyManagerContext)[0];
     if (dependencyManager === undefined) {
-        throw new Error("'useRefetchQuires' can only be used under <DependencyManagerProvider/>.");
+        throw new Error("'useDependencyManager()' can only be used under <DependencyManagerProvider/>");
     }
-
-    return useMemo<RefetchQueries>(() => {
-        const byTypes = (fetcher: Fetcher<string, object>, mode?: DependencyMode, condition?: boolean): string[] => {
-            if (condition !== false) {
-                return dependencyManager.resourcesDependOnTypes(fetcher, mode ?? "ALL");
-            }
-            return [];
-        };
-        const byFields = (fetcher: Fetcher<string, object>, mode?: DependencyMode, condition?: boolean): string[] => {
-            if (condition !== false) {
-                return dependencyManager.resourcesDependOnFields(fetcher, mode ?? "ALL");
-            }
-            return [];
-        };
-        return { byTypes, byFields };
-    }, [dependencyManager]);
+    return dependencyManager;
 }
 
-export interface RefetchQueries {
-    byTypes(fetcher: Fetcher<string, object>, mode?: DependencyMode, condition?: boolean): string[];
-    byFields(fetcher: Fetcher<string, object>, mode?: DependencyMode, condition?: boolean): string[];
+export interface DependencyManagerProviderConfig {
+    defaultRegisterDependencies: boolean;
 }
 
-// Internal, only used by useTypedQuery and useLazyTypedQuery
-export const dependencyManagerContext = createContext<DependencyManager | undefined>(undefined);
+export interface RefetchableDependencies<T extends object> {
+    ofResult(oldObject: T | undefined, newObject: T | undefined): string[];
+    ofError(): string[];
+}
+
+// Internal, used by usedTypedQuery, useLazyTypedQuery, useTypedMutation
+export const dependencyManagerContext = createContext<[DependencyManager | undefined, DependencyManagerProviderConfig | undefined]>([undefined, undefined]);
 `;

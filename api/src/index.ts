@@ -10,6 +10,6 @@
 
 export type { Fetcher, ModelType } from './Fetcher';
 export { AbstractFetcher } from './Fetcher';
-export { DependencyManager, DependencyMode } from './DependencyManager';
-export { createFetcher } from './FetcherProxy';
+export { DependencyManager } from './DependencyManager';
+export { createFetcher, createFetchableType } from './FetcherProxy';
 export { replaceNullValues } from './util';

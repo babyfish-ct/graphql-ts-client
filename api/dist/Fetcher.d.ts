@@ -65,10 +65,11 @@ export interface FetchableType<E extends string> {
     readonly entityName: E;
     readonly superTypes: readonly FetchableType<string>[];
     readonly declaredFields: ReadonlySet<string>;
+    readonly fields: ReadonlySet<string>;
 }
 export interface FetcherField {
     readonly args?: {
         readonly [key: string]: any;
     };
-    readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, any>>;
+    readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object>>;
 }

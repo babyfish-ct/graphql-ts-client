@@ -4,7 +4,7 @@ import { ModelType } from "../../../../../api/dist";
 import { Dialog } from "../common/Dialog";
 import { ErrorText } from "../common/ErrorText";
 import { Loading } from "../common/Loading";
-import { useRefetchQuries, useSimpleMutation } from "../__generated";
+import { useSimpleMutation } from "../__generated";
 import { employee$ } from "../__generated/fetchers";
 
 export const DELETED_EMPLOYEE_FETCHER =
@@ -18,13 +18,10 @@ export const DeleteEmployeeDialog: FC<{
     onClose: () => void
 }> = memo(({value, onClose}) => {
 
-    const refetchQueries = useRefetchQuries();
-
     const [mutate, {loading, error}] = useSimpleMutation(
         "deleteEmployee",
         { 
-            variables: {id: value.id},
-            refetchQueries: () => refetchQueries.byTypes(employee$) 
+            variables: {id: value.id} 
         } 
     );
 

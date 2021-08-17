@@ -4,8 +4,9 @@ import { ModelType } from "graphql-ts-client-api";
 import { Dialog } from "../common/Dialog";
 import { ErrorText } from "../common/ErrorText";
 import { Loading } from "../common/Loading";
-import { useRefetchQuries, useSimpleMutation } from "../__generated";
+import { useSimpleMutation } from "../__generated";
 import { department$ } from "../__generated/fetchers";
+import { useDependencyManager } from "../__generated/DependencyManager";
 
 const DELETED_DEPARTMENT_FETCHER =
     department$
@@ -17,13 +18,20 @@ export const DeleteDepartmentDialog: FC<{
     onClose: () => void
 }> = memo(({value, onClose}) => {
 
-    const refetchQueries = useRefetchQuries();
-    
+    const dependencyManager = useDependencyManager();
     const [mutate, {loading, error}] = useSimpleMutation(
         "deleteDepartment", 
         { 
             variables: { id: value.id },
-            refetchQueries: () => refetchQueries.byTypes(department$)
+            refetchQueries: () => {
+                /*
+                 * 1. Be diffeant with 'allResources' accept empty fetcher without fields
+                 * 
+                 * 2. If serve side supports cascade deletation on the one-to-many assocation "department.employees",
+                 * change the argument to "department$.employees(employee$)"
+                 */
+                return dependencyManager.allResources(department$);
+            }
         }
     );
 

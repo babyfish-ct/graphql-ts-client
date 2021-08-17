@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, memo, useCallback } from "react";
+import { ChangeEvent, FC, memo, useCallback, useEffect } from "react";
 import { ERROR_CSS } from "../common/CssClasses";
 import { Loading } from "../common/Loading";
 import { useTypedQuery } from "../__generated";
@@ -10,7 +10,7 @@ const EMPLOYEE_OPTION_FETCHER =
     .firstName
     .lastName;
 
-export const DepartmentSelect: FC<{
+export const EmployeeSelect: FC<{
     optional?: boolean,
     departmentId?: string,
     value?: string,
@@ -18,7 +18,7 @@ export const DepartmentSelect: FC<{
 }> = memo(({optional = false, departmentId, value, onChange}) => {
 
     const { loading, error, data } = useTypedQuery(
-        { queryKey: "findEmployees", dataKey: "options" }, 
+        { queryKey: "findEmployees", dataKey: "options", operationName: "huqwihfasdnasjnfandfas" }, 
         EMPLOYEE_OPTION_FETCHER,
         {
             variables: { departmentId }
@@ -29,6 +29,12 @@ export const DepartmentSelect: FC<{
         const v = e.target.value;
         onChange(v === '' ? undefined : v);
     }, [onChange]);
+
+    useEffect(() => {
+        if (!optional && value === undefined && data !== undefined && data.options.length > 0) {
+            onChange(data.options[0].id);
+        }
+    }, [optional, value, data, onChange]);
 
     return (
         <>

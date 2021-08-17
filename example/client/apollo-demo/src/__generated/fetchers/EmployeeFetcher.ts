@@ -1,4 +1,4 @@
-import { Fetcher, createFetcher } from 'graphql-ts-client-api';
+import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import { WithTypeName, ImplementationType } from '../CommonTypes';
 import {Gender} from '../enums';
 
@@ -53,11 +53,11 @@ export interface EmployeeFetcher<T extends object> extends Fetcher<'Employee', T
 
 export const employee$: EmployeeFetcher<{}> = 
 	createFetcher(
-		{
-			entityName: "Employee", 
-			superTypes: [], 
-			declaredFields: new Set<string>(["id", "firstName", "lastName", "gender", "salary", "department", "supervisor", "subordinates"])
-		}, 
+		createFetchableType(
+			"Employee", 
+			[], 
+			["id", "firstName", "lastName", "gender", "salary", "department", "supervisor", "subordinates"]
+		), 
 		undefined, 
 		[
 			'department', 

@@ -4,6 +4,7 @@ import { EmployeeItem, EMPLOYEE_ITEM_FETCHER } from "./EmployeeItem";
 import { useTypedQuery } from "../__generated";
 import { LABEL_CSS } from "../common/CssClasses";
 import { Loading } from "../common/Loading";
+import { EmployeeDialog } from "./EmployeeDialog";
 
 export const EmployeeList: FC = memo(() => {
 
@@ -22,10 +23,17 @@ export const EmployeeList: FC = memo(() => {
         const name = e.target.value.trim();
         setName(name === "" ? undefined : name);
     }, []);
-
     const onRefetchClick = useCallback(() => {
         refetch();
     }, [refetch]);
+
+    const [dialog, setDialog] = useState(false);
+    const onNewClick = useCallback(() => {
+        setDialog(true);
+    }, []);
+    const onDialogClose = useCallback(() => {
+        setDialog(false);
+    }, []);
 
     return (
         <div className={css({margin: "0 1rem 0 1rem"})}>
@@ -41,7 +49,12 @@ export const EmployeeList: FC = memo(() => {
                     <span className={LABEL_CSS}>Name: </span> 
                     <input value={name} onChange={onNameChange}/>
                 </div>
-                <button onClick={onRefetchClick}>Refresh</button>
+                <div>
+                    <button onClick={onRefetchClick}>Refresh</button>
+                </div>
+                <div>
+                    <button onClick={onNewClick}>Add employee</button>
+                </div>
             </div>
             { loading && <Loading mode="FLOAT"/> }
             { error && <div>Error</div> }
@@ -52,6 +65,10 @@ export const EmployeeList: FC = memo(() => {
                     )}
                 </div>
             }
+            <div className={css({margin: "1rem 0 1rem 0"})}>
+                <button onClick={onNewClick}>Add employee</button>
+                { dialog && <EmployeeDialog onClose={onDialogClose}/>}
+            </div>
         </div>
     );
 });

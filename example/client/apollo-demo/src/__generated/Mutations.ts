@@ -1,5 +1,7 @@
 import { Fetcher, replaceNullValues } from 'graphql-ts-client-api';
-import { useMutation, MutationHookOptions, DefaultContext, MutationTuple, ApolloCache, gql } from '@apollo/client';
+import { useMutation, MutationHookOptions, DefaultContext, MutationTuple, ApolloCache, FetchResult, InternalRefetchQueriesInclude, gql } from '@apollo/client';
+import { useContext, useMemo } from 'react';
+import { dependencyManagerContext, RefetchableDependencies } from './DependencyManager';
 import {DepartmentInput} from './inputs';
 import {EmployeeInput} from './inputs';
 
@@ -17,7 +19,11 @@ export function useTypedMutation<
 		readonly operationName?: string;
 	}, 
 	fetcher: Fetcher<MutationFetchableTypes[TMutationKey], T>, 
-	options?: MutationHookOptions<Record<TDataKey, MutationFetchedTypes<T>[TMutationKey]>, MutationVariables[TMutationKey], TContext>
+	options?: MutationHookOptions<Record<TDataKey, MutationFetchedTypes<T>[TMutationKey]>, MutationVariables[TMutationKey], TContext> & {
+		readonly refetchDependencies?: (
+			result: FetchResult<Record<TDataKey, MutationFetchedTypes<T>[TMutationKey]>> &{ dependencies: RefetchableDependencies<T> }
+		) => InternalRefetchQueriesInclude
+	}
 ): MutationTuple<
 	Record<TDataKey, MutationFetchedTypes<T>[TMutationKey]>, 
 	MutationVariables[TMutationKey], 
@@ -32,12 +38,47 @@ export function useTypedMutation<
 			${dataKey ? dataKey + ": " : ""}${mutationKey}${GQL_ARGS[mutationKey] ?? ""}${fetcher.toString()}}
 		${fetcher.toFragmentString()}
 	`;
+	const [dependencyManager] = useContext(dependencyManagerContext);
+	if (options?.refetchDependencies && dependencyManager === undefined) {
+		throw new Error("The property 'refetchDependencies' of options requires <DependencyManagerProvider/>");
+	}const dependencies = useMemo<RefetchableDependencies<T>>(() => {
+		const ofResult = (oldObject: T | undefined, newObject?: T | undefined): string[] => {
+			return dependencyManager!.resources(fetcher, oldObject, newObject);
+		};
+		const ofError = (): string[] => {
+			return [];
+		};
+		return { ofResult, ofError };
+		// eslint-disable-next-line
+	}, [dependencyManager, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
+	if (options?.refetchDependencies && options?.refetchQueries) {
+		throw new Error("The property 'refetchDependencies' and 'refetchQueries' of options cannot be specified at the same time");
+	}
+	const newOptions = useMemo<MutationHookOptions<
+		Record<TDataKey, MutationFetchedTypes<T>[TMutationKey]>, 
+		MutationVariables[TMutationKey], 
+		TContext
+	> | undefined>(() => {
+		const refetchDependencies = options?.refetchDependencies;
+		if (refetchDependencies === undefined) {
+			return options;
+		}
+		const cloned: MutationHookOptions<
+			Record<TDataKey, MutationFetchedTypes<T>[TMutationKey]>, 
+			MutationVariables[TMutationKey], 
+			TContext
+		> = { ...options };
+		cloned.refetchQueries = result => {
+			return refetchDependencies({...result, dependencies});
+		}
+		return cloned;
+	}, [options, dependencies]);
 	const response = useMutation<
 		Record<TDataKey, MutationFetchedTypes<T>[TMutationKey]>, 
 		MutationVariables[TMutationKey], 
 		TContext, 
 		TCache
-	>(gql(request), options);
+	>(gql(request), newOptions);
 	replaceNullValues(response[1].data);
 	return response;
 }

@@ -9,7 +9,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createFetcher = void 0;
+exports.createFetchableType = exports.createFetcher = void 0;
 const Fetcher_1 = require("./Fetcher");
 /*
  * In order to reduce compacity of compiled target code,
@@ -31,25 +31,30 @@ class FetcherTarget extends Fetcher_1.AbstractFetcher {
 function proxyHandler(fetchableType, methodNames) {
     const handler = {
         get: (target, p, receiver) => {
-            if (typeof p !== 'string' || BUILT_IN_FIELDS.has(p)) {
-                const value = Reflect.get(target, p);
-                if (typeof value === "function") {
-                    return value.bind(target);
-                }
-                return value;
-            }
             if (p === "fetchableType") {
                 return fetchableType;
             }
-            if (p.startsWith("~")) {
-                const removeField = Reflect.get(target, "removeField");
-                return new Proxy(removeField.call(target, p.substring(1)), handler);
+            if (typeof p === 'string') {
+                if (p.startsWith("~")) {
+                    const rest = p.substring(1);
+                    if (fetchableType.fields.has(rest)) {
+                        const removeField = Reflect.get(target, "removeField");
+                        return new Proxy(removeField.call(target, rest), handler);
+                    }
+                }
+                else if (p === "on" || p === "asFragment" || methodNames.has(p)) {
+                    return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, p));
+                }
+                else if (fetchableType.fields.has(p)) {
+                    const addField = Reflect.get(target, "addField");
+                    return new Proxy(addField.call(target, p.toString()), handler);
+                }
             }
-            if (p === "on" || p === "asFragment" || methodNames.has(p)) {
-                return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, p));
+            const value = Reflect.get(target, p);
+            if (typeof value === "function") {
+                return value.bind(target);
             }
-            const addField = Reflect.get(target, "addField");
-            return new Proxy(addField.call(target, p.toString()), handler);
+            return value;
         }
     };
     return handler;
@@ -92,10 +97,38 @@ function methodProxyHandler(targetFetcher, handler, field) {
     };
 }
 function dummyTargetMethod() { }
-const FETCHER_TARGET = new FetcherTarget([{ entityName: "Any", superTypes: [], declaredFields: new Set() }, undefined], false, "");
-const BUILT_IN_FIELDS = new Set([
-    ...Object.keys(FETCHER_TARGET),
-    ...Reflect.ownKeys(Fetcher_1.AbstractFetcher.prototype),
-    "_str",
-    "_json"
-]);
+function createFetchableType(entityName, superTypes, declaredFields) {
+    return new FetchableTypeImpl(entityName, superTypes, new Set(declaredFields));
+}
+exports.createFetchableType = createFetchableType;
+class FetchableTypeImpl {
+    constructor(entityName, superTypes, declaredFields) {
+        this.entityName = entityName;
+        this.superTypes = superTypes;
+        this.declaredFields = declaredFields;
+    }
+    get fields() {
+        let fds = this._fields;
+        if (fds === undefined) {
+            if (this.superTypes.length === 0) {
+                fds = this.declaredFields;
+            }
+            else {
+                const set = new Set();
+                collectFields(this, set);
+                fds = set;
+            }
+            this._fields = fds;
+        }
+        return fds;
+    }
+}
+function collectFields(fetchableType, output) {
+    for (const field of fetchableType.declaredFields) {
+        output.add(field);
+    }
+    for (const superType of this.superTypes) {
+        collectFields(superType, output);
+    }
+}
+const FETCHER_TARGET = new FetcherTarget([createFetchableType("Any", [], []), undefined], false, "");

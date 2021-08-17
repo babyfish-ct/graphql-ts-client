@@ -17,7 +17,7 @@ export const Dialog: FC<
             bottom: 0
         })}>
             <div className={css({
-                opacity: .3,
+                opacity: .5,
                 backgroundColor: "black",
                 position: "absolute",
                 left: 0,

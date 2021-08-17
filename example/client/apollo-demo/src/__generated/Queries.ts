@@ -15,7 +15,9 @@ export function useTypedQuery<
 		readonly operationName?: string;
 	}, 
 	fetcher: Fetcher<QueryFetchableTypes[TQueryKey], T>, 
-	options?: QueryHookOptions<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>
+	options?: QueryHookOptions<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]> & {
+		readonly registerDependencies?: boolean | { readonly fieldDependencies: readonly Fetcher<string, object>[] }
+	}
 ): QueryResult<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]> {
 	const queryKey = typeof key === 'string' ? key : key.queryKey;
 	const dataKey = typeof key === 'object' ? key.dataKey : undefined;
@@ -25,13 +27,21 @@ export function useTypedQuery<
 			${dataKey ? dataKey + ": " : ""}${queryKey}${GQL_ARGS[queryKey] ?? ""}${fetcher.toString()}}
 		${fetcher.toFragmentString()}
 	`;
-	const dependencyManager = useContext(dependencyManagerContext);
+	const [dependencyManager, config] = useContext(dependencyManagerContext);
+	const register = options?.registerDependencies !== undefined ? !!options.registerDependencies : config?.defaultRegisterDependencies ?? false;
+	if (register && dependencyManager === undefined) {
+		throw new Error("The property 'registerDependencies' of options requires <DependencyManagerProvider/>");
+	}
 	useEffect(() => {
-		if (dependencyManager !== undefined) {
-			dependencyManager.register(operationName ?? queryKey, [fetcher]);
-			return () => { dependencyManager.unregister(operationName ?? queryKey); };
+		if (register) {
+			dependencyManager!.register(
+				operationName ?? queryKey, 
+				fetcher, 
+				typeof options?.registerDependencies === 'object' ? options?.registerDependencies?.fieldDependencies : undefined
+			);
+			return () => { dependencyManager!.unregister(operationName ?? queryKey); };
 		}// eslint-disable-next-line
-	}, [dependencyManager, operationName, queryKey, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
+	}, [register, dependencyManager, operationName, queryKey, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
 	const response = useQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(gql(request), options);
 	replaceNullValues(response.data);
 	return response;
@@ -48,7 +58,9 @@ export function useLazyTypedQuery<
 		readonly operationName?: string;
 	}, 
 	fetcher: Fetcher<QueryFetchableTypes[TQueryKey], T>, 
-	options?: QueryHookOptions<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>
+	options?: QueryHookOptions<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]> & {
+		readonly registerDependencies?: boolean | { readonly fieldDependencies: readonly Fetcher<string, object>[] }
+	}
 ): QueryTuple<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]> {
 	const queryKey = typeof key === 'string' ? key : key.queryKey;
 	const dataKey = typeof key === 'object' ? key.dataKey : undefined;
@@ -58,13 +70,21 @@ export function useLazyTypedQuery<
 			${dataKey ? dataKey + ": " : ""}${queryKey}${GQL_ARGS[queryKey] ?? ""}${fetcher.toString()}}
 		${fetcher.toFragmentString()}
 	`;
-	const dependencyManager = useContext(dependencyManagerContext);
+	const [dependencyManager, config] = useContext(dependencyManagerContext);
+	const register = options?.registerDependencies !== undefined ? !!options.registerDependencies : config?.defaultRegisterDependencies ?? false;
+	if (register && dependencyManager === undefined) {
+		throw new Error("The property 'registerDependencies' of options requires <DependencyManagerProvider/>");
+	}
 	useEffect(() => {
-		if (dependencyManager !== undefined) {
-			dependencyManager.register(operationName ?? queryKey, [fetcher]);
-			return () => { dependencyManager.unregister(operationName ?? queryKey); };
+		if (register) {
+			dependencyManager!.register(
+				operationName ?? queryKey, 
+				fetcher, 
+				typeof options?.registerDependencies === 'object' ? options?.registerDependencies?.fieldDependencies : undefined
+			);
+			return () => { dependencyManager!.unregister(operationName ?? queryKey); };
 		}// eslint-disable-next-line
-	}, [dependencyManager, operationName, queryKey, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
+	}, [register, dependencyManager, operationName, queryKey, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
 	const response = useLazyQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(gql(request), options);
 	replaceNullValues(response[1].data);
 	return response;

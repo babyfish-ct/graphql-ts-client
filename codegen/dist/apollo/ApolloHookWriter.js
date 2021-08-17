@@ -30,7 +30,11 @@ class ApolloHookWriter extends Writer_1.Writer {
             }
         }
         else {
-            this.importStatement(`import { useMutation, MutationHookOptions, DefaultContext, MutationTuple, ApolloCache, gql } from '@apollo/client';`);
+            this.importStatement(`import { useMutation, MutationHookOptions, DefaultContext, MutationTuple, ApolloCache, FetchResult, InternalRefetchQueriesInclude, gql } from '@apollo/client';`);
+            if (this.hasTypedHooks) {
+                this.importStatement("import { useContext, useMemo } from 'react';");
+                this.importStatement("import { dependencyManagerContext, RefetchableDependencies } from './DependencyManager';");
+            }
         }
         for (const field of this.fields) {
             for (const arg of field.args) {
@@ -109,17 +113,34 @@ class ApolloHookWriter extends Writer_1.Writer {
                         t("TContext");
                 }
             });
+            t(' & ');
+            this.scope({ type: "BLOCK", multiLines: true }, () => {
+                if (this.hookType === 'Query') {
+                    t("readonly registerDependencies?: boolean | { readonly fieldDependencies: readonly Fetcher<string, object>[] }");
+                }
+                else {
+                    t("readonly refetchDependencies?: ");
+                    this.scope({ type: "PARAMETERS", multiLines: true }, () => {
+                        t(`result: FetchResult<Record<TDataKey, ${this.hookType}FetchedTypes<T>[T${this.hookType}Key]>> &`);
+                        t("{ dependencies: RefetchableDependencies<T> }");
+                    });
+                    t(" => InternalRefetchQueriesInclude");
+                }
+            });
         });
         t(`: ${returnType}`);
-        this.writeReturnedGenericArgs("FetchedTypes<T>");
+        this.writeReturnOrOptionsGenericArgs("FetchedTypes<T>");
         this.scope({ "type": "BLOCK", multiLines: true, prefix: " ", suffix: "\n" }, () => {
             this.writeRequestDeclaration(true);
             if (this.hookType === 'Query') {
-                this.writeDependencyRegisitry();
+                this.writeDependencyRegistry();
+            }
+            else {
+                this.writeDependencyTrigger();
             }
             t(`const response = use${prefix}${this.hookType}`);
-            this.writeReturnedGenericArgs("FetchedTypes<T>");
-            t("(gql(request), options);\n");
+            this.writeReturnOrOptionsGenericArgs("FetchedTypes<T>");
+            t(`(gql(request), ${this.hookType === 'Mutation' ? 'newOptions' : 'options'});\n`);
             t(`replaceNullValues(response${responseDataProp}.data);\n`);
             t("return response;\n");
         });
@@ -162,15 +183,15 @@ class ApolloHookWriter extends Writer_1.Writer {
             });
         });
         t(`: ${returnType}`);
-        this.writeReturnedGenericArgs("SimpleTypes");
+        this.writeReturnOrOptionsGenericArgs("SimpleTypes");
         this.scope({ "type": "BLOCK", multiLines: true, prefix: " ", suffix: "\n" }, () => {
             this.writeRequestDeclaration(false);
             t(`return use${prefix}${this.hookType}`);
-            this.writeReturnedGenericArgs("SimpleTypes");
+            this.writeReturnOrOptionsGenericArgs("SimpleTypes");
             t("(gql(request), options);\n");
         });
     }
-    writeReturnedGenericArgs(typesName) {
+    writeReturnOrOptionsGenericArgs(typesName, forOptions = false) {
         const t = this.text.bind(this);
         this.scope({ type: "GENERIC", multiLines: this.hookType === 'Mutation' }, () => {
             t(`Record<TDataKey, ${this.hookType}${typesName}[T${this.hookType}Key]>`);
@@ -179,8 +200,10 @@ class ApolloHookWriter extends Writer_1.Writer {
             if (this.hookType === 'Mutation') {
                 this.separator(),
                     t("TContext");
-                this.separator(),
-                    t("TCache");
+                if (!forOptions) {
+                    this.separator(),
+                        t("TCache");
+                }
             }
         });
     }
@@ -208,19 +231,76 @@ class ApolloHookWriter extends Writer_1.Writer {
             }
         });
     }
-    writeDependencyRegisitry() {
+    writeDependencyRegistry() {
         const t = this.text.bind(this);
-        t('const dependencyManager = useContext(dependencyManagerContext);\n');
+        t('const [dependencyManager, config] = useContext(dependencyManagerContext);\n');
+        t("const register = options?.registerDependencies !== undefined ? !!options.registerDependencies : config?.defaultRegisterDependencies ?? false;\n");
+        t("if (register && dependencyManager === undefined) ");
+        this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
+            t(`throw new Error("The property 'registerDependencies' of options requires <DependencyManagerProvider/>");\n`);
+        });
         t("useEffect(() => ");
         this.scope({ type: "BLOCK", multiLines: true }, () => {
-            t("if (dependencyManager !== undefined) ");
+            t("if (register) ");
             this.scope({ type: "BLOCK", multiLines: true }, () => {
-                t("dependencyManager.register(operationName ?? queryKey, [fetcher]);\n");
-                t("return () => { dependencyManager.unregister(operationName ?? queryKey); };\n");
+                t("dependencyManager!.register");
+                this.scope({ type: "PARAMETERS", multiLines: true, suffix: ";\n" }, () => {
+                    t("operationName ?? queryKey");
+                    this.separator();
+                    t("fetcher");
+                    this.separator();
+                    t("typeof options?.registerDependencies === 'object' ? options?.registerDependencies?.fieldDependencies : undefined");
+                });
+                t("return () => { dependencyManager!.unregister(operationName ?? queryKey); };\n");
             });
             t("// eslint-disable-next-line");
         });
-        t(", [dependencyManager, operationName, queryKey, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.\n");
+        t(", [register, dependencyManager, operationName, queryKey, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.\n");
+    }
+    writeDependencyTrigger() {
+        const t = this.text.bind(this);
+        t('const [dependencyManager] = useContext(dependencyManagerContext);\n');
+        t("if (options?.refetchDependencies && dependencyManager === undefined) ");
+        this.scope({ type: "BLOCK", multiLines: true }, () => {
+            t(`throw new Error("The property 'refetchDependencies' of options requires <DependencyManagerProvider/>");\n`);
+        });
+        t('const dependencies = useMemo<RefetchableDependencies<T>>(() => ');
+        this.scope({ type: "BLOCK", multiLines: true }, () => {
+            t("const ofResult = (oldObject: T | undefined, newObject?: T | undefined): string[] => ");
+            this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
+                t("return dependencyManager!.resources(fetcher, oldObject, newObject);\n");
+            });
+            t("const ofError = (): string[] => ");
+            this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
+                t("return [];\n");
+            });
+            t("return { ofResult, ofError };\n");
+            t("// eslint-disable-next-line");
+        });
+        t(", [dependencyManager, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.\n");
+        t("if (options?.refetchDependencies && options?.refetchQueries) ");
+        this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
+            t(`throw new Error("The property 'refetchDependencies' and 'refetchQueries' of options cannot be specified at the same time");\n`);
+        });
+        t("const newOptions = useMemo<MutationHookOptions");
+        this.writeReturnOrOptionsGenericArgs("FetchedTypes<T>", true);
+        t(" | undefined>(() => ");
+        this.scope({ type: "BLOCK", multiLines: true }, () => {
+            t("const refetchDependencies = options?.refetchDependencies;\n");
+            t("if (refetchDependencies === undefined) ");
+            this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
+                t("return options;\n");
+            });
+            t("const cloned: MutationHookOptions");
+            this.writeReturnOrOptionsGenericArgs("FetchedTypes<T>", true);
+            t(" = { ...options };\n");
+            t("cloned.refetchQueries = result => ");
+            this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
+                t("return refetchDependencies({...result, dependencies});\n");
+            });
+            t("return cloned;\n");
+        });
+        t(", [options, dependencies]);\n");
     }
     writeVariables() {
         const t = this.text.bind(this);

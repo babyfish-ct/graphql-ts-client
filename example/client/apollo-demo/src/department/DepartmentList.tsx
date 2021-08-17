@@ -3,6 +3,7 @@ import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { LABEL_CSS } from "../common/CssClasses";
 import { Loading } from "../common/Loading";
 import { useTypedQuery } from "../__generated";
+import { employee$ } from "../__generated/fetchers";
 import { DepartmentDialog } from "./DepartmentDialog";
 import { DepartmentItem, DEPARTMENT_ITEM_FETCHER } from "./DepartmentItem";
 
@@ -13,11 +14,22 @@ export const DepartmentList: FC = memo(() => {
     const [dialog, setDialog] = useState(false);
 
     const { loading, error, data, refetch } = useTypedQuery(
-        { queryKey: "findDepartmentsLikeName", operationName: "abc" }, 
+        "findDepartmentsLikeName", 
         DEPARTMENT_ITEM_FETCHER,
         { 
             notifyOnNetworkStatusChange: true, // consider "refetching" as "loading"
-            variables: { name } 
+            variables: { name },
+            registerDependencies: {
+                fieldDependencies: [ 
+                    /*
+                     * In the business logic of server-side, "Department.avgSalary" depends on "Employee.salary".
+                     *
+                     * 'Department.avgSalary' is not an explicit graphql assocaition field, but an implicit businss constriant,
+                     * so tell the DependencyManager this query must be refetch when "Employee.slaray" is modified. 
+                     */
+                    employee$.salary 
+                ]
+            }
         }
     );
 
@@ -52,7 +64,12 @@ export const DepartmentList: FC = memo(() => {
                     <span className={LABEL_CSS}>Name: </span> 
                     <input value={name ?? ''} onChange={onNameChange}/>
                 </div>
-                <button onClick={onRefetchClick}>Refetch</button>
+                <div>
+                    <button onClick={onRefetchClick}>Refresh</button>
+                </div>
+                <div>
+                    <button onClick={onNewClick}>Add department</button>
+                </div>
             </div>
             { loading && <Loading mode="FLOAT"/> }
             { error && <div>Error</div> }

@@ -13,7 +13,7 @@ function App() {
 
     return (
         <ApolloProvider client={client}>
-            <DependencyManagerProvider>
+            <DependencyManagerProvider defaultRegisterDependencies={true}>
                 <div className={css`display:flex`}>
                     <div className={css`width:50%`}>
                         <DepartmentList/>

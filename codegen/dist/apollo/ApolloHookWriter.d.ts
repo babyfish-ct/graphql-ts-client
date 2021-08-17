@@ -23,9 +23,10 @@ export declare class ApolloHookWriter extends Writer {
     protected writeCode(): void;
     private writeTypedHook;
     private writeSimpleHook;
-    private writeReturnedGenericArgs;
+    private writeReturnOrOptionsGenericArgs;
     private writeRequestDeclaration;
-    private writeDependencyRegisitry;
+    private writeDependencyRegistry;
+    private writeDependencyTrigger;
     private writeVariables;
     private writeFetchableTypes;
     private writeFetchedTypes;

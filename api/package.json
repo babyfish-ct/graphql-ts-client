@@ -10,5 +10,8 @@
   "files": [
     "/dist"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "ts-md5": "^1.2.9"
+  },
+  "devDependencies": {}
 }
