@@ -11,4 +11,11 @@ export type { Fetcher, ModelType } from './Fetcher';
 export { AbstractFetcher } from './Fetcher';
 export { DependencyManager } from './DependencyManager';
 export { createFetcher, createFetchableType } from './FetcherProxy';
-export { replaceNullValues, toMd5 } from './util';
+import { Draft, PatchListener } from "immer";
+interface UtilInterace {
+    toMd5(value: string): string;
+    removeNullValues(value: any): void;
+    exceptNullValues<T>(value: T): T;
+    produce<T>(base: T, recipe: (draft: Draft<T>) => void, listener?: PatchListener): any;
+}
+export declare const util: UtilInterace;

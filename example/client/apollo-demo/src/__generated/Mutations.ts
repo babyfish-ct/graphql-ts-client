@@ -1,4 +1,4 @@
-import { Fetcher, replaceNullValues, toMd5 } from 'graphql-ts-client-api';
+import { Fetcher, util } from 'graphql-ts-client-api';
 import { DocumentNode } from 'graphql';
 import { useMutation, MutationHookOptions, DefaultContext, MutationTuple, ApolloCache, FetchResult, InternalRefetchQueriesInclude, gql } from '@apollo/client';
 import { useContext, useMemo } from 'react';
@@ -50,7 +50,7 @@ export function useTypedMutation<
 		${fetcher.toFragmentString()}
 	`;
 	const request = useMemo<DocumentNode>(() => {
-		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${mutationKey}_${toMd5(requestWithoutOperation)}`;
+		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${mutationKey}_${util.toMd5(requestWithoutOperation)}`;
 		return gql`mutation ${operationName}${requestWithoutOperation}`;
 	}, [mutationKey, requestWithoutOperation, key]);
 	const [dependencyManager] = useContext(dependencyManagerContext);
@@ -94,8 +94,11 @@ export function useTypedMutation<
 		TContext, 
 		TCache
 	>(request, newOptions);
-	replaceNullValues(response[1].data);
-	return response;
+	return useMemo(() => {
+		return util.produce(response, draft => {
+			draft[1].data = util.exceptNullValues(draft[1].data);
+		});
+	}, [response]);
 }
 
 export function useSimpleMutation<
@@ -123,7 +126,7 @@ export function useSimpleMutation<
 			${dataKey ? dataKey + ": " : ""}${mutationKey}${GQL_ARGS[mutationKey] ?? ""}}
 	`;
 	const request = useMemo<DocumentNode>(() => {
-		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${mutationKey}_${toMd5(requestWithoutOperation)}`;
+		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${mutationKey}_${util.toMd5(requestWithoutOperation)}`;
 		return gql`mutation ${operationName}${requestWithoutOperation}`;
 	}, [mutationKey, requestWithoutOperation, key]);
 	return useMutation<

@@ -33,9 +33,9 @@ export class AsyncOperationWriter extends Writer {
 
     protected prepareImportings() {
         if (this.associatedType !== undefined) {
-            this.importStatement("import {Fetcher, replaceNullValues} from 'graphql-ts-client-api';");
+            this.importStatement("import { Fetcher, util } from 'graphql-ts-client-api';");
         }
-        this.importStatement("import {graphQLClient} from '../Environment';");
+        this.importStatement("import { graphQLClient } from '../Environment';");
         this.importFieldTypes(this.field);
     }
 
@@ -108,7 +108,7 @@ export class AsyncOperationWriter extends Writer {
         t("'];\n");
 
         if (this.associatedType !== undefined) {
-            t("replaceNullValues(result);\n");
+            t("util.removeNullValues(result);\n");
         }
         t("return result as ");
         this.typeRef(this.field.type, "X");

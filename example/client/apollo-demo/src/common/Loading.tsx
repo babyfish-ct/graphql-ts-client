@@ -34,7 +34,7 @@ export const Loading: FC<{
                 })}>
                     <div className={css({display: "flex"})}>
                         <div>
-                            <img src={loading} height={mode === 'INLINE_TINY' ? 20 : 60} className={ANIMATION_CSS}/>
+                            <img src={loading} height={mode === 'INLINE_TINY' ? 20 : 60} className={ANIMATION_CSS} alt="loading"/>
                         </div>
                         {
                             mode === 'INLINE_TINY' ?

@@ -21,7 +21,7 @@ class ApolloHookWriter extends Writer_1.Writer {
         this.hasSimpleHooks = this.fields.find(field => Associations_1.associatedTypeOf(field.type) === undefined) !== undefined;
     }
     prepareImportings() {
-        this.importStatement("import { Fetcher, replaceNullValues, toMd5 } from 'graphql-ts-client-api';");
+        this.importStatement("import { Fetcher, util } from 'graphql-ts-client-api';");
         this.importStatement("import { DocumentNode } from 'graphql';");
         if (this.hookType === "Query") {
             this.importStatement(`import { useQuery, useLazyQuery, QueryHookOptions, QueryResult, QueryTuple, gql } from '@apollo/client';`);
@@ -143,8 +143,15 @@ class ApolloHookWriter extends Writer_1.Writer {
             t(`const response = use${prefix}${this.hookType}`);
             this.writeReturnOrOptionsGenericArgs("FetchedTypes<T>");
             t(`(request, ${this.hookType === 'Mutation' ? 'newOptions' : 'options'});\n`);
-            t(`replaceNullValues(response${responseDataProp}.data);\n`);
-            t("return response;\n");
+            t("return useMemo(() => ");
+            this.scope({ type: "BLOCK", multiLines: true }, () => {
+                t("return util.produce(response, draft => ");
+                this.scope({ type: "BLOCK", multiLines: true }, () => {
+                    t(`draft${responseDataProp}.data = util.exceptNullValues(draft${responseDataProp}.data);\n`);
+                });
+                t(");\n");
+            });
+            t(", [response]);\n");
         });
     }
     writeSimpleHook(returnType, prefix = "") {
@@ -236,7 +243,7 @@ class ApolloHookWriter extends Writer_1.Writer {
             t("const request = useMemo<DocumentNode>(() => ");
         }
         this.scope({ type: "BLOCK", multiLines: true }, () => {
-            t(`const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? \`\${${lowercaseHookType}Key}_\${toMd5(requestWithoutOperation)}\`;\n`);
+            t(`const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? \`\${${lowercaseHookType}Key}_\${util.toMd5(requestWithoutOperation)}\`;\n`);
             if (this.hookType === 'Query') {
                 t(`return [operationName, gql\`${lowercaseHookType} \${operationName}\${requestWithoutOperation}\`];\n`);
             }

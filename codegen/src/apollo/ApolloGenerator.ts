@@ -125,7 +125,7 @@ export const DependencyManagerProvider: FC<
             new DependencyManager(),
             { defaultRegisterDependencies } 
         ];
-    }, []);
+    }, [defaultRegisterDependencies]);
     return (
         <dependencyManagerContext.Provider value={arr}>
             {children}

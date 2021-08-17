@@ -6,7 +6,7 @@ import { ERROR_CSS, FORM_CSS } from "../common/CssClasses";
 import { Dialog } from "../common/Dialog";
 import { Loading } from "../common/Loading";
 import { useTypedMutation } from "../__generated";
-import { department$, department$$ } from "../__generated/fetchers";
+import { department$$ } from "../__generated/fetchers";
 import { DepartmentInput } from "../__generated/inputs";
 
 export const DEPARTMENT_MUTATION_FETCHER =
@@ -33,7 +33,7 @@ export const DepartmentDialog: FC<{
 
     const [mutate, { loading, error }] = useTypedMutation(
         "mergeDepartment",
-        DEPARTMENT_MUTATION_FETCHER,
+        DEPARTMENT_MUTATION_FETCHER, // Mutation Fetcher
         { 
             variables: { input: input as DepartmentInput }, // Unsafe cast, depends on "valid"
             

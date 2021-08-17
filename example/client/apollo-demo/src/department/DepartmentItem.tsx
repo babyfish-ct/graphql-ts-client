@@ -1,8 +1,8 @@
-import { css, cx } from "@emotion/css";
+import { css } from "@emotion/css";
 import { FC, memo, useCallback, useState } from "react";
 import { ModelType } from "graphql-ts-client-api";
 import { LABEL_CSS, TAG_CSS } from "../common/CssClasses";
-import { department$$, employee$, employee$$ } from "../__generated/fetchers";
+import { department$$, employee$ } from "../__generated/fetchers";
 import { DeleteDepartmentDialog } from "./DeleteDepartmentDialog";
 import { DepartmentDialog } from "./DepartmentDialog";
 

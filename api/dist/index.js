@@ -9,7 +9,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toMd5 = exports.replaceNullValues = exports.createFetchableType = exports.createFetcher = exports.DependencyManager = exports.AbstractFetcher = void 0;
+exports.util = exports.createFetchableType = exports.createFetcher = exports.DependencyManager = exports.AbstractFetcher = void 0;
 var Fetcher_1 = require("./Fetcher");
 Object.defineProperty(exports, "AbstractFetcher", { enumerable: true, get: function () { return Fetcher_1.AbstractFetcher; } });
 var DependencyManager_1 = require("./DependencyManager");
@@ -17,6 +17,7 @@ Object.defineProperty(exports, "DependencyManager", { enumerable: true, get: fun
 var FetcherProxy_1 = require("./FetcherProxy");
 Object.defineProperty(exports, "createFetcher", { enumerable: true, get: function () { return FetcherProxy_1.createFetcher; } });
 Object.defineProperty(exports, "createFetchableType", { enumerable: true, get: function () { return FetcherProxy_1.createFetchableType; } });
-var util_1 = require("./util");
-Object.defineProperty(exports, "replaceNullValues", { enumerable: true, get: function () { return util_1.replaceNullValues; } });
-Object.defineProperty(exports, "toMd5", { enumerable: true, get: function () { return util_1.toMd5; } });
+const Md5_1 = require("./util/Md5");
+const NullValues_1 = require("./util/NullValues");
+const immer_1 = require("immer");
+exports.util = { toMd5: Md5_1.toMd5, removeNullValues: NullValues_1.removeNullValues, exceptNullValues: NullValues_1.exceptNullValues, produce: immer_1.produce };

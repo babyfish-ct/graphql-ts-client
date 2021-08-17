@@ -1,4 +1,4 @@
-import { ApolloError, ServerError } from "@apollo/client";
+import { ApolloError } from "@apollo/client";
 import { FC, memo } from "react";
 import { ERROR_CSS, FORM_CSS } from "./CssClasses";
 

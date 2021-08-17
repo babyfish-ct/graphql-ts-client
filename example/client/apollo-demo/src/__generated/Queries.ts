@@ -1,4 +1,4 @@
-import { Fetcher, replaceNullValues, toMd5 } from 'graphql-ts-client-api';
+import { Fetcher, util } from 'graphql-ts-client-api';
 import { DocumentNode } from 'graphql';
 import { useQuery, useLazyQuery, QueryHookOptions, QueryResult, QueryTuple, gql } from '@apollo/client';
 import { useContext, useEffect, useMemo } from 'react';
@@ -39,7 +39,7 @@ export function useTypedQuery<
 		${fetcher.toFragmentString()}
 	`;
 	const [operationName, request] = useMemo<[string, DocumentNode]>(() => {
-		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${queryKey}_${toMd5(requestWithoutOperation)}`;
+		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${queryKey}_${util.toMd5(requestWithoutOperation)}`;
 		return [operationName, gql`query ${operationName}${requestWithoutOperation}`];
 	}, [queryKey, requestWithoutOperation, key]);
 	const [dependencyManager, config] = useContext(dependencyManagerContext);
@@ -58,8 +58,11 @@ export function useTypedQuery<
 		}// eslint-disable-next-line
 	}, [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
 	const response = useQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(request, options);
-	replaceNullValues(response.data);
-	return response;
+	return useMemo(() => {
+		return util.produce(response, draft => {
+			draft.data = util.exceptNullValues(draft.data);
+		});
+	}, [response]);
 }
 
 export function useLazyTypedQuery<
@@ -96,7 +99,7 @@ export function useLazyTypedQuery<
 		${fetcher.toFragmentString()}
 	`;
 	const [operationName, request] = useMemo<[string, DocumentNode]>(() => {
-		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${queryKey}_${toMd5(requestWithoutOperation)}`;
+		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${queryKey}_${util.toMd5(requestWithoutOperation)}`;
 		return [operationName, gql`query ${operationName}${requestWithoutOperation}`];
 	}, [queryKey, requestWithoutOperation, key]);
 	const [dependencyManager, config] = useContext(dependencyManagerContext);
@@ -115,8 +118,11 @@ export function useLazyTypedQuery<
 		}// eslint-disable-next-line
 	}, [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
 	const response = useLazyQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(request, options);
-	replaceNullValues(response[1].data);
-	return response;
+	return useMemo(() => {
+		return util.produce(response, draft => {
+			draft[1].data = util.exceptNullValues(draft[1].data);
+		});
+	}, [response]);
 }
 
 //////////////////////////////////////////////////
