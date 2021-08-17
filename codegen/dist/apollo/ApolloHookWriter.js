@@ -21,11 +21,12 @@ class ApolloHookWriter extends Writer_1.Writer {
         this.hasSimpleHooks = this.fields.find(field => Associations_1.associatedTypeOf(field.type) === undefined) !== undefined;
     }
     prepareImportings() {
-        this.importStatement("import { Fetcher, replaceNullValues } from 'graphql-ts-client-api';");
+        this.importStatement("import { Fetcher, replaceNullValues, toMd5 } from 'graphql-ts-client-api';");
+        this.importStatement("import { DocumentNode } from 'graphql';");
         if (this.hookType === "Query") {
             this.importStatement(`import { useQuery, useLazyQuery, QueryHookOptions, QueryResult, QueryTuple, gql } from '@apollo/client';`);
             if (this.hasTypedHooks) {
-                this.importStatement("import { useContext, useEffect } from 'react';");
+                this.importStatement("import { useContext, useEffect, useMemo } from 'react';");
                 this.importStatement("import { dependencyManagerContext } from './DependencyManager';");
             }
         }
@@ -93,6 +94,7 @@ class ApolloHookWriter extends Writer_1.Writer {
             this.scope({ type: "BLOCK", multiLines: true }, () => {
                 t(`readonly ${lowercaseHookType}Key: T${this.hookType}Key;\n`);
                 t("readonly dataKey?: TDataKey;\n");
+                t(OPERATION_NAME_DOC);
                 t("readonly operationName?: string;\n");
             });
             this.separator();
@@ -140,7 +142,7 @@ class ApolloHookWriter extends Writer_1.Writer {
             }
             t(`const response = use${prefix}${this.hookType}`);
             this.writeReturnOrOptionsGenericArgs("FetchedTypes<T>");
-            t(`(gql(request), ${this.hookType === 'Mutation' ? 'newOptions' : 'options'});\n`);
+            t(`(request, ${this.hookType === 'Mutation' ? 'newOptions' : 'options'});\n`);
             t(`replaceNullValues(response${responseDataProp}.data);\n`);
             t("return response;\n");
         });
@@ -188,7 +190,7 @@ class ApolloHookWriter extends Writer_1.Writer {
             this.writeRequestDeclaration(false);
             t(`return use${prefix}${this.hookType}`);
             this.writeReturnOrOptionsGenericArgs("SimpleTypes");
-            t("(gql(request), options);\n");
+            t("(request, options);\n");
         });
     }
     writeReturnOrOptionsGenericArgs(typesName, forOptions = false) {
@@ -212,11 +214,8 @@ class ApolloHookWriter extends Writer_1.Writer {
         const lowercaseHookType = this.hookType.toLowerCase();
         t(`const ${lowercaseHookType}Key = typeof key === 'string' ? key : key.${lowercaseHookType}Key;\n`);
         t(`const dataKey = typeof key === 'object' ? key.dataKey : undefined;\n`);
-        t(`const operationName = typeof key === 'object' ? key.operationName : undefined;\n`);
-        t("const request = ");
+        t("const requestWithoutOperation = ");
         this.scope({ type: "BLANK", prefix: "`", suffix: "`;\n", multiLines: true }, () => {
-            t(lowercaseHookType);
-            t(` \${operationName ?? ${lowercaseHookType}Key}`);
             t(`\${GQL_PARAMS[${lowercaseHookType}Key] ?? ""} {\n`);
             this.scope({ type: "BLANK" }, () => {
                 t(`\${dataKey ? dataKey + ": " : ""}`);
@@ -230,6 +229,22 @@ class ApolloHookWriter extends Writer_1.Writer {
                 t("${fetcher.toFragmentString()}\n");
             }
         });
+        if (this.hookType === 'Query') {
+            t("const [operationName, request] = useMemo<[string, DocumentNode]>(() => ");
+        }
+        else {
+            t("const request = useMemo<DocumentNode>(() => ");
+        }
+        this.scope({ type: "BLOCK", multiLines: true }, () => {
+            t(`const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? \`\${${lowercaseHookType}Key}_\${toMd5(requestWithoutOperation)}\`;\n`);
+            if (this.hookType === 'Query') {
+                t(`return [operationName, gql\`${lowercaseHookType} \${operationName}\${requestWithoutOperation}\`];\n`);
+            }
+            else {
+                t(`return gql\`${lowercaseHookType} \${operationName}\${requestWithoutOperation}\`;\n`);
+            }
+        });
+        t(`, [${lowercaseHookType}Key, requestWithoutOperation, key]);\n`);
     }
     writeDependencyRegistry() {
         const t = this.text.bind(this);
@@ -412,3 +427,15 @@ class ApolloHookWriter extends Writer_1.Writer {
 }
 exports.ApolloHookWriter = ApolloHookWriter;
 const DIVIDER_LINE = "\n//////////////////////////////////////////////////\n";
+const OPERATION_NAME_DOC = `
+/*
+ * OperationName is not necessary, and it is not recommended to specify its value.
+ * If it's not speicified, a md5 code base on the request is used to be the suffix of actual operation name.
+ * 
+ * Maybe sometimes you need to make the request body more readable, you can specify it,
+ * but be careful, please make sure each query has a unique operations; 
+ * otherwise, both Apollo/client and DependencyManager cannot work normally.
+ * Please view "Each included query is executed with its most recently provided set of variables."
+ * in https://www.apollographql.com/docs/react/data/mutations/#refetching-queries to know more.
+ */
+`;

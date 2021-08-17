@@ -16,7 +16,7 @@ export const DepartmentSelect: FC<{
 }> = memo(({optional = false, value, onChange}) => {
 
     const { loading, error, data } = useTypedQuery(
-        { queryKey: "findDepartmentsLikeName", dataKey: "options", operationName: "sfasdfadfasrawefasdfasdfasdf" }, 
+        { queryKey: "findDepartmentsLikeName", dataKey: "options" }, 
         DEPARTMENT_OTPITON_FETCHER
     );
 

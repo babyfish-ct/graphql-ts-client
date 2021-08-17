@@ -68,18 +68,28 @@ export class EmployeeService {
          */
         await delay(1000);
 
+        for (let suprvisorId = input.supervisorId; 
+            suprvisorId !== undefined;
+            suprvisorId = employeeTable.findByUniqueProp("id", suprvisorId)?.supervisorId
+        ) {
+            if (suprvisorId === input.id) {
+                throw new Error("Cannot modify the supervisor, it would make the data reference cycle problem if it is allowed");
+            }
+        }
         employeeTable.insert(input, true);
         return new Employee(input);
     }
 
-    @Mutation(() => Boolean)
+    @Mutation(() => String)
     async deleteEmployee(
         @Arg("id", () => String) id: string
-    ): Promise<boolean> {
+    ): Promise<string | undefined> {
 
         /*
          * Mock the network delay
          */
-        return employeeTable.delete(id) !== 0;
+        await delay(1000);
+
+        return employeeTable.delete(id) !== 0 ? id : undefined;
     }
 }

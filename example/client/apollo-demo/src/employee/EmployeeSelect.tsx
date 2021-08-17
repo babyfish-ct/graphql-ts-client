@@ -18,7 +18,7 @@ export const EmployeeSelect: FC<{
 }> = memo(({optional = false, departmentId, value, onChange}) => {
 
     const { loading, error, data } = useTypedQuery(
-        { queryKey: "findEmployees", dataKey: "options", operationName: "huqwihfasdnasjnfandfas" }, 
+        { queryKey: "findEmployees", dataKey: "options" }, 
         EMPLOYEE_OPTION_FETCHER,
         {
             variables: { departmentId }

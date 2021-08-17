@@ -36,7 +36,16 @@ export const DepartmentDialog: FC<{
         DEPARTMENT_MUTATION_FETCHER,
         { 
             variables: { input: input as DepartmentInput }, // Unsafe cast, depends on "valid"
+            
             refetchDependencies: result => {
+                
+                if (result.errors) { 
+                    // Refetch all the affected queries becasue error means client does not know whether server side has done the mutation or not.
+                    return result.dependencies.ofError(); 
+                }
+
+                // If the mutation added an new department('value' is undefined but 'result.data?.mergeDepartment' is not)
+                // The queries returns department lists will be refetched.
                 return result.dependencies.ofResult(value, result.data?.mergeDepartment);
             }
         }

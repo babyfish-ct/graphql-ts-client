@@ -7,7 +7,10 @@ export const Loading: FC<{
     mode?: "INLINE" | "INLINE_TINY" | "FLOAT"
 }> = memo(({title = "Loading...", mode = "INLINE"}) => {
     return (
-        <div className={cx({[css({position: 'relative'})]: mode === 'FLOAT'})}>
+        <div className={cx({
+            [css({position: 'relative'})]: mode === 'FLOAT', 
+            [css({display: "inline-block"})]: mode === 'INLINE_TINY'
+        })}>
             <div className={cx({
                 [css({
                     position: "absolute",

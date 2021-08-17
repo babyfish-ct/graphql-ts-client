@@ -8,3 +8,4 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 export declare function replaceNullValues(value: any): void;
+export declare function toMd5(value: string): string;

@@ -1,4 +1,4 @@
-import { ApolloError } from "@apollo/client";
+import { ApolloError, ServerError } from "@apollo/client";
 import { FC, memo } from "react";
 import { ERROR_CSS, FORM_CSS } from "./CssClasses";
 
@@ -6,19 +6,29 @@ export const ErrorText: FC<{
     error: ApolloError
 }> = memo(({error}) => {
 
+    const serverErrors = (error.networkError as any).result?.errors as {readonly message: string}[] | undefined;
     return (
         <div className={ERROR_CSS}>
-            <h2>{error.message}</h2>
             <div className={FORM_CSS}>
                 {
-                    error.networkError && 
+                    serverErrors && 
+                    <ul>
+                        {
+                            serverErrors.map((serverError, index) =>
+                                <li key={index}>{serverError.message}</li> 
+                            )
+                        }
+                    </ul>
+                }
+                {
+                    serverErrors === undefined && error.networkError && 
                     <div>
                         <div>Network error</div>
                         <div>{error.networkError.message}</div>
                     </div>
                 }
                 {
-                    error.clientErrors && 
+                    error.clientErrors.length !== 0 && 
                     <div>
                         <div>Client errors</div>
                         <div>
@@ -33,7 +43,7 @@ export const ErrorText: FC<{
                     </div>
                 }
                 {
-                    error.graphQLErrors && 
+                    error.graphQLErrors.length !== 0 && 
                     <div>
                         <div>GraphQL errors</div>
                         <div>

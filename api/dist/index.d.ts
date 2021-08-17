@@ -11,4 +11,4 @@ export type { Fetcher, ModelType } from './Fetcher';
 export { AbstractFetcher } from './Fetcher';
 export { DependencyManager } from './DependencyManager';
 export { createFetcher, createFetchableType } from './FetcherProxy';
-export { replaceNullValues } from './util';
+export { replaceNullValues, toMd5 } from './util';

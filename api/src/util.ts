@@ -8,6 +8,8 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
+import { Md5 } from 'ts-md5';
+
 export function replaceNullValues(value: any) {
     if (typeof value === 'object') {
         if (Array.isArray(value)) {
@@ -30,4 +32,10 @@ export function replaceNullValues(value: any) {
             }
         }
     }
+}
+
+export function toMd5(value: string): string {
+    const md5 = new Md5();
+    md5.appendStr(value);
+    return md5.end() as string;
 }

@@ -1,4 +1,5 @@
-import { Fetcher, replaceNullValues } from 'graphql-ts-client-api';
+import { Fetcher, replaceNullValues, toMd5 } from 'graphql-ts-client-api';
+import { DocumentNode } from 'graphql';
 import { useMutation, MutationHookOptions, DefaultContext, MutationTuple, ApolloCache, FetchResult, InternalRefetchQueriesInclude, gql } from '@apollo/client';
 import { useContext, useMemo } from 'react';
 import { dependencyManagerContext, RefetchableDependencies } from './DependencyManager';
@@ -16,6 +17,17 @@ export function useTypedMutation<
 	key: TMutationKey | {
 		readonly mutationKey: TMutationKey;
 		readonly dataKey?: TDataKey;
+
+		/*
+		 * OperationName is not necessary, and it is not recommended to specify its value.
+		 * If it's not speicified, a md5 code base on the request is used to be the suffix of actual operation name.
+		 * 
+		 * Maybe sometimes you need to make the request body more readable, you can specify it,
+		 * but be careful, please make sure each query has a unique operations; 
+		 * otherwise, both Apollo/client and DependencyManager cannot work normally.
+		 * Please view "Each included query is executed with its most recently provided set of variables."
+		 * in https://www.apollographql.com/docs/react/data/mutations/#refetching-queries to know more.
+		 */
 		readonly operationName?: string;
 	}, 
 	fetcher: Fetcher<MutationFetchableTypes[TMutationKey], T>, 
@@ -32,12 +44,15 @@ export function useTypedMutation<
 > {
 	const mutationKey = typeof key === 'string' ? key : key.mutationKey;
 	const dataKey = typeof key === 'object' ? key.dataKey : undefined;
-	const operationName = typeof key === 'object' ? key.operationName : undefined;
-	const request = `
-		mutation ${operationName ?? mutationKey}${GQL_PARAMS[mutationKey] ?? ""} {
+	const requestWithoutOperation = `
+		${GQL_PARAMS[mutationKey] ?? ""} {
 			${dataKey ? dataKey + ": " : ""}${mutationKey}${GQL_ARGS[mutationKey] ?? ""}${fetcher.toString()}}
 		${fetcher.toFragmentString()}
 	`;
+	const request = useMemo<DocumentNode>(() => {
+		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${mutationKey}_${toMd5(requestWithoutOperation)}`;
+		return gql`mutation ${operationName}${requestWithoutOperation}`;
+	}, [mutationKey, requestWithoutOperation, key]);
 	const [dependencyManager] = useContext(dependencyManagerContext);
 	if (options?.refetchDependencies && dependencyManager === undefined) {
 		throw new Error("The property 'refetchDependencies' of options requires <DependencyManagerProvider/>");
@@ -78,7 +93,7 @@ export function useTypedMutation<
 		MutationVariables[TMutationKey], 
 		TContext, 
 		TCache
-	>(gql(request), newOptions);
+	>(request, newOptions);
 	replaceNullValues(response[1].data);
 	return response;
 }
@@ -103,17 +118,20 @@ export function useSimpleMutation<
 > {
 	const mutationKey = typeof key === 'string' ? key : key.mutationKey;
 	const dataKey = typeof key === 'object' ? key.dataKey : undefined;
-	const operationName = typeof key === 'object' ? key.operationName : undefined;
-	const request = `
-		mutation ${operationName ?? mutationKey}${GQL_PARAMS[mutationKey] ?? ""} {
+	const requestWithoutOperation = `
+		${GQL_PARAMS[mutationKey] ?? ""} {
 			${dataKey ? dataKey + ": " : ""}${mutationKey}${GQL_ARGS[mutationKey] ?? ""}}
 	`;
+	const request = useMemo<DocumentNode>(() => {
+		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${mutationKey}_${toMd5(requestWithoutOperation)}`;
+		return gql`mutation ${operationName}${requestWithoutOperation}`;
+	}, [mutationKey, requestWithoutOperation, key]);
 	return useMutation<
 		Record<TDataKey, MutationSimpleTypes[TMutationKey]>, 
 		MutationVariables[TMutationKey], 
 		TContext, 
 		TCache
-	>(gql(request), options);
+	>(request, options);
 }
 
 //////////////////////////////////////////////////
@@ -136,8 +154,8 @@ export interface MutationFetchedTypes<T> {
 }
 
 export interface MutationSimpleTypes {
-	deleteDepartment: boolean;
-	deleteEmployee: boolean;
+	deleteDepartment: string;
+	deleteEmployee: string;
 }
 
 //////////////////////////////////////////////////

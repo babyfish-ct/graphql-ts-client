@@ -1,6 +1,7 @@
-import { Fetcher, replaceNullValues } from 'graphql-ts-client-api';
+import { Fetcher, replaceNullValues, toMd5 } from 'graphql-ts-client-api';
+import { DocumentNode } from 'graphql';
 import { useQuery, useLazyQuery, QueryHookOptions, QueryResult, QueryTuple, gql } from '@apollo/client';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useMemo } from 'react';
 import { dependencyManagerContext } from './DependencyManager';
 
 
@@ -12,6 +13,17 @@ export function useTypedQuery<
 	key: TQueryKey | {
 		readonly queryKey: TQueryKey;
 		readonly dataKey?: TDataKey;
+
+		/*
+		 * OperationName is not necessary, and it is not recommended to specify its value.
+		 * If it's not speicified, a md5 code base on the request is used to be the suffix of actual operation name.
+		 * 
+		 * Maybe sometimes you need to make the request body more readable, you can specify it,
+		 * but be careful, please make sure each query has a unique operations; 
+		 * otherwise, both Apollo/client and DependencyManager cannot work normally.
+		 * Please view "Each included query is executed with its most recently provided set of variables."
+		 * in https://www.apollographql.com/docs/react/data/mutations/#refetching-queries to know more.
+		 */
 		readonly operationName?: string;
 	}, 
 	fetcher: Fetcher<QueryFetchableTypes[TQueryKey], T>, 
@@ -21,12 +33,15 @@ export function useTypedQuery<
 ): QueryResult<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]> {
 	const queryKey = typeof key === 'string' ? key : key.queryKey;
 	const dataKey = typeof key === 'object' ? key.dataKey : undefined;
-	const operationName = typeof key === 'object' ? key.operationName : undefined;
-	const request = `
-		query ${operationName ?? queryKey}${GQL_PARAMS[queryKey] ?? ""} {
+	const requestWithoutOperation = `
+		${GQL_PARAMS[queryKey] ?? ""} {
 			${dataKey ? dataKey + ": " : ""}${queryKey}${GQL_ARGS[queryKey] ?? ""}${fetcher.toString()}}
 		${fetcher.toFragmentString()}
 	`;
+	const [operationName, request] = useMemo<[string, DocumentNode]>(() => {
+		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${queryKey}_${toMd5(requestWithoutOperation)}`;
+		return [operationName, gql`query ${operationName}${requestWithoutOperation}`];
+	}, [queryKey, requestWithoutOperation, key]);
 	const [dependencyManager, config] = useContext(dependencyManagerContext);
 	const register = options?.registerDependencies !== undefined ? !!options.registerDependencies : config?.defaultRegisterDependencies ?? false;
 	if (register && dependencyManager === undefined) {
@@ -42,7 +57,7 @@ export function useTypedQuery<
 			return () => { dependencyManager!.unregister(operationName ?? queryKey); };
 		}// eslint-disable-next-line
 	}, [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
-	const response = useQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(gql(request), options);
+	const response = useQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(request, options);
 	replaceNullValues(response.data);
 	return response;
 }
@@ -55,6 +70,17 @@ export function useLazyTypedQuery<
 	key: TQueryKey | {
 		readonly queryKey: TQueryKey;
 		readonly dataKey?: TDataKey;
+
+		/*
+		 * OperationName is not necessary, and it is not recommended to specify its value.
+		 * If it's not speicified, a md5 code base on the request is used to be the suffix of actual operation name.
+		 * 
+		 * Maybe sometimes you need to make the request body more readable, you can specify it,
+		 * but be careful, please make sure each query has a unique operations; 
+		 * otherwise, both Apollo/client and DependencyManager cannot work normally.
+		 * Please view "Each included query is executed with its most recently provided set of variables."
+		 * in https://www.apollographql.com/docs/react/data/mutations/#refetching-queries to know more.
+		 */
 		readonly operationName?: string;
 	}, 
 	fetcher: Fetcher<QueryFetchableTypes[TQueryKey], T>, 
@@ -64,12 +90,15 @@ export function useLazyTypedQuery<
 ): QueryTuple<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]> {
 	const queryKey = typeof key === 'string' ? key : key.queryKey;
 	const dataKey = typeof key === 'object' ? key.dataKey : undefined;
-	const operationName = typeof key === 'object' ? key.operationName : undefined;
-	const request = `
-		query ${operationName ?? queryKey}${GQL_PARAMS[queryKey] ?? ""} {
+	const requestWithoutOperation = `
+		${GQL_PARAMS[queryKey] ?? ""} {
 			${dataKey ? dataKey + ": " : ""}${queryKey}${GQL_ARGS[queryKey] ?? ""}${fetcher.toString()}}
 		${fetcher.toFragmentString()}
 	`;
+	const [operationName, request] = useMemo<[string, DocumentNode]>(() => {
+		const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? `${queryKey}_${toMd5(requestWithoutOperation)}`;
+		return [operationName, gql`query ${operationName}${requestWithoutOperation}`];
+	}, [queryKey, requestWithoutOperation, key]);
 	const [dependencyManager, config] = useContext(dependencyManagerContext);
 	const register = options?.registerDependencies !== undefined ? !!options.registerDependencies : config?.defaultRegisterDependencies ?? false;
 	if (register && dependencyManager === undefined) {
@@ -85,7 +114,7 @@ export function useLazyTypedQuery<
 			return () => { dependencyManager!.unregister(operationName ?? queryKey); };
 		}// eslint-disable-next-line
 	}, [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
-	const response = useLazyQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(gql(request), options);
+	const response = useLazyQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(request, options);
 	replaceNullValues(response[1].data);
 	return response;
 }

@@ -29,6 +29,10 @@ export const DeleteDepartmentDialog: FC<{
                  * 
                  * 2. If serve side supports cascade deletation on the one-to-many assocation "department.employees",
                  * change the argument to "department$.employees(employee$)"
+                 * 
+                 * 3. Now, the server-side does not supports cascade deletation,
+                 * so this is a simple deleting operation and you can remove this "refetchQuires" 
+                 * and add "update" with "cache.evict" to optimize the performance.
                  */
                 return dependencyManager.allResources(department$);
             }

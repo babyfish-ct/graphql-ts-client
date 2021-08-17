@@ -1,10 +1,11 @@
 import { css } from "@emotion/css";
 import { FC, memo, useCallback } from "react";
-import { ModelType } from "../../../../../api/dist";
+import { ModelType } from "graphql-ts-client-api";
 import { Dialog } from "../common/Dialog";
 import { ErrorText } from "../common/ErrorText";
 import { Loading } from "../common/Loading";
 import { useSimpleMutation } from "../__generated";
+import { useDependencyManager } from "../__generated/DependencyManager";
 import { employee$ } from "../__generated/fetchers";
 
 export const DELETED_EMPLOYEE_FETCHER =
@@ -18,11 +19,19 @@ export const DeleteEmployeeDialog: FC<{
     onClose: () => void
 }> = memo(({value, onClose}) => {
 
+    const dependencyManager = useDependencyManager();
     const [mutate, {loading, error}] = useSimpleMutation(
         "deleteEmployee",
         { 
-            variables: {id: value.id} 
-        } 
+            variables: {id: value.id},
+            refetchQueries: () => {
+                /*
+                 * This "refetchQueries" is necesary, it cannot be replaced by "update" with "cache.evict".
+                 * If you do that, you will find that "Department.avgSalary" cannot be changed.
+                 */
+                return dependencyManager.allResources(employee$);
+            }
+        }
     );
 
     const onDeleteClick = useCallback(async () => {
@@ -32,7 +41,7 @@ export const DeleteEmployeeDialog: FC<{
             console.warn("Failed to delete employee", ex);
             return;
         }
-        onClose
+        onClose();
     }, [mutate, onClose]);
 
     return (
@@ -45,6 +54,7 @@ export const DeleteEmployeeDialog: FC<{
             { error && <ErrorText error={error}/>}
             <div className={css({textAlign: 'right'})}>
                 <button disabled={loading} onClick={onDeleteClick}>Ok</button>
+                &nbsp;
                 <button onClick={onClose}>Cancel</button>
             </div>
         </Dialog>

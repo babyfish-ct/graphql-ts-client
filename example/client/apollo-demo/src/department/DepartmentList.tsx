@@ -24,8 +24,8 @@ export const DepartmentList: FC = memo(() => {
                     /*
                      * In the business logic of server-side, "Department.avgSalary" depends on "Employee.salary".
                      *
-                     * 'Department.avgSalary' is not an explicit graphql assocaition field, but an implicit businss constriant,
-                     * so tell the DependencyManager this query must be refetch when "Employee.slaray" is modified. 
+                     * This dependency is not an explicit graphql assocaition dependency, but an implicit businss constriant,
+                     * so please tell the DependencyManager this query must be refetched when "Employee.slaray" is modified by yourself. 
                      */
                     employee$.salary 
                 ]
@@ -56,8 +56,9 @@ export const DepartmentList: FC = memo(() => {
             <div className={css({
                 margin: "1rem 0 1rem 0",
                 display: "flex",
+                flexWrap: "wrap",
                 "&>div": {
-                    margin: "0 1rem 0 1rem"
+                    padding: ".5rem"
                 }
             })}>
                 <div>

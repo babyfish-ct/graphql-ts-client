@@ -33,9 +33,13 @@ express()
         '/graphql', 
         graphqlHTTP({
             schema,
-            graphiql: true
+            graphiql: true,
+            customFormatErrorFn: err => {
+                console.log("Exception raised!", err);
+                return err;
+            }
         })
     )
     .listen(8080, () => {
-        console.log("GraphQL server is started, please access http://localhost:8080/graphql");
+        console.log("\n\n\nGraphQL server is started, please access http://localhost:8080/graphql");
     });

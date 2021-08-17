@@ -5,17 +5,25 @@ import { useTypedQuery } from "../__generated";
 import { LABEL_CSS } from "../common/CssClasses";
 import { Loading } from "../common/Loading";
 import { EmployeeDialog } from "./EmployeeDialog";
+import { DepartmentSelect } from "../department/DepartmentSelect";
+import { EmployeeSelect } from "./EmployeeSelect";
 
 export const EmployeeList: FC = memo(() => {
 
     const [name, setName] = useState<string>();
+    const [departmentId, setDepartmentId] = useState<string>();
+    const [supervisorId, setSupervisorId] = useState<string>();
 
     const { loading, error, data, refetch } = useTypedQuery(
         "findEmployees",
         EMPLOYEE_ITEM_FETCHER,
         {
             notifyOnNetworkStatusChange: true, // consider "refetching" as "loading"
-            variables: { name }
+            variables: { 
+                name,
+                departmentId,
+                supervisorId
+            }
         }
     );
 
@@ -41,13 +49,22 @@ export const EmployeeList: FC = memo(() => {
             <div className={css({
                 margin: "1rem 0 1rem 0",
                 display: "flex",
+                flexWrap: "wrap",
                 "&>div": {
-                    margin: "0 1rem 0 1rem"
+                    padding: ".5rem"
                 }
             })}>
                 <div>
                     <span className={LABEL_CSS}>Name: </span> 
                     <input value={name} onChange={onNameChange}/>
+                </div>
+                <div>
+                    <span className={LABEL_CSS}>Department: </span>
+                    <DepartmentSelect optional value={departmentId} onChange={setDepartmentId}/>
+                </div>
+                <div>
+                    <span className={LABEL_CSS}>Supervisor: </span>
+                    <EmployeeSelect optional value={supervisorId} onChange={setSupervisorId}/>
                 </div>
                 <div>
                     <button onClick={onRefetchClick}>Refresh</button>

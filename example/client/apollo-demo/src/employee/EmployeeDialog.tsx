@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { ChangeEvent, FC, memo, useCallback, useMemo, useState } from "react";
 import UUIDClass from "uuidjs";
-import { ModelType } from "../../../../../api/dist";
+import { ModelType } from "graphql-ts-client-api";
 import { ERROR_CSS, FORM_CSS } from "../common/CssClasses";
 import { Dialog } from "../common/Dialog";
 import { ErrorText } from "../common/ErrorText";
@@ -47,12 +47,36 @@ export const EmployeeDialog: FC<{
 
     const [mutate, {loading, error}] = useTypedMutation(
         "mergeEmployee",
-        employee$$
-        .department(department$.id)
-        .supervisor(employee$.id),
+        EMPLOYEE_FORM_FETCHER, // Mutation Fetcher
         {
             variables: { input: input as EmployeeInput }, // Unsafe cast, depends on "valid"
+            
             refetchDependencies: result => {
+
+                if (result.errors) { 
+                    // Refetch all the affected queries becasue error means client does not know whether server side has done the mutation or not.
+                    return result.dependencies.ofError(); 
+                }
+
+                /*
+                 * 1. The mutation fetcher 'EMPLOYEE_FORM_FETCHER' contains the assocation field 'Employee.department', 
+                 * so DependencyManager will compare the departments of the old object(value) and new object(result.data?.mergeEmployee).
+                 * If that association field has been changed, all the affected queries will be refetched, 
+                 * For example, other queries returns Department objects with field 'employees'
+                 * 
+                 * 2. The mutation fetcher 'EMPLOYEE_FORM_FETCHER' contains the assocation field 'Employee.supervisor',
+                 * so DependencyManager will compare the supervisors of the old object(value) and new object(result.data?.mergeEmployee).
+                 * If that association field has been changed, all the affected queries will be refetched, 
+                 * For example, other queries returns Employee objects with field 'subordinates'
+                 * 
+                 * 3. The mutation fetcher 'EMPLOYEE_FORM_FETCHER' contains the scalar field 'Employee.scalar'
+                 * so DependencyManager will compare the salaries of the old object(value) and new object(result.data?.mergeEmployee).
+                 * If that scalar field has been changed, all the affected queries will be refetched, 
+                 * For example, other queries returns Department objects with field 'avgSalary'
+                 * 
+                 * 4. If the mutation added an new employee('value' is undefined but 'result.data?.mergeEmployee' is not),
+                 * Refetchs all the queries returns 'Employee' and execute 1, 2 and 3.
+                 */
                 return result.dependencies.ofResult(value, result.data?.mergeEmployee);
             }
         }

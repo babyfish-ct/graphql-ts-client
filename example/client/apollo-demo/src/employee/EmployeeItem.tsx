@@ -4,6 +4,7 @@ import { ModelType } from "graphql-ts-client-api";
 import { LABEL_CSS, TAG_CSS } from "../common/CssClasses";
 import { department$$, employee$$ } from "../__generated/fetchers";
 import { EmployeeDialog } from "./EmployeeDialog";
+import { DeleteEmployeeDialog } from "./DeleteEmployeeDialog";
 
 export const EMPLOYEE_ITEM_FETCHER = 
     employee$$
@@ -66,6 +67,7 @@ export const EmployeeItem: FC<{
                     textAlign: "right"   
                 })}>
                     <button onClick={onEditClick}>Edit</button>
+                    &nbsp;
                     <button onClick={onDeleteClick}>Delete</button>
                 </div>
             </div>
@@ -113,6 +115,7 @@ export const EmployeeItem: FC<{
                 </div>
             </div>
             { dialog === 'EDIT' && <EmployeeDialog value={employee} onClose={onDialogClose}/> }
+            { dialog === 'DELETE' && <DeleteEmployeeDialog value={employee} onClose={onDialogClose}/> }
         </div>
     );
 })
