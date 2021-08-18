@@ -1,10 +1,17 @@
-Sometimes you need to get the automaitcally infered data type to design your API, do it like this
+Sometimes you need to get the automaitcally infered data type to design your API, ModelType can resolve this problem
 
+First, import ModelType.
 ```
 import { ModelType } from 'graphql-ts-client';
-import .. other importing statements ...
+```
 
-const fetcher = 
+Then, declare a fetcher
+
+```ts
+
+import .. More importing statements ...
+
+const DEPARTMENT_ITEM_FETCHER = 
 	department$$
 	.employees(
 		employee$$
@@ -15,12 +22,31 @@ const fetcher =
 			employee$$
 		)
 	);
-
-export type DepartmentDetailInfo = ModelType<typeof fetcher>;
 ```
 
-Now, you can use the explicit type 'DepartmentDetailInfo ' to design your API.
+Now, you have 2 choices
 
+1. Use the infered type implicitly
+
+```ts
+export function handleDepartmentItems(
+    items: ModelType<typeof DEPARTMENT_ITEM_FETCHER>[]
+) {
+    ... More code ...
+}
+```
+
+2. Use the infered type explicitly
+```ts
+
+export type DepartmentItem = ModelType<typeof DEPARTMENT_ITEM_FETCHER>;
+
+export function handleDepartmentItems(
+    items: DepartmentItem[]
+) {
+    ... More code ...
+}
+```
 
 ____________________
 

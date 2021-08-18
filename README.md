@@ -9,6 +9,8 @@
 
 # Get started
 
+In order to support 'OUT-OF-THE-BOX', this framework is integrated with @apollo/client since 2.1.4, let's use it step by step :)
+
 ### 1. Start the server
 
 Goto [example/server](example/server), execute
@@ -30,7 +32,7 @@ Goto the root dir of your app, execute
 yarn add graphql @apollo/client graphql-ts-client-api
 yarn add graphql-ts-client-codegen --dev
 ``` 
-*Notes: my npm libraries are 'graphql-ts-client-api' and 'graphql-ts-client-codegen', there is another library 'graphql-ts-client' in npm repository, that's not my framework.*
+*Notes: my npm libraries are 'graphql-ts-client-api' and 'graphql-ts-client-codegen'. There is another library named 'graphql-ts-client' in npm repository, that's not my framework.*
 
 ### 4. config code generator
 
@@ -61,14 +63,14 @@ Open the package.json of the root dir, find the object "scripts" and add this fi
 "codegen": "node scripts/GraphQLCodeGenerator.js"
 ```
 
-### 5. Generate TS code
+### 5. Generate TS code(depends on server)
 
 Goto the root dir of your app, execute
 
 ```
 yarn codegen
 ``` 
-* Notes: This is a one-time job! Be different with code generator of other similar frameworks or the compiler of relay, you need not to genrate code again and again. After this step, you can forget the code generator until the server-side team tell you their interface has been changed.*
+* Notes: This is a one-time job! Be different with code generator of other similar frameworks or the compiler of relay, you need not to genrate code again and again. After this step, you can forget the code generator until the server-side team tell you their interface has been changed. *
 
 ### 6. Change react code
 Change 'src/App.tsx' of your app, like this
@@ -145,7 +147,7 @@ export default App;
 
 ```
 
-### 7. Run your app
+### 7. Run your app(depends on server)
 
 Goto the root dir of your app, execute 
 ```
@@ -160,4 +162,13 @@ This is the simplest demo, you can view the full demo [apollo-demo](example/clie
 1. [Run the example](example/README.md)
 2. [Code generator configuration](codegen-properties.md)
 3. [Get inferred type explicitly](model-type.md)
-4. [Polymorphism query&Fragment since 2.0.0](2.0.0.md)
+4. [Polymorphism query & Fragment since 2.0.0](2.0.0.md)
+5. [@apollo/client integration since 2.1.4](2.1.4.md)
+
+# TODO items
+
+1. Support directives
+2. Integrate relay
+
+# Contact me
+Babyfish.ct@gmail.com
