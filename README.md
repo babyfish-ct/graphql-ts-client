@@ -177,4 +177,4 @@ This is the simplest demo, you can view the full demo [apollo-demo](example/clie
 2. Integrate relay
 
 # Contact me
-Babyfish.ct@gmail.com
+babyfish.ct@gmail.com
