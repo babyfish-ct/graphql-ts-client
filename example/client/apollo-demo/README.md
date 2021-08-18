@@ -5,22 +5,22 @@
 There are at most 6 hooks in the generated code
 1. useTypedQuery
 2. useLazyTypedQuery
-3. useSimpleQuery
-4. useLazySimpleQuery
-5. useTypedMutation
+3. useTypedMutation
+4. useSimpleQuery
+5. useLazySimpleQuery 
 6. useSimpleMutation
 
-1, 2, and 3 are called typed hooks, 4, 5, and 6 are called simple hooks.
+1, 2, and 3 are called typed hooks; 4, 5, and 6 are called simple hooks.
 
-If the graphql schema contains queries/mutations return complex type(object, interface, union, list), useTypedQuery, useLazyTypedQuery and useTypedMuation will be generated.
+If the graphql schema contains queries/mutations return complex type(object, interface, union or list of them), useTypedQuery, useLazyTypedQuery and useTypedMuation will be generated.
 
 It the graphql schema contains queries/mutations return simple type(string, number, enum), useSimpleQuery, useLazySimpleQuery and useSimpleMutation will be generated.
 
-Use the full demo [apollo-demo](example/client/apollo-demo) to be the example, 4 hooks are generated
-1. useTypedQuery(declared in [Queries.ts](example/client/apollo-demo/src/__generated/Queries.ts))
-2. useLazyTypedQuery(declared in [Queries.ts](example/client/apollo-demo/src/__generated/Queries.ts))
-3. useTypedMuation(declared in [Mutations.ts](example/client/apollo-demo/src/__generated/Mutations.ts))
-4. useSimpleMutation(declared in [Queries.ts](example/client/apollo-demo/src/__generated/Mutations.ts))
+In this [apollo-demo](./), 4 hooks are generated
+1. useTypedQuery(declared in [Queries.ts](src/__generated/Queries.ts))
+2. useLazyTypedQuery(declared in [Queries.ts](src/__generated/Queries.ts))
+3. useTypedMuation(declared in [Mutations.ts](src/__generated/Mutations.ts))
+4. useSimpleMutation(declared in [Mutations.ts](src/__generated/Mutations.ts))
 
 #### Typed Query hooks
 ```ts
@@ -57,7 +57,7 @@ export function useLazyTypedQuery<
 ): QueryTuple<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>;
 ```
 
-1. key or 'key.queryKey':
+##### 1. key or 'key.queryKey':
    Must be query name declared in graphql schema, otherwise ts will report compliation error. Two methods are supportted
 ```ts
 const { loading, error, data } = useTypedQuery("findEmployees", ...more arguments...);
@@ -70,7 +70,7 @@ const { loading, error, data } = useTypedQuery(
 );
 ```
 
-2. key.dataKey
+##### 2. key.dataKey
    Declare the root field name of data, it's optional, it's same 'key.queryKey' if it's not specified.
 
 When it is specified
@@ -97,7 +97,7 @@ if (data !== undefined) {
 }
 ```
 
-3. key.operationName
+##### 3. key.operationName
 
 	The operation name of qraphql request, it's optional, it's combined by 'key.queryKey' and md5 hash of fetcher if it's not specified.
 
@@ -147,7 +147,7 @@ This framework supports DependencyManager(will dicuss later) to reduce the diffi
 
 Whether you use DependencyManager or not, you can specify it. Be careful, in this case its uniqueness is guaranteed by you.
 
-4. fetcher
+##### 4. fetcher
 
 The second argument of typed hook is fetcher, it's the core value of this framework, please see the GIF animation of homepage
 
@@ -209,7 +209,7 @@ if (data !== undefined) {
  */
 ```
 
-4. options
+##### 4. options
 
 The third argument of typed query hook is fetcher is options, it's based on Apollo's querty options, but there is an new field 'registerDependencies', this new field is used to work with DependencyManager, we'll discuss DependencyManager later.
 
@@ -423,7 +423,7 @@ allResources(
 
 We've disucssed the DepartmentManager only interested in the changes of associations, because the changes of scalar fields can be handled by Apollo cache.
 
-In [apllo-demo](example/client/apollo-demo), I built a case that needs to trigger refetching based on the change of the scalar fields: Employee supports a scalar field "salary", and Department supports as scalar field "avgSalary", this is a computed field, it means the average salary of its employees.
+In [apllo-demo](./), I built a case that needs to trigger refetching based on the change of the scalar fields: Employee supports a scalar field "salary", and Department supports as scalar field "avgSalary", this is a computed field, it means the average salary of its employees.
 
 You can resolve this problem easily, like this
 
