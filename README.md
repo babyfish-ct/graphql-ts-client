@@ -169,7 +169,7 @@ This is the simplest demo, you can view the full demo [apollo-demo](example/clie
 2. [Code generator configuration](codegen-properties.md)
 3. [Get inferred type explicitly](model-type.md)
 4. [Polymorphism query & Fragment since 2.0.0](2.0.0.md)
-5. [@apollo/client integration since 2.1.4](2.1.4.md)
+5. [@apollo/client integration since 2.1.4](/example/client/apollo-demo/README.md)
 
 # TODO items
 

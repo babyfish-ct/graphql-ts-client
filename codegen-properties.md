@@ -9,7 +9,6 @@
 |objectEditable|boolean|false|false|
 |arrayEditable|boolean|false|false|
 |fetcherSuffix|string|false|"Fetcher"|
-|generateOperations|boolean|false|false|
 |excludedTypes|string[]|false||
 |excludedOperations|string[]|false||
 |scalarTypeMap|{[key:string:] "string" \| "number" \| "boolean"}|false||
@@ -31,13 +30,13 @@ eg
 |
 +----+-scripts
 |    |
-|    \------codegen.js // Your script that use code generator
+|    \------codegen.js // Your node script that use code generator
 |
 \----+-src
      |
-     \------generated // You want to generate code here
+     \------__generated // You want to generate code here
 ```
-for this direactory structure, you should specify it as "../src/generated"
+for this direactory structure, you should specify it as "../src/__generated"
 
 ## recreateTargetDir
 Indicates whether the target directory should be deleted before generating code so that the unnecessary files will be removed when the GraphQL schema of server is changed.
