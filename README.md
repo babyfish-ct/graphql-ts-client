@@ -113,7 +113,7 @@ function Example() {
         )
     );
     return (
-        <ApolloProvider client={client}>
+        <>
             { error && <div>Error</div> }
             { loading && <div>Loading...</div> }
             {
@@ -145,7 +145,7 @@ function Example() {
                     </div>
                 )
             }
-        </ApolloProvider>
+        </>
     );
 }
 
