@@ -32,7 +32,8 @@ Goto the root dir of your app, execute
 yarn add graphql @apollo/client graphql-ts-client-api
 yarn add graphql-ts-client-codegen --dev
 ``` 
-*Notes: my npm libraries are 'graphql-ts-client-api' and 'graphql-ts-client-codegen'. There is another library named 'graphql-ts-client' in npm repository, that's not my framework.*
+*Notes:*
+*My npm libraries are 'graphql-ts-client-api' and 'graphql-ts-client-codegen'. There is another library named 'graphql-ts-client' in npm repository, that's not my framework.*
 
 ### 4. config code generator
 
@@ -70,7 +71,9 @@ Goto the root dir of your app, execute
 ```
 yarn codegen
 ``` 
-* Notes: This is a one-time job! Be different with code generator of other similar frameworks or the compiler of relay, you need not to genrate code again and again. After this step, you can forget the code generator until the server-side team tell you their interface has been changed. *
+*Notes:*
+*This is a one-time job! Be different with code generator of other similar frameworks or the compiler of relay, you need not to genrate code again and again.*
+*After this step, you can forget the code generator until the server-side team tell you their interface has been changed.*
 
 ### 6. Change react code
 Change 'src/App.tsx' of your app, like this
