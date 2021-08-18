@@ -144,8 +144,12 @@ class ApolloHookWriter extends Writer_1.Writer {
             this.writeReturnOrOptionsGenericArgs("FetchedTypes<T>");
             t(`(request, ${this.hookType === 'Mutation' ? 'newOptions' : 'options'});\n`);
             t(`const responseData = response${responseDataProp}.data;\n`);
-            t(`response${responseDataProp}.data = useMemo(() => util.exceptNullValues(responseData), [responseData]);\n`);
-            t("return response;\n");
+            t(`const newResponseData = useMemo(() => util.exceptNullValues(responseData), [responseData]);\n`);
+            t("return newResponseData === responseData ? response : util.produce(response, draft => ");
+            this.scope({ type: "BLOCK", multiLines: true }, () => {
+                t(`draft${responseDataProp}.data = util.produce(newResponseData, () => {});\n`);
+            });
+            t(");\n");
         });
     }
     writeSimpleHook(returnType, prefix = "") {

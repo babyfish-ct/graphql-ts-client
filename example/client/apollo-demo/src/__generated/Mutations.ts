@@ -95,8 +95,10 @@ export function useTypedMutation<
 		TCache
 	>(request, newOptions);
 	const responseData = response[1].data;
-	response[1].data = useMemo(() => util.exceptNullValues(responseData), [responseData]);
-	return response;
+	const newResponseData = useMemo(() => util.exceptNullValues(responseData), [responseData]);
+	return newResponseData === responseData ? response : util.produce(response, draft => {
+		draft[1].data = util.produce(newResponseData, () => {});
+	});
 }
 
 export function useSimpleMutation<

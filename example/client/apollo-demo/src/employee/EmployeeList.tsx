@@ -56,7 +56,7 @@ export const EmployeeList: FC = memo(() => {
             })}>
                 <div>
                     <span className={LABEL_CSS}>Name: </span> 
-                    <input value={name} onChange={onNameChange}/>
+                    <input value={name ?? ''} onChange={onNameChange}/>
                 </div>
                 <div>
                     <span className={LABEL_CSS}>Department: </span>

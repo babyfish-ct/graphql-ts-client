@@ -5460,18 +5460,18 @@ graphql-request@^3.4.0:
     extract-files "^9.0.0"
     form-data "^3.0.0"
 
-graphql-ts-client-api@^2.1.2:
-  version "2.1.2"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-2.1.2.tgz#7e2a2153a1765a01c6b5660cf51e1959c56d473b"
-  integrity sha512-azR4PBY1tLNefh6oMRLthedEK3Mewjy/6rdD0nCuh6ISISMV/f3f5q0WZb8zKPgeP/HFHeBXWtuLszK7aSGqCQ==
+graphql-ts-client-api@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-2.1.4.tgz#b7f3ab9a8c19590f2798ee624f0aee8de21ef8b3"
+  integrity sha512-+/yjHMFOQcGBkzvQRH0o/rG2W86bHHhCsb0cohfSk+6uvoASHvyzuxk4oMrk3zQ2zp4PYUEAw1sFYTL6TGKipA==
   dependencies:
     immer "^9.0.5"
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^2.1.3:
-  version "2.1.3"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-2.1.3.tgz#bf41b82f5995eb1daaa701e51a7bb4fbf6199670"
-  integrity sha512-0DScSVnlXBhDStsOJsPK/og9wObd0SMFENNHD+92C/ZTpcKsBz7v4qK2CUF1scE0nZqIGO4Kd0z7bbUZBl3kQg==
+graphql-ts-client-codegen@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-2.1.4.tgz#618fcf3ff03bf58c4989f3098e79bfa2423515e0"
+  integrity sha512-n7HhjJw8nJZMyJ6eqo+WB9Xf49Js3ijOhEycmop80+OyClE+Eui6A3v4+0Sfi+4aCzlu9BKMivIEGvZGEIp1JQ==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
