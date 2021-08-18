@@ -2,7 +2,7 @@ Sometimes you need to get the automaitcally infered data type to design your API
 
 First, import ModelType.
 ```
-import { ModelType } from 'graphql-ts-client';
+import { ModelType } from 'graphql-ts-client-api';
 ```
 
 Then, declare a fetcher
@@ -29,7 +29,7 @@ Now, you have 2 choices
 1. Use the infered type implicitly
 
 ```ts
-export function handleDepartmentItems(
+export function processDepartmentItems(
     items: ModelType<typeof DEPARTMENT_ITEM_FETCHER>[]
 ) {
     ... More code ...
@@ -41,7 +41,7 @@ export function handleDepartmentItems(
 
 export type DepartmentItem = ModelType<typeof DEPARTMENT_ITEM_FETCHER>;
 
-export function handleDepartmentItems(
+export function processDepartmentItems(
     items: DepartmentItem[]
 ) {
     ... More code ...

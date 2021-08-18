@@ -270,7 +270,7 @@ The mutation hook(both typed and simple) know what the types of the objects have
 
 #### 1. Setup global DependencyManager object.
 
-In the genrated source code, there is a react componenent [&lt;DependencyManagerProvider/&gt;](src/__generated/DependencyManager.ts), the first step is to use it in your [App.tsx](src/App.tsx)
+In the genrated source code, there is a react componenent [&lt;DependencyManagerProvider/&gt;](src/__generated/DependencyManager.tsx), the first step is to use it in your [App.tsx](src/App.tsx)
 
 First, import it
 ```

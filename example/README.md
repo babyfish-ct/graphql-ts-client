@@ -1,3 +1,7 @@
+
+# Download this project.
+
+
 # Run server
 
 1. 
@@ -14,21 +18,23 @@ yarn start
 ```
 4. access "http://localhost:8080/graphql"
 
-# Run Client
 
-1. 
-``` 
-cd ${project_home}/example/client
-```
+# Run Apollo Client
+1. Make sure the server is running
 2. 
+``` 
+cd ${project_home}/example/client/apollo-demo
+```
+3. 
 ```
 yarn install
 ```
-3. 
+4. 
 ```
 yarn start
 ```
 4. access "http://localhost:3000"
+
 
 # Re-generate client code(Optional)
 
@@ -36,13 +42,13 @@ yarn start
 
 2. 
 ```
-cd ${project_home}/example/client
+cd ${project_home}/example/client/apollo-demo
 ```
 3. 
 ```
 yarn codegen
 ```
-4. All the files under '${project_home}/example/client/src/generated' have been recreated.
+4. All the files under '${project_home}/example/client/apollo-demo/src/__generated' have been recreated.
 
 ____________________
 
