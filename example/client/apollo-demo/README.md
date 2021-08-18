@@ -308,7 +308,7 @@ This query fetches two object types: Department and Employee. That means this qu
 3. Inserted into an associaton of other objects (Eg: change many-to-one association to be non-null value, add elements into one-to-many association)
 4. Deleted from an assocaition of other objects (Eg: change many-to-one association to be null value, remove elements from one-to-many association)
 
-Notes, if the scalar fields of Department/Employee is changed by other mutations, this query need not to be refetched becasue Apollo Cache can handle this case very well. That means DepartmentManager only interested in the changes of associations and ignore the change of scalars most of the time.
+Notes, if the scalar fields of Department/Employee is changed by other mutations, this query need not to be refetched becasue Apollo Cache can handle this case very well. That means DependencyManager only interested in the changes of associations and ignore the change of scalars most of the time.
 
 #### Refetch Queries in mutation
 
@@ -356,18 +356,19 @@ const [mutate, { loading, error }] = useTypedMutation(
    
 *Notes*
 
-*1. Here, "queries ... will be refetched" means the queries that have registered themselves into DependencyManager.*
+*a. Here, "queries ... will be refetched" means the queries that have registered themselves into DependencyManager.*
 
-*2. Case "2.a" can not be validated by the [apollo-demo(./)] becasue 'Employee.department' is declared as non-null field in the demo, it's impossible to create a new Employee without parent Department. 'Employee.supervisor' is nullable but the parent object and child object are of same type so that it cannot be used to validate that case too. Plaese validate that case in your project.*
+*b. Case "2.a" can not be validated by the [apollo-demo](./) becasue 'Employee.department' is declared as non-null field in the demo, it's impossible to create a new Employee without parent Department. 'Employee.supervisor' is nullable but the parent object and child object are of same type so that it cannot be used to validate that case too. Plaese validate that case in your project.*
 
-3. "return result.dependencies.ofError()" means unconditionally refetch all the quires depends on either 'Department' or 'Employee'. 
+
+3. "return result.dependencies.ofError();" means unconditionally refetch all the quires depends on either 'Department' or 'Employee'. 
 
     a. If an error is raised by the business logic of server-side, the database transaction will ensure that all internal operation steps have been rollbacked so that client-side need not to update anything, unless you met a bad server-side team.
 
 
     b. If an error is raised by network problem, client-side does not know whether the mutation has been executed or not, there is no way other than retry. This is why server-side developers say that idempotence is important.
 
-In actual projects, these two situations should be carefully distinguished. However, in order to ensure the indirectness of the demo code, all of them are treated as case b, so you see such barbaric behavior :)
+In actual projects, these two situations should be carefully distinguished. However, in order to ensure the simplicity of the demo code, all of them are treated as case "b", so you see such barbaric behavior :)
 
 4. The argument "fetcher" containers the id of associated object of 'Employee.department', it tells DependencyManager to compare the associated objects of the old and new objects, otherwise case "2.b" and case "2.d" cannot work. That means the mutation fetcher boundary is very important. How to determine the mutation fetcher boundary?
 
@@ -377,7 +378,7 @@ In actual projects, these two situations should be carefully distinguished. Howe
 
 ##### by simple mutation hook
 
-Be different with typed mutation hook, the argument 'options' of simple mutations hook does not support 'refetchDependencies'. You need to use DepartmentManager explicitly.
+Be different with typed mutation hook, the argument 'options' of simple mutations hook does not support 'refetchDependencies'. You need to use DependencyManager explicitly.
 
 First, import it
 ```
@@ -385,7 +386,7 @@ import { useDependencyManager } from "../__generated/DependencyManager";
 ```
 Then
 ```
-const departmentManager = useDepartmentManager();
+const dependencyManager = useDependencyManager();
 
 const [mutate, {loading, error}] = useSimpleMutation(
         "deleteEmployee", 
@@ -403,13 +404,13 @@ In fact, deleting case is very simple. If there is no additional behavior on the
 1. The queries for Employee will be refetched
 2. The queries do not query Employee but their fetcher boundary has intersect with Employee will be refetched.
 
-Actually, DependencyManager supports two functions to anser the question about which queris should be refetched
+Actually, DependencyManager supports two functions to answer the question about which queries should be refetched
 ```ts
 
 /*
  * Deeply compare old object and new object, if there are some changes, find the operation names of affected queries
  *
- * 1. fetcher is used to specify a comparison boundary, so DependencyManager won't compare 
+ * 1. fetcher is used to specify a comparison boundary, DependencyManager won't compare 
  *     the asociated objects which are too deep so that they are outside of the boundary
  *
  * 2. fetcher does not accept empty fetcher, the fetcher must contain fields
@@ -437,7 +438,7 @@ allResources(
 
 #### Refetch quries when scalar field changed.
 
-We've disucssed the DepartmentManager only interested in the changes of associations most of time, because the changes of scalar fields can be handled by Apollo cache.
+We've disucssed the DependencyManager only interested in the changes of associations most of the time, because the changes of scalar fields can be handled by Apollo cache.
 
 In [apllo-demo](./), I built a case that needs to trigger refetching based on the change of the scalar fields: Employee supports a scalar field "salary", and Department supports as scalar field "avgSalary", this is a computed field, it means the average salary of its employees.
 
