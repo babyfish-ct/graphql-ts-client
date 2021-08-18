@@ -9,30 +9,30 @@
 
 # Get started
 
-1. Start the server
+### 1. Start the server
 
 Goto [example/server](example/server), execute
 ```
 yarn start
 ```
 
-2. Create your app
+### 2. Create your client app
 
 Choose any another dir, execute
 ```
 yarn create react-app <YourAppName> --template typescript
 ```
 
-3. Add dendpenceis
+### 3. Add dendpenceis
 
 Goto the root dir of your app, execute
 ```
 yarn add graphql @apollo/client graphql-ts-client-api
 yarn add graphql-ts-client-codegen --dev
 ``` 
-*Notes: my npm libraries are 'graphql-ts-client-api' and 'graphql-ts-client-codegen', the another library 'graphql-ts-client' is not my framework.*
+*Notes: my npm libraries are 'graphql-ts-client-api' and 'graphql-ts-client-codegen', there is another library 'graphql-ts-client' in npm repository, that's not my framework.*
 
-4. config code generator
+### 4. config code generator
 
 Goto the root dir or your app
 ```
@@ -61,7 +61,7 @@ Open the package.json of the root dir, find the object "scripts" and add this fi
 "codegen": "node scripts/GraphQLCodeGenerator.js"
 ```
 
-5. Generate Ts code
+### 5. Generate TS code
 
 Goto the root dir of your app, execute
 
@@ -70,7 +70,7 @@ yarn codegen
 ``` 
 * Notes: This is a one-time job! Be different with code generator of other similar frameworks or the compiler of relay, you need not to genrate code again and again. After this step, you can forget the code generator until the server-side team tell you their interface has been changed.*
 
-6. Change react code
+### 6. Change react code
 Change 'src/App.tsx' of your app, like this
 ```tsx
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
@@ -145,15 +145,17 @@ export default App;
 
 ```
 
-7. Run your app
+### 7. Run your app
 
 Goto the root dir of your app, execute 
 ```
 yarn start
 ```
-Now, you can access http://localhost:3000 
+Now, you can access http://localhost:3000
 
-# More
+This is the simplest demo, you can view the full demo [apollo-demo](example/client/apollo-demo) to know more
+
+# MoreLinks
 
 1. [Run the example](example/README.md)
 2. [Code generator configuration](codegen-properties.md)
