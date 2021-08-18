@@ -1,4 +1,8 @@
-# This framework is integrated with '@apollo/client' to support out-of-the-box since 2.1.4
+# Apollo guid
+
+1. This framework is integrated with '@apollo/client' to support out-of-the-box since 2.1.4
+
+2. In addition, an optional functionality named "DependencyManager" is provided, it can help the developers to reduce the difficulty of using "refetchQueries" of apollo mutation.
 
 ## Typed Hooks
 
