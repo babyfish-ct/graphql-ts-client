@@ -1,4 +1,4 @@
-# Apollo guid
+# Guide for apollo-client user
 
 1. This framework is integrated with '@apollo/client' to support out-of-the-box since 2.1.4
 
