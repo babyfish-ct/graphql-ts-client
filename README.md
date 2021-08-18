@@ -4,32 +4,36 @@
 2. **Automatically infers the type of the returned data according to the strongly typed query request**, This is the essential difference between this framework and other similar frameworks, and it is also the reason why I created it.
 
 
-![ImageText](https://github.com/babyfish-ct/graphql-ts-client/blob/master/graphql-ts-client.gif)
+![ImageText](graphql-ts-client.gif)
 
 
 # Get started
 
 1. Start the server
+
 Goto [example/server](example/server), execute
 ```
 yarn start
 ```
 
 2. Create your app
+
+Choose any another dir, execute
 ```
 yarn create react-app <YourAppName> --template typescript
 ```
 
 3. Add dendpenceis
-Goto the root dir or your app
+
+Goto the root dir of your app, execute
 ```
 yarn add graphql @apollo/client graphql-ts-client-api
 yarn add graphql-ts-client-codegen --dev
 ``` 
-*Notes: 
-my npm libraries are 'graphql-ts-client-api' and 'graphql-ts-client-codegen', the another library 'graphql-ts-client' is not my framework.*
+*Notes: my npm libraries are 'graphql-ts-client-api' and 'graphql-ts-client-codegen', the another library 'graphql-ts-client' is not my framework.*
 
 4. config code generator
+
 Goto the root dir or your app
 ```
 mkdir scripts
@@ -58,14 +62,13 @@ Open the package.json of the root dir, find the object "scripts" and add this fi
 ```
 
 5. Generate Ts code
-goto the root dir of your app, use command line to execute
+
+Goto the root dir of your app, execute
+
 ```
 yarn codegen
 ``` 
-* Notes: 
-This is a one-time job. 
-Be different with code generator of other similar frameworks or the compiler of relay, you need not to genrate code again and again. 
-After this step, you can forget the code generator until the server-side team tell you their interface has been changed.*
+* Notes: This is a one-time job! Be different with code generator of other similar frameworks or the compiler of relay, you need not to genrate code again and again. After this step, you can forget the code generator until the server-side team tell you their interface has been changed.*
 
 6. Change react code
 Change 'src/App.tsx' of your app, like this
@@ -143,6 +146,7 @@ export default App;
 ```
 
 7. Run your app
+
 Goto the root dir of your app, execute 
 ```
 yarn start
