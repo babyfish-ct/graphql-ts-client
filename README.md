@@ -13,7 +13,7 @@ In order to support 'OUT-OF-THE-BOX', this framework is integrated with @apollo/
 
 ### 1. Start the server
 
-Goto [example/server](example/server), execute
+Download this project, goto [example/server](example/server), execute
 ```
 yarn start
 ```
