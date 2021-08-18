@@ -56,13 +56,14 @@ export function useTypedQuery<
 			);
 			return () => { dependencyManager!.unregister(operationName ?? queryKey); };
 		}// eslint-disable-next-line
-	}, [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
+	}, [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required, becasue 'fetcher' is replaced by 'request' here.
 	const response = useQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(request, options);
-	return useMemo(() => {
-		return util.produce(response, draft => {
-			draft.data = util.exceptNullValues(draft.data);
-		});
-	}, [response]);
+	const responseData = response.data;
+	response.data = useMemo(() => {
+		console.log('ExceptNullValues');
+		return util.exceptNullValues(responseData);
+	}, [responseData]);
+	return response;
 }
 
 export function useLazyTypedQuery<
@@ -116,13 +117,11 @@ export function useLazyTypedQuery<
 			);
 			return () => { dependencyManager!.unregister(operationName ?? queryKey); };
 		}// eslint-disable-next-line
-	}, [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
+	}, [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required, becasue 'fetcher' is replaced by 'request' here.
 	const response = useLazyQuery<Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, QueryVariables[TQueryKey]>(request, options);
-	return useMemo(() => {
-		return util.produce(response, draft => {
-			draft[1].data = util.exceptNullValues(draft[1].data);
-		});
-	}, [response]);
+	const responseData = response[1].data;
+	response[1].data = useMemo(() => util.exceptNullValues(responseData), [responseData]);
+	return response;
 }
 
 //////////////////////////////////////////////////

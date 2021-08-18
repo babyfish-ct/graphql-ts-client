@@ -94,11 +94,9 @@ export function useTypedMutation<
 		TContext, 
 		TCache
 	>(request, newOptions);
-	return useMemo(() => {
-		return util.produce(response, draft => {
-			draft[1].data = util.exceptNullValues(draft[1].data);
-		});
-	}, [response]);
+	const responseData = response[1].data;
+	response[1].data = useMemo(() => util.exceptNullValues(responseData), [responseData]);
+	return response;
 }
 
 export function useSimpleMutation<

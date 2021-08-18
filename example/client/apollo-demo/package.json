@@ -50,6 +50,6 @@
     ]
   },
   "devDependencies": {
-    "graphql-ts-client-codegen": "^2.1.2"
+    "graphql-ts-client-codegen": "^2.1.3"
   }
 }

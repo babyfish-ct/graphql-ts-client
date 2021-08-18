@@ -143,15 +143,9 @@ class ApolloHookWriter extends Writer_1.Writer {
             t(`const response = use${prefix}${this.hookType}`);
             this.writeReturnOrOptionsGenericArgs("FetchedTypes<T>");
             t(`(request, ${this.hookType === 'Mutation' ? 'newOptions' : 'options'});\n`);
-            t("return useMemo(() => ");
-            this.scope({ type: "BLOCK", multiLines: true }, () => {
-                t("return util.produce(response, draft => ");
-                this.scope({ type: "BLOCK", multiLines: true }, () => {
-                    t(`draft${responseDataProp}.data = util.exceptNullValues(draft${responseDataProp}.data);\n`);
-                });
-                t(");\n");
-            });
-            t(", [response]);\n");
+            t(`const responseData = response${responseDataProp}.data;\n`);
+            t(`response${responseDataProp}.data = useMemo(() => util.exceptNullValues(responseData), [responseData]);\n`);
+            t("return response;\n");
         });
     }
     writeSimpleHook(returnType, prefix = "") {
@@ -277,7 +271,7 @@ class ApolloHookWriter extends Writer_1.Writer {
             });
             t("// eslint-disable-next-line");
         });
-        t(", [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.\n");
+        t(", [register, dependencyManager, operationName, queryKey, options?.registerDependencies, request]); // Eslint disable is required, becasue 'fetcher' is replaced by 'request' here.\n");
     }
     writeDependencyTrigger() {
         const t = this.text.bind(this);
