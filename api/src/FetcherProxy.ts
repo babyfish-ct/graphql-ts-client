@@ -181,7 +181,7 @@ function collectFields(fetchableType: FetchableType<string>, output: Set<string>
     for (const field of fetchableType.declaredFields) {
         output.add(field);
     }
-    for (const superType of this.superTypes) {
+    for (const superType of fetchableType.superTypes) {
         collectFields(superType, output);
     }
 }
