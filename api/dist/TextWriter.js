@@ -9,24 +9,26 @@ class TextWriter {
         this.scopes = [];
     }
     text(value) {
-        const index = value.indexOf('\n');
-        let str;
-        let rest;
-        if (index === -1) {
-            str = value.substring(0, index);
-            rest = value.substring(index + 1);
-        }
-        else {
-            str = value.substring(index + 1);
-            rest = undefined;
-        }
-        while (str !== undefined) {
-            this.addIndent();
-            this.addText(str);
-            if (rest !== undefined) {
+        const scope = this.currentScope();
+        if (value.length !== 0 && scope !== undefined && scope.dirty === false) {
+            if (scope.multiLines) {
                 this.addLineTerminator();
             }
-            str = rest;
+            scope.dirty = true;
+        }
+        let str = value;
+        while (str.length !== 0) {
+            this.addIndent();
+            const index = str.indexOf('\n');
+            if (index !== -1) {
+                this.result += str.substring(0, index);
+                this.addLineTerminator();
+                str = str.substring(index + 1);
+            }
+            else {
+                this.result += str;
+                str = "";
+            }
         }
     }
     scope(props, action) {
@@ -41,19 +43,19 @@ class TextWriter {
                     break;
             }
         }
+        if (props.prefix !== undefined) {
+            this.text(props.prefix);
+        }
         switch (props.type) {
             case 'BLOCK':
-                this.addText('{');
+                this.text('{');
                 break;
             case 'ARGUMENTS':
-                this.addText('(');
+                this.text('(');
                 break;
             case 'ARRAY':
-                this.addText('[');
+                this.text('[');
                 break;
-        }
-        if (props.multiLines) {
-            this.addLineTerminator();
         }
         this.scopes.push({
             type: props.type,
@@ -71,14 +73,17 @@ class TextWriter {
             }
             switch (props.type) {
                 case 'BLOCK':
-                    this.addText('}');
+                    this.text('}');
                     break;
                 case 'ARGUMENTS':
-                    this.addText(')');
+                    this.text(')');
                     break;
                 case 'ARRAY':
-                    this.addText(']');
+                    this.text(']');
                     break;
+            }
+            if (props.suffix !== undefined) {
+                this.text(props.suffix);
             }
         }
     }
@@ -115,15 +120,6 @@ class TextWriter {
     addLineTerminator() {
         this.result += '\n';
         this.newLine = true;
-    }
-    addText(text) {
-        if (text.length !== 0) {
-            this.result += text;
-            const scope = this.currentScope();
-            if (scope !== undefined) {
-                scope.dirty = true;
-            }
-        }
     }
     currentScope() {
         const arr = this.scopes;

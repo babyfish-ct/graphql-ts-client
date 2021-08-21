@@ -42,12 +42,15 @@ function proxyHandler(fetchableType, methodNames) {
                         return new Proxy(removeField.call(target, rest), handler);
                     }
                 }
+                else if (p === "on" || methodNames.has(p)) {
+                    return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, p));
+                }
                 else if (fetchableType.fields.has(p)) {
                     const addField = Reflect.get(target, "addField");
                     return new Proxy(addField.call(target, p.toString()), handler);
                 }
             }
-            return Reflect.get(target, p, receiver);
+            return Reflect.get(target, p, target);
         }
     };
     return handler;

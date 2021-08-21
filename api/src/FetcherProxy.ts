@@ -67,6 +67,11 @@ function proxyHandler(
                             handler
                         );
                     }
+                } else if (p === "on" || methodNames.has(p)) {
+                    return new Proxy(
+                        dummyTargetMethod,
+                        methodProxyHandler(target, handler, p)
+                    );
                 } else if (fetchableType.fields.has(p)) {
                     const addField = Reflect.get(target, "addField") as ADD_FILED;
                     return new Proxy(
@@ -75,7 +80,7 @@ function proxyHandler(
                     );
                 }
             }
-            return Reflect.get(target, p, receiver);
+            return Reflect.get(target, p, target);
         }
     };
      return handler;

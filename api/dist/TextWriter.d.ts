@@ -9,12 +9,13 @@ export declare class TextWriter {
         readonly type: ScopeType;
         readonly multiLines?: boolean;
         readonly seperator?: string;
+        readonly prefix?: string;
+        readonly suffix?: string;
     }, action: () => void): void;
     seperator(sperator?: string): void;
     toString(): string;
     private addIndent;
     private addLineTerminator;
-    private addText;
     private currentScope;
 }
 export declare type ScopeType = "BLOCK" | "ARGUMENTS" | "ARRAY";

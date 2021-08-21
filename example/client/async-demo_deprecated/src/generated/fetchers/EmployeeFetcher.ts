@@ -1,5 +1,6 @@
 import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import { WithTypeName, ImplementationType } from '../CommonTypes';
+import { node$ } from './NodeFetcher';
 import {Gender} from '../enums';
 
 /*
@@ -26,7 +27,7 @@ export interface EmployeeFetcher<T extends object> extends Fetcher<'Employee', T
 
 	asFragment(name: string): Fetcher<'Employee', T>;
 
-	readonly id: EmployeeFetcher<T & {readonly id: string}>;
+	readonly id: EmployeeFetcher<T & {readonly id: number}>;
 	readonly "~id": EmployeeFetcher<Omit<T, 'id'>>;
 
 	readonly firstName: EmployeeFetcher<T & {readonly firstName: string}>;
@@ -55,8 +56,8 @@ export const employee$: EmployeeFetcher<{}> =
 	createFetcher(
 		createFetchableType(
 			"Employee", 
-			[], 
-			["id", "firstName", "lastName", "gender", "salary", "department", "supervisor", "subordinates"]
+			[node$.fetchableType], 
+			["firstName", "lastName", "gender", "salary", "department", "supervisor", "subordinates"]
 		), 
 		undefined, 
 		[

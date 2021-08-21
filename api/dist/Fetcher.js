@@ -119,24 +119,28 @@ class AbstractFetcher {
         const writer = new TextWriter_1.TextWriter();
         const fragmentWriter = new TextWriter_1.TextWriter();
         let ctx = new ResultContext(writer);
-        ctx.accept(this);
+        writer.scope({ type: "BLOCK", multiLines: true, suffix: '\n' }, () => {
+            ctx.accept(this);
+        });
         const renderedFragmentNames = new Set();
         while (true) {
             const fragmentMap = ctx.namedFragmentMap;
-            if (fragmentMap === undefined) {
+            if (fragmentMap.size === 0) {
                 break;
             }
-            const fragmentCtx = new ResultContext(fragmentWriter, ctx);
+            ctx = new ResultContext(fragmentWriter, ctx);
             for (const [fragmentName, fragment] of fragmentMap) {
                 if (renderedFragmentNames.add(fragmentName)) {
                     fragmentWriter.text(`fragment ${fragmentName} on ${fragment.fetchableType.entityName} `);
-                    fragmentCtx.accept(fragment);
+                    fragmentWriter.scope({ type: "BLOCK", multiLines: true, suffix: '\n' }, () => {
+                        ctx.accept(fragment);
+                    });
                 }
             }
         }
         return {
             text: writer.toString(),
-            fragmentText: writer.toString(),
+            fragmentText: fragmentWriter.toString(),
             explicitArgumentNames: ctx.explicitArgumentNames,
             implicitArgumentValues: ctx.implicitArgumentValues
         };
@@ -150,61 +154,55 @@ class ResultContext {
     constructor(writer = new TextWriter_1.TextWriter(), ctx) {
         var _a, _b;
         this.writer = writer;
-        this._namedFragmentMap = new Map();
+        this.namedFragmentMap = new Map();
         this.explicitArgumentNames = (_a = ctx === null || ctx === void 0 ? void 0 : ctx.explicitArgumentNames) !== null && _a !== void 0 ? _a : new Set();
         this.implicitArgumentValues = (_b = ctx === null || ctx === void 0 ? void 0 : ctx.implicitArgumentValues) !== null && _b !== void 0 ? _b : [];
     }
     accept(fetcher) {
         const t = this.writer.text.bind(this.writer);
-        this.writer.scope({ type: "BLOCK", multiLines: true }, () => {
-            for (const [fieldName, field] of fetcher.fieldMap) {
-                t(fieldName);
-                if (field.args !== undefined && Object.keys(field).length !== 0) {
-                    this.writer.scope({ type: "ARGUMENTS", multiLines: isMultLineJSON(field.args) }, () => {
-                        for (const argName in field.args) {
-                            this.writer.seperator();
-                            const arg = field.args[argName];
-                            t(argName);
-                            t(": ");
-                            if (arg instanceof Parameter_1.ParameterRef) {
-                                this.explicitArgumentNames.add(arg.name);
-                                t(arg.name);
-                            }
-                            else {
-                                t(`fetcherArgs[${this.implicitArgumentValues.length}]`);
-                                this.implicitArgumentValues.push(arg);
-                            }
+        for (const [fieldName, field] of fetcher.fieldMap) {
+            t(fieldName);
+            if (field.args !== undefined && Object.keys(field).length !== 0) {
+                this.writer.scope({ type: "ARGUMENTS", multiLines: isMultLineJSON(field.args) }, () => {
+                    for (const argName in field.args) {
+                        this.writer.seperator();
+                        const arg = field.args[argName];
+                        t(argName);
+                        t(": ");
+                        if (arg instanceof Parameter_1.ParameterRef) {
+                            this.explicitArgumentNames.add(arg.name);
+                            t(arg.name);
                         }
-                    });
-                }
-                const childFetchers = field.childFetchers;
-                if (childFetchers !== undefined && childFetchers.length !== 0) {
-                    if (fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
-                        const fragmentName = fieldName.substring("...".length).trim();
-                        const oldFragment = this._namedFragmentMap.get(fragmentName);
-                        for (const childFetcher of childFetchers) {
-                            if (oldFragment !== undefined && oldFragment !== childFetcher) {
-                                throw new Error(`Conflict fragment name ${fragmentName}`);
-                            }
-                            this._namedFragmentMap.set(fragmentName, childFetcher);
+                        else {
+                            t(`fetcherArgs[${this.implicitArgumentValues.length}]`);
+                            this.implicitArgumentValues.push(arg);
                         }
                     }
-                    else {
-                        t(' ');
+                });
+            }
+            const childFetchers = field.childFetchers;
+            if (childFetchers !== undefined && childFetchers.length !== 0) {
+                if (fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
+                    const fragmentName = fieldName.substring("...".length).trim();
+                    const oldFragment = this.namedFragmentMap.get(fragmentName);
+                    for (const childFetcher of childFetchers) {
+                        if (oldFragment !== undefined && oldFragment !== childFetcher) {
+                            throw new Error(`Conflict fragment name ${fragmentName}`);
+                        }
+                        this.namedFragmentMap.set(fragmentName, childFetcher);
+                    }
+                }
+                else {
+                    t(' ');
+                    this.writer.scope({ type: "BLOCK", multiLines: true }, () => {
                         for (const childFetcher of childFetchers) {
                             this.accept(childFetcher);
                         }
-                    }
+                    });
                 }
             }
-        });
-        t("\n");
-    }
-    get namedFragmentMap() {
-        if (this._namedFragmentMap.size === 0) {
-            return undefined;
+            t('\n');
         }
-        return this._namedFragmentMap;
     }
 }
 function isMultLineJSON(obj) {
