@@ -10,14 +10,8 @@
 export interface Fetcher<E extends string, T extends object> {
     readonly fetchableType: FetchableType<E>;
     readonly fieldMap: ReadonlyMap<string, FetcherField>;
-    /**
-     * For query/mutation
-     */
     toString(): string;
     toFragmentString(): string;
-    /**
-     * For recoild
-     */
     toJSON(): string;
     __supressWarnings__(value: T): never;
 }
@@ -27,38 +21,30 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     private _field;
     private _args?;
     private _child?;
-    private _fragmentName?;
     private _fetchableType;
     private _unionItemTypes?;
     private _prev?;
-    private _str?;
-    private _fragmentStr?;
-    private _json?;
     private _fieldMap?;
+    private _result;
     constructor(ctx: AbstractFetcher<string, any> | [FetchableType<E>, string[] | undefined], _negative: boolean, _field: string, _args?: {
         [key: string]: any;
-    }, _child?: AbstractFetcher<string, any>, _fragmentName?: string);
+    } | undefined, _child?: AbstractFetcher<string, any> | undefined);
     get fetchableType(): FetchableType<E>;
     protected addField<F extends AbstractFetcher<string, any>>(field: string, args?: {
         [key: string]: any;
     }, child?: AbstractFetcher<string, any>): F;
     protected removeField<F extends AbstractFetcher<string, any>>(field: string): F;
-    protected addEmbbeddable<F extends AbstractFetcher<string, any>>(child: AbstractFetcher<string, any>): F;
-    protected addFragment(name: string): Fetcher<E, T>;
+    protected addEmbbeddable<F extends AbstractFetcher<string, any>>(child: AbstractFetcher<string, any>, fragmentName?: string): F;
     protected abstract createFetcher(negative: boolean, field: string, args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<string, any>, fragmentName?: string): AbstractFetcher<string, any>;
-    toString(): string;
-    toFragmentString(): string;
-    private _toString0;
-    private _toString1;
-    toJSON(): string;
-    private _toJSON0;
+    }, child?: AbstractFetcher<string, any>): AbstractFetcher<string, any>;
     get fieldMap(): ReadonlyMap<string, FetcherField>;
     private _getFieldMap0;
-    private static appendIndentTo;
-    private static appendFieldTo;
-    private static _appendFieldTo0;
+    toString(): string;
+    toFragmentString(): string;
+    toJSON(): string;
+    private get result();
+    private createResult;
     __supressWarnings__(_: T): never;
 }
 export interface FetchableType<E extends string> {

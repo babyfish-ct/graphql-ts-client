@@ -53,7 +53,7 @@ export function removeNullValues(value: any) {
 
 export function exceptNullValues<T>(value: T): T {
     if (value === null || value === undefined) {
-        return undefined;
+        return undefined as any as T;
     }
     if (typeof value !== 'object') {
         return value;

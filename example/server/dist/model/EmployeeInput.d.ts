@@ -12,6 +12,6 @@ export declare class EmployeeInput implements TEmployee {
     readonly lastName: string;
     readonly gender: Gender;
     readonly salary: number;
-    readonly departmentId: number;
+    readonly departmentId: string;
     readonly supervisorId?: string;
 }

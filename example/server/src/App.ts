@@ -13,12 +13,14 @@ import { DepartmentResolver } from "./model/Department";
 import { EmployeeResolver } from "./model/Employee";
 import { Gender } from "./model/Gender";
 import { EmployeeService } from "./bll/EmployeeService";
+import { NodeResolver } from "./bll/NodeResolver";
 
 registerEnumType(Gender, { name: "Gender" });
 
 const schema = buildSchemaSync({
     resolvers: [
         
+        NodeResolver,
         DepartmentResolver, 
         EmployeeResolver,
 

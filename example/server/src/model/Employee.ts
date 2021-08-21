@@ -10,12 +10,10 @@ import { departmentTable } from '../dal/DepartmentRepostiory';
 import { employeeTable, TEmployee } from '../dal/EmployeeRepository';
 import { Department } from './Department';
 import { Gender } from './Gender';
+import { Node } from './Node';
 
-@ObjectType()
-export class Employee {
-
-    @Field(() => String)
-    readonly id: string;
+@ObjectType({implements: Node})
+export class Employee extends Node {
 
     @Field(() => String)
     readonly firstName: string;
@@ -34,7 +32,7 @@ export class Employee {
     readonly supervisorId?: string;
 
     constructor(row: TEmployee) {
-        this.id = row.id;
+        super(row.id);
         this.firstName = row.firstName;
         this.lastName = row.lastName;
         this.gender = row.gender;

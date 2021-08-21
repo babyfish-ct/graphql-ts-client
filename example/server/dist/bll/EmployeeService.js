@@ -31,7 +31,7 @@ const Employee_1 = require("../model/Employee");
 const EmployeeInput_1 = require("../model/EmployeeInput");
 const Delay_1 = require("./Delay");
 class EmployeeService {
-    findEmployees(namePattern, departmentId, supervisorId, mockedErrorProbability) {
+    findEmployees(name, departmentId, supervisorId, mockedErrorProbability) {
         return __awaiter(this, void 0, void 0, function* () {
             /*
              * Mock the network delay
@@ -46,7 +46,7 @@ class EmployeeService {
                     throw new Error(`Mocked error by nodejs at '${Date()}'`);
                 }
             }
-            const lowercaseName = namePattern === null || namePattern === void 0 ? void 0 : namePattern.toLocaleLowerCase();
+            const lowercaseName = name === null || name === void 0 ? void 0 : name.toLocaleLowerCase();
             return EmployeeRepository_1.employeeTable
                 .find([
                 departmentId !== undefined ?
@@ -59,15 +59,23 @@ class EmployeeService {
                 d => (d.firstName.toLowerCase().indexOf(lowercaseName) !== -1 ||
                     d.lastName.toLowerCase().indexOf(lowercaseName) !== -1) :
                 undefined)
-                .map(row => new Employee_1.Employee(row));
+                .map(row => new Employee_1.Employee(row))
+                .sort((a, b) => a.firstName > b.firstName ? +1 : a.firstName < b.firstName ? -1 : 0);
+            ;
         });
     }
     mergeEmployee(input) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             /*
              * Mock the network delay
              */
             yield Delay_1.delay(1000);
+            for (let suprvisorId = input.supervisorId; suprvisorId !== undefined; suprvisorId = (_a = EmployeeRepository_1.employeeTable.findByUniqueProp("id", suprvisorId)) === null || _a === void 0 ? void 0 : _a.supervisorId) {
+                if (suprvisorId === input.id) {
+                    throw new Error("Cannot modify the supervisor, it would make the data reference cycle problem if it is allowed");
+                }
+            }
             EmployeeRepository_1.employeeTable.insert(input, true);
             return new Employee_1.Employee(input);
         });
@@ -77,14 +85,15 @@ class EmployeeService {
             /*
              * Mock the network delay
              */
-            return EmployeeRepository_1.employeeTable.delete(id) !== 0;
+            yield Delay_1.delay(1000);
+            return EmployeeRepository_1.employeeTable.delete(id) !== 0 ? id : undefined;
         });
     }
 }
 __decorate([
     type_graphql_1.Query(() => [Employee_1.Employee]),
-    __param(0, type_graphql_1.Arg("namePattern", () => String, { nullable: true })),
-    __param(1, type_graphql_1.Arg("departmentId", () => type_graphql_1.Int, { nullable: true })),
+    __param(0, type_graphql_1.Arg("name", () => String, { nullable: true })),
+    __param(1, type_graphql_1.Arg("departmentId", () => String, { nullable: true })),
     __param(2, type_graphql_1.Arg("supervisorId", () => String, { nullable: true })),
     __param(3, type_graphql_1.Arg("mockedErrorProbability", () => type_graphql_1.Int, { nullable: true }))
 ], EmployeeService.prototype, "findEmployees", null);
@@ -93,7 +102,7 @@ __decorate([
     __param(0, type_graphql_1.Arg("input", () => EmployeeInput_1.EmployeeInput))
 ], EmployeeService.prototype, "mergeEmployee", null);
 __decorate([
-    type_graphql_1.Mutation(() => Boolean),
-    __param(0, type_graphql_1.Arg("id", () => type_graphql_1.Int))
+    type_graphql_1.Mutation(() => String),
+    __param(0, type_graphql_1.Arg("id", () => String))
 ], EmployeeService.prototype, "deleteEmployee", null);
 exports.EmployeeService = EmployeeService;

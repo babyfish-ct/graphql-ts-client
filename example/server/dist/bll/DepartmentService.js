@@ -43,7 +43,8 @@ class DepartmentService {
                 undefined;
             return DepartmentRepostiory_1.departmentTable
                 .find([], predicate)
-                .map(row => new Department_1.Department(row));
+                .map(row => new Department_1.Department(row))
+                .sort((a, b) => a.name > b.name ? +1 : a.name < b.name ? -1 : 0);
         });
     }
     mergeDepartment(input) {
@@ -62,7 +63,7 @@ class DepartmentService {
              * Mock the network delay
              */
             yield Delay_1.delay(1000);
-            return DepartmentRepostiory_1.departmentTable.delete(id) !== 0;
+            return DepartmentRepostiory_1.departmentTable.delete(id) !== 0 ? id : undefined;
         });
     }
 }
@@ -75,7 +76,7 @@ __decorate([
     __param(0, type_graphql_1.Arg("input", () => DepartmentInput_1.DepartmentInput))
 ], DepartmentService.prototype, "mergeDepartment", null);
 __decorate([
-    type_graphql_1.Mutation(() => Boolean),
-    __param(0, type_graphql_1.Arg("id", () => type_graphql_1.Int))
+    type_graphql_1.Mutation(() => String),
+    __param(0, type_graphql_1.Arg("id", () => String))
 ], DepartmentService.prototype, "deleteDepartment", null);
 exports.DepartmentService = DepartmentService;

@@ -135,16 +135,19 @@ export interface QueryVariables{
 		readonly departmentId?: string, 
 		readonly name?: string
 	};
+	node: {readonly id: string};
 }
 
 export interface QueryFetchableTypes {
 	findDepartmentsLikeName: 'Department';
 	findEmployees: 'Employee';
+	node: 'Node';
 }
 
 export interface QueryFetchedTypes<T> {
 	findDepartmentsLikeName: readonly T[];
 	findEmployees: readonly T[];
+	node?: T;
 }
 
 export interface QuerySimpleTypes {
@@ -154,10 +157,12 @@ export interface QuerySimpleTypes {
 
 const GQL_PARAMS: {[key: string]: string} = {
 	"findDepartmentsLikeName": "($name: String)", 
-	"findEmployees": "($mockedErrorProbability: Int, $supervisorId: String, $departmentId: String, $name: String)"
+	"findEmployees": "($mockedErrorProbability: Int, $supervisorId: String, $departmentId: String, $name: String)", 
+	"node": "($id: ID!)"
 };
 
 const GQL_ARGS: {[key: string]: string} = {
 	"findDepartmentsLikeName": "(name: $name)", 
-	"findEmployees": "(mockedErrorProbability: $mockedErrorProbability, supervisorId: $supervisorId, departmentId: $departmentId, name: $name)"
+	"findEmployees": "(mockedErrorProbability: $mockedErrorProbability, supervisorId: $supervisorId, departmentId: $departmentId, name: $name)", 
+	"node": "(id: $id)"
 };

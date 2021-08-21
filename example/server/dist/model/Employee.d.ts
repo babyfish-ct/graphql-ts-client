@@ -7,13 +7,13 @@ import 'reflect-metadata';
 import { TEmployee } from '../dal/EmployeeRepository';
 import { Department } from './Department';
 import { Gender } from './Gender';
-export declare class Employee {
-    readonly id: string;
+import { Node } from './Node';
+export declare class Employee extends Node {
     readonly firstName: string;
     readonly lastName: string;
     readonly gender: Gender;
     readonly salary: number;
-    readonly departmentId: number;
+    readonly departmentId: string;
     readonly supervisorId?: string;
     constructor(row: TEmployee);
 }

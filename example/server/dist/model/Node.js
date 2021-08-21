@@ -1,9 +1,4 @@
 "use strict";
-/**
- * @author ChenTao
- *
- * Server-side of example of 'graphql-ts-client'
- */
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -11,18 +6,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DepartmentInput = void 0;
-require("reflect-metadata");
+exports.Node = void 0;
 const type_graphql_1 = require("type-graphql");
-let DepartmentInput = class DepartmentInput {
+let Node = class Node {
+    constructor(id) {
+        this.id = id;
+    }
 };
 __decorate([
-    type_graphql_1.Field(() => String)
-], DepartmentInput.prototype, "id", void 0);
-__decorate([
-    type_graphql_1.Field(() => String)
-], DepartmentInput.prototype, "name", void 0);
-DepartmentInput = __decorate([
-    type_graphql_1.InputType()
-], DepartmentInput);
-exports.DepartmentInput = DepartmentInput;
+    type_graphql_1.Field(() => type_graphql_1.ID)
+], Node.prototype, "id", void 0);
+Node = __decorate([
+    type_graphql_1.InterfaceType()
+], Node);
+exports.Node = Node;

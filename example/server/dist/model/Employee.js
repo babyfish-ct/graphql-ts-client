@@ -21,9 +21,10 @@ const DepartmentRepostiory_1 = require("../dal/DepartmentRepostiory");
 const EmployeeRepository_1 = require("../dal/EmployeeRepository");
 const Department_1 = require("./Department");
 const Gender_1 = require("./Gender");
-let Employee = class Employee {
+const Node_1 = require("./Node");
+let Employee = class Employee extends Node_1.Node {
     constructor(row) {
-        this.id = row.id;
+        super(row.id);
         this.firstName = row.firstName;
         this.lastName = row.lastName;
         this.gender = row.gender;
@@ -32,9 +33,6 @@ let Employee = class Employee {
         this.supervisorId = row.supervisorId;
     }
 };
-__decorate([
-    type_graphql_1.Field(() => String)
-], Employee.prototype, "id", void 0);
 __decorate([
     type_graphql_1.Field(() => String)
 ], Employee.prototype, "firstName", void 0);

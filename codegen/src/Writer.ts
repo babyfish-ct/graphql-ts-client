@@ -345,7 +345,7 @@ const SCALAR_MAP: {[key: string]: "string" | "number" | "boolean"} = {
     "DateTime": "string",
     "LocalDate": "string",
     "LocalDateTime": "string",
-    "ID": "number",
+    "ID": "string",
     "UUID": "string"
 };
 

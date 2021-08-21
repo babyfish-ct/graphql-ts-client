@@ -103,7 +103,7 @@ export class Table<R extends object> {
         }
         const idRowMap = this.uniqueIndexMap.get(this.idProp)!;
         const rows = ids !== undefined ?
-            Array.from(ids).map(id => idRowMap.get(id)) :
+            Array.from(ids).map(id => idRowMap.get(id)!) :
             Array.from(idRowMap.values());
         if (predicate === undefined && unhandledPairs.length === 0) {
             return rows;
@@ -164,7 +164,7 @@ export class Table<R extends object> {
 
         const id = newRow !== undefined ? 
             newRow[this.idProp] :
-            oldRow[this.idProp];
+            oldRow![this.idProp];
 
         if (newRow === undefined) {
             for (const {table, prop} of this.foreignKeyReversedReferences) {

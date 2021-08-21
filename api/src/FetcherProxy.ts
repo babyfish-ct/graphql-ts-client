@@ -35,16 +35,14 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object> {
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<string, any>,
-        fragmentName?: string
+        child?: AbstractFetcher<string, any>
     ): AbstractFetcher<string, any> {
         return new FetcherTarget(
             this,
             negative,
             field,
             args,
-            child,
-            fragmentName
+            child
         );
     }
 }
@@ -69,11 +67,6 @@ function proxyHandler(
                             handler
                         );
                     }
-                } else if (p === "on" || p === "asFragment" || methodNames.has(p)) {
-                    return new Proxy(
-                        dummyTargetMethod,
-                        methodProxyHandler(target, handler, p)
-                    );
                 } else if (fetchableType.fields.has(p)) {
                     const addField = Reflect.get(target, "addField") as ADD_FILED;
                     return new Proxy(
@@ -82,11 +75,7 @@ function proxyHandler(
                     );
                 }
             }
-            const value = Reflect.get(target, p);
-            if (typeof value === "function") {
-                return value.bind(target);
-            }
-            return value;
+            return Reflect.get(target, p, receiver);
         }
     };
      return handler;
@@ -101,18 +90,11 @@ function methodProxyHandler(
     return {
         apply: (_1: Function, _2: any, argArray: any[]): any => {
             if (field === "on") {
-                let child = argArray[0] as AbstractFetcher<string, any>;
+                const child = argArray[0] as AbstractFetcher<string, any>;
+                const fragmentName = argArray[1] as string | undefined
                 const addEmbbeddable = Reflect.get(targetFetcher, "addEmbbeddable") as ADD_EMBBEDDABLE;
                 return new Proxy(
-                    addEmbbeddable.call(targetFetcher, child),
-                    handler
-                );
-            }
-            if (field === "asFragment") {
-                let name = argArray[0] as string;
-                const addFragment = Reflect.get(targetFetcher, "addFragment") as ADD_FRAGMENT;
-                return new Proxy(
-                    addFragment.call(targetFetcher, name),
+                    addEmbbeddable.call(targetFetcher, child, fragmentName),
                     handler
                 );
             }
@@ -155,11 +137,8 @@ type REMOVE_FILED = (
 ) => AbstractFetcher<string, any>;
  
 type ADD_EMBBEDDABLE = (
-    child: AbstractFetcher<string, any>
-) => AbstractFetcher<string, any>;
- 
-type ADD_FRAGMENT = (
-    name: string
+    child: AbstractFetcher<string, any>,
+    fragmentName?: string
 ) => AbstractFetcher<string, any>;
 
 function dummyTargetMethod() {}

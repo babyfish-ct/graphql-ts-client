@@ -311,7 +311,7 @@ const SCALAR_MAP = {
     "DateTime": "string",
     "LocalDate": "string",
     "LocalDateTime": "string",
-    "ID": "number",
+    "ID": "string",
     "UUID": "string"
 };
 const EMPTY_MAP = {};

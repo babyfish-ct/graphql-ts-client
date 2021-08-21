@@ -9,18 +9,16 @@ import { Field, FieldResolver, Float, Int, ObjectType, Resolver, Root } from 'ty
 import { TDepartment } from '../dal/DepartmentRepostiory';
 import { employeeTable } from '../dal/EmployeeRepository';
 import { Employee } from './Employee';
+import { Node } from './Node';
 
-@ObjectType()
-export class Department {
-
-    @Field(() => String)
-    readonly id: string;
+@ObjectType({implements: Node})
+export class Department extends Node {
 
     @Field(() => String)
     readonly name: string;
 
     constructor(row: TDepartment) {
-        this.id = row.id;
+        super(row.id);
         this.name = row.name;
     }
 }

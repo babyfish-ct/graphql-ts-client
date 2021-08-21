@@ -1,5 +1,6 @@
 import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import { WithTypeName, ImplementationType } from '../CommonTypes';
+import { node$ } from './NodeFetcher';
 import {Gender} from '../enums';
 
 /*
@@ -15,7 +16,10 @@ export interface EmployeeFetcher<T extends object> extends Fetcher<'Employee', T
 
 	readonly __typename: EmployeeFetcher<T & {__typename: ImplementationType<'Employee'>}>;
 
-	on<XName extends ImplementationType<'Employee'>, X extends object>(child: Fetcher<XName, X>): EmployeeFetcher<
+	on<XName extends ImplementationType<'Employee'>, X extends object>(
+		child: Fetcher<XName, X>, 
+		fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
+	): EmployeeFetcher<
 		XName extends 'Employee' ?
 		T & X :
 		WithTypeName<T, ImplementationType<'Employee'>> & (
@@ -23,8 +27,6 @@ export interface EmployeeFetcher<T extends object> extends Fetcher<'Employee', T
 			{__typename: Exclude<ImplementationType<'Employee'>, ImplementationType<XName>>}
 		)
 	>;
-
-	asFragment(name: string): Fetcher<'Employee', T>;
 
 	readonly id: EmployeeFetcher<T & {readonly id: string}>;
 	readonly "~id": EmployeeFetcher<Omit<T, 'id'>>;
@@ -55,8 +57,8 @@ export const employee$: EmployeeFetcher<{}> =
 	createFetcher(
 		createFetchableType(
 			"Employee", 
-			[], 
-			["id", "firstName", "lastName", "gender", "salary", "department", "supervisor", "subordinates"]
+			[node$.fetchableType], 
+			["firstName", "lastName", "gender", "salary", "department", "supervisor", "subordinates"]
 		), 
 		undefined, 
 		[

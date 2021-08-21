@@ -12,6 +12,6 @@ export interface TEmployee {
     readonly lastName: string;
     readonly gender: Gender;
     readonly salary: number;
-    readonly departmentId: number;
+    readonly departmentId: string;
     readonly supervisorId?: string;
 }

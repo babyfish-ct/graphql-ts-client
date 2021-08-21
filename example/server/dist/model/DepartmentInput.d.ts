@@ -6,6 +6,6 @@
 import "reflect-metadata";
 import { TDepartment } from "../dal/DepartmentRepostiory";
 export declare class DepartmentInput implements TDepartment {
-    readonly id: number;
+    readonly id: string;
     readonly name: string;
 }

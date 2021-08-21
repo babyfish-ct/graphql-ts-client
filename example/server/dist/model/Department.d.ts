@@ -6,8 +6,8 @@
 import 'reflect-metadata';
 import { TDepartment } from '../dal/DepartmentRepostiory';
 import { Employee } from './Employee';
-export declare class Department {
-    readonly id: number;
+import { Node } from './Node';
+export declare class Department extends Node {
     readonly name: string;
     constructor(row: TDepartment);
 }

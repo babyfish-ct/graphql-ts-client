@@ -32,10 +32,10 @@ __decorate([
     type_graphql_1.Field(() => type_graphql_1.Float)
 ], EmployeeInput.prototype, "salary", void 0);
 __decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int)
+    type_graphql_1.Field(() => String)
 ], EmployeeInput.prototype, "departmentId", void 0);
 __decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int, { nullable: true })
+    type_graphql_1.Field(() => String, { nullable: true })
 ], EmployeeInput.prototype, "supervisorId", void 0);
 EmployeeInput = __decorate([
     type_graphql_1.InputType()

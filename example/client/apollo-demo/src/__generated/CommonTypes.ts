@@ -29,6 +29,7 @@
  *     ;
  */
 export type ImplementationType<T> = 
+	T extends 'Node' ? 'Node' | ImplementationType<'Department'> | ImplementationType<'Employee'> :
 	T
 ;
 /**
@@ -102,6 +103,14 @@ export function upcastTypes(typeName: string): string[] {
 
 function upcastTypes0(typeName: string, output: string[]) {
 	switch (typeName){
+		case 'Department':
+			output.push('Department');
+			upcastTypes0('Node', output);
+			break;
+		case 'Employee':
+			output.push('Employee');
+			upcastTypes0('Node', output);
+			break;
 		default:
 			output.push(typeName);
 			break;
@@ -175,6 +184,11 @@ export function downcastTypes(typeName: string): string[] {
 
 function downcastTypes0(typeName: string, output: string[]) {
 	switch (typeName){
+		case 'Node':
+			output.push('Node');
+			downcastTypes0('Department', output);
+			downcastTypes0('Employee', output);
+			break;
 		default:
 			output.push(typeName);
 			break;

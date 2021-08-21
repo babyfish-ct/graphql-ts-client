@@ -161,8 +161,10 @@ class Table {
         for (const [prop, valueRowMap] of this.uniqueIndexMap) {
             const oldValue = rowValue(oldRow, prop);
             const newValue = rowValue(newRow, prop);
-            if (oldValue !== newValue) {
+            if (oldRow !== undefined) {
                 valueRowMap.delete(oldValue);
+            }
+            if (newRow !== undefined) {
                 valueRowMap.set(newValue, newRow);
             }
         }
@@ -188,6 +190,9 @@ class Table {
                 }
             }
         }
+        console.log(`Table ${this.name} changed-------------------------------------`);
+        console.log(`> Old row: ${JSON.stringify(oldRow)}`);
+        console.log(`> New row: ${JSON.stringify(newRow)}`);
     }
 }
 exports.Table = Table;

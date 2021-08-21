@@ -137,8 +137,12 @@ export class FetcherWriter extends Writer {
         t("'>}>;\n");
 
         t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object>`);
-        this.scope({type: "PARAMETERS"}, () => {
+        this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
             t("child: Fetcher<XName, X>");
+            if (!(this.modelType instanceof GraphQLUnionType)) {
+                this.separator(", ");
+                t("fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment");
+            }
         });
         t(`: ${this.fetcherTypeName}`);
         this.scope({type: "GENERIC", multiLines: true}, () => {
@@ -152,12 +156,6 @@ export class FetcherWriter extends Writer {
             });
         });
         t(";\n");
-
-        if (!(this.modelType instanceof GraphQLUnionType)) {
-            t("\nasFragment(name: string): Fetcher<");
-            this.str(this.modelType.name);
-            t(", T>;\n");
-        }
 
         for (const fieldName in this.fieldMap) {
             t("\n");

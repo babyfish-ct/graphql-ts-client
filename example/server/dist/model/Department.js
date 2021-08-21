@@ -19,15 +19,13 @@ require("reflect-metadata");
 const type_graphql_1 = require("type-graphql");
 const EmployeeRepository_1 = require("../dal/EmployeeRepository");
 const Employee_1 = require("./Employee");
-let Department = class Department {
+const Node_1 = require("./Node");
+let Department = class Department extends Node_1.Node {
     constructor(row) {
-        this.id = row.id;
+        super(row.id);
         this.name = row.name;
     }
 };
-__decorate([
-    type_graphql_1.Field(() => type_graphql_1.Int)
-], Department.prototype, "id", void 0);
 __decorate([
     type_graphql_1.Field(() => String)
 ], Department.prototype, "name", void 0);

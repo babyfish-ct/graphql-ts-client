@@ -10,13 +10,14 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractFetcher = void 0;
+const Parameter_1 = require("./Parameter");
+const TextWriter_1 = require("./TextWriter");
 class AbstractFetcher {
-    constructor(ctx, _negative, _field, _args, _child, _fragmentName) {
+    constructor(ctx, _negative, _field, _args, _child) {
         this._negative = _negative;
         this._field = _field;
         this._args = _args;
         this._child = _child;
-        this._fragmentName = _fragmentName;
         if (Array.isArray(ctx)) {
             this._fetchableType = ctx[0];
             this._unionItemTypes = ctx[1] !== undefined && ctx[1].length !== 0 ? ctx[1] : undefined;
@@ -39,10 +40,16 @@ class AbstractFetcher {
         }
         return this.createFetcher(true, field);
     }
-    addEmbbeddable(child) {
+    addEmbbeddable(child, fragmentName) {
         let fieldName;
-        if (child._fragmentName !== undefined) {
-            fieldName = `... ${child._fragmentName}`;
+        if (fragmentName !== undefined) {
+            if (fragmentName.length === 0) {
+                throw new Error("fragmentName cannot be ''");
+            }
+            if (fragmentName.startsWith("on ")) {
+                throw new Error("fragmentName cannot start with 'on '");
+            }
+            fieldName = `... ${fragmentName}`;
         }
         else if (child._fetchableType.entityName === this._fetchableType.entityName || child._unionItemTypes !== undefined) {
             fieldName = '...';
@@ -51,121 +58,6 @@ class AbstractFetcher {
             fieldName = `... on ${child._fetchableType.entityName}`;
         }
         return this.createFetcher(false, fieldName, undefined, child);
-    }
-    addFragment(name) {
-        if (this._unionItemTypes !== undefined) {
-            throw new Error("Cannot cast the fetcher of union type to fragment");
-        }
-        return this.createFetcher(false, "", undefined, undefined, name);
-    }
-    toString() {
-        let s = this._str;
-        if (s === undefined) {
-            const result = this._toString0(0);
-            this._str = s = result[0];
-            this._fragmentStr = result[1];
-        }
-        return s;
-    }
-    toFragmentString() {
-        let fs = this._fragmentStr;
-        if (fs === undefined) {
-            const result = this._toString0(0);
-            this._str = result[0];
-            this._fragmentStr = fs = result[1];
-        }
-        return fs;
-    }
-    _toString0(indent) {
-        const ctx = {
-            value: "",
-            fragmentMap: new Map()
-        };
-        this._toString1(indent, ctx);
-        const processedFragmentNames = new Set();
-        let fragmentStr = "";
-        let restFragmentMap = ctx.fragmentMap;
-        while (restFragmentMap.size !== 0) {
-            const fragmentCtx = {
-                value: "",
-                fragmentMap: new Map()
-            };
-            for (const [name, fragmentFetcher] of restFragmentMap) {
-                if (!processedFragmentNames.has(name)) {
-                    processedFragmentNames.add(name);
-                    fragmentCtx.value += "\nfragment ";
-                    fragmentCtx.value += name;
-                    fragmentCtx.value += " on ";
-                    fragmentCtx.value += fragmentFetcher._fetchableType.entityName;
-                    fragmentCtx.value += " ";
-                    fragmentFetcher._toString1(0, fragmentCtx);
-                }
-            }
-            fragmentStr += fragmentCtx.value;
-            restFragmentMap = fragmentCtx.fragmentMap;
-        }
-        return [ctx.value, fragmentStr];
-    }
-    _toString1(indent, ctx) {
-        const fieldMap = this.fieldMap;
-        if (fieldMap.size === 0) {
-            return ["", ""];
-        }
-        ctx.value += "{\n";
-        if (this._unionItemTypes === undefined) {
-            for (const [fieldName, field] of fieldMap) {
-                AbstractFetcher.appendIndentTo(indent + 1, ctx);
-                AbstractFetcher.appendFieldTo(indent + 1, fieldName, field, ctx);
-            }
-        }
-        else {
-            for (const [fieldName, field] of fieldMap) {
-                if (fieldName.startsWith("...")) {
-                    AbstractFetcher.appendIndentTo(indent + 1, ctx);
-                    AbstractFetcher.appendFieldTo(indent + 1, fieldName, field, ctx);
-                }
-            }
-            for (const itemType of this._unionItemTypes) {
-                AbstractFetcher.appendIndentTo(indent + 1, ctx);
-                ctx.value += "... on ";
-                ctx.value += itemType;
-                ctx.value += " { \n";
-                for (const [fieldName, field] of fieldMap) {
-                    if (!fieldName.startsWith("...")) {
-                        AbstractFetcher.appendIndentTo(indent + 2, ctx);
-                        AbstractFetcher.appendFieldTo(indent + 2, fieldName, field, ctx);
-                    }
-                }
-                AbstractFetcher.appendIndentTo(indent + 1, ctx);
-                ctx.value += "}\n";
-            }
-        }
-        AbstractFetcher.appendIndentTo(indent, ctx);
-        ctx.value += "}";
-    }
-    toJSON() {
-        let j = this._json;
-        if (j === undefined) {
-            this._json = j = JSON.stringify(this._toJSON0());
-        }
-        return j;
-    }
-    _toJSON0() {
-        var _a;
-        const fieldMap = this.fieldMap;
-        if (fieldMap.size === 0) {
-            return {};
-        }
-        const arr = [];
-        for (const [name, field] of fieldMap) {
-            let obj = {
-                name,
-                args: field.args,
-                child: (_a = field.childFetchers) === null || _a === void 0 ? void 0 : _a.map(child => child._toJSON0())
-            };
-            arr.push(obj);
-        }
-        return arr;
     }
     get fieldMap() {
         let m = this._fieldMap;
@@ -189,7 +81,7 @@ class AbstractFetcher {
                 let childFetchers = (_a = fieldMap.get(fetcher._field)) === null || _a === void 0 ? void 0 : _a.childFetchers;
                 if (childFetchers === undefined) {
                     childFetchers = [];
-                    fieldMap.set(fetcher._field, { childFetchers });
+                    fieldMap.set(fetcher._field, { childFetchers }); // Fragment cause mutliple child fetchers
                 }
                 childFetchers.push(fetcher._child);
             }
@@ -200,81 +92,143 @@ class AbstractFetcher {
                 else {
                     fieldMap.set(fetcher._field, {
                         args: fetcher._args,
-                        childFetchers: fetcher._child === undefined ? undefined : [fetcher._child]
+                        childFetchers: fetcher._child === undefined ? undefined : [fetcher._child] // Association only cause one child fetcher
                     });
                 }
             }
         }
         return fieldMap;
     }
-    static appendIndentTo(indent, ctx) {
-        for (let i = indent; i > 0; --i) {
-            ctx.value += '\t';
-        }
+    toString() {
+        return this.result.text;
     }
-    static appendFieldTo(indent, fieldName, field, ctx) {
-        if (field.childFetchers !== undefined) {
-            for (const child of field.childFetchers) {
-                this._appendFieldTo0(indent, fieldName, field, ctx, child);
-            }
-        }
-        else {
-            this._appendFieldTo0(indent, fieldName, field, ctx);
-        }
+    toFragmentString() {
+        return this.result.fragmentText;
     }
-    static _appendFieldTo0(indent, fieldName, field, ctx, child) {
-        ctx.value += fieldName;
-        if (field.args !== undefined) {
-            const argNames = Object.keys(field.args);
-            if (argNames.length !== 0) {
-                let separator = "(";
-                for (const argName of argNames) {
-                    ctx.value += separator;
-                    ctx.value += argName;
-                    ctx.value += ": ";
-                    const arg = field.args[argName];
-                    if (arg === undefined || arg === null) {
-                        ctx.value += "null";
-                    }
-                    else if (typeof arg === 'number' || typeof arg === 'boolean') {
-                        ctx.value += arg;
-                    }
-                    else {
-                        ctx.value += '"';
-                        ctx.value += arg;
-                        ctx.value += '"';
-                    }
-                    separator = ", ";
-                }
-                ctx.value += ")";
-            }
+    toJSON() {
+        return JSON.stringify(this.result);
+    }
+    get result() {
+        let r = this._result;
+        if (r === undefined) {
+            this._result = r = this.createResult();
         }
-        if (child !== undefined) {
-            if (child._fragmentName !== undefined) {
-                const conflictFragment = ctx.fragmentMap.get(child._fragmentName);
-                if (conflictFragment === undefined) {
-                    ctx.fragmentMap.set(child._fragmentName, child);
-                }
-                else if (conflictFragment !== child) {
-                    throw new Error(`Different fragments with same name '${child._fragmentName}'`);
-                }
+        return r;
+    }
+    createResult() {
+        const writer = new TextWriter_1.TextWriter();
+        const fragmentWriter = new TextWriter_1.TextWriter();
+        let ctx = new ResultContext(writer);
+        ctx.accept(this);
+        const renderedFragmentNames = new Set();
+        while (true) {
+            const fragmentMap = ctx.namedFragmentMap;
+            if (fragmentMap === undefined) {
+                break;
             }
-            else {
-                const childCtx = {
-                    value: "",
-                    fragmentMap: ctx.fragmentMap
-                };
-                child._toString1(indent, childCtx);
-                if (childCtx.value !== "") {
-                    ctx.value += " ";
-                    ctx.value += childCtx.value;
+            const fragmentCtx = new ResultContext(fragmentWriter, ctx);
+            for (const [fragmentName, fragment] of fragmentMap) {
+                if (renderedFragmentNames.add(fragmentName)) {
+                    fragmentWriter.text(`fragment ${fragmentName} on ${fragment.fetchableType.entityName} `);
+                    fragmentCtx.accept(fragment);
                 }
             }
         }
-        ctx.value += "\n";
+        return {
+            text: writer.toString(),
+            fragmentText: writer.toString(),
+            explicitArgumentNames: ctx.explicitArgumentNames,
+            implicitArgumentValues: ctx.implicitArgumentValues
+        };
     }
     __supressWarnings__(_) {
         throw new Error("__supressWarnings is not supported");
     }
 }
 exports.AbstractFetcher = AbstractFetcher;
+class ResultContext {
+    constructor(writer = new TextWriter_1.TextWriter(), ctx) {
+        var _a, _b;
+        this.writer = writer;
+        this._namedFragmentMap = new Map();
+        this.explicitArgumentNames = (_a = ctx === null || ctx === void 0 ? void 0 : ctx.explicitArgumentNames) !== null && _a !== void 0 ? _a : new Set();
+        this.implicitArgumentValues = (_b = ctx === null || ctx === void 0 ? void 0 : ctx.implicitArgumentValues) !== null && _b !== void 0 ? _b : [];
+    }
+    accept(fetcher) {
+        const t = this.writer.text.bind(this.writer);
+        this.writer.scope({ type: "BLOCK", multiLines: true }, () => {
+            for (const [fieldName, field] of fetcher.fieldMap) {
+                t(fieldName);
+                if (field.args !== undefined && Object.keys(field).length !== 0) {
+                    this.writer.scope({ type: "ARGUMENTS", multiLines: isMultLineJSON(field.args) }, () => {
+                        for (const argName in field.args) {
+                            this.writer.seperator();
+                            const arg = field.args[argName];
+                            t(argName);
+                            t(": ");
+                            if (arg instanceof Parameter_1.ParameterRef) {
+                                this.explicitArgumentNames.add(arg.name);
+                                t(arg.name);
+                            }
+                            else {
+                                t(`fetcherArgs[${this.implicitArgumentValues.length}]`);
+                                this.implicitArgumentValues.push(arg);
+                            }
+                        }
+                    });
+                }
+                const childFetchers = field.childFetchers;
+                if (childFetchers !== undefined && childFetchers.length !== 0) {
+                    if (fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
+                        const fragmentName = fieldName.substring("...".length).trim();
+                        const oldFragment = this._namedFragmentMap.get(fragmentName);
+                        for (const childFetcher of childFetchers) {
+                            if (oldFragment !== undefined && oldFragment !== childFetcher) {
+                                throw new Error(`Conflict fragment name ${fragmentName}`);
+                            }
+                            this._namedFragmentMap.set(fragmentName, childFetcher);
+                        }
+                    }
+                    else {
+                        t(' ');
+                        for (const childFetcher of childFetchers) {
+                            this.accept(childFetcher);
+                        }
+                    }
+                }
+            }
+        });
+        t("\n");
+    }
+    get namedFragmentMap() {
+        if (this._namedFragmentMap.size === 0) {
+            return undefined;
+        }
+        return this._namedFragmentMap;
+    }
+}
+function isMultLineJSON(obj) {
+    let size = 0;
+    if (Array.isArray(obj)) {
+        for (const value of obj) {
+            if (typeof value === 'object' && !(value instanceof Parameter_1.ParameterRef)) {
+                return true;
+            }
+            if (++size > 2) {
+                return true;
+            }
+        }
+    }
+    else if (typeof obj === 'object') {
+        for (const key in obj) {
+            const value = obj[key];
+            if (typeof value === 'object' && !(value instanceof Parameter_1.ParameterRef)) {
+                return true;
+            }
+            if (++size > 2) {
+                return true;
+            }
+        }
+    }
+    return false;
+}

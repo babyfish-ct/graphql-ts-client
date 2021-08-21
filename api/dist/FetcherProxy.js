@@ -24,8 +24,8 @@ function createFetcher(fetchableType, unionEntityTypes, methodNames) {
 }
 exports.createFetcher = createFetcher;
 class FetcherTarget extends Fetcher_1.AbstractFetcher {
-    createFetcher(negative, field, args, child, fragmentName) {
-        return new FetcherTarget(this, negative, field, args, child, fragmentName);
+    createFetcher(negative, field, args, child) {
+        return new FetcherTarget(this, negative, field, args, child);
     }
 }
 function proxyHandler(fetchableType, methodNames) {
@@ -42,19 +42,12 @@ function proxyHandler(fetchableType, methodNames) {
                         return new Proxy(removeField.call(target, rest), handler);
                     }
                 }
-                else if (p === "on" || p === "asFragment" || methodNames.has(p)) {
-                    return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, p));
-                }
                 else if (fetchableType.fields.has(p)) {
                     const addField = Reflect.get(target, "addField");
                     return new Proxy(addField.call(target, p.toString()), handler);
                 }
             }
-            const value = Reflect.get(target, p);
-            if (typeof value === "function") {
-                return value.bind(target);
-            }
-            return value;
+            return Reflect.get(target, p, receiver);
         }
     };
     return handler;
@@ -64,14 +57,10 @@ function methodProxyHandler(targetFetcher, handler, field) {
     return {
         apply: (_1, _2, argArray) => {
             if (field === "on") {
-                let child = argArray[0];
+                const child = argArray[0];
+                const fragmentName = argArray[1];
                 const addEmbbeddable = Reflect.get(targetFetcher, "addEmbbeddable");
-                return new Proxy(addEmbbeddable.call(targetFetcher, child), handler);
-            }
-            if (field === "asFragment") {
-                let name = argArray[0];
-                const addFragment = Reflect.get(targetFetcher, "addFragment");
-                return new Proxy(addFragment.call(targetFetcher, name), handler);
+                return new Proxy(addEmbbeddable.call(targetFetcher, child, fragmentName), handler);
             }
             let args = undefined;
             let child = undefined;

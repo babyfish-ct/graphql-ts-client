@@ -6,6 +6,6 @@
 import { Table } from "./Table";
 export declare const departmentTable: Table<TDepartment>;
 export interface TDepartment {
-    readonly id: number;
+    readonly id: string;
     readonly name: string;
 }

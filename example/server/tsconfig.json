@@ -6,7 +6,8 @@
     "outDir": "./dist",
     "skipLibCheck": true,
     "experimentalDecorators": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "strictNullChecks": true
   },
   "include": [
     "src/**/*"

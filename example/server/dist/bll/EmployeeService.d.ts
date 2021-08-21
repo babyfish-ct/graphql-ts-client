@@ -7,7 +7,7 @@ import 'reflect-metadata';
 import { Employee } from '../model/Employee';
 import { EmployeeInput } from '../model/EmployeeInput';
 export declare class EmployeeService {
-    findEmployees(namePattern?: string, departmentId?: number, supervisorId?: string, mockedErrorProbability?: number): Promise<Employee[]>;
+    findEmployees(name?: string, departmentId?: string, supervisorId?: string, mockedErrorProbability?: number): Promise<Employee[]>;
     mergeEmployee(input: EmployeeInput): Promise<Employee>;
-    deleteEmployee(id: number): Promise<boolean>;
+    deleteEmployee(id: string): Promise<string | undefined>;
 }

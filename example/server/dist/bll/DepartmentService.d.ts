@@ -9,5 +9,5 @@ import { DepartmentInput } from '../model/DepartmentInput';
 export declare class DepartmentService {
     findDepartmentsLikeName(name?: string): Promise<Department[]>;
     mergeDepartment(input: DepartmentInput): Promise<Department>;
-    deleteDepartment(id: number): Promise<boolean>;
+    deleteDepartment(id: string): Promise<string | undefined>;
 }
