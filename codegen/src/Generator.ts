@@ -92,6 +92,21 @@ export class Generator {
         await Promise.all(promises);
     }
 
+    protected createFetcheWriter(
+        modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
+        inheritanceInfo: InheritanceInfo,
+        stream: WriteStream,
+        config: GeneratorConfig
+    ): FetcherWriter {
+        return new FetcherWriter(
+            false,
+            modelType,
+            inheritanceInfo,
+            stream,
+            config
+        );
+    }
+
     private async loadSchema(): Promise<GraphQLSchema> {
         try {
             const schema = await this.config.schemaLoader(); 
@@ -115,7 +130,7 @@ export class Generator {
                 const stream = createStreamAndLog(
                     join(dir, `${generatedFetcherTypeName(type, this.config)}.ts`)
                 );
-                const writer = new FetcherWriter(type, inheritanceInfo, stream, this.config);
+                const writer = this.createFetcheWriter(type, inheritanceInfo, stream, this.config);
                 emptyFetcherNameMap.set(type, writer.emptyFetcherName);
                 if (writer.defaultFetcherName !== undefined) {
                     defaultFetcherNameMap.set(type, writer.defaultFetcherName);
@@ -266,6 +281,10 @@ export class Generator {
 export function createStreamAndLog(path: string): WriteStream {
     console.log(`Write code into file: ${path}`);
     return createWriteStream(path);
+}
+
+export async function awaitStream(stream: WriteStream) {
+    return await(promisify(stream.end).call(stream));
 }
 
 const mkdirAsync = promisify(mkdir);

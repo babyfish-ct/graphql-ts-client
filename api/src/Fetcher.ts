@@ -233,6 +233,11 @@ export interface FetcherField {
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object>>;
 }
 
+export abstract class FragmentWrapper<TFragmentName extends string, E extends string, T extends object> {
+
+    protected constructor(readonly name: TFragmentName, readonly fetcher: Fetcher<E, T>) {}
+}
+
 interface Result {
     readonly text: string;
     readonly fragmentText: string;

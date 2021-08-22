@@ -8,7 +8,16 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 import { FetchableType, Fetcher } from './Fetcher';
-export declare function createFetcher<E extends string, F extends Fetcher<E, object>>(fetchableType: FetchableType<E>, unionEntityTypes: string[] | undefined, methodNames: string[]): F;
+export declare function createFetcher<E extends string, F extends Fetcher<E, object>>(fetchableType: FetchableType<E>, unionEntityTypes: string[] | undefined, methodNames: string[], extension?: FetcherProxyExtension): F;
+export declare type FetcherProxyExtension = {
+    readonly [key: string]: FetcherProxyExtensionFunc;
+};
+export interface FetcherProxyExtensionContext {
+    readonly proxy: Fetcher<string, object>;
+    readonly target: Fetcher<string, object>;
+    readonly args: IArguments;
+}
+declare type FetcherProxyExtensionFunc = (ctx: FetcherProxyExtensionContext) => any;
 export declare function createFetchableType<E extends string>(entityName: string, superTypes: readonly FetchableType<string>[], declaredFields: readonly string[]): FetchableTypeImpl<string>;
 declare class FetchableTypeImpl<E extends string> implements FetchableType<E> {
     readonly entityName: E;

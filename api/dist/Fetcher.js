@@ -9,7 +9,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AbstractFetcher = void 0;
+exports.FragmentWrapper = exports.AbstractFetcher = void 0;
 const Parameter_1 = require("./Parameter");
 const TextWriter_1 = require("./TextWriter");
 class AbstractFetcher {
@@ -150,6 +150,13 @@ class AbstractFetcher {
     }
 }
 exports.AbstractFetcher = AbstractFetcher;
+class FragmentWrapper {
+    constructor(name, fetcher) {
+        this.name = name;
+        this.fetcher = fetcher;
+    }
+}
+exports.FragmentWrapper = FragmentWrapper;
 class ResultContext {
     constructor(writer = new TextWriter_1.TextWriter(), ctx) {
         var _a, _b;

@@ -8,15 +8,18 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 /// <reference types="node" />
-import { GraphQLField, GraphQLSchema } from "graphql";
+import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { WriteStream } from "fs";
+import { FetcherWriter } from "./FetcherWriter";
+import { InheritanceInfo } from "./InheritanceInfo";
 export declare class Generator {
     protected config: GeneratorConfig;
     private excludedTypeNames;
     private excludedOperationNames;
     constructor(config: GeneratorConfig);
     generate(): Promise<void>;
+    protected createFetcheWriter(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, inheritanceInfo: InheritanceInfo, stream: WriteStream, config: GeneratorConfig): FetcherWriter;
     private loadSchema;
     private generateFetcherTypes;
     private generateInputTypes;
@@ -31,3 +34,4 @@ export declare class Generator {
     protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
 }
 export declare function createStreamAndLog(path: string): WriteStream;
+export declare function awaitStream(stream: WriteStream): Promise<any>;

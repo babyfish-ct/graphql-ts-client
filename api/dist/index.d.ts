@@ -8,7 +8,8 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 export type { Fetcher, ModelType } from './Fetcher';
-export { AbstractFetcher } from './Fetcher';
+export type { FetcherProxyExtensionContext } from './FetcherProxy';
+export { AbstractFetcher, FragmentWrapper } from './Fetcher';
 export { DependencyManager } from './DependencyManager';
 export { createFetcher, createFetchableType } from './FetcherProxy';
 import { Draft, PatchListener } from "immer";

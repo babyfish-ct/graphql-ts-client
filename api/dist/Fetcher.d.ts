@@ -59,3 +59,8 @@ export interface FetcherField {
     };
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object>>;
 }
+export declare abstract class FragmentWrapper<TFragmentName extends string, E extends string, T extends object> {
+    readonly name: TFragmentName;
+    readonly fetcher: Fetcher<E, T>;
+    protected constructor(name: TFragmentName, fetcher: Fetcher<E, T>);
+}

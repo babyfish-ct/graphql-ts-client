@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { AbstractFetcher, FetchableType, Fetcher } from './Fetcher';
+import { AbstractFetcher, FetchableType, Fetcher, FragmentWrapper } from './Fetcher';
 
 /*
  * In order to reduce compacity of compiled target code,
@@ -21,13 +21,26 @@ import { AbstractFetcher, FetchableType, Fetcher } from './Fetcher';
 export function createFetcher<E extends string, F extends Fetcher<E, object>>(
     fetchableType: FetchableType<E>,
     unionEntityTypes: string[] | undefined,
-    methodNames: string[]
+    methodNames: string[],
+    extension?: FetcherProxyExtension
 ) {
     return new Proxy(
         new FetcherTarget([fetchableType, unionEntityTypes], false, ""),
-        proxyHandler(fetchableType, new Set<string>(methodNames))
+        proxyHandler(fetchableType, new Set<string>(methodNames), extension),
     ) as F;
 }
+
+export type FetcherProxyExtension = {
+    readonly [key: string]: FetcherProxyExtensionFunc
+}
+
+export interface FetcherProxyExtensionContext {
+    readonly proxy: Fetcher<string, object>;
+    readonly target: Fetcher<string, object>;
+    readonly args: IArguments;
+}
+
+type FetcherProxyExtensionFunc = (ctx: FetcherProxyExtensionContext) => any;
  
 class FetcherTarget<E extends string> extends AbstractFetcher<E, object> {
  
@@ -49,7 +62,8 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object> {
  
 function proxyHandler(
    fetchableType: FetchableType<string>, 
-   methodNames: Set<string>
+   methodNames: Set<string>,
+   extension?: FetcherProxyExtension
 ): ProxyHandler<Fetcher<string, object>> {
  
     const handler = {
@@ -58,6 +72,18 @@ function proxyHandler(
                 return fetchableType;
             }
             if (typeof p === 'string') {
+                if (extension !== undefined) {
+                    const extensionFunc = extension[p];
+                    if (extensionFunc !== undefined) {
+                        return function() {
+                            extensionFunc({
+                                proxy: receiver as Fetcher<string, any>,
+                                target,
+                                args: arguments
+                            });
+                        }
+                    }
+                }
                 if (p.startsWith("~")) {
                     const rest = p.substring(1);
                     if (fetchableType.fields.has(rest)) {
@@ -95,9 +121,15 @@ function methodProxyHandler(
     return {
         apply: (_1: Function, _2: any, argArray: any[]): any => {
             if (field === "on") {
-                const child = argArray[0] as AbstractFetcher<string, any>;
+                const child = argArray[0];
                 const fragmentName = argArray[1] as string | undefined
                 const addEmbbeddable = Reflect.get(targetFetcher, "addEmbbeddable") as ADD_EMBBEDDABLE;
+                if (child instanceof FragmentWrapper) {
+                    return new Proxy(
+                        addEmbbeddable.call(targetFetcher, child.fetcher, child.name),
+                        handler
+                    );
+                }
                 return new Proxy(
                     addEmbbeddable.call(targetFetcher, child, fragmentName),
                     handler

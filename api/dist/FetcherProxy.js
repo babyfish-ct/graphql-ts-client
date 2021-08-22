@@ -19,8 +19,8 @@ const Fetcher_1 = require("./Fetcher");
  * interfaces cannot affect the capacity of compilied targe code
  * ), and this "createFetcher" method uses proxies to create instances of those interfaces.
  */
-function createFetcher(fetchableType, unionEntityTypes, methodNames) {
-    return new Proxy(new FetcherTarget([fetchableType, unionEntityTypes], false, ""), proxyHandler(fetchableType, new Set(methodNames)));
+function createFetcher(fetchableType, unionEntityTypes, methodNames, extension) {
+    return new Proxy(new FetcherTarget([fetchableType, unionEntityTypes], false, ""), proxyHandler(fetchableType, new Set(methodNames), extension));
 }
 exports.createFetcher = createFetcher;
 class FetcherTarget extends Fetcher_1.AbstractFetcher {
@@ -28,13 +28,25 @@ class FetcherTarget extends Fetcher_1.AbstractFetcher {
         return new FetcherTarget(this, negative, field, args, child);
     }
 }
-function proxyHandler(fetchableType, methodNames) {
+function proxyHandler(fetchableType, methodNames, extension) {
     const handler = {
         get: (target, p, receiver) => {
             if (p === "fetchableType") {
                 return fetchableType;
             }
             if (typeof p === 'string') {
+                if (extension !== undefined) {
+                    const extensionFunc = extension[p];
+                    if (extensionFunc !== undefined) {
+                        return function () {
+                            extensionFunc({
+                                proxy: receiver,
+                                target,
+                                args: arguments
+                            });
+                        };
+                    }
+                }
                 if (p.startsWith("~")) {
                     const rest = p.substring(1);
                     if (fetchableType.fields.has(rest)) {
@@ -63,6 +75,9 @@ function methodProxyHandler(targetFetcher, handler, field) {
                 const child = argArray[0];
                 const fragmentName = argArray[1];
                 const addEmbbeddable = Reflect.get(targetFetcher, "addEmbbeddable");
+                if (child instanceof Fetcher_1.FragmentWrapper) {
+                    return new Proxy(addEmbbeddable.call(targetFetcher, child.fetcher, child.name), handler);
+                }
                 return new Proxy(addEmbbeddable.call(targetFetcher, child, fragmentName), handler);
             }
             let args = undefined;

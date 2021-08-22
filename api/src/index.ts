@@ -9,8 +9,8 @@
  */
 
 export type { Fetcher, ModelType } from './Fetcher';
-export type { RelayFragment } from './RelayFragment';
-export { AbstractFetcher } from './Fetcher';
+export type { FetcherProxyExtensionContext } from './FetcherProxy';
+export { AbstractFetcher, FragmentWrapper } from './Fetcher';
 export { DependencyManager } from './DependencyManager';
 export { createFetcher, createFetchableType } from './FetcherProxy';
 

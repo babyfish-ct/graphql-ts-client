@@ -18,7 +18,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createStreamAndLog = exports.Generator = void 0;
+exports.awaitStream = exports.createStreamAndLog = exports.Generator = void 0;
 const graphql_1 = require("graphql");
 const GeneratorConfig_1 = require("./GeneratorConfig");
 const fs_1 = require("fs");
@@ -93,6 +93,9 @@ class Generator {
             yield Promise.all(promises);
         });
     }
+    createFetcheWriter(modelType, inheritanceInfo, stream, config) {
+        return new FetcherWriter_1.FetcherWriter(false, modelType, inheritanceInfo, stream, config);
+    }
     loadSchema() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -114,7 +117,7 @@ class Generator {
             const promises = fetcherTypes
                 .map((type) => __awaiter(this, void 0, void 0, function* () {
                 const stream = createStreamAndLog(path_1.join(dir, `${FetcherWriter_1.generatedFetcherTypeName(type, this.config)}.ts`));
-                const writer = new FetcherWriter_1.FetcherWriter(type, inheritanceInfo, stream, this.config);
+                const writer = this.createFetcheWriter(type, inheritanceInfo, stream, this.config);
                 emptyFetcherNameMap.set(type, writer.emptyFetcherName);
                 if (writer.defaultFetcherName !== undefined) {
                     defaultFetcherNameMap.set(type, writer.defaultFetcherName);
@@ -256,6 +259,12 @@ function createStreamAndLog(path) {
     return fs_1.createWriteStream(path);
 }
 exports.createStreamAndLog = createStreamAndLog;
+function awaitStream(stream) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield (util_1.promisify(stream.end).call(stream));
+    });
+}
+exports.awaitStream = awaitStream;
 const mkdirAsync = util_1.promisify(fs_1.mkdir);
 const rmdirAsync = util_1.promisify(fs_1.rmdir);
 const accessAsync = util_1.promisify(fs_1.access);

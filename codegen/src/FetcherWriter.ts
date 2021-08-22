@@ -30,6 +30,7 @@ export class FetcherWriter extends Writer {
     readonly fieldMap: GraphQLFieldMap<any, any>;
 
     constructor(
+        private relay: boolean,
         private readonly modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
         private inheritanceInfo: InheritanceInfo,
         stream: WriteStream,
@@ -86,9 +87,14 @@ export class FetcherWriter extends Writer {
     }
 
     protected prepareImportings() {
+        
         this.importStatement("import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';");
         this.importStatement("import { WithTypeName, ImplementationType } from '../CommonTypes';");
-        
+        if (this.relay) {
+            this.importStatement("import type { FetcherProxyExtensionContext } from 'graphql-ts-client-api';");   
+            this.importStatement("import { FragmentRefs } from 'relay-runtime';");
+            this.importStatement("import { RelayFragment } from '../RelayFragment';");
+        } 
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
             this.importFieldTypes(field);
@@ -156,6 +162,24 @@ export class FetcherWriter extends Writer {
             });
         });
         t(";\n");
+
+        if (this.relay) {
+            t(`\non<TFragmentName extends string>`);
+            this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
+                t(`child: RelayFragment<TFragmentName, "${this.modelType.name}", object>`);
+            });
+            t(`: ${this.fetcherTypeName}`);
+            this.scope({type: "GENERIC", multiLines: true}, () => {
+                t('T & { readonly " $fragmentRefs": FragmentRefs<TFragmentName>}');
+            });
+            t(";\n");
+
+            t("\ntoRelayFragment<TFragmentName extends string>");
+            this.scope({type: "PARAMETERS", multiLines: true}, () => {
+                t("name: TFragmentName");
+            });
+            t(`: RelayFragment<TFragmentName, "${this.modelType.name}", T>;\n`);
+        }
 
         for (const fieldName in this.fieldMap) {
             t("\n");
@@ -296,6 +320,15 @@ export class FetcherWriter extends Writer {
                         this.str(methodName);
                     }
                 });
+                if (this.relay) {
+                    this.separator(", ");
+                    this.scope({type: "BLOCK", multiLines: true}, () => {
+                        t("toRelayFragment: (ctx: FetcherProxyExtensionContext) => ");
+                        this.scope({type: "BLOCK", multiLines: true}, () => {
+                            t("return new RelayFragment(ctx.args[0] as string, ctx.proxy);\n");
+                        });    
+                    });
+                }
             });
         });
 
