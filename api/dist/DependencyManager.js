@@ -225,7 +225,7 @@ function collectDeclaringTypeNames(fieldName, fetchableType, output) {
     }
     else {
         for (const superType of fetchableType.superTypes) {
-            this.collectDeclaringTypeNames(fieldName, superType, output);
+            collectDeclaringTypeNames(fieldName, superType, output);
         }
     }
 }
