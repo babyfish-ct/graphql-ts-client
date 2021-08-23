@@ -278,8 +278,10 @@ class Writer {
         return false;
     }
     writeIndent() {
-        for (let i = this.scopes.length; i > 0; --i) {
-            this.stream.write(this.indent);
+        for (const scope of this.scopes) {
+            if (scope.multiLines) {
+                this.stream.write(this.indent);
+            }
         }
     }
     get currentScope() {

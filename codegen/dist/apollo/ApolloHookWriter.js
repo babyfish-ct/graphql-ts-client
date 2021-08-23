@@ -10,20 +10,15 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApolloHookWriter = void 0;
-const Associations_1 = require("../Associations");
-const Writer_1 = require("../Writer");
-class ApolloHookWriter extends Writer_1.Writer {
-    constructor(hookType, fields, stream, config) {
-        super(stream, config);
-        this.hookType = hookType;
-        this.fields = fields;
-        this.hasTypedHooks = this.fields.find(field => Associations_1.associatedTypeOf(field.type) !== undefined) !== undefined;
-        this.hasSimpleHooks = this.fields.find(field => Associations_1.associatedTypeOf(field.type) === undefined) !== undefined;
+const AbstractOperationWriter_1 = require("../AbstractOperationWriter");
+class ApolloHookWriter extends AbstractOperationWriter_1.AbstractHookWriter {
+    constructor(operationType, fields, stream, config) {
+        super(operationType, fields, stream, config);
     }
     prepareImportings() {
         this.importStatement("import { Fetcher, util } from 'graphql-ts-client-api';");
         this.importStatement("import { DocumentNode } from 'graphql';");
-        if (this.hookType === "Query") {
+        if (this.operationType === "Query") {
             this.importStatement(`import { useQuery, useLazyQuery, QueryHookOptions, QueryResult, QueryTuple, gql } from '@apollo/client';`);
             if (this.hasTypedHooks) {
                 this.importStatement("import { useContext, useEffect, useMemo } from 'react';");
@@ -37,20 +32,10 @@ class ApolloHookWriter extends Writer_1.Writer {
                 this.importStatement("import { dependencyManagerContext, RefetchableDependencies } from './DependencyManager';");
             }
         }
-        for (const field of this.fields) {
-            for (const arg of field.args) {
-                this.importType(arg.type);
-            }
-            if (Associations_1.associatedTypeOf(field.type) === undefined) {
-                this.importType(field.type);
-            }
-        }
-    }
-    isUnderGlobalDir() {
-        return true;
+        super.prepareImportings();
     }
     writeCode() {
-        if (this.hookType === 'Query') {
+        if (this.operationType === 'Query') {
             this.writeTypedHook('QueryResult');
             this.writeTypedHook('QueryTuple', '[1]', 'Lazy');
             this.writeSimpleHook('QueryResult');
@@ -74,25 +59,25 @@ class ApolloHookWriter extends Writer_1.Writer {
             return;
         }
         const t = this.text.bind(this);
-        const lowercaseHookType = this.hookType.toLowerCase();
-        t(`\nexport function use${prefix}Typed${this.hookType}`);
+        const lowercaseHookType = this.operationType.toLowerCase();
+        t(`\nexport function use${prefix}Typed${this.operationType}`);
         this.scope({ type: "GENERIC", multiLines: true }, () => {
-            t(`T${this.hookType}Key extends keyof ${this.hookType}FetchableTypes`);
+            t(`T${this.operationType}Key extends keyof ${this.operationType}FetchableTypes`);
             this.separator();
             t("T extends object");
-            if (this.hookType === 'Mutation') {
+            if (this.operationType === 'Mutation') {
                 this.separator();
                 t("TContext = DefaultContext");
                 this.separator();
                 t("TCache extends ApolloCache<any> = ApolloCache<any>");
             }
             this.separator();
-            t(`TDataKey extends string = T${this.hookType}Key`);
+            t(`TDataKey extends string = T${this.operationType}Key`);
         });
         this.scope({ type: "PARAMETERS", multiLines: true }, () => {
-            t(`key: T${this.hookType}Key | `);
+            t(`key: T${this.operationType}Key | `);
             this.scope({ type: "BLOCK", multiLines: true }, () => {
-                t(`readonly ${lowercaseHookType}Key: T${this.hookType}Key;\n`);
+                t(`readonly ${lowercaseHookType}Key: T${this.operationType}Key;\n`);
                 t("readonly dataKey?: TDataKey;\n");
                 t(OPERATION_NAME_DOC);
                 t("readonly operationName?: string;\n");
@@ -100,30 +85,30 @@ class ApolloHookWriter extends Writer_1.Writer {
             this.separator();
             t("fetcher: Fetcher");
             this.scope({ type: "GENERIC" }, () => {
-                t(`${this.hookType}FetchableTypes[T${this.hookType}Key]`);
+                t(`${this.operationType}FetchableTypes[T${this.operationType}Key]`);
                 this.separator();
                 t("T");
             });
             this.separator();
-            t(`options?: ${this.hookType}HookOptions`);
+            t(`options?: ${this.operationType}HookOptions`);
             this.scope({ type: "GENERIC" }, () => {
-                t(`Record<TDataKey, ${this.hookType}FetchedTypes<T>[T${this.hookType}Key]>`);
+                t(`Record<TDataKey, ${this.operationType}FetchedTypes<T>[T${this.operationType}Key]>`);
                 this.separator();
-                t(`${this.hookType}Variables[T${this.hookType}Key]`);
-                if (this.hookType === 'Mutation') {
+                t(`${this.operationType}Variables[T${this.operationType}Key]`);
+                if (this.operationType === 'Mutation') {
                     this.separator(),
                         t("TContext");
                 }
             });
             t(' & ');
             this.scope({ type: "BLOCK", multiLines: true }, () => {
-                if (this.hookType === 'Query') {
+                if (this.operationType === 'Query') {
                     t("readonly registerDependencies?: boolean | { readonly fieldDependencies: readonly Fetcher<string, object>[] }");
                 }
                 else {
                     t("readonly refetchDependencies?: ");
                     this.scope({ type: "PARAMETERS", multiLines: true }, () => {
-                        t(`result: FetchResult<Record<TDataKey, ${this.hookType}FetchedTypes<T>[T${this.hookType}Key]>> &`);
+                        t(`result: FetchResult<Record<TDataKey, ${this.operationType}FetchedTypes<T>[T${this.operationType}Key]>> &`);
                         t("{ dependencies: RefetchableDependencies<T> }");
                     });
                     t(" => InternalRefetchQueriesInclude");
@@ -134,15 +119,15 @@ class ApolloHookWriter extends Writer_1.Writer {
         this.writeReturnOrOptionsGenericArgs("FetchedTypes<T>");
         this.scope({ "type": "BLOCK", multiLines: true, prefix: " ", suffix: "\n" }, () => {
             this.writeRequestDeclaration(true);
-            if (this.hookType === 'Query') {
+            if (this.operationType === 'Query') {
                 this.writeDependencyRegistry();
             }
             else {
                 this.writeDependencyTrigger();
             }
-            t(`const response = use${prefix}${this.hookType}`);
+            t(`const response = use${prefix}${this.operationType}`);
             this.writeReturnOrOptionsGenericArgs("FetchedTypes<T>");
-            t(`(request, ${this.hookType === 'Mutation' ? 'newOptions' : 'options'});\n`);
+            t(`(request, ${this.operationType === 'Mutation' ? 'newOptions' : 'options'});\n`);
             t(`const responseData = response${responseDataProp}.data;\n`);
             t(`const newResponseData = useMemo(() => util.exceptNullValues(responseData), [responseData]);\n`);
             t("return newResponseData === responseData ? response : util.produce(response, draft => ");
@@ -157,33 +142,33 @@ class ApolloHookWriter extends Writer_1.Writer {
             return;
         }
         const t = this.text.bind(this);
-        const lowercaseHookType = this.hookType.toLowerCase();
-        t(`\nexport function use${prefix}Simple${this.hookType}`);
-        this.scope({ type: "GENERIC", multiLines: this.hookType === 'Mutation' }, () => {
-            t(`T${this.hookType}Key extends Exclude<keyof ${this.hookType}Variables, keyof ${this.hookType}FetchableTypes>`);
-            if (this.hookType === 'Mutation') {
+        const lowercaseHookType = this.operationType.toLowerCase();
+        t(`\nexport function use${prefix}Simple${this.operationType}`);
+        this.scope({ type: "GENERIC", multiLines: this.operationType === 'Mutation' }, () => {
+            t(`T${this.operationType}Key extends Exclude<keyof ${this.operationType}Variables, keyof ${this.operationType}FetchableTypes>`);
+            if (this.operationType === 'Mutation') {
                 this.separator();
                 t("TContext = DefaultContext");
                 this.separator();
                 t("TCache extends ApolloCache<any> = ApolloCache<any>");
             }
             this.separator();
-            t(`TDataKey extends string = T${this.hookType}Key`);
+            t(`TDataKey extends string = T${this.operationType}Key`);
         });
         this.scope({ type: "PARAMETERS", multiLines: true }, () => {
-            t(`key: T${this.hookType}Key | `);
+            t(`key: T${this.operationType}Key | `);
             this.scope({ type: "BLOCK", multiLines: true }, () => {
-                t(`readonly ${lowercaseHookType}Key: T${this.hookType}Key;\n`);
+                t(`readonly ${lowercaseHookType}Key: T${this.operationType}Key;\n`);
                 t("readonly dataKey?: TDataKey;\n");
                 t("readonly operationName?: string;\n");
             });
             this.separator();
-            t(`options?: ${this.hookType}HookOptions`);
+            t(`options?: ${this.operationType}HookOptions`);
             this.scope({ type: "GENERIC" }, () => {
-                t(`Record<TDataKey, ${this.hookType}SimpleTypes[T${this.hookType}Key]>`);
+                t(`Record<TDataKey, ${this.operationType}SimpleTypes[T${this.operationType}Key]>`);
                 this.separator();
-                t(`${this.hookType}Variables[T${this.hookType}Key]`);
-                if (this.hookType === 'Mutation') {
+                t(`${this.operationType}Variables[T${this.operationType}Key]`);
+                if (this.operationType === 'Mutation') {
                     this.separator(),
                         t("TContext");
                 }
@@ -193,18 +178,18 @@ class ApolloHookWriter extends Writer_1.Writer {
         this.writeReturnOrOptionsGenericArgs("SimpleTypes");
         this.scope({ "type": "BLOCK", multiLines: true, prefix: " ", suffix: "\n" }, () => {
             this.writeRequestDeclaration(false);
-            t(`return use${prefix}${this.hookType}`);
+            t(`return use${prefix}${this.operationType}`);
             this.writeReturnOrOptionsGenericArgs("SimpleTypes");
             t("(request, options);\n");
         });
     }
     writeReturnOrOptionsGenericArgs(typesName, forOptions = false) {
         const t = this.text.bind(this);
-        this.scope({ type: "GENERIC", multiLines: this.hookType === 'Mutation' }, () => {
-            t(`Record<TDataKey, ${this.hookType}${typesName}[T${this.hookType}Key]>`);
+        this.scope({ type: "GENERIC", multiLines: this.operationType === 'Mutation' }, () => {
+            t(`Record<TDataKey, ${this.operationType}${typesName}[T${this.operationType}Key]>`);
             this.separator();
-            t(`${this.hookType}Variables[T${this.hookType}Key]`);
-            if (this.hookType === 'Mutation') {
+            t(`${this.operationType}Variables[T${this.operationType}Key]`);
+            if (this.operationType === 'Mutation') {
                 this.separator(),
                     t("TContext");
                 if (!forOptions) {
@@ -216,7 +201,7 @@ class ApolloHookWriter extends Writer_1.Writer {
     }
     writeRequestDeclaration(hasFetcher) {
         const t = this.text.bind(this);
-        const lowercaseHookType = this.hookType.toLowerCase();
+        const lowercaseHookType = this.operationType.toLowerCase();
         t(`const ${lowercaseHookType}Key = typeof key === 'string' ? key : key.${lowercaseHookType}Key;\n`);
         t(`const dataKey = typeof key === 'object' ? key.dataKey : undefined;\n`);
         t("const requestWithoutOperation = ");
@@ -234,7 +219,7 @@ class ApolloHookWriter extends Writer_1.Writer {
                 t("${fetcher.toFragmentString()}\n");
             }
         });
-        if (this.hookType === 'Query') {
+        if (this.operationType === 'Query') {
             t("const [operationName, request] = useMemo<[string, DocumentNode]>(() => ");
         }
         else {
@@ -242,7 +227,7 @@ class ApolloHookWriter extends Writer_1.Writer {
         }
         this.scope({ type: "BLOCK", multiLines: true }, () => {
             t(`const operationName = (typeof key === 'object' ? key.operationName : undefined) ?? \`\${${lowercaseHookType}Key}_\${util.toMd5(requestWithoutOperation)}\`;\n`);
-            if (this.hookType === 'Query') {
+            if (this.operationType === 'Query') {
                 t(`return [operationName, gql\`${lowercaseHookType} \${operationName}\${requestWithoutOperation}\`];\n`);
             }
             else {
@@ -321,113 +306,6 @@ class ApolloHookWriter extends Writer_1.Writer {
             t("return cloned;\n");
         });
         t(", [options, dependencies]);\n");
-    }
-    writeVariables() {
-        const t = this.text.bind(this);
-        t(`\nexport interface ${this.hookType}Variables`);
-        this.scope({ "type": "BLOCK", multiLines: true, suffix: "\n" }, () => {
-            for (const field of this.fields) {
-                t(field.name);
-                t(": ");
-                this.scope({ "type": "BLOCK", multiLines: field.args.length > 2 }, () => {
-                    for (const arg of field.args) {
-                        this.separator(", ");
-                        t("readonly ");
-                        this.varableDecl(arg.name, arg.type);
-                    }
-                });
-                t(";\n");
-            }
-        });
-    }
-    writeFetchableTypes() {
-        const t = this.text.bind(this);
-        t("\nexport interface ");
-        t(this.hookType);
-        t("FetchableTypes ");
-        this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
-            for (const field of this.fields) {
-                const associatedType = Associations_1.associatedTypeOf(field.type);
-                if (associatedType !== undefined) {
-                    t(field.name);
-                    t(": '");
-                    t(associatedType.name);
-                    t("';\n");
-                }
-            }
-        });
-    }
-    writeFetchedTypes() {
-        const t = this.text.bind(this);
-        t("\nexport interface ");
-        t(this.hookType);
-        t("FetchedTypes<T> ");
-        this.scope({ "type": "BLOCK", multiLines: true, suffix: "\n" }, () => {
-            for (const field of this.fields) {
-                const associatedType = Associations_1.associatedTypeOf(field.type);
-                if (associatedType !== undefined) {
-                    this.varableDecl(field.name, field.type, "T");
-                    t(";\n");
-                }
-            }
-        });
-    }
-    writeSimpleTypes() {
-        const t = this.text.bind(this);
-        t("\nexport interface ");
-        t(this.hookType);
-        t("SimpleTypes ");
-        this.scope({ "type": "BLOCK", multiLines: true, suffix: "\n" }, () => {
-            for (const field of this.fields) {
-                const associatedType = Associations_1.associatedTypeOf(field.type);
-                if (associatedType === undefined) {
-                    this.varableDecl(field.name, field.type);
-                    t(";\n");
-                }
-            }
-        });
-    }
-    writeGQLParameters() {
-        const t = this.text.bind(this);
-        t("\nconst GQL_PARAMS: {[key: string]: string} = ");
-        this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
-            for (const field of this.fields) {
-                if (field.args.length !== 0) {
-                    this.separator(", ");
-                    t(`"${field.name}": `);
-                    this.scope({ type: "BLANK", prefix: '"(', suffix: ')"' }, () => {
-                        for (const arg of field.args) {
-                            this.separator(", ");
-                            t("$");
-                            t(arg.name);
-                            t(": ");
-                            this.gqlTypeRef(arg.type);
-                        }
-                    });
-                }
-            }
-        });
-    }
-    writeGQLArguments() {
-        const t = this.text.bind(this);
-        t("\nconst GQL_ARGS: {[key: string]: string} = ");
-        this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
-            for (const field of this.fields) {
-                if (field.args.length !== 0) {
-                    this.separator(", ");
-                    t(`"${field.name}": `);
-                    this.scope({ type: "BLANK", prefix: '"(', suffix: ')"' }, () => {
-                        for (const arg of field.args) {
-                            this.separator(", ");
-                            t(arg.name);
-                            t(": ");
-                            t("$");
-                            t(arg.name);
-                        }
-                    });
-                }
-            }
-        });
     }
 }
 exports.ApolloHookWriter = ApolloHookWriter;

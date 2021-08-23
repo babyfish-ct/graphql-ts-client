@@ -11,7 +11,7 @@
 import { ParameterRef } from "./Parameter";
 import { TextWriter } from "./TextWriter";
 
- export interface Fetcher<E extends string, T extends object> {
+ export interface Fetcher<E extends string, T extends object, TUnresolvedVariables extends object> {
 
     readonly fetchableType: FetchableType<E>;
 
@@ -23,32 +23,36 @@ import { TextWriter } from "./TextWriter";
 
     toJSON(): string; // for recoil
 
+    explicitVariableNames: ReadonlySet<string>;
+
+    implicitVariableMap: ReadonlyMap<string, string>;
+
     __supressWarnings__(value: T): never;
 }
 
 export type ModelType<F> = 
-    F extends Fetcher<string, infer M> ? 
+    F extends Fetcher<string, infer M, object> ? 
     M : 
     never;
 
-export abstract class AbstractFetcher<E extends string, T extends object> implements Fetcher<E, T> {
+export abstract class AbstractFetcher<E extends string, T extends object, TUnresolvedVariables extends object> implements Fetcher<E, T, TUnresolvedVariables> {
 
     private _fetchableType: FetchableType<E>;
 
     private _unionItemTypes?: string[];
 
-    private _prev?: AbstractFetcher<string, any>;
+    private _prev?: AbstractFetcher<string, object, object>;
 
     private _fieldMap?: Map<string, FetcherField>;
 
     private _result: Result;    
 
     constructor(
-        ctx: AbstractFetcher<string, any> | [FetchableType<E>, string[] | undefined],
+        ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, string[] | undefined],
         private _negative: boolean,
         private _field: string,
         private _args?: {[key: string]: any},
-        private _child?: AbstractFetcher<string, any>
+        private _child?: AbstractFetcher<string, object, object>
     ) {
         if (Array.isArray(ctx)) {
             this._fetchableType = ctx[0];
@@ -64,10 +68,10 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
         return this._fetchableType;
     }
 
-    protected addField<F extends AbstractFetcher<string, any>>(
+    protected addField<F extends AbstractFetcher<string, object, object>>(
         field: string, 
         args?: {[key: string]: any},
-        child?: AbstractFetcher<string, any>
+        child?: AbstractFetcher<string, object, object>
     ): F {
         return this.createFetcher(
             false,
@@ -77,7 +81,7 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
         ) as F;
     }
 
-    protected removeField<F extends AbstractFetcher<string, any>>(field: string): F {
+    protected removeField<F extends AbstractFetcher<string, object, object>>(field: string): F {
         if (field === '__typename') {
             throw new Error("__typename cannot be removed");
         }
@@ -87,8 +91,8 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
         ) as F;
     }
 
-    protected addEmbbeddable<F extends AbstractFetcher<string, any>>(
-        child: AbstractFetcher<string, any>,
+    protected addEmbbeddable<F extends AbstractFetcher<string, object, object>>(
+        child: AbstractFetcher<string, object, object>,
         fragmentName?: string
     ) {
         let fieldName: string;
@@ -117,8 +121,8 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<string, any>
-    ): AbstractFetcher<string, any>;
+        child?: AbstractFetcher<string, object, object>
+    ): AbstractFetcher<string, object, object>;
 
     get fieldMap(): ReadonlyMap<string, FetcherField> {
         let m = this._fieldMap;
@@ -129,8 +133,8 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
     }
 
     private _getFieldMap0(): Map<string, FetcherField> {
-        const fetchers: AbstractFetcher<string, any>[] = [];
-        for (let fetcher: AbstractFetcher<string, any> | undefined = this; 
+        const fetchers: AbstractFetcher<string, object, object>[] = [];
+        for (let fetcher: AbstractFetcher<string, object, object> | undefined = this; 
             fetcher !== undefined; 
             fetcher = fetcher._prev
         ) {
@@ -142,7 +146,7 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
         for (let i = fetchers.length - 1; i >= 0; --i) {
             const fetcher = fetchers[i];
             if (fetcher._field.startsWith('...')) {
-                let childFetchers = fieldMap.get(fetcher._field)?.childFetchers as AbstractFetcher<string, any>[];
+                let childFetchers = fieldMap.get(fetcher._field)?.childFetchers as AbstractFetcher<string, object, object>[];
                 if (childFetchers === undefined) {
                     childFetchers = [];
                     fieldMap.set(fetcher._field, { childFetchers }); // Fragment cause mutliple child fetchers
@@ -160,6 +164,14 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
             }
         }
         return fieldMap;
+    }
+
+    get explicitVariableNames(): ReadonlySet<string> {
+        return this.result.explicitArgumentNames;
+    }
+
+    get implicitVariableMap(): ReadonlyMap<string, string> {
+        return this.result.implicitArgumentValues;
     }
 
     toString(): string {
@@ -224,44 +236,50 @@ export abstract class AbstractFetcher<E extends string, T extends object> implem
 export interface FetchableType<E extends string> {
     readonly entityName: E;
     readonly superTypes: readonly FetchableType<string>[];
-    readonly declaredFields: ReadonlySet<string>;
-    readonly fields: ReadonlySet<string>;
+    readonly declaredFields: ReadonlyMap<string, FetchableField>;
+    readonly fields: ReadonlyMap<string, FetchableField>;
+}
+
+export interface FetchableField {
+    readonly name: string;
+    readonly isFunction: boolean;
+    readonly argGraphQLTypeMap: ReadonlyMap<string, string>;
 }
 
 export interface FetcherField {
     readonly args?: {readonly [key: string]: any};
-    readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object>>;
+    readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
 
-export abstract class FragmentWrapper<TFragmentName extends string, E extends string, T extends object> {
+export abstract class FragmentWrapper<TFragmentName extends string, E extends string, T extends object, TUnresolvedVariables extends object> {
 
-    protected constructor(readonly name: TFragmentName, readonly fetcher: Fetcher<E, T>) {}
+    protected constructor(readonly name: TFragmentName, readonly fetcher: Fetcher<E, T, TUnresolvedVariables>) {}
 }
 
 interface Result {
     readonly text: string;
     readonly fragmentText: string;
     readonly explicitArgumentNames: ReadonlySet<string>;
-    readonly implicitArgumentValues: readonly any[];
+    readonly implicitArgumentValues: ReadonlyMap<string, string>;
 }
 
 class ResultContext {
 
-    readonly namedFragmentMap = new Map<string, Fetcher<string, any>>();
+    readonly namedFragmentMap = new Map<string, Fetcher<string, object, object>>();
 
     readonly explicitArgumentNames: Set<string>;
 
-    readonly implicitArgumentValues: any[];
+    readonly implicitArgumentValues: Map<string, string>;
 
     constructor(
         readonly writer: TextWriter = new TextWriter(), 
         ctx?: ResultContext
     ) {
         this.explicitArgumentNames = ctx?.explicitArgumentNames ?? new Set<string>();
-        this.implicitArgumentValues = ctx?.implicitArgumentValues ?? [];
+        this.implicitArgumentValues = ctx?.implicitArgumentValues ?? new Map<string, string>();
     }
 
-    accept(fetcher: Fetcher<string, object>) {
+    accept(fetcher: Fetcher<string, object, object>) {
         
         const t = this.writer.text.bind(this.writer);
 
@@ -278,8 +296,9 @@ class ResultContext {
                             this.explicitArgumentNames.add(arg.name);
                             t(arg.name);
                         } else {
-                            t(`fetcherArgs[${this.implicitArgumentValues.length}]`);
-                            this.implicitArgumentValues.push(arg);
+                            const text = `__implicitArgs__[${this.implicitArgumentValues.size}]`; 
+                            t(text);
+                            this.implicitArgumentValues.set(text, fetcher.fetchableType.fields.get(fieldName)!.argGraphQLTypeMap.get(argName)!);
                         }
                     }
                 });

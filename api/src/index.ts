@@ -9,10 +9,11 @@
  */
 
 export type { Fetcher, ModelType } from './Fetcher';
-export type { FetcherProxyExtensionContext } from './FetcherProxy';
 export { AbstractFetcher, FragmentWrapper } from './Fetcher';
+export { AcceptableVariables, UnresolvedVariables, ParameterRef } from './Parameter';
 export { DependencyManager } from './DependencyManager';
 export { createFetcher, createFetchableType } from './FetcherProxy';
+export { buildRequest } from './Request';
 
 import { toMd5 } from "./util/Md5";
 import { removeNullValues, exceptNullValues } from './util/NullValues';

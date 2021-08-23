@@ -19,8 +19,6 @@ export class FetcherWriter extends Writer {
 
     private readonly fetcherTypeName: string;
 
-    private readonly methodNames: string[];
-
     private readonly defaultFetcherProps: string[];
 
     readonly emptyFetcherName: string;
@@ -28,6 +26,10 @@ export class FetcherWriter extends Writer {
     readonly defaultFetcherName: string | undefined;
 
     readonly fieldMap: GraphQLFieldMap<any, any>;
+
+    private methodFields: Map<string, GraphQLField<unknown, unknown>>;
+
+    private hasArgs: boolean;
 
     constructor(
         private relay: boolean,
@@ -61,14 +63,13 @@ export class FetcherWriter extends Writer {
             this.fieldMap = modelType.getFields();
         }
       
-        const methodNames: string[] = [];
+        const methodFields = new Map<string, GraphQLField<unknown, unknown>>();
         const defaultFetcherProps: string[] = [];
+        this.hasArgs = false;
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName]!;
             const associatedType = associatedTypeOf(field.type);
-            if (associatedType !== undefined) {
-                methodNames.push(fieldName);
-            } else {
+            if (associatedType === undefined) {
                 if (config.defaultFetcherExcludeMap !== undefined) {
                     const excludeProps = config.defaultFetcherExcludeMap[modelType.name];
                     if (excludeProps !== undefined && excludeProps.filter(name => name === fieldName).length !== 0) {
@@ -77,10 +78,15 @@ export class FetcherWriter extends Writer {
                 }
                 defaultFetcherProps.push(fieldName);
             }
+            if (field.args.length !== 0 || associatedType !== undefined) {
+                methodFields.set(field.name, field);
+            }
+            if (field.args.length !== 0) {
+                this.hasArgs = true;
+            }
         }
-        this.methodNames = methodNames;
         this.defaultFetcherProps = defaultFetcherProps;
-
+        this.methodFields = methodFields;
         let prefix = instancePrefix(this.modelType.name);
         this.emptyFetcherName = `${prefix}$`;
         this.defaultFetcherName = defaultFetcherProps.length !== 0 ? `${prefix}$$` : undefined;
@@ -89,11 +95,13 @@ export class FetcherWriter extends Writer {
     protected prepareImportings() {
         
         this.importStatement("import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';");
+        if (this.hasArgs) {
+            this.importStatement("import type { AcceptableVariables, UnresolvedVariables } from 'graphql-ts-client-api';");   
+        }
         this.importStatement("import { WithTypeName, ImplementationType } from '../CommonTypes';");
         if (this.relay) {
-            this.importStatement("import type { FetcherProxyExtensionContext } from 'graphql-ts-client-api';");   
             this.importStatement("import { FragmentRefs } from 'relay-runtime';");
-            this.importStatement("import { RelayFragment } from '../RelayFragment';");
+            this.importStatement("import { RelayFragment } from '../TaggedNode';");
         } 
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
@@ -125,9 +133,9 @@ export class FetcherWriter extends Writer {
         t(COMMENT);
         t("export interface ");
         t(this.fetcherTypeName);
-        t("<T extends object> extends Fetcher<'");
+        t("<T extends object, TUnresolvedVariables extends object> extends Fetcher<'");
         t(this.modelType.name);
-        t("', T> ");
+        t("', T, TUnresolvedVariables> ");
         this.enter("BLOCK", true);
 
         t("\n");
@@ -140,11 +148,11 @@ export class FetcherWriter extends Writer {
         t(this.fetcherTypeName);
         t("<T & {__typename: ImplementationType<'");
         t(this.modelType.name);
-        t("'>}>;\n");
+        t("'>}, TUnresolvedVariables>;\n");
 
-        t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object>`);
+        t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object, XUnresolvedVariables extends object>`);
         this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
-            t("child: Fetcher<XName, X>");
+            t("child: Fetcher<XName, X, XUnresolvedVariables>");
             if (!(this.modelType instanceof GraphQLUnionType)) {
                 this.separator(", ");
                 t("fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment");
@@ -160,25 +168,24 @@ export class FetcherWriter extends Writer {
                 this.separator(" | ");
                 t(`{__typename: Exclude<ImplementationType<'${this.modelType}'>, ImplementationType<XName>>}`);
             });
+            this.separator(", ");
+            t("TUnresolvedVariables & XUnresolvedVariables");
         });
         t(";\n");
 
         if (this.relay) {
-            t(`\non<TFragmentName extends string>`);
+
+            t(`\non<TFragmentName extends string, XUnresolvedVariables extends object>`);
             this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
-                t(`child: RelayFragment<TFragmentName, "${this.modelType.name}", object>`);
+                t(`child: RelayFragment<TFragmentName, "${this.modelType.name}", object, XUnresolvedVariables>`);
             });
             t(`: ${this.fetcherTypeName}`);
             this.scope({type: "GENERIC", multiLines: true}, () => {
                 t('T & { readonly " $fragmentRefs": FragmentRefs<TFragmentName>}');
+                this.separator(", ");
+                t("TUnresolvedVariables & XUnresolvedVariables");
             });
             t(";\n");
-
-            t("\ntoRelayFragment<TFragmentName extends string>");
-            this.scope({type: "PARAMETERS", multiLines: true}, () => {
-                t("name: TFragmentName");
-            });
-            t(`: RelayFragment<TFragmentName, "${this.modelType.name}", T>;\n`);
         }
 
         for (const fieldName in this.fieldMap) {
@@ -190,6 +197,8 @@ export class FetcherWriter extends Writer {
         this.leave("\n");
 
         this.writeInstances();
+
+        this.writeArgsTypesInterface();
     }
 
     private writePositiveProp(field: GraphQLField<unknown, unknown>) {
@@ -202,39 +211,42 @@ export class FetcherWriter extends Writer {
             t("readonly ");
             t(field.name);
         } else {
-            const multiLines = 
-                field.args.length + 
-                (associatedType !== undefined ? 1 : 0) 
-                > 1;
             t(field.name);
-            if (associatedType !== undefined) {
-                t("<X extends object>");
-            }
-            this.enter("PARAMETERS", multiLines);
-            {
+            this.scope({type: "GENERIC", multiLines: field.args.length !== 0}, () => {
+                if (associatedType !== undefined) {
+                    this.separator(", ");
+                    t("X extends object");
+                    this.separator(", ");
+                    t("XUnresolvedVariables extends object");
+                };
                 if (field.args.length !== 0) {
                     this.separator(", ");
-                    t("args: ");
-                    this.enter("BLOCK", multiLines);
-                    {
-                        for (const arg of field.args) {
-                            this.separator(", ");
-                            t(arg.name);
-                            if (!(arg instanceof GraphQLNonNull)) {
-                                t("?");
-                            }
-                            t(": ");
-                            this.typeRef(arg.type)
-                        }
-                    }
-                    this.leave();
+                    t(`XArgs extends AcceptableVariables<ArgsTypes['${field.name}']>`);
                 }
+            })
+            this.enter("PARAMETERS", true);
+            {
                 if (associatedType !== undefined) {
                     this.separator(", ");
                     t("child: ");
                     t("Fetcher<'");
                     t(associatedType.name);
-                    t("', X>");
+                    t("', X, XUnresolvedVariables>");
+                }
+                if (field.args.length !== 0) {
+                    this.separator(", ");
+                    let hasNonNullArgs = false;
+                    for (const argName in field.args) {
+                        if (field.args[argName].type instanceof GraphQLNonNull) {
+                            hasNonNullArgs = true;
+                            break;
+                        }
+                    }
+                    if (hasNonNullArgs) {
+                        t("args: XArgs");
+                    } else {
+                        t("args?: XArgs");
+                    }
                 }
             }
             this.leave();
@@ -242,21 +254,37 @@ export class FetcherWriter extends Writer {
 
         t(": ");
         t(this.fetcherTypeName);
-        t("<T & {");
-        if (!this.config.objectEditable) {
-            t("readonly ");
-        }
-        t(field.name);
-        if (!(field.type instanceof GraphQLNonNull)) {
-            t("?");
-        }
-        t(": ");
-        this.typeRef(field.type, associatedType !== undefined ? "X" : undefined);
-        t("}>;\n");
+        this.scope({type: "GENERIC", multiLines: this.methodFields.has(field.name), suffix: ";\n"}, () => {
+            
+            t("T & {");
+            if (!this.config.objectEditable) {
+                t("readonly ");
+            }
+            t(field.name);
+            if (!(field.type instanceof GraphQLNonNull)) {
+                t("?");
+            }
+            t(": ");
+            this.typeRef(field.type, associatedType !== undefined ? "X" : undefined);
+            t("}");
+
+            this.separator(", ");
+            t("TUnresolvedVariables");
+            if (associatedType !== undefined) {
+                t(" & XUnresolvedVariables");
+            }
+            if (field.args.length !== 0) {
+                t(` & UnresolvedVariables<XArgs, ArgsTypes['${field.name}']>`);
+            }
+        });
     }
 
     private writeNegativeProp(field: GraphQLField<unknown, unknown>) {
         
+        if (field.args.length !== 0 ||  associatedTypeOf(field.type) !== undefined) {
+            return;
+        }
+
         const t = this.text.bind(this);
 
         t('readonly "~');
@@ -265,7 +293,7 @@ export class FetcherWriter extends Writer {
         t(this.fetcherTypeName);
         t("<Omit<T, '");
         t(field.name);
-        t("'>>;\n");
+        t("'>, TUnresolvedVariables>;\n");
     }
 
     private writeInstances() {
@@ -277,7 +305,7 @@ export class FetcherWriter extends Writer {
         t(this.emptyFetcherName);
         t(": ");
         t(generatedFetcherTypeName(this.modelType, this.config))
-        t("<{}> = ")
+        t("<{}, {}> = ")
         this.scope({type: "BLANK", multiLines: true, suffix: ";\n"}, () => {
             t("createFetcher")
             this.scope({type: "PARAMETERS", multiLines: true}, () => {
@@ -295,10 +323,32 @@ export class FetcherWriter extends Writer {
                         }
                     });
                     this.separator(", ");
-                    this.scope({type: "ARRAY"}, () => {
+                    this.scope({type: "ARRAY", multiLines: this.methodFields.size !== 0 }, () => {
                         for (const declaredFieldName of this.declaredFieldNames()) {
                             this.separator(", ");
-                            t(`"${declaredFieldName}"`);
+                            const methodField = this.methodFields.get(declaredFieldName);
+                            if (methodField === undefined) {
+                                t(`"${declaredFieldName}"`);
+                            } else {
+                                this.scope({type: "BLOCK", multiLines: true}, () => {
+                                    t("type: 'METHOD'");
+                                    this.separator(", ");
+                                    t(`name: "${declaredFieldName}"`);
+                                    if (methodField.args.length !== 0) {
+                                        this.separator(", ");
+                                        t("argGraphQLTypeMap: ");
+                                        this.scope({type: "BLOCK", multiLines: methodField.args.length > 1}, () => {
+                                            for (const arg of methodField.args) {
+                                                this.separator(", ");
+                                                t(arg.name);
+                                                t(": '");
+                                                this.gqlTypeRef(arg.type);
+                                                t("'");
+                                            }
+                                        });
+                                    }
+                                })
+                            }
                         }
                     });
                 });
@@ -311,22 +361,6 @@ export class FetcherWriter extends Writer {
                             this.separator(", ");
                             this.str(itemType.name);
                         }
-                    });
-                }
-                this.separator(", ");
-                this.scope({type: "ARRAY", multiLines: this.methodNames.length >= 2}, () => {
-                    for (const methodName of this.methodNames) {
-                        this.separator(", ");
-                        this.str(methodName);
-                    }
-                });
-                if (this.relay) {
-                    this.separator(", ");
-                    this.scope({type: "BLOCK", multiLines: true}, () => {
-                        t("toRelayFragment: (ctx: FetcherProxyExtensionContext) => ");
-                        this.scope({type: "BLOCK", multiLines: true}, () => {
-                            t("return new RelayFragment(ctx.args[0] as string, ctx.proxy);\n");
-                        });    
                     });
                 }
             });
@@ -345,8 +379,37 @@ export class FetcherWriter extends Writer {
                 t("\n");
             }
             this.leave();
-            this.leave(";");
+            this.leave(";\n");
         }
+    }
+
+    private writeArgsTypesInterface() {
+
+        if (!this.hasArgs) {
+            return;
+        }
+
+        const t = this.text.bind(this);
+        t("\ninterface ArgsTypes ");
+        this.scope({type: "BLOCK", multiLines: true}, () => {
+            for (const fieldName in this.fieldMap) {
+                const field = this.fieldMap[fieldName];
+                if (field.args.length !== 0) {
+                    t(`${field.name}: `);
+                    this.scope({type: "BLOCK", multiLines: field.args.length > 1}, () => {
+                        for (const arg of field.args) {
+                            this.separator(", ");
+                            t(arg.name);
+                            if (!(arg instanceof GraphQLNonNull)) {
+                                t("?");
+                            }
+                            t(": ");
+                            this.typeRef(arg.type)
+                        }
+                    });
+                }
+            }
+        });
     }
 
     private declaredFieldNames(): Set<string> {

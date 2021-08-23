@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, GraphQLUnionType } from "graphql";
+import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
 import { FetcherWriter } from "../FetcherWriter";
 import { Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
@@ -12,4 +12,5 @@ export declare class RelayGenerator extends Generator {
     private generateQueries;
     private generateMutations;
     private generateRelayFragment;
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
 }

@@ -42,21 +42,21 @@ class ApolloGenerator extends Generator_1.Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Queries.ts"));
             new ApolloHookWriter_1.ApolloHookWriter("Query", fields, stream, this.config).write();
-            yield stream.end();
+            yield Generator_1.awaitStream(stream);
         });
     }
     generateMutations(fields) {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Mutations.ts"));
             new ApolloHookWriter_1.ApolloHookWriter("Mutation", fields, stream, this.config).write();
-            yield stream.end();
+            yield Generator_1.awaitStream(stream);
         });
     }
     generateDependencyManager() {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "DependencyManager.tsx"));
             stream.write(DEPENDENCY_MANAGER_CODE);
-            yield stream.end();
+            yield Generator_1.awaitStream(stream);
         });
     }
     writeIndexCode(stream, schema) {

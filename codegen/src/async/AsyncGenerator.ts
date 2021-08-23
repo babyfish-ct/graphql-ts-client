@@ -11,7 +11,7 @@
 import { GraphQLField } from "graphql";
 import { argsWrapperTypeName, AsyncOperationWriter } from "./AsyncOperationWriter";
 import { AsyncEnvironmentWriter } from "./AsyncEnvironmentWriter";
-import { createStreamAndLog, Generator } from "../Generator";
+import { awaitStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { join } from "path";
 
@@ -42,7 +42,7 @@ export class AsyncGenerator extends Generator {
             join(this.config.targetDir, "Environment.ts")
         );
         new AsyncEnvironmentWriter(stream, this.config).write();
-        await stream.end();
+        await awaitStream(stream);
     }
     
     private async generateOperations(
@@ -55,7 +55,7 @@ export class AsyncGenerator extends Generator {
                 join(this.config.targetDir, subDir, `${field.name}.ts`)
             );
             new AsyncOperationWriter(mutation, field, stream, this.config).write();
-            await stream.end();
+            await awaitStream(stream);
         });
         const writeIndex = async() => {
             const stream = createStreamAndLog(

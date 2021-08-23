@@ -8,23 +8,11 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 import { FetchableType, Fetcher } from './Fetcher';
-export declare function createFetcher<E extends string, F extends Fetcher<E, object>>(fetchableType: FetchableType<E>, unionEntityTypes: string[] | undefined, methodNames: string[], extension?: FetcherProxyExtension): F;
-export declare type FetcherProxyExtension = {
-    readonly [key: string]: FetcherProxyExtensionFunc;
-};
-export interface FetcherProxyExtensionContext {
-    readonly proxy: Fetcher<string, object>;
-    readonly target: Fetcher<string, object>;
-    readonly args: IArguments;
-}
-declare type FetcherProxyExtensionFunc = (ctx: FetcherProxyExtensionContext) => any;
-export declare function createFetchableType<E extends string>(entityName: string, superTypes: readonly FetchableType<string>[], declaredFields: readonly string[]): FetchableTypeImpl<string>;
-declare class FetchableTypeImpl<E extends string> implements FetchableType<E> {
-    readonly entityName: E;
-    readonly superTypes: readonly FetchableType<string>[];
-    readonly declaredFields: ReadonlySet<string>;
-    private _fields?;
-    constructor(entityName: E, superTypes: readonly FetchableType<string>[], declaredFields: ReadonlySet<string>);
-    get fields(): ReadonlySet<string>;
-}
-export {};
+export declare function createFetcher<E extends string, F extends Fetcher<E, object, object>>(fetchableType: FetchableType<E>, unionEntityTypes: string[] | undefined): F;
+export declare function createFetchableType<E extends string>(entityName: E, superTypes: readonly FetchableType<string>[], declaredFields: ReadonlyArray<string | {
+    readonly type: "METHOD";
+    readonly name: string;
+    readonly argGraphQLTypeMap?: {
+        readonly [key: string]: string;
+    };
+}>): FetchableType<E>;

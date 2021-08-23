@@ -9,15 +9,19 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.util = exports.createFetchableType = exports.createFetcher = exports.DependencyManager = exports.FragmentWrapper = exports.AbstractFetcher = void 0;
+exports.util = exports.buildRequest = exports.createFetchableType = exports.createFetcher = exports.DependencyManager = exports.ParameterRef = exports.FragmentWrapper = exports.AbstractFetcher = void 0;
 var Fetcher_1 = require("./Fetcher");
 Object.defineProperty(exports, "AbstractFetcher", { enumerable: true, get: function () { return Fetcher_1.AbstractFetcher; } });
 Object.defineProperty(exports, "FragmentWrapper", { enumerable: true, get: function () { return Fetcher_1.FragmentWrapper; } });
+var Parameter_1 = require("./Parameter");
+Object.defineProperty(exports, "ParameterRef", { enumerable: true, get: function () { return Parameter_1.ParameterRef; } });
 var DependencyManager_1 = require("./DependencyManager");
 Object.defineProperty(exports, "DependencyManager", { enumerable: true, get: function () { return DependencyManager_1.DependencyManager; } });
 var FetcherProxy_1 = require("./FetcherProxy");
 Object.defineProperty(exports, "createFetcher", { enumerable: true, get: function () { return FetcherProxy_1.createFetcher; } });
 Object.defineProperty(exports, "createFetchableType", { enumerable: true, get: function () { return FetcherProxy_1.createFetchableType; } });
+var Request_1 = require("./Request");
+Object.defineProperty(exports, "buildRequest", { enumerable: true, get: function () { return Request_1.buildRequest; } });
 const Md5_1 = require("./util/Md5");
 const NullValues_1 = require("./util/NullValues");
 const immer_1 = require("immer");

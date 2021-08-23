@@ -5,10 +5,11 @@
  */
 
 import 'reflect-metadata';
-import { Field, FieldResolver, Float, ObjectType, Resolver, Root } from 'type-graphql';
+import { Field, Float, ObjectType } from 'type-graphql';
 import { departmentTable } from '../dal/DepartmentRepostiory';
 import { employeeTable, TEmployee } from '../dal/EmployeeRepository';
 import { Department } from './Department';
+import { EmployeeOrderedField } from './EmployeeOrderedField';
 import { Gender } from './Gender';
 import { Node } from './Node';
 
@@ -31,6 +32,26 @@ export class Employee extends Node {
     
     readonly supervisorId?: string;
 
+    @Field(() => Department)
+    department(): Department {
+        return new Department(departmentTable.findNonNullById(this.departmentId)!);
+    }
+
+    @Field(() => Employee, {nullable: true})
+    supervisor(): Employee | undefined {
+        if (this.supervisorId === undefined) {
+            return undefined;
+        }
+        return new Employee(employeeTable.findNonNullById(this.supervisorId)!);
+    }
+
+    @Field(() => [Employee])
+    subordinates(): Employee[] {
+        return employeeTable
+            .findByProp("supervisorId", this.id)
+            .map(row => new Employee(row));
+    }
+
     constructor(row: TEmployee) {
         super(row.id);
         this.firstName = row.firstName;
@@ -42,32 +63,13 @@ export class Employee extends Node {
     }
 }
 
-/*
- * This simple demo uses data in memory to mock database,
- * so there is no performance issues, "N + 1" query is not a problem 
- * 
- * That means "Resvoler" is enough and "DataLoader" optimization is unnecessary.
- */
-@Resolver(Employee)
-export class EmployeeResolver {
-
-    @FieldResolver(() => Department)
-    department(@Root() self: Employee): Department {
-        return new Department(departmentTable.findNonNullById(self.departmentId)!);
-    }
-
-    @FieldResolver(() => Employee, {nullable: true})
-    supervisor(@Root() self: Employee): Employee | undefined {
-        if (self.supervisorId === undefined) {
-            return undefined;
-        }
-        return new Employee(employeeTable.findNonNullById(self.supervisorId)!);
-    }
-
-    @FieldResolver(() => [Employee])
-    subordinates(@Root() self: Employee): Employee[] {
-        return employeeTable
-            .findByProp("supervisorId", self.id)
-            .map(row => new Employee(row));
+export function orderedValueOf(employee: Employee, orderedBy: EmployeeOrderedField) {
+    switch (orderedBy) {
+        case EmployeeOrderedField.FIRST_NAME:
+            return employee.firstName;
+        case EmployeeOrderedField.LAST_NAME:
+            return employee.lastName;
+        case EmployeeOrderedField.SALARY:
+            return employee.salary;
     }
 }

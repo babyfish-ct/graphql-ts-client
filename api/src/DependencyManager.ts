@@ -30,7 +30,7 @@ export class DependencyManager {
         this._idGetter = idGetter ?? getDefaultId;
     }
 
-    register(resource: string, fetcher: Fetcher<string, object>, fieldDependencies?: readonly Fetcher<string, object>[]) {
+    register(resource: string, fetcher: Fetcher<string, object, object>, fieldDependencies?: readonly Fetcher<string, object, object>[]) {
         if (fieldDependencies !== undefined) {
             this.registerTypes(resource, [fetcher, ...fieldDependencies]);
             this.registerFields(resource, fieldDependencies);
@@ -45,7 +45,7 @@ export class DependencyManager {
     }
 
     resources<T extends object>(
-        fetcher: Fetcher<string, T>, 
+        fetcher: Fetcher<string, T, object>, 
         oldObject: T | undefined, 
         newObject: T | undefined
     ): string[] {
@@ -54,13 +54,13 @@ export class DependencyManager {
         return Array.from(resources);
     }
 
-    allResources(fetcher: Fetcher<string, any>) {
+    allResources(fetcher: Fetcher<string, object, object>) {
         const resources = new Set<string>();
         this.collectAllResources(fetcher, resources);
         return Array.from(resources);
     }
 
-    private registerTypes(resource: string, fetchers: readonly Fetcher<string, object>[]) {
+    private registerTypes(resource: string, fetchers: readonly Fetcher<string, object, object>[]) {
         for (const fetcher of fetchers) {
             for (const [fieldName, field] of fetcher.fieldMap) {
                 const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
@@ -76,7 +76,7 @@ export class DependencyManager {
         }
     }
 
-    private registerFields(resource: string, fetchers: readonly Fetcher<string, object>[]) {
+    private registerFields(resource: string, fetchers: readonly Fetcher<string, object, object>[]) {
         for (const fetcher of fetchers) {
             for (const [fieldName, field] of fetcher.fieldMap) {
                 if (!fieldName.startsWith("...")) {
@@ -94,7 +94,7 @@ export class DependencyManager {
     }
 
     private collectResources(
-        fetcher: Fetcher<string, object>, 
+        fetcher: Fetcher<string, object, object>, 
         oldObject: object | undefined, 
         newObject: object | undefined,
         output: Set<string>
@@ -146,9 +146,9 @@ export class DependencyManager {
     }
 
     private collectResourcesByAssocaiton(
-        parentFetcher: Fetcher<string, object>,
+        parentFetcher: Fetcher<string, object, object>,
         fieldName: string,
-        childFetcher: Fetcher<string, object>, 
+        childFetcher: Fetcher<string, object, object>, 
         oldAssociation: any, 
         newAssociation: any,
         output: Set<string>
@@ -188,7 +188,7 @@ export class DependencyManager {
         }
     }
 
-    private collectAllResources(fetcher: Fetcher<string, object>, output: Set<string>) {
+    private collectAllResources(fetcher: Fetcher<string, object, object>, output: Set<string>) {
         this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)?.copyTo(output);
         for (const [fieldName, field] of fetcher.fieldMap) {
             if (!fieldName.startsWith("...")) { // Not fragment
@@ -234,7 +234,7 @@ class Resources {
     }
 }
 
-function getDeclaringTypeNames(fieldName: string, fetcher: Fetcher<string, object>): Set<string> {
+function getDeclaringTypeNames(fieldName: string, fetcher: Fetcher<string, object, object>): Set<string> {
     const declaringTypeNames = new Set<string>();
     if (fieldName !== '' && fieldName !== '...') {
         collectDeclaringTypeNames(fieldName, fetcher.fetchableType, declaringTypeNames);

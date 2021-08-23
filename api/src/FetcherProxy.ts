@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { AbstractFetcher, FetchableType, Fetcher, FragmentWrapper } from './Fetcher';
+import { AbstractFetcher, FetchableField, FetchableType, Fetcher, FragmentWrapper } from './Fetcher';
 
 /*
  * In order to reduce compacity of compiled target code,
@@ -18,38 +18,24 @@ import { AbstractFetcher, FetchableType, Fetcher, FragmentWrapper } from './Fetc
  * interfaces cannot affect the capacity of compilied targe code
  * ), and this "createFetcher" method uses proxies to create instances of those interfaces.
  */
-export function createFetcher<E extends string, F extends Fetcher<E, object>>(
+export function createFetcher<E extends string, F extends Fetcher<E, object, object>>(
     fetchableType: FetchableType<E>,
-    unionEntityTypes: string[] | undefined,
-    methodNames: string[],
-    extension?: FetcherProxyExtension
+    unionEntityTypes: string[] | undefined
 ) {
     return new Proxy(
         new FetcherTarget([fetchableType, unionEntityTypes], false, ""),
-        proxyHandler(fetchableType, new Set<string>(methodNames), extension),
+        proxyHandler(fetchableType),
     ) as F;
 }
-
-export type FetcherProxyExtension = {
-    readonly [key: string]: FetcherProxyExtensionFunc
-}
-
-export interface FetcherProxyExtensionContext {
-    readonly proxy: Fetcher<string, object>;
-    readonly target: Fetcher<string, object>;
-    readonly args: IArguments;
-}
-
-type FetcherProxyExtensionFunc = (ctx: FetcherProxyExtensionContext) => any;
  
-class FetcherTarget<E extends string> extends AbstractFetcher<E, object> {
+class FetcherTarget<E extends string> extends AbstractFetcher<E, object, object> {
  
     protected createFetcher(
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<string, any>
-    ): AbstractFetcher<string, any> {
+        child?: AbstractFetcher<string, object, object>
+    ): AbstractFetcher<string, object, object> {
         return new FetcherTarget(
             this,
             negative,
@@ -61,29 +47,15 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object> {
 }
  
 function proxyHandler(
-   fetchableType: FetchableType<string>, 
-   methodNames: Set<string>,
-   extension?: FetcherProxyExtension
-): ProxyHandler<Fetcher<string, object>> {
+   fetchableType: FetchableType<string>
+): ProxyHandler<Fetcher<string, object, object>> {
  
     const handler = {
-        get: (target: AbstractFetcher<string, object>, p: string | symbol, receiver: any): any => {
+        get: (target: AbstractFetcher<string, object, object>, p: string | symbol, receiver: any): any => {
             if (p === "fetchableType") {
                 return fetchableType;
             }
             if (typeof p === 'string') {
-                if (extension !== undefined) {
-                    const extensionFunc = extension[p];
-                    if (extensionFunc !== undefined) {
-                        return function() {
-                            extensionFunc({
-                                proxy: receiver as Fetcher<string, any>,
-                                target,
-                                args: arguments
-                            });
-                        }
-                    }
-                }
                 if (p.startsWith("~")) {
                     const rest = p.substring(1);
                     if (fetchableType.fields.has(rest)) {
@@ -93,7 +65,7 @@ function proxyHandler(
                             handler
                         );
                     }
-                } else if (p === "on" || methodNames.has(p)) {
+                } else if (p === "on" || fetchableType.fields.get(p)?.isFunction === true) {
                     return new Proxy(
                         dummyTargetMethod,
                         methodProxyHandler(target, handler, p)
@@ -113,8 +85,8 @@ function proxyHandler(
 };
  
 function methodProxyHandler(
-    targetFetcher: AbstractFetcher<string, any>, 
-    handler: ProxyHandler<Fetcher<string, object>>,
+    targetFetcher: AbstractFetcher<string, object, object>, 
+    handler: ProxyHandler<Fetcher<string, object, object>>,
     field: string
 ): ProxyHandler<Function> {
 
@@ -136,7 +108,7 @@ function methodProxyHandler(
                 );
             }
             let args: {[key: string]: any} | undefined = undefined;
-            let child: AbstractFetcher<string, any> | undefined = undefined;
+            let child: AbstractFetcher<string, object, object> | undefined = undefined;
             switch (argArray.length) {
                 case 1:
                     if (argArray[0] instanceof AbstractFetcher) {
@@ -146,8 +118,8 @@ function methodProxyHandler(
                     }
                     break;
                 case 2:
-                    args = argArray[0];
-                    child = argArray[1];
+                    child = argArray[0];    
+                    args = argArray[1];
                     break;
                 default:
                     throw new Error("Fetcher method must have 1 or 2 argument(s)");
@@ -164,49 +136,76 @@ function methodProxyHandler(
 type ADD_FILED = (
     field: string, 
     args?: {[key: string]: any}, 
-    child?: (AbstractFetcher<string, any>)
-) => AbstractFetcher<string, any>;
+    child?: (AbstractFetcher<string, object, object>)
+) => AbstractFetcher<string, object, object>;
  
 type REMOVE_FILED = (
     field: string, 
     args?: {[key: string]: any}, 
-    child?: (AbstractFetcher<string, any>)
-) => AbstractFetcher<string, any>;
+    child?: (AbstractFetcher<string, object, object>)
+) => AbstractFetcher<string, object, object>;
  
 type ADD_EMBBEDDABLE = (
-    child: AbstractFetcher<string, any>,
+    child: AbstractFetcher<string, object, object>,
     fragmentName?: string
-) => AbstractFetcher<string, any>;
+) => AbstractFetcher<string, object, object>;
 
 function dummyTargetMethod() {}
 
 export function createFetchableType<E extends string>(
-    entityName: string,
+    entityName: E,
     superTypes: readonly FetchableType<string>[],
-    declaredFields: readonly string[]
-) {
-    return new FetchableTypeImpl(entityName, superTypes, new Set<string>(declaredFields));
+    declaredFields: ReadonlyArray<string | { 
+        readonly type: "METHOD",
+        readonly name: string,
+        readonly argGraphQLTypeMap?: { readonly [key: string]: string }
+    }>
+): FetchableType<E> {
+    const declaredFieldMap = new Map<string, FetchableField>();
+    for (const declaredField of declaredFields) {
+        if (typeof declaredField === 'string') {
+            declaredFieldMap.set(declaredField, {
+                name: declaredField,
+                isFunction: false,
+                argGraphQLTypeMap: new Map<string, string>()
+            });
+        } else {
+            const argGraphQLTypeMap = new Map<string, string>();
+            if (declaredField.argGraphQLTypeMap !== undefined) {
+                for (const argName in  declaredField.argGraphQLTypeMap) {
+                    const argGraphQLType = declaredField.argGraphQLTypeMap[argName];
+                    argGraphQLTypeMap.set(argName, argGraphQLType);
+                }
+            }
+            declaredFieldMap.set(declaredField.name, {
+                name: declaredField.name,
+                isFunction: true,
+                argGraphQLTypeMap
+            });
+        }
+    }
+    return new FetchableTypeImpl<E>(entityName, superTypes, declaredFieldMap);
 }
 
 class FetchableTypeImpl<E extends string> implements FetchableType<E> {
 
-    private _fields?: ReadonlySet<string>;
+    private _fields?: ReadonlyMap<string, FetchableField>;
 
     constructor(
         readonly entityName: E,
         readonly superTypes: readonly FetchableType<string>[],
-        readonly declaredFields: ReadonlySet<string>
+        readonly declaredFields: ReadonlyMap<string, FetchableField>
     ) {}
 
-    get fields(): ReadonlySet<string> {
+    get fields(): ReadonlyMap<string, FetchableField> {
         let fds = this._fields;
         if (fds === undefined) {
             if (this.superTypes.length === 0) {
                 fds = this.declaredFields;
             } else {
-                const set = new Set<string>();
-                collectFields(this, set);
-                fds = set;
+                const map = new Map<string, FetchableField>();
+                collectFields(this, map);
+                fds = map;
             }
             this._fields = fds;
         }
@@ -214,9 +213,9 @@ class FetchableTypeImpl<E extends string> implements FetchableType<E> {
     }
 }
 
-function collectFields(fetchableType: FetchableType<string>, output: Set<string>) {
-    for (const field of fetchableType.declaredFields) {
-        output.add(field);
+function collectFields(fetchableType: FetchableType<string>, output: Map<string, FetchableField>) {
+    for (const [name, field] of fetchableType.declaredFields) {
+        output.set(name, field);
     }
     for (const superType of fetchableType.superTypes) {
         collectFields(superType, output);

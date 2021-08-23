@@ -7,7 +7,7 @@ import { Employee } from '../model/Employee';
 import { Node } from '../model/Node';
 import { delay } from './Delay';
 
-export class NodeResolver {
+export class NodeService {
 
     @Query(() => Node, { nullable: true })
     async node(

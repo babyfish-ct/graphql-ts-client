@@ -99,6 +99,12 @@ class AbstractFetcher {
         }
         return fieldMap;
     }
+    get explicitVariableNames() {
+        return this.result.explicitArgumentNames;
+    }
+    get implicitVariableMap() {
+        return this.result.implicitArgumentValues;
+    }
     toString() {
         return this.result.text;
     }
@@ -163,7 +169,7 @@ class ResultContext {
         this.writer = writer;
         this.namedFragmentMap = new Map();
         this.explicitArgumentNames = (_a = ctx === null || ctx === void 0 ? void 0 : ctx.explicitArgumentNames) !== null && _a !== void 0 ? _a : new Set();
-        this.implicitArgumentValues = (_b = ctx === null || ctx === void 0 ? void 0 : ctx.implicitArgumentValues) !== null && _b !== void 0 ? _b : [];
+        this.implicitArgumentValues = (_b = ctx === null || ctx === void 0 ? void 0 : ctx.implicitArgumentValues) !== null && _b !== void 0 ? _b : new Map();
     }
     accept(fetcher) {
         const t = this.writer.text.bind(this.writer);
@@ -181,8 +187,9 @@ class ResultContext {
                             t(arg.name);
                         }
                         else {
-                            t(`fetcherArgs[${this.implicitArgumentValues.length}]`);
-                            this.implicitArgumentValues.push(arg);
+                            const text = `__implicitArgs__[${this.implicitArgumentValues.size}]`;
+                            t(text);
+                            this.implicitArgumentValues.set(text, fetcher.fetchableType.fields.get(fieldName).argGraphQLTypeMap.get(argName));
                         }
                     }
                 });

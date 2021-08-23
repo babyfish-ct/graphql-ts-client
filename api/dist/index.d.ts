@@ -8,10 +8,11 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 export type { Fetcher, ModelType } from './Fetcher';
-export type { FetcherProxyExtensionContext } from './FetcherProxy';
 export { AbstractFetcher, FragmentWrapper } from './Fetcher';
+export { AcceptableVariables, UnresolvedVariables, ParameterRef } from './Parameter';
 export { DependencyManager } from './DependencyManager';
 export { createFetcher, createFetchableType } from './FetcherProxy';
+export { buildRequest } from './Request';
 import { Draft, PatchListener } from "immer";
 interface UtilInterace {
     toMd5(value: string): string;

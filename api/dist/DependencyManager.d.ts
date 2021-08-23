@@ -13,10 +13,10 @@ export declare class DependencyManager {
     private fieldResourceMap;
     private _idGetter;
     constructor(idGetter?: (obj: any) => any);
-    register(resource: string, fetcher: Fetcher<string, object>, fieldDependencies?: readonly Fetcher<string, object>[]): void;
+    register(resource: string, fetcher: Fetcher<string, object, object>, fieldDependencies?: readonly Fetcher<string, object, object>[]): void;
     unregister(resource: string): void;
-    resources<T extends object>(fetcher: Fetcher<string, T>, oldObject: T | undefined, newObject: T | undefined): string[];
-    allResources(fetcher: Fetcher<string, any>): string[];
+    resources<T extends object>(fetcher: Fetcher<string, T, object>, oldObject: T | undefined, newObject: T | undefined): string[];
+    allResources(fetcher: Fetcher<string, object, object>): string[];
     private registerTypes;
     private registerFields;
     private collectResources;

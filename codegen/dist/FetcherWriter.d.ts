@@ -18,11 +18,12 @@ export declare class FetcherWriter extends Writer {
     private readonly modelType;
     private inheritanceInfo;
     private readonly fetcherTypeName;
-    private readonly methodNames;
     private readonly defaultFetcherProps;
     readonly emptyFetcherName: string;
     readonly defaultFetcherName: string | undefined;
     readonly fieldMap: GraphQLFieldMap<any, any>;
+    private methodFields;
+    private hasArgs;
     constructor(relay: boolean, modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, inheritanceInfo: InheritanceInfo, stream: WriteStream, config: GeneratorConfig);
     protected prepareImportings(): void;
     protected importingBehavior(type: GraphQLNamedType): ImportingBehavior;
@@ -30,6 +31,7 @@ export declare class FetcherWriter extends Writer {
     private writePositiveProp;
     private writeNegativeProp;
     private writeInstances;
+    private writeArgsTypesInterface;
     private declaredFieldNames;
     private removeSuperFieldNames;
 }

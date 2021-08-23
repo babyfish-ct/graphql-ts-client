@@ -1,27 +1,198 @@
 import { WriteStream } from "fs";
 import { GraphQLField } from "graphql";
-import { associatedTypeOf } from "../Associations";
+import { AbstractHookWriter as AbstractOperationWriter } from "../AbstractOperationWriter";
 import { GeneratorConfig } from "../GeneratorConfig";
-import { Writer } from "../Writer";
 
-export class RelayHookWriter extends Writer {
+export class RelayHookWriter extends AbstractOperationWriter {
 
     protected readonly hasTypedHooks: boolean;
 
     protected readonly hasSimpleHooks: boolean;
 
     constructor(
-        private hookType: "Query" | "Mutation",
-        private fields: GraphQLField<unknown, unknown>[],
+        operationType: "Query" | "Mutation",
+        fields: GraphQLField<unknown, unknown>[],
         stream: WriteStream, 
         config: GeneratorConfig
     ) {
-        super(stream, config);
-        this.hasTypedHooks = this.fields.find(field => associatedTypeOf(field.type) !== undefined) !== undefined;
-        this.hasSimpleHooks = this.fields.find(field => associatedTypeOf(field.type) === undefined) !== undefined;
+        super(operationType, fields, stream, config);
+    }
+
+    protected prepareImportings() {
+        this.importStatement('import { Fetcher, buildRequest } from "graphql-ts-client-api";');
+        this.importStatement(`import { Relay${this.operationType} } from "./TaggedNode";`);
+
+        super.prepareImportings();
     }
 
     protected writeCode() {
 
+        this.writeTypedOperation();
+        this.writeSimpleOperation();
+        this.writeOperationImpl();
+
+        this.writeVariables();
+        this.writeFetchableTypes();
+        this.writeFetchedTypes();
+        this.writeSimpleTypes();
+        
+        this.writeGQLParameters();
+        this.writeGQLArguments();
+    }
+
+    private writeTypedOperation() {
+
+        if (!this.hasTypedHooks) {
+            return;
+        }
+
+        const t = this.text.bind(this);
+
+        t(`\nexport function create${this.operationType}`);
+        this.scope({type: "GENERIC", multiLines: true}, () => {
+            t(`T${this.operationType}Key extends keyof ${this.operationType}FetchableTypes`);
+            this.separator(", ");
+            t("T extends object");
+            this.separator(", ");
+            t("TUnresolvedVariables extends object");
+            this.separator(", ");
+            t(`TDataKey extends string = T${this.operationType}Key`);
+        });
+        this.scope({type: "PARAMETERS", multiLines: true}, () => {
+            t("name: string");
+            this.separator(", ");
+            t("args: ");
+            this.scope({type: "BLOCK", multiLines: true}, () => {
+                t(`readonly ${this.operationType.toLowerCase()}Key: T${this.operationType}Key,\n`);
+                t(`readonly fetcher: Fetcher<${this.operationType}FetchableTypes[T${this.operationType}Key], T, TUnresolvedVariables>,\n`);
+                t("readonly dataKey?: TDataKey\n");
+            });
+        });
+        t(`: Relay${this.operationType}`);
+        this.scope({type: "GENERIC", multiLines: true, suffix: ";\n"}, () => {
+            t(`Record<TDataKey, ${this.operationType}FetchedTypes<T>[T${this.operationType}Key]>`);
+            this.separator(", ");
+            t(`${this.operationType}Variables[T${this.operationType}Key] & TUnresolvedVariables`);
+        });
+    }
+
+    private writeSimpleOperation() {
+
+        if (!this.hasSimpleHooks) {
+            return;
+        }
+
+        const t = this.text.bind(this);
+        
+        t(`\nexport function create${this.operationType}`);
+        this.scope({type: "GENERIC", multiLines: true}, () => {
+            t(`T${this.operationType}Key extends Exclude<keyof ${this.operationType}Variables, keyof ${this.operationType}FetchableTypes>`);
+            this.separator(", ");
+            t(`TDataKey extends string = T${this.operationType}Key`);
+        });
+        this.scope({type: "PARAMETERS", multiLines: true}, () => {
+            t("name: string");
+            this.separator(", ");
+            t("args: ");
+            this.scope({type: "BLOCK", multiLines: true}, () => {
+                t(`readonly ${this.operationType.toLowerCase()}Key: T${this.operationType}Key,\n`);
+                t("readonly dataKey?: TDataKey\n");
+            });
+        });
+        t(`: Relay${this.operationType}`);
+        this.scope({type: "GENERIC", multiLines: true, suffix: ";\n"}, () => {
+            t(`Record<TDataKey, ${this.operationType}SimpleTypes[T${this.operationType}Key]>`);
+            this.separator(", ");
+            t(`${this.operationType}Variables[T${this.operationType}Key]`);
+        });
+    }
+
+    private writeOperationImpl() {
+
+        const t = this.text.bind(this);
+
+        t(`\nexport function create${this.operationType}`);
+        this.scope({type: "GENERIC", multiLines: true}, () => {
+            t(`T${this.operationType}Key extends keyof ${this.operationType}Variables`);
+            this.separator(", ");
+            t(`TDataKey extends string = T${this.operationType}Key`);
+        });
+        this.scope({type: "PARAMETERS", multiLines: true}, () => {
+            t("name: string");
+            this.separator(", ");
+            t("args: ");
+            this.scope({type: "BLOCK", multiLines: true}, () => {
+                t(`readonly ${this.operationType.toLowerCase()}Key: T${this.operationType}Key,\n`);
+                t(`readonly fetcher?: Fetcher<string, object, object>,\n`);
+                t("readonly dataKey?: TDataKey\n");
+            });
+        });
+        t(`: Relay${this.operationType}`);
+        this.scope({type: "GENERIC", multiLines: true}, () => {
+            t(`Record<TDataKey, any>`);
+            this.separator(", ");
+            t(`${this.operationType}Variables[T${this.operationType}Key]`);
+        });
+        t(" ");
+        this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
+            t("const request = buildRequest");
+            this.scope({type: "PARAMETERS", multiLines: true, suffix: ";\n"}, () => {
+                t(`"${this.operationType}"`);
+                this.separator();
+                t("name");
+                this.separator();
+                this.scope({type: "BLOCK", multiLines: true}, () => {
+                    t(`operationKey: args.${this.operationType.toLowerCase()}Key`);
+                    this.separator(", ");
+                    t("fetcher: args.fetcher");
+                    this.separator(", ");
+                    t("dataKey: args.dataKey");
+                    this.separator(", ");
+                    t(`variableParameterClause: GQL_PARAMS[args.${this.operationType.toLowerCase()}Key]`);
+                    this.separator(", ");
+                    t(`variableArgumentClause: GQL_ARGS[args.${this.operationType.toLowerCase()}Key]`);
+                });
+            });
+            t(`return new Relay${this.operationType}(name, request);\n`);
+        });
     }
 }
+
+/*
+
+export function loadQuery<
+    TQuery extends OperationType,
+    TEnvironmentProviderOptions extends EnvironmentProviderOptions = {}
+>(
+    environment: IEnvironment,
+    preloadableRequest: GraphQLTaggedNode | PreloadableConcreteRequest<TQuery>,
+    variables: VariablesOf<TQuery>,
+    options?: LoadQueryOptions,
+    environmentProviderOptions?: TEnvironmentProviderOptions,
+): PreloadedQuery<TQuery, TEnvironmentProviderOptions>;
+
+export function usePreloadedQuery<TQuery extends OperationType>(
+    gqlQuery: GraphQLTaggedNode,
+    preloadedQuery: PreloadedQuery<TQuery>,
+    options?: {
+        UNSTABLE_renderPolicy?: RenderPolicy | undefined;
+    },
+): TQuery['response'];
+
+export function createQuery<
+	TQueryKey extends keyof QueryFetchableTypes, 
+	T extends object, 
+	TUnresolvedVariables extends object, 
+	TDataKey extends string = TQueryKey
+>(
+	name: string, 
+	args: {
+		readonly queryKey: TQueryKey,
+		readonly fetcher: Fetcher<QueryFetchableTypes[TQueryKey], T, TUnresolvedVariables>,
+		readonly dataKey?: TDataKey
+	}
+): RelayQuery<
+	Record<TDataKey, QueryFetchedTypes<T>[TQueryKey]>, 
+	QueryVariables[TQueryKey] & TUnresolvedVariables
+>;
+ */

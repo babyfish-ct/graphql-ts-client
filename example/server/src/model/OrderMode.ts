@@ -7,9 +7,9 @@
 import "reflect-metadata";
 import { registerEnumType } from "type-graphql";
 
-export enum Gender {
-    MALE,
-    FEMALE
+export enum OrderMode {
+    ASC,
+    DESC
 }
 
-registerEnumType(Gender, {name: "Gender"});
+registerEnumType(OrderMode, { name: "OrderMode"});

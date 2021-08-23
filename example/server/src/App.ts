@@ -9,21 +9,15 @@ import express from 'express';
 import cors from "cors";
 import { graphqlHTTP } from 'express-graphql';
 import { DepartmentService } from "./bll/DepartmentService";
-import { DepartmentResolver } from "./model/Department";
-import { EmployeeResolver } from "./model/Employee";
 import { Gender } from "./model/Gender";
 import { EmployeeService } from "./bll/EmployeeService";
-import { NodeResolver } from "./bll/NodeResolver";
+import { NodeService } from "./bll/NodeService";
 
 registerEnumType(Gender, { name: "Gender" });
 
 const schema = buildSchemaSync({
     resolvers: [
-        
-        NodeResolver,
-        DepartmentResolver, 
-        EmployeeResolver,
-
+        NodeService,
         DepartmentService, 
         EmployeeService
     ]

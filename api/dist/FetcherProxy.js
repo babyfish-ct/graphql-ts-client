@@ -19,8 +19,8 @@ const Fetcher_1 = require("./Fetcher");
  * interfaces cannot affect the capacity of compilied targe code
  * ), and this "createFetcher" method uses proxies to create instances of those interfaces.
  */
-function createFetcher(fetchableType, unionEntityTypes, methodNames, extension) {
-    return new Proxy(new FetcherTarget([fetchableType, unionEntityTypes], false, ""), proxyHandler(fetchableType, new Set(methodNames), extension));
+function createFetcher(fetchableType, unionEntityTypes) {
+    return new Proxy(new FetcherTarget([fetchableType, unionEntityTypes], false, ""), proxyHandler(fetchableType));
 }
 exports.createFetcher = createFetcher;
 class FetcherTarget extends Fetcher_1.AbstractFetcher {
@@ -28,25 +28,14 @@ class FetcherTarget extends Fetcher_1.AbstractFetcher {
         return new FetcherTarget(this, negative, field, args, child);
     }
 }
-function proxyHandler(fetchableType, methodNames, extension) {
+function proxyHandler(fetchableType) {
     const handler = {
         get: (target, p, receiver) => {
+            var _a;
             if (p === "fetchableType") {
                 return fetchableType;
             }
             if (typeof p === 'string') {
-                if (extension !== undefined) {
-                    const extensionFunc = extension[p];
-                    if (extensionFunc !== undefined) {
-                        return function () {
-                            extensionFunc({
-                                proxy: receiver,
-                                target,
-                                args: arguments
-                            });
-                        };
-                    }
-                }
                 if (p.startsWith("~")) {
                     const rest = p.substring(1);
                     if (fetchableType.fields.has(rest)) {
@@ -54,7 +43,7 @@ function proxyHandler(fetchableType, methodNames, extension) {
                         return new Proxy(removeField.call(target, rest), handler);
                     }
                 }
-                else if (p === "on" || methodNames.has(p)) {
+                else if (p === "on" || ((_a = fetchableType.fields.get(p)) === null || _a === void 0 ? void 0 : _a.isFunction) === true) {
                     return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, p));
                 }
                 else if (fetchableType.fields.has(p)) {
@@ -92,8 +81,8 @@ function methodProxyHandler(targetFetcher, handler, field) {
                     }
                     break;
                 case 2:
-                    args = argArray[0];
-                    child = argArray[1];
+                    child = argArray[0];
+                    args = argArray[1];
                     break;
                 default:
                     throw new Error("Fetcher method must have 1 or 2 argument(s)");
@@ -105,7 +94,31 @@ function methodProxyHandler(targetFetcher, handler, field) {
 }
 function dummyTargetMethod() { }
 function createFetchableType(entityName, superTypes, declaredFields) {
-    return new FetchableTypeImpl(entityName, superTypes, new Set(declaredFields));
+    const declaredFieldMap = new Map();
+    for (const declaredField of declaredFields) {
+        if (typeof declaredField === 'string') {
+            declaredFieldMap.set(declaredField, {
+                name: declaredField,
+                isFunction: false,
+                argGraphQLTypeMap: new Map()
+            });
+        }
+        else {
+            const argGraphQLTypeMap = new Map();
+            if (declaredField.argGraphQLTypeMap !== undefined) {
+                for (const argName in declaredField.argGraphQLTypeMap) {
+                    const argGraphQLType = declaredField.argGraphQLTypeMap[argName];
+                    argGraphQLTypeMap.set(argName, argGraphQLType);
+                }
+            }
+            declaredFieldMap.set(declaredField.name, {
+                name: declaredField.name,
+                isFunction: true,
+                argGraphQLTypeMap
+            });
+        }
+    }
+    return new FetchableTypeImpl(entityName, superTypes, declaredFieldMap);
 }
 exports.createFetchableType = createFetchableType;
 class FetchableTypeImpl {
@@ -121,9 +134,9 @@ class FetchableTypeImpl {
                 fds = this.declaredFields;
             }
             else {
-                const set = new Set();
-                collectFields(this, set);
-                fds = set;
+                const map = new Map();
+                collectFields(this, map);
+                fds = map;
             }
             this._fields = fds;
         }
@@ -131,8 +144,8 @@ class FetchableTypeImpl {
     }
 }
 function collectFields(fetchableType, output) {
-    for (const field of fetchableType.declaredFields) {
-        output.add(field);
+    for (const [name, field] of fetchableType.declaredFields) {
+        output.set(name, field);
     }
     for (const superType of fetchableType.superTypes) {
         collectFields(superType, output);

@@ -21,7 +21,7 @@ export class EmployeeInput implements TEmployee {
     @Field(() => String)
     readonly lastName: string;
 
-    @Field(() => String)
+    @Field(() => Gender)
     readonly gender: Gender;
 
     @Field(() => Float)

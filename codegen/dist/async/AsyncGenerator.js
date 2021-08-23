@@ -44,7 +44,7 @@ class AsyncGenerator extends Generator_1.Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Environment.ts"));
             new AsyncEnvironmentWriter_1.AsyncEnvironmentWriter(stream, this.config).write();
-            yield stream.end();
+            yield Generator_1.awaitStream(stream);
         });
     }
     generateOperations(mutation, fields) {
@@ -53,7 +53,7 @@ class AsyncGenerator extends Generator_1.Generator {
             const promises = fields.map((field) => __awaiter(this, void 0, void 0, function* () {
                 const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, subDir, `${field.name}.ts`));
                 new AsyncOperationWriter_1.AsyncOperationWriter(mutation, field, stream, this.config).write();
-                yield stream.end();
+                yield Generator_1.awaitStream(stream);
             }));
             const writeIndex = () => __awaiter(this, void 0, void 0, function* () {
                 const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, subDir, "index.ts"));
