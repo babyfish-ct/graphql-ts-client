@@ -18,13 +18,15 @@ export { buildRequest } from './Request';
 
 import { toMd5 } from "./util/Md5";
 import { removeNullValues, exceptNullValues } from './util/NullValues';
+import { iterateMap } from './util/MapIterator';
 import { produce, Draft, PatchListener } from "immer";
 
 interface UtilInterace {
     toMd5(value: string): string;
     removeNullValues(value: any): void;
     exceptNullValues<T>(value: T): T;
+    iterateMap<K, V>(map: ReadonlyMap<K, V>, onEach: (pair: [K, V]) => void): void;
     produce<T>(base: T, recipe: (draft: Draft<T>) => void, listener?: PatchListener);
 }
 
-export const util: UtilInterace = { toMd5, removeNullValues, exceptNullValues, produce };
+export const util: UtilInterace = { toMd5, removeNullValues, exceptNullValues, iterateMap, produce };

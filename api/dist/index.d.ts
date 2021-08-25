@@ -19,6 +19,7 @@ interface UtilInterace {
     toMd5(value: string): string;
     removeNullValues(value: any): void;
     exceptNullValues<T>(value: T): T;
+    iterateMap<K, V>(map: ReadonlyMap<K, V>, onEach: (pair: [K, V]) => void): void;
     produce<T>(base: T, recipe: (draft: Draft<T>) => void, listener?: PatchListener): any;
 }
 export declare const util: UtilInterace;

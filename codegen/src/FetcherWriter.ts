@@ -108,7 +108,7 @@ export class FetcherWriter extends Writer {
         this.importStatement("import { WithTypeName, ImplementationType } from '../CommonTypes';");
         if (this.relay) {
             this.importStatement("import { FragmentRefs } from 'relay-runtime';");
-            this.importStatement("import { RelayFragment } from '../TaggedNode';");
+            this.importStatement("import { RelayFragment } from '../Relay';");
         } 
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
@@ -182,13 +182,18 @@ export class FetcherWriter extends Writer {
 
         if (this.relay) {
 
-            t(`\non<TFragmentName extends string, XUnresolvedVariables extends object>`);
+            t(`\non<XFragmentName extends string, XData extends object, XUnresolvedVariables extends object>`);
             this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
-                t(`child: RelayFragment<TFragmentName, "${this.modelType.name}", object, XUnresolvedVariables>`);
+                t(`child: RelayFragment<XFragmentName, "${this.modelType.name}", XData, XUnresolvedVariables>`);
             });
             t(`: ${this.fetcherTypeName}`);
             this.scope({type: "GENERIC", multiLines: true}, () => {
-                t('T & { readonly " $fragmentRefs": FragmentRefs<TFragmentName>}');
+                t('T & ');
+                this.scope({type: "BLOCK", multiLines: true}, () => {
+                    t('readonly " $data": XData');
+                    this.separator(", ");
+                    t('readonly " $fragmentRefs": FragmentRefs<XFragmentName>');
+                });
                 this.separator(", ");
                 t("TUnresolvedVariables & XUnresolvedVariables");
             });

@@ -8,7 +8,7 @@ class RelayHookWriter extends AbstractOperationWriter_1.AbstractHookWriter {
     }
     prepareImportings() {
         this.importStatement('import { Fetcher, buildRequest } from "graphql-ts-client-api";');
-        this.importStatement(`import { Relay${this.operationType} } from "./TaggedNode";`);
+        this.importStatement(`import { Relay${this.operationType} } from "./Relay";`);
         super.prepareImportings();
     }
     writeCode() {
@@ -27,7 +27,7 @@ class RelayHookWriter extends AbstractOperationWriter_1.AbstractHookWriter {
             return;
         }
         const t = this.text.bind(this);
-        t(`\nexport function create${this.operationType}`);
+        t(`\nexport function createTyped${this.operationType}`);
         this.scope({ type: "GENERIC", multiLines: true }, () => {
             t(`T${this.operationType}Key extends keyof ${this.operationType}FetchableTypes`);
             this.separator(", ");
@@ -59,7 +59,7 @@ class RelayHookWriter extends AbstractOperationWriter_1.AbstractHookWriter {
             return;
         }
         const t = this.text.bind(this);
-        t(`\nexport function create${this.operationType}`);
+        t(`\nexport function createTyped${this.operationType}`);
         this.scope({ type: "GENERIC", multiLines: true }, () => {
             t(`T${this.operationType}Key extends Exclude<keyof ${this.operationType}Variables, keyof ${this.operationType}FetchableTypes>`);
             this.separator(", ");
@@ -83,7 +83,7 @@ class RelayHookWriter extends AbstractOperationWriter_1.AbstractHookWriter {
     }
     writeOperationImpl() {
         const t = this.text.bind(this);
-        t(`\nexport function create${this.operationType}`);
+        t(`\nexport function createTyped${this.operationType}`);
         this.scope({ type: "GENERIC", multiLines: true }, () => {
             t(`T${this.operationType}Key extends keyof ${this.operationType}Variables`);
             this.separator(", ");
