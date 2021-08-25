@@ -19,8 +19,8 @@ class RelayHookWriter extends AbstractOperationWriter_1.AbstractHookWriter {
         this.writeFetchableTypes();
         this.writeFetchedTypes();
         this.writeSimpleTypes();
-        this.writeGQLParameters();
-        this.writeGQLArguments();
+        this.writeVariableTypeMaps();
+        this.writeResultPlurals();
     }
     writeTypedOperation() {
         if (!this.hasTypedHooks) {
@@ -107,25 +107,15 @@ class RelayHookWriter extends AbstractOperationWriter_1.AbstractHookWriter {
         });
         t(" ");
         this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
-            t("const request = buildRequest");
+            t(`return new Relay${this.operationType}`);
             this.scope({ type: "PARAMETERS", multiLines: true, suffix: ";\n" }, () => {
-                t(`"${this.operationType}"`);
-                this.separator();
-                t("name");
-                this.separator();
-                this.scope({ type: "BLOCK", multiLines: true }, () => {
-                    t(`operationKey: args.${this.operationType.toLowerCase()}Key`);
-                    this.separator(", ");
-                    t("fetcher: args.fetcher");
-                    this.separator(", ");
-                    t("dataKey: args.dataKey");
-                    this.separator(", ");
-                    t(`variableParameterClause: GQL_PARAMS[args.${this.operationType.toLowerCase()}Key]`);
-                    this.separator(", ");
-                    t(`variableArgumentClause: GQL_ARGS[args.${this.operationType.toLowerCase()}Key]`);
-                });
+                t("name,\n");
+                t(`args.${this.operationType.toLowerCase()}Key,\n`);
+                t("args.dataKey,\n");
+                t(`VARIABLE_TYPE_MAPS[args.${this.operationType.toLowerCase()}Key],\n`);
+                t(`RESULT_PLURALS[args.${this.operationType.toLowerCase()}Key] !== undefined,\n`);
+                t('args.fetcher\n');
             });
-            t(`return new Relay${this.operationType}(name, request);\n`);
         });
     }
 }

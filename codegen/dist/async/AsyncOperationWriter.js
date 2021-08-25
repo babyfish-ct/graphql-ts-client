@@ -11,7 +11,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.argsWrapperTypeName = exports.AsyncOperationWriter = void 0;
 const graphql_1 = require("graphql");
-const Associations_1 = require("../Associations");
+const Utils_1 = require("../Utils");
 const Writer_1 = require("../Writer");
 class AsyncOperationWriter extends Writer_1.Writer {
     constructor(mutation, field, stream, config) {
@@ -19,7 +19,7 @@ class AsyncOperationWriter extends Writer_1.Writer {
         this.mutation = mutation;
         this.field = field;
         this.argsWrapperName = argsWrapperTypeName(field);
-        this.associatedType = Associations_1.associatedTypeOf(this.field.type);
+        this.associatedType = Utils_1.associatedTypeOf(this.field.type);
     }
     prepareImportings() {
         if (this.associatedType !== undefined) {

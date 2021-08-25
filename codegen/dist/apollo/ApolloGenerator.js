@@ -20,7 +20,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApolloGenerator = void 0;
 const path_1 = require("path");
-const Associations_1 = require("../Associations");
+const Utils_1 = require("../Utils");
 const Generator_1 = require("../Generator");
 const ApolloHookWriter_1 = require("./ApolloHookWriter");
 class ApolloGenerator extends Generator_1.Generator {
@@ -72,7 +72,7 @@ class ApolloGenerator extends Generator_1.Generator {
             const queryFieldMap = (_a = schema.getQueryType()) === null || _a === void 0 ? void 0 : _a.getFields();
             for (const queryFieldName in queryFieldMap) {
                 const queryField = queryFieldMap[queryFieldName];
-                if (Associations_1.associatedTypeOf(queryField.type) !== undefined) {
+                if (Utils_1.associatedTypeOf(queryField.type) !== undefined) {
                     hasTypedQuery = true;
                 }
                 else {
@@ -85,7 +85,7 @@ class ApolloGenerator extends Generator_1.Generator {
             const mutationFieldMap = (_b = schema.getMutationType()) === null || _b === void 0 ? void 0 : _b.getFields();
             for (const mutationFieldName in mutationFieldMap) {
                 const mutationField = mutationFieldMap[mutationFieldName];
-                if (Associations_1.associatedTypeOf(mutationField.type) !== undefined) {
+                if (Utils_1.associatedTypeOf(mutationField.type) !== undefined) {
                     hasTypedMutation = true;
                 }
                 else {

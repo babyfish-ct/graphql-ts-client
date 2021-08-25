@@ -1,6 +1,6 @@
 import { WriteStream } from "fs";
 import { GraphQLField } from "graphql";
-import { associatedTypeOf } from "./Associations";
+import { associatedTypeOf, isPluralType } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { Writer } from "./Writer";
 
@@ -113,23 +113,23 @@ export abstract class AbstractHookWriter extends Writer {
         });
     }
 
-    protected writeGQLParameters() {
+    protected writeVariableTypeMaps() {
         
         const t = this.text.bind(this);
 
-        t("\nconst GQL_PARAMS: {[key: string]: string} = ");
+        t("\nconst VARIABLE_TYPE_MAPS: {[key: string]: {[key: string]: string}} = ");
         this.scope({type: "BLOCK", multiLines: true, suffix: ";\n"}, () => {
             for (const field of this.fields) {
                 if (field.args.length !== 0) {
                     this.separator(", ");
-                    t(`"${field.name}": `);
-                    this.scope({type: "BLANK", prefix: '"', suffix: '"'}, () => {
+                    t(`${field.name}: `);
+                    this.scope({type: "BLOCK"}, () => {
                         for (const arg of field.args) {
                             this.separator(", ");
-                            t("$");
                             t(arg.name);
-                            t(": ");
+                            t(': "');
                             this.gqlTypeRef(arg.type);
+                            t('"');
                         }
                     });
                 }
@@ -137,25 +137,16 @@ export abstract class AbstractHookWriter extends Writer {
         });
     }
 
-    protected writeGQLArguments() {
-        
+    protected writeResultPlurals() {
+
         const t = this.text.bind(this);
 
-        t("\nconst GQL_ARGS: {[key: string]: string} = ");
+        t("\nconst RESULT_PLURALS: {[key: string]: true} = ");
         this.scope({type: "BLOCK", multiLines: true, suffix: ";\n"}, () => {
             for (const field of this.fields) {
-                if (field.args.length !== 0) {
+                if (isPluralType(field.type)) {
                     this.separator(", ");
-                    t(`"${field.name}": `);
-                    this.scope({type: "BLANK", prefix: '"', suffix: '"'}, () => {
-                        for (const arg of field.args) {
-                            this.separator(", ");
-                            t(arg.name);
-                            t(": ");
-                            t("$");
-                            t(arg.name);
-                        }
-                    });
+                    t(`${field.name}: true`);
                 }
             }
         });

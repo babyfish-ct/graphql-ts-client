@@ -6,7 +6,7 @@ export function buildRequest(
     config: RequestConfig
 ): string {
     
-    const parameterClause = config.variableArgumentClause ?? "";
+    const parameterClause = config.variableParameterClause ?? "";
     const argumentClause = config.variableArgumentClause ?? "";
     if (commaCount(parameterClause) !== commaCount(argumentClause)) {
         throw new Error('"config.variableParameterClause" and "config.variableArgumentClause" are are inconsistent');
@@ -44,7 +44,7 @@ export function buildRequest(
         ""
     );
     
-    return `${operationType} ${operationName}${allParameterClause}{
+    return `${operationType.toLocaleLowerCase()} ${operationName}${allParameterClause}{
         ${dataKeyPrefix}${config.operationKey}${allArgumentClause}
         ${config.fetcher?.toString() ?? ""}
     }

@@ -156,7 +156,8 @@ export function createFetchableType<E extends string>(
     entityName: E,
     superTypes: readonly FetchableType<string>[],
     declaredFields: ReadonlyArray<string | { 
-        readonly type: "METHOD",
+        readonly isFunction: boolean,
+        readonly isPlural: boolean,
         readonly name: string,
         readonly argGraphQLTypeMap?: { readonly [key: string]: string }
     }>
@@ -167,6 +168,7 @@ export function createFetchableType<E extends string>(
             declaredFieldMap.set(declaredField, {
                 name: declaredField,
                 isFunction: false,
+                isPlural: false,
                 argGraphQLTypeMap: new Map<string, string>()
             });
         } else {
@@ -179,7 +181,8 @@ export function createFetchableType<E extends string>(
             }
             declaredFieldMap.set(declaredField.name, {
                 name: declaredField.name,
-                isFunction: true,
+                isFunction: declaredField.isFunction,
+                isPlural: declaredField.isPlural,
                 argGraphQLTypeMap
             });
         }

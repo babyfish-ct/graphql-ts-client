@@ -23,11 +23,11 @@ import { TextWriter } from "./TextWriter";
 
     toJSON(): string; // for recoil
 
-    explicitVariableNames: ReadonlySet<string>;
+    explicitVariableMap: ReadonlyMap<string, string>;
 
     implicitVariableMap: ReadonlyMap<string, string>;
 
-    __supressWarnings__(value: T): never;
+    __supressWarnings__(value: T, unresolvedVariables: TUnresolvedVariables): never;
 }
 
 export type ModelType<F> = 
@@ -149,7 +149,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
                 let childFetchers = fieldMap.get(fetcher._field)?.childFetchers as AbstractFetcher<string, object, object>[];
                 if (childFetchers === undefined) {
                     childFetchers = [];
-                    fieldMap.set(fetcher._field, { childFetchers }); // Fragment cause mutliple child fetchers
+                    fieldMap.set(fetcher._field, { plural: false, childFetchers }); // Fragment cause mutliple child fetchers
                 }
                 childFetchers.push(fetcher._child!);
             } else {
@@ -157,7 +157,9 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
                     fieldMap.delete(fetcher._field);
                 } else {
                     fieldMap.set(fetcher._field, { 
+                        argGraphQLTypes: fetcher.fetchableType.fields.get(fetcher._field)?.argGraphQLTypeMap,
                         args: fetcher._args, 
+                        plural: fetcher.fetchableType.fields.get(fetcher._field)!.isPlural,
                         childFetchers: fetcher._child === undefined ? undefined: [fetcher._child] // Association only cause one child fetcher
                     });
                 }
@@ -166,12 +168,12 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         return fieldMap;
     }
 
-    get explicitVariableNames(): ReadonlySet<string> {
-        return this.result.explicitArgumentNames;
+    get explicitVariableMap(): ReadonlyMap<string, string> {
+        return this.result.explicitVariableMap;
     }
 
     get implicitVariableMap(): ReadonlyMap<string, string> {
-        return this.result.implicitArgumentValues;
+        return this.result.implicitVariableMap;
     }
 
     toString(): string {
@@ -223,12 +225,12 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         return {
             text: writer.toString(),
             fragmentText: fragmentWriter.toString(),
-            explicitArgumentNames: ctx.explicitArgumentNames,
-            implicitArgumentValues: ctx.implicitArgumentValues
+            explicitVariableMap: ctx.explicitVariableMap,
+            implicitVariableMap: ctx.implicitVariableMap
         };
     }
 
-    __supressWarnings__(_: T): never {
+    __supressWarnings__(_: T, unresolvedVariables: TUnresolvedVariables): never {
         throw new Error("__supressWarnings is not supported");
     }
 }
@@ -242,12 +244,15 @@ export interface FetchableType<E extends string> {
 
 export interface FetchableField {
     readonly name: string;
+    readonly isPlural: boolean;
     readonly isFunction: boolean;
     readonly argGraphQLTypeMap: ReadonlyMap<string, string>;
 }
 
 export interface FetcherField {
+    readonly argGraphQLTypes?: ReadonlyMap<string, string>;
     readonly args?: {readonly [key: string]: any};
+    readonly plural: boolean;
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
 
@@ -259,24 +264,24 @@ export abstract class FragmentWrapper<TFragmentName extends string, E extends st
 interface Result {
     readonly text: string;
     readonly fragmentText: string;
-    readonly explicitArgumentNames: ReadonlySet<string>;
-    readonly implicitArgumentValues: ReadonlyMap<string, string>;
+    readonly explicitVariableMap: ReadonlyMap<string, string>;
+    readonly implicitVariableMap: ReadonlyMap<string, string>;
 }
 
 class ResultContext {
 
     readonly namedFragmentMap = new Map<string, Fetcher<string, object, object>>();
 
-    readonly explicitArgumentNames: Set<string>;
+    readonly explicitVariableMap: Map<string, string>;
 
-    readonly implicitArgumentValues: Map<string, string>;
+    readonly implicitVariableMap: Map<string, string>;
 
     constructor(
         readonly writer: TextWriter = new TextWriter(), 
         ctx?: ResultContext
     ) {
-        this.explicitArgumentNames = ctx?.explicitArgumentNames ?? new Set<string>();
-        this.implicitArgumentValues = ctx?.implicitArgumentValues ?? new Map<string, string>();
+        this.explicitVariableMap = ctx?.explicitVariableMap ?? new Map<string, string>();
+        this.implicitVariableMap = ctx?.implicitVariableMap ?? new Map<string, string>();
     }
 
     accept(fetcher: Fetcher<string, object, object>) {
@@ -293,12 +298,12 @@ class ResultContext {
                         t(argName);
                         t(": ");
                         if (arg instanceof ParameterRef) {
-                            this.explicitArgumentNames.add(arg.name);
+                            this.explicitVariableMap.set(arg.name, field.argGraphQLTypes![argName]!);
                             t(arg.name);
                         } else {
-                            const text = `__implicitArgs__[${this.implicitArgumentValues.size}]`; 
+                            const text = `__implicitArgs__[${this.implicitVariableMap.size}]`; 
                             t(text);
-                            this.implicitArgumentValues.set(text, fetcher.fetchableType.fields.get(fieldName)!.argGraphQLTypeMap.get(argName)!);
+                            this.implicitVariableMap.set(text, fetcher.fetchableType.fields.get(fieldName)!.argGraphQLTypeMap.get(argName)!);
                         }
                     }
                 });

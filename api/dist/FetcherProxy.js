@@ -100,6 +100,7 @@ function createFetchableType(entityName, superTypes, declaredFields) {
             declaredFieldMap.set(declaredField, {
                 name: declaredField,
                 isFunction: false,
+                isPlural: false,
                 argGraphQLTypeMap: new Map()
             });
         }
@@ -113,7 +114,8 @@ function createFetchableType(entityName, superTypes, declaredFields) {
             }
             declaredFieldMap.set(declaredField.name, {
                 name: declaredField.name,
-                isFunction: true,
+                isFunction: declaredField.isFunction,
+                isPlural: declaredField.isPlural,
                 argGraphQLTypeMap
             });
         }

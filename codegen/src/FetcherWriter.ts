@@ -9,8 +9,8 @@
  */
 
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
-import { associatedTypeOf } from "./Associations";
+import { GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
+import { associatedTypeOf, isPluralType } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { InheritanceInfo } from "./InheritanceInfo";
 import { ImportingBehavior, Writer } from "./Writer";
@@ -28,6 +28,8 @@ export class FetcherWriter extends Writer {
     readonly fieldMap: GraphQLFieldMap<any, any>;
 
     private methodFields: Map<string, GraphQLField<unknown, unknown>>;
+
+    private pluralFields: Map<string, GraphQLField<unknown, unknown>>;
 
     private hasArgs: boolean;
 
@@ -64,6 +66,7 @@ export class FetcherWriter extends Writer {
         }
       
         const methodFields = new Map<string, GraphQLField<unknown, unknown>>();
+        const pluralFields = new Map<string, GraphQLField<unknown, unknown>>();
         const defaultFetcherProps: string[] = [];
         this.hasArgs = false;
         for (const fieldName in this.fieldMap) {
@@ -78,6 +81,9 @@ export class FetcherWriter extends Writer {
                 }
                 defaultFetcherProps.push(fieldName);
             }
+            if (isPluralType(field.type)) {
+                pluralFields.set(field.name, field);
+            }
             if (field.args.length !== 0 || associatedType !== undefined) {
                 methodFields.set(field.name, field);
             }
@@ -86,6 +92,7 @@ export class FetcherWriter extends Writer {
             }
         }
         this.defaultFetcherProps = defaultFetcherProps;
+        this.pluralFields = pluralFields;
         this.methodFields = methodFields;
         let prefix = instancePrefix(this.modelType.name);
         this.emptyFetcherName = `${prefix}$`;
@@ -326,15 +333,18 @@ export class FetcherWriter extends Writer {
                     this.scope({type: "ARRAY", multiLines: this.methodFields.size !== 0 }, () => {
                         for (const declaredFieldName of this.declaredFieldNames()) {
                             this.separator(", ");
+                            const pluralField = this.pluralFields.get(declaredFieldName);
                             const methodField = this.methodFields.get(declaredFieldName);
-                            if (methodField === undefined) {
+                            if (pluralField === undefined && methodField === undefined) {
                                 t(`"${declaredFieldName}"`);
                             } else {
                                 this.scope({type: "BLOCK", multiLines: true}, () => {
-                                    t("type: 'METHOD'");
+                                    t(`isFunction: ${methodField !== undefined}`);
+                                    this.separator(", ");
+                                    t(`isPlural: ${pluralField !== undefined}`);
                                     this.separator(", ");
                                     t(`name: "${declaredFieldName}"`);
-                                    if (methodField.args.length !== 0) {
+                                    if (methodField !== undefined && methodField.args.length !== 0) {
                                         this.separator(", ");
                                         t("argGraphQLTypeMap: ");
                                         this.scope({type: "BLOCK", multiLines: methodField.args.length > 1}, () => {

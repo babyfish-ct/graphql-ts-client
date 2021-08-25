@@ -23,6 +23,7 @@ export declare class FetcherWriter extends Writer {
     readonly defaultFetcherName: string | undefined;
     readonly fieldMap: GraphQLFieldMap<any, any>;
     private methodFields;
+    private pluralFields;
     private hasArgs;
     constructor(relay: boolean, modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, inheritanceInfo: InheritanceInfo, stream: WriteStream, config: GeneratorConfig);
     protected prepareImportings(): void;

@@ -10,7 +10,8 @@
 import { FetchableType, Fetcher } from './Fetcher';
 export declare function createFetcher<E extends string, F extends Fetcher<E, object, object>>(fetchableType: FetchableType<E>, unionEntityTypes: string[] | undefined): F;
 export declare function createFetchableType<E extends string>(entityName: E, superTypes: readonly FetchableType<string>[], declaredFields: ReadonlyArray<string | {
-    readonly type: "METHOD";
+    readonly isFunction: boolean;
+    readonly isPlural: boolean;
     readonly name: string;
     readonly argGraphQLTypeMap?: {
         readonly [key: string]: string;

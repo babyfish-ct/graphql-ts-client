@@ -51,8 +51,8 @@ class ApolloHookWriter extends AbstractOperationWriter_1.AbstractHookWriter {
         this.writeFetchedTypes();
         this.writeSimpleTypes();
         this.text(DIVIDER_LINE);
-        this.writeGQLParameters();
-        this.writeGQLArguments();
+        this.writeVariableTypeMaps();
+        this.writeResultPlurals();
     }
     writeTypedHook(returnType, responseDataProp = "", prefix = "") {
         if (!this.hasTypedHooks) {

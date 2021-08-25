@@ -10,7 +10,7 @@
 
 import { WriteStream } from "fs";
 import { GraphQLField, GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
-import { associatedTypeOf } from "../Associations";
+import { associatedTypeOf } from "../Utils";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { Writer } from "../Writer";
 

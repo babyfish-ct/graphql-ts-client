@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractHookWriter = void 0;
-const Associations_1 = require("./Associations");
+const Utils_1 = require("./Utils");
 const Writer_1 = require("./Writer");
 class AbstractHookWriter extends Writer_1.Writer {
     constructor(operationType, fields, stream, config) {
         super(stream, config);
         this.operationType = operationType;
         this.fields = fields;
-        this.hasTypedHooks = this.fields.find(field => Associations_1.associatedTypeOf(field.type) !== undefined) !== undefined;
-        this.hasSimpleHooks = this.fields.find(field => Associations_1.associatedTypeOf(field.type) === undefined) !== undefined;
+        this.hasTypedHooks = this.fields.find(field => Utils_1.associatedTypeOf(field.type) !== undefined) !== undefined;
+        this.hasSimpleHooks = this.fields.find(field => Utils_1.associatedTypeOf(field.type) === undefined) !== undefined;
     }
     isUnderGlobalDir() {
         return true;
@@ -19,7 +19,7 @@ class AbstractHookWriter extends Writer_1.Writer {
             for (const arg of field.args) {
                 this.importType(arg.type);
             }
-            if (Associations_1.associatedTypeOf(field.type) === undefined) {
+            if (Utils_1.associatedTypeOf(field.type) === undefined) {
                 this.importType(field.type);
             }
         }
@@ -49,7 +49,7 @@ class AbstractHookWriter extends Writer_1.Writer {
         t("FetchableTypes ");
         this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
             for (const field of this.fields) {
-                const associatedType = Associations_1.associatedTypeOf(field.type);
+                const associatedType = Utils_1.associatedTypeOf(field.type);
                 if (associatedType !== undefined) {
                     t(field.name);
                     t(": '");
@@ -66,7 +66,7 @@ class AbstractHookWriter extends Writer_1.Writer {
         t("FetchedTypes<T> ");
         this.scope({ "type": "BLOCK", multiLines: true, suffix: "\n" }, () => {
             for (const field of this.fields) {
-                const associatedType = Associations_1.associatedTypeOf(field.type);
+                const associatedType = Utils_1.associatedTypeOf(field.type);
                 if (associatedType !== undefined) {
                     this.varableDecl(field.name, field.type, "T");
                     t(";\n");
@@ -81,7 +81,7 @@ class AbstractHookWriter extends Writer_1.Writer {
         t("SimpleTypes ");
         this.scope({ "type": "BLOCK", multiLines: true, suffix: "\n" }, () => {
             for (const field of this.fields) {
-                const associatedType = Associations_1.associatedTypeOf(field.type);
+                const associatedType = Utils_1.associatedTypeOf(field.type);
                 if (associatedType === undefined) {
                     this.varableDecl(field.name, field.type);
                     t(";\n");
@@ -89,44 +89,35 @@ class AbstractHookWriter extends Writer_1.Writer {
             }
         });
     }
-    writeGQLParameters() {
+    writeVariableTypeMaps() {
         const t = this.text.bind(this);
-        t("\nconst GQL_PARAMS: {[key: string]: string} = ");
+        t("\nconst VARIABLE_TYPE_MAPS: {[key: string]: {[key: string]: string}} = ");
         this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
             for (const field of this.fields) {
                 if (field.args.length !== 0) {
                     this.separator(", ");
-                    t(`"${field.name}": `);
-                    this.scope({ type: "BLANK", prefix: '"', suffix: '"' }, () => {
+                    t(`${field.name}: `);
+                    this.scope({ type: "BLOCK" }, () => {
                         for (const arg of field.args) {
                             this.separator(", ");
-                            t("$");
                             t(arg.name);
-                            t(": ");
+                            t(': "');
                             this.gqlTypeRef(arg.type);
+                            t('"');
                         }
                     });
                 }
             }
         });
     }
-    writeGQLArguments() {
+    writeResultPlurals() {
         const t = this.text.bind(this);
-        t("\nconst GQL_ARGS: {[key: string]: string} = ");
+        t("\nconst RESULT_PLURALS: {[key: string]: true} = ");
         this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
             for (const field of this.fields) {
-                if (field.args.length !== 0) {
+                if (Utils_1.isPluralType(field.type)) {
                     this.separator(", ");
-                    t(`"${field.name}": `);
-                    this.scope({ type: "BLANK", prefix: '"', suffix: '"' }, () => {
-                        for (const arg of field.args) {
-                            this.separator(", ");
-                            t(arg.name);
-                            t(": ");
-                            t("$");
-                            t(arg.name);
-                        }
-                    });
+                    t(`${field.name}: true`);
                 }
             }
         });

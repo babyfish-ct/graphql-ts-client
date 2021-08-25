@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildRequest = void 0;
 function buildRequest(operationType, operationName, config) {
     var _a, _b, _c, _d, _e, _f, _g;
-    const parameterClause = (_a = config.variableArgumentClause) !== null && _a !== void 0 ? _a : "";
+    const parameterClause = (_a = config.variableParameterClause) !== null && _a !== void 0 ? _a : "";
     const argumentClause = (_b = config.variableArgumentClause) !== null && _b !== void 0 ? _b : "";
     if (commaCount(parameterClause) !== commaCount(argumentClause)) {
         throw new Error('"config.variableParameterClause" and "config.variableArgumentClause" are are inconsistent');
@@ -37,7 +37,7 @@ function buildRequest(operationType, operationName, config) {
     const dataKeyPrefix = (config.dataKey !== undefined && config.dataKey !== config.operationKey ?
         `${config.dataKey}: ` :
         "");
-    return `${operationType} ${operationName}${allParameterClause}{
+    return `${operationType.toLocaleLowerCase()} ${operationName}${allParameterClause}{
         ${dataKeyPrefix}${config.operationKey}${allArgumentClause}
         ${(_f = (_e = config.fetcher) === null || _e === void 0 ? void 0 : _e.toString()) !== null && _f !== void 0 ? _f : ""}
     }

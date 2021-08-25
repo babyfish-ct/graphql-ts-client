@@ -15,6 +15,6 @@ export declare abstract class AbstractHookWriter extends Writer {
     protected writeFetchableTypes(): void;
     protected writeFetchedTypes(): void;
     protected writeSimpleTypes(): void;
-    protected writeGQLParameters(): void;
-    protected writeGQLArguments(): void;
+    protected writeVariableTypeMaps(): void;
+    protected writeResultPlurals(): void;
 }

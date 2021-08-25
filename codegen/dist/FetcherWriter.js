@@ -11,7 +11,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generatedFetcherTypeName = exports.FetcherWriter = void 0;
 const graphql_1 = require("graphql");
-const Associations_1 = require("./Associations");
+const Utils_1 = require("./Utils");
 const Writer_1 = require("./Writer");
 class FetcherWriter extends Writer_1.Writer {
     constructor(relay, modelType, inheritanceInfo, stream, config) {
@@ -44,11 +44,12 @@ class FetcherWriter extends Writer_1.Writer {
             this.fieldMap = modelType.getFields();
         }
         const methodFields = new Map();
+        const pluralFields = new Map();
         const defaultFetcherProps = [];
         this.hasArgs = false;
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
-            const associatedType = Associations_1.associatedTypeOf(field.type);
+            const associatedType = Utils_1.associatedTypeOf(field.type);
             if (associatedType === undefined) {
                 if (config.defaultFetcherExcludeMap !== undefined) {
                     const excludeProps = config.defaultFetcherExcludeMap[modelType.name];
@@ -58,6 +59,9 @@ class FetcherWriter extends Writer_1.Writer {
                 }
                 defaultFetcherProps.push(fieldName);
             }
+            if (Utils_1.isPluralType(field.type)) {
+                pluralFields.set(field.name, field);
+            }
             if (field.args.length !== 0 || associatedType !== undefined) {
                 methodFields.set(field.name, field);
             }
@@ -66,6 +70,7 @@ class FetcherWriter extends Writer_1.Writer {
             }
         }
         this.defaultFetcherProps = defaultFetcherProps;
+        this.pluralFields = pluralFields;
         this.methodFields = methodFields;
         let prefix = instancePrefix(this.modelType.name);
         this.emptyFetcherName = `${prefix}$`;
@@ -168,7 +173,7 @@ class FetcherWriter extends Writer_1.Writer {
     }
     writePositiveProp(field) {
         const t = this.text.bind(this);
-        const associatedType = Associations_1.associatedTypeOf(field.type);
+        const associatedType = Utils_1.associatedTypeOf(field.type);
         if (field.args.length === 0 && associatedType === undefined) {
             t("readonly ");
             t(field.name);
@@ -241,7 +246,7 @@ class FetcherWriter extends Writer_1.Writer {
         });
     }
     writeNegativeProp(field) {
-        if (field.args.length !== 0 || Associations_1.associatedTypeOf(field.type) !== undefined) {
+        if (field.args.length !== 0 || Utils_1.associatedTypeOf(field.type) !== undefined) {
             return;
         }
         const t = this.text.bind(this);
@@ -281,16 +286,19 @@ class FetcherWriter extends Writer_1.Writer {
                     this.scope({ type: "ARRAY", multiLines: this.methodFields.size !== 0 }, () => {
                         for (const declaredFieldName of this.declaredFieldNames()) {
                             this.separator(", ");
+                            const pluralField = this.pluralFields.get(declaredFieldName);
                             const methodField = this.methodFields.get(declaredFieldName);
-                            if (methodField === undefined) {
+                            if (pluralField === undefined && methodField === undefined) {
                                 t(`"${declaredFieldName}"`);
                             }
                             else {
                                 this.scope({ type: "BLOCK", multiLines: true }, () => {
-                                    t("type: 'METHOD'");
+                                    t(`isFunction: ${methodField !== undefined}`);
+                                    this.separator(", ");
+                                    t(`isPlural: ${pluralField !== undefined}`);
                                     this.separator(", ");
                                     t(`name: "${declaredFieldName}"`);
-                                    if (methodField.args.length !== 0) {
+                                    if (methodField !== undefined && methodField.args.length !== 0) {
                                         this.separator(", ");
                                         t("argGraphQLTypeMap: ");
                                         this.scope({ type: "BLOCK", multiLines: methodField.args.length > 1 }, () => {

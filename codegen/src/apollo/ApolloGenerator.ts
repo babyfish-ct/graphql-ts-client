@@ -11,7 +11,7 @@
 import { WriteStream } from "fs";
 import { GraphQLField, GraphQLSchema } from "graphql";
 import { join } from "path";
-import { associatedTypeOf } from "../Associations";
+import { associatedTypeOf } from "../Utils";
 import { awaitStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { ApolloHookWriter } from "./ApolloHookWriter";

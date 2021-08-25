@@ -13,9 +13,9 @@ export interface Fetcher<E extends string, T extends object, TUnresolvedVariable
     toString(): string;
     toFragmentString(): string;
     toJSON(): string;
-    explicitVariableNames: ReadonlySet<string>;
+    explicitVariableMap: ReadonlyMap<string, string>;
     implicitVariableMap: ReadonlyMap<string, string>;
-    __supressWarnings__(value: T): never;
+    __supressWarnings__(value: T, unresolvedVariables: TUnresolvedVariables): never;
 }
 export declare type ModelType<F> = F extends Fetcher<string, infer M, object> ? M : never;
 export declare abstract class AbstractFetcher<E extends string, T extends object, TUnresolvedVariables extends object> implements Fetcher<E, T, TUnresolvedVariables> {
@@ -42,14 +42,14 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     }, child?: AbstractFetcher<string, object, object>): AbstractFetcher<string, object, object>;
     get fieldMap(): ReadonlyMap<string, FetcherField>;
     private _getFieldMap0;
-    get explicitVariableNames(): ReadonlySet<string>;
+    get explicitVariableMap(): ReadonlyMap<string, string>;
     get implicitVariableMap(): ReadonlyMap<string, string>;
     toString(): string;
     toFragmentString(): string;
     toJSON(): string;
     private get result();
     private createResult;
-    __supressWarnings__(_: T): never;
+    __supressWarnings__(_: T, unresolvedVariables: TUnresolvedVariables): never;
 }
 export interface FetchableType<E extends string> {
     readonly entityName: E;
@@ -59,13 +59,16 @@ export interface FetchableType<E extends string> {
 }
 export interface FetchableField {
     readonly name: string;
+    readonly isPlural: boolean;
     readonly isFunction: boolean;
     readonly argGraphQLTypeMap: ReadonlyMap<string, string>;
 }
 export interface FetcherField {
+    readonly argGraphQLTypes?: ReadonlyMap<string, string>;
     readonly args?: {
         readonly [key: string]: any;
     };
+    readonly plural: boolean;
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
 export declare abstract class FragmentWrapper<TFragmentName extends string, E extends string, T extends object, TUnresolvedVariables extends object> {

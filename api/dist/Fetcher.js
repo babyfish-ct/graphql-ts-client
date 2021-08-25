@@ -67,7 +67,7 @@ class AbstractFetcher {
         return m;
     }
     _getFieldMap0() {
-        var _a;
+        var _a, _b;
         const fetchers = [];
         for (let fetcher = this; fetcher !== undefined; fetcher = fetcher._prev) {
             if (fetcher._field !== "") {
@@ -81,7 +81,7 @@ class AbstractFetcher {
                 let childFetchers = (_a = fieldMap.get(fetcher._field)) === null || _a === void 0 ? void 0 : _a.childFetchers;
                 if (childFetchers === undefined) {
                     childFetchers = [];
-                    fieldMap.set(fetcher._field, { childFetchers }); // Fragment cause mutliple child fetchers
+                    fieldMap.set(fetcher._field, { plural: false, childFetchers }); // Fragment cause mutliple child fetchers
                 }
                 childFetchers.push(fetcher._child);
             }
@@ -91,7 +91,9 @@ class AbstractFetcher {
                 }
                 else {
                     fieldMap.set(fetcher._field, {
+                        argGraphQLTypes: (_b = fetcher.fetchableType.fields.get(fetcher._field)) === null || _b === void 0 ? void 0 : _b.argGraphQLTypeMap,
                         args: fetcher._args,
+                        plural: fetcher.fetchableType.fields.get(fetcher._field).isPlural,
                         childFetchers: fetcher._child === undefined ? undefined : [fetcher._child] // Association only cause one child fetcher
                     });
                 }
@@ -99,11 +101,11 @@ class AbstractFetcher {
         }
         return fieldMap;
     }
-    get explicitVariableNames() {
-        return this.result.explicitArgumentNames;
+    get explicitVariableMap() {
+        return this.result.explicitVariableMap;
     }
     get implicitVariableMap() {
-        return this.result.implicitArgumentValues;
+        return this.result.implicitVariableMap;
     }
     toString() {
         return this.result.text;
@@ -147,11 +149,11 @@ class AbstractFetcher {
         return {
             text: writer.toString(),
             fragmentText: fragmentWriter.toString(),
-            explicitArgumentNames: ctx.explicitArgumentNames,
-            implicitArgumentValues: ctx.implicitArgumentValues
+            explicitVariableMap: ctx.explicitVariableMap,
+            implicitVariableMap: ctx.implicitVariableMap
         };
     }
-    __supressWarnings__(_) {
+    __supressWarnings__(_, unresolvedVariables) {
         throw new Error("__supressWarnings is not supported");
     }
 }
@@ -168,8 +170,8 @@ class ResultContext {
         var _a, _b;
         this.writer = writer;
         this.namedFragmentMap = new Map();
-        this.explicitArgumentNames = (_a = ctx === null || ctx === void 0 ? void 0 : ctx.explicitArgumentNames) !== null && _a !== void 0 ? _a : new Set();
-        this.implicitArgumentValues = (_b = ctx === null || ctx === void 0 ? void 0 : ctx.implicitArgumentValues) !== null && _b !== void 0 ? _b : new Map();
+        this.explicitVariableMap = (_a = ctx === null || ctx === void 0 ? void 0 : ctx.explicitVariableMap) !== null && _a !== void 0 ? _a : new Map();
+        this.implicitVariableMap = (_b = ctx === null || ctx === void 0 ? void 0 : ctx.implicitVariableMap) !== null && _b !== void 0 ? _b : new Map();
     }
     accept(fetcher) {
         const t = this.writer.text.bind(this.writer);
@@ -183,13 +185,13 @@ class ResultContext {
                         t(argName);
                         t(": ");
                         if (arg instanceof Parameter_1.ParameterRef) {
-                            this.explicitArgumentNames.add(arg.name);
+                            this.explicitVariableMap.set(arg.name, field.argGraphQLTypes[argName]);
                             t(arg.name);
                         }
                         else {
-                            const text = `__implicitArgs__[${this.implicitArgumentValues.size}]`;
+                            const text = `__implicitArgs__[${this.implicitVariableMap.size}]`;
                             t(text);
-                            this.implicitArgumentValues.set(text, fetcher.fetchableType.fields.get(fieldName).argGraphQLTypeMap.get(argName));
+                            this.implicitVariableMap.set(text, fetcher.fetchableType.fields.get(fieldName).argGraphQLTypeMap.get(argName));
                         }
                     }
                 });

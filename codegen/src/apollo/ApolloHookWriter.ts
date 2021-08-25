@@ -11,7 +11,7 @@
 import { WriteStream } from "fs";
 import { GraphQLField } from "graphql";
 import { AbstractHookWriter } from "../AbstractOperationWriter";
-import { associatedTypeOf } from "../Associations";
+import { associatedTypeOf } from "../Utils";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { Writer } from "../Writer";
 
@@ -66,8 +66,8 @@ export class ApolloHookWriter extends AbstractHookWriter {
 
         this.text(DIVIDER_LINE);
         
-        this.writeGQLParameters();
-        this.writeGQLArguments();
+        this.writeVariableTypeMaps();
+        this.writeResultPlurals();
     }
 
     private writeTypedHook(returnType: string, responseDataProp: "" | "[1]" = "", prefix: string = "") {
