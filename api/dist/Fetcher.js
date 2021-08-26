@@ -13,11 +13,12 @@ exports.FragmentWrapper = exports.AbstractFetcher = void 0;
 const Parameter_1 = require("./Parameter");
 const TextWriter_1 = require("./TextWriter");
 class AbstractFetcher {
-    constructor(ctx, _negative, _field, _args, _child) {
+    constructor(ctx, _negative, _field, _args, _child, _optionsValue) {
         this._negative = _negative;
         this._field = _field;
         this._args = _args;
         this._child = _child;
+        this._optionsValue = _optionsValue;
         if (Array.isArray(ctx)) {
             this._fetchableType = ctx[0];
             this._unionItemTypes = ctx[1] !== undefined && ctx[1].length !== 0 ? ctx[1] : undefined;
@@ -31,8 +32,8 @@ class AbstractFetcher {
     get fetchableType() {
         return this._fetchableType;
     }
-    addField(field, args, child) {
-        return this.createFetcher(false, field, args, child);
+    addField(field, args, child, optionsValue) {
+        return this.createFetcher(false, field, args, child, optionsValue);
     }
     removeField(field) {
         if (field === '__typename') {
@@ -93,6 +94,7 @@ class AbstractFetcher {
                     fieldMap.set(fetcher._field, {
                         argGraphQLTypes: (_b = fetcher.fetchableType.fields.get(fetcher._field)) === null || _b === void 0 ? void 0 : _b.argGraphQLTypeMap,
                         args: fetcher._args,
+                        optionsValue: fetcher._optionsValue,
                         plural: fetcher.fetchableType.fields.get(fetcher._field).isPlural,
                         childFetchers: fetcher._child === undefined ? undefined : [fetcher._child] // Association only cause one child fetcher
                     });
@@ -101,11 +103,14 @@ class AbstractFetcher {
         }
         return fieldMap;
     }
-    get explicitVariableMap() {
-        return this.result.explicitVariableMap;
+    get explicitVariableTypeMap() {
+        return this.result.explicitVariableTypeMap;
     }
-    get implicitVariableMap() {
-        return this.result.implicitVariableMap;
+    get implicitVariableTypeMap() {
+        return this.result.implicitVariableTypeMap;
+    }
+    get implicitVariableValueMap() {
+        return this.result.implicitVariableValueMap;
     }
     toString() {
         return this.result.text;
@@ -149,12 +154,13 @@ class AbstractFetcher {
         return {
             text: writer.toString(),
             fragmentText: fragmentWriter.toString(),
-            explicitVariableMap: ctx.explicitVariableMap,
-            implicitVariableMap: ctx.implicitVariableMap
+            explicitVariableTypeMap: ctx.explicitVariableTypeMap,
+            implicitVariableTypeMap: ctx.implicitVariableTypeMap,
+            implicitVariableValueMap: ctx.implicitVariableValueMap
         };
     }
-    __supressWarnings__(_, unresolvedVariables) {
-        throw new Error("__supressWarnings is not supported");
+    " $supressWarnings"(_, _2) {
+        throw new Error("' $supressWarnings' is not supported");
     }
 }
 exports.AbstractFetcher = AbstractFetcher;
@@ -167,34 +173,61 @@ class FragmentWrapper {
 exports.FragmentWrapper = FragmentWrapper;
 class ResultContext {
     constructor(writer = new TextWriter_1.TextWriter(), ctx) {
-        var _a, _b;
+        var _a, _b, _c;
         this.writer = writer;
         this.namedFragmentMap = new Map();
-        this.explicitVariableMap = (_a = ctx === null || ctx === void 0 ? void 0 : ctx.explicitVariableMap) !== null && _a !== void 0 ? _a : new Map();
-        this.implicitVariableMap = (_b = ctx === null || ctx === void 0 ? void 0 : ctx.implicitVariableMap) !== null && _b !== void 0 ? _b : new Map();
+        this.explicitVariableTypeMap = (_a = ctx === null || ctx === void 0 ? void 0 : ctx.explicitVariableTypeMap) !== null && _a !== void 0 ? _a : new Map();
+        this.implicitVariableTypeMap = (_b = ctx === null || ctx === void 0 ? void 0 : ctx.implicitVariableTypeMap) !== null && _b !== void 0 ? _b : new Map();
+        this.implicitVariableValueMap = (_c = ctx === null || ctx === void 0 ? void 0 : ctx.implicitVariableValueMap) !== null && _c !== void 0 ? _c : new Map();
     }
     accept(fetcher) {
+        var _a, _b;
         const t = this.writer.text.bind(this.writer);
         for (const [fieldName, field] of fetcher.fieldMap) {
+            const alias = (_a = field.optionsValue) === null || _a === void 0 ? void 0 : _a.alias;
+            if (alias !== undefined && alias !== "" && alias !== fieldName) {
+                t(`${alias}: `);
+            }
             t(fieldName);
-            if (field.args !== undefined && Object.keys(field).length !== 0) {
-                this.writer.scope({ type: "ARGUMENTS", multiLines: isMultLineJSON(field.args) }, () => {
-                    for (const argName in field.args) {
-                        this.writer.seperator();
-                        const arg = field.args[argName];
-                        t(argName);
-                        t(": ");
-                        if (arg instanceof Parameter_1.ParameterRef) {
-                            this.explicitVariableMap.set(arg.name, field.argGraphQLTypes[argName]);
-                            t(arg.name);
-                        }
-                        else {
-                            const text = `__implicitArgs__[${this.implicitVariableMap.size}]`;
-                            t(text);
-                            this.implicitVariableMap.set(text, fetcher.fetchableType.fields.get(fieldName).argGraphQLTypeMap.get(argName));
-                        }
+            if (field.args !== undefined) {
+                let hasField = false;
+                for (const argName in field.args) {
+                    const argGraphQLTypeName = (_b = field.argGraphQLTypes) === null || _b === void 0 ? void 0 : _b.get(argName);
+                    if (argGraphQLTypeName !== undefined) {
+                        hasField = true;
+                        break;
                     }
-                });
+                    else {
+                        console.warn(`Unexpected argument: ${argName}`);
+                    }
+                }
+                if (hasField) {
+                    this.writer.scope({ type: "ARGUMENTS", multiLines: isMultLineJSON(field.args) }, () => {
+                        var _a;
+                        for (const argName in field.args) {
+                            this.writer.seperator();
+                            const arg = field.args[argName];
+                            const argGraphQLTypeName = (_a = field.argGraphQLTypes) === null || _a === void 0 ? void 0 : _a.get(argName);
+                            if (argGraphQLTypeName !== undefined) {
+                                t(argName);
+                                t(": ");
+                                if (arg instanceof Parameter_1.ParameterRef) {
+                                    this.explicitVariableTypeMap.set(arg.name, argGraphQLTypeName);
+                                    t(`$${arg.name}`);
+                                }
+                                else if (arg !== undefined || arg !== null) {
+                                    const text = `$__implicitArgs__[${this.implicitVariableTypeMap.size}]`;
+                                    t(text);
+                                    this.implicitVariableTypeMap.set(text, argGraphQLTypeName);
+                                    this.implicitVariableValueMap.set(text, arg);
+                                }
+                                else {
+                                    t("null");
+                                }
+                            }
+                        }
+                    });
+                }
             }
             const childFetchers = field.childFetchers;
             if (childFetchers !== undefined && childFetchers.length !== 0) {

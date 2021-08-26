@@ -9,6 +9,8 @@
  */
 
 import { AbstractFetcher, FetchableField, FetchableType, Fetcher, FragmentWrapper } from './Fetcher';
+import { FieldOptions, FieldOptionsValue, isFieldOptions } from './FieldOptions';
+import { ParameterRef } from './Parameter';
 
 /*
  * In order to reduce compacity of compiled target code,
@@ -34,14 +36,16 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object, object>
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<string, object, object>
+        child?: AbstractFetcher<string, object, object>,
+        optionsValue?: FieldOptionsValue<string, object>
     ): AbstractFetcher<string, object, object> {
         return new FetcherTarget(
             this,
             negative,
             field,
             args,
-            child
+            child,
+            optionsValue
         );
     }
 }
@@ -63,6 +67,14 @@ function proxyHandler(
                         return new Proxy(
                             removeField.call(target, rest),
                             handler
+                        );
+                    }
+                } else if (p.endsWith("+")) {
+                    const rest = p.substring(0, p.length - 1);
+                    if (fetchableType.fields.has(rest)) {
+                        return new Proxy(
+                            dummyTargetMethod,
+                            methodProxyHandler(target, handler, rest)
                         );
                     }
                 } else if (p === "on" || fetchableType.fields.get(p)?.isFunction === true) {
@@ -109,24 +121,28 @@ function methodProxyHandler(
             }
             let args: {[key: string]: any} | undefined = undefined;
             let child: AbstractFetcher<string, object, object> | undefined = undefined;
-            switch (argArray.length) {
-                case 1:
-                    if (argArray[0] instanceof AbstractFetcher) {
-                        child = argArray[0];
-                    } else {
-                        args = argArray[0];
+            let optionsValue: FieldOptionsValue<string, object> | undefined = undefined;
+            for (const arg of argArray) {
+                if (arg instanceof AbstractFetcher) {
+                    child = arg as AbstractFetcher<string, object, object>;
+                } else if (isFieldOptions(arg)) {
+                    optionsValue = (arg as FieldOptions<string, object>).value;
+                } else {
+                    args = arg;
+                }
+            }
+            if (args === undefined) {
+                const argGraphQLTypeMap = targetFetcher.fetchableType.declaredFields.get(field)?.argGraphQLTypeMap;
+                if (argGraphQLTypeMap !== undefined && argGraphQLTypeMap.size !== 0) {
+                    args = {};
+                    for (const [name, ] of argGraphQLTypeMap) {
+                        args[name] = ParameterRef.of(name);
                     }
-                    break;
-                case 2:
-                    child = argArray[0];    
-                    args = argArray[1];
-                    break;
-                default:
-                    throw new Error("Fetcher method must have 1 or 2 argument(s)");
+                }
             }
             const addField = Reflect.get(targetFetcher, "addField") as ADD_FILED;
             return new Proxy(
-                addField.call(targetFetcher, field, args, child),
+                addField.call(targetFetcher, field, args, child, optionsValue),
                 handler
             );
         }
@@ -136,13 +152,14 @@ function methodProxyHandler(
 type ADD_FILED = (
     field: string, 
     args?: {[key: string]: any}, 
-    child?: (AbstractFetcher<string, object, object>)
+    child?: AbstractFetcher<string, object, object>,
+    optionsValue?: FieldOptionsValue<string, object>
 ) => AbstractFetcher<string, object, object>;
  
 type REMOVE_FILED = (
     field: string, 
     args?: {[key: string]: any}, 
-    child?: (AbstractFetcher<string, object, object>)
+    child?: AbstractFetcher<string, object, object>
 ) => AbstractFetcher<string, object, object>;
  
 type ADD_EMBBEDDABLE = (

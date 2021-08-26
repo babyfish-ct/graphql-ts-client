@@ -5,7 +5,6 @@ import { FetcherWriter } from "../FetcherWriter";
 import { awaitStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { InheritanceInfo } from "../InheritanceInfo";
-import { RelayHookWriter } from "./RelayHookWriter";
 
 export class RelayGenerator extends Generator {
 
@@ -29,33 +28,11 @@ export class RelayGenerator extends Generator {
     }
 
     protected async generateServices(
-        queryFields: GraphQLField<unknown, unknown>[],
-        mutationFields: GraphQLField<unknown, unknown>[],
+        _1: GraphQLField<unknown, unknown>[],
+        _2: GraphQLField<unknown, unknown>[],
         promises: Promise<void>[]
     ) {
-        if (queryFields.length !== 0) {
-            promises.push(this.generateQueries(queryFields));
-        }
-        if (mutationFields.length !== 0) {
-            promises.push(this.generateMutations(mutationFields));
-        }
         promises.push(this.generateRelayFragment());
-    }
-
-    private async generateQueries(fields: GraphQLField<unknown, unknown>[]) {
-        const stream = createStreamAndLog(
-            join(this.config.targetDir, "Queries.ts")
-        );
-        new RelayHookWriter("Query", fields, stream, this.config).write();
-        awaitStream(stream);
-    }
-
-    private async generateMutations(fields: GraphQLField<unknown, unknown>[]) {
-        const stream = createStreamAndLog(
-            join(this.config.targetDir, "Mutations.ts")
-        );
-        new RelayHookWriter("Mutation", fields, stream, this.config).write();
-        await awaitStream(stream);
     }
 
     private async generateRelayFragment() {
@@ -69,23 +46,17 @@ export class RelayGenerator extends Generator {
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
         stream.write(EXPORT_RELAY_TYPES_CODE);
         stream.write(EXPORT_RELAY_VARS_CODE);
-        if (Object.keys(schema.getQueryType()?.getFields() ?? {}).length !== 0) {
-            stream.write("export { createTypedQuery } from './Queries';\n");
-        }
-        if (Object.keys(schema.getMutationType()?.getFields() ?? {}).length !== 0) {
-            stream.write("export { createTypedMutation } from './Mutations';\n");
-        }
     }
 }
 
 const EXPORT_RELAY_TYPES_CODE = `export type {
-    PreloadedQueryTypeOf, 
-    QueryTypeOf, 
+    PreloadedQueryOf, 
+    OperationOf, 
     QueryResponseOf, 
     QueryVariablesOf, 
     FragmentDataOf, 
     FragmentKeyOf, 
-    QueryType, 
+    OperationType,
     FragmentKeyType
 } from "./Relay";\n`;
 
@@ -93,6 +64,8 @@ const EXPORT_RELAY_VARS_CODE = `export {
     RelayQuery, 
     RelayMutation, 
     RelayFragment, 
+    createTypedQuery,
+    createTypedMutation,
     createTypedFragment,
     loadTypedQuery,
     useTypedQueryLoader,
@@ -111,6 +84,8 @@ import {
     PreloadedQuery, 
     useFragment, 
     useLazyLoadQuery, 
+    useMutation, 
+    UseMutationConfig, 
     usePreloadedQuery, 
     useQueryLoader 
 } from "react-relay";
@@ -129,24 +104,41 @@ import {
     RenderPolicy,
     FetchPolicy,
     CacheConfig,
-    FragmentRefs
+    FragmentRefs,
+    fetchQuery,
+    MutationConfig,
+    Disposable,
+    Environment,
+    FetchQueryFetchPolicy
 } from "relay-runtime";
+import { RelayObservable } from "relay-runtime/lib/network/RelayObservable";
 
 
 
-////////////////////////////////////////////////////
+/*
+ * - - - - - - - - - - - - - - - - - - - - 
+ *
+ * PreloadedQueryOf
+ * OperationOf
+ * QueryResponseOf
+ * QueryVariablesOf
+ * FragmentDataOf
+ * FragmentKeyOf
+ * 
+ * OperationType
+ * FragmentKeyType
+ * - - - - - - - - - - - - - - - - - - - - 
+ */
 
-
-
-export type PreloadedQueryTypeOf<TRelayQuery> =
+export type PreloadedQueryOf<TRelayQuery> =
     TRelayQuery extends RelayQuery<infer TResponse, infer TVariables> ?
-    PreloadedQuery<QueryType<TResponse, TVariables>> :
+    PreloadedQuery<OperationType<TResponse, TVariables>> :
     never
 ;
 
-export type QueryTypeOf<TRelayQuery> =
-    TRelayQuery extends RelayQuery<infer TResponse, infer TVariables> ?
-    QueryType<TResponse, TVariables> :
+export type OperationOf<TRelayOperation> =
+    TRelayOperation extends RelayOperation<infer TResponse, infer TVariables> ?
+    OperationType<TResponse, TVariables> :
     never
 ;
 
@@ -173,7 +165,7 @@ export type FragmentKeyOf<TRelayFragment> =
     never
 ;
 
-export type QueryType<TResponse, TVariables> = {
+export type OperationType<TResponse, TVariables> = {
     readonly response: TResponse,
     readonly variables: TVariables
 };
@@ -185,69 +177,26 @@ export type FragmentKeyType<TFragmentName extends string, TData extends object> 
 
 
 
-////////////////////////////////////////////////////
+/*
+ * - - - - - - - - - - - - - - - - - - - - 
+ * createTypedQuery
+ * createTypedMutation
+ * createTypedFragment
+ * - - - - - - - - - - - - - - - - - - - - 
+ */
 
-
-
-export function loadTypedQuery<
-    TResponse,
-	TVariables,
-    TEnvironmentProviderOptions extends EnvironmentProviderOptions = {}
->(
-    environment: IEnvironment,
-    query: RelayQuery<TResponse, TVariables>,
-    variables: TVariables,
-    options?: LoadQueryOptions,
-    environmentProviderOptions?: TEnvironmentProviderOptions,
-): PreloadedQuery<QueryType<TResponse, TVariables>> {
-	return loadQuery<QueryType<TResponse, TVariables>>(
-		environment,
-		query.taggedNode,
-		variables,
-		options,
-		environmentProviderOptions
-	);
+export function createTypedQuery<TResponse extends object, TVariables extends object>(
+    name: string,
+    fetcher: Fetcher<"Query", TResponse, TVariables>
+): RelayQuery<TResponse, TVariables> {
+    return new RelayQuery<TResponse, TVariables>(name, fetcher);
 }
 
-export function useTypedQueryLoader<TResponse, TVariables>(
-	query: RelayQuery<TResponse, TVariables>,
-	initialQueryReference: PreloadedQuery<QueryType<TResponse, TVariables>> | null
-) {
-	return useQueryLoader<QueryType<TResponse, TVariables>>(
-		query.taggedNode,
-		initialQueryReference
-	);
-}
-
-export function useTypedPreloadedQuery<TResponse, TVariables>(
-    query: RelayQuery<TResponse, TVariables>,
-    preloadedQuery: PreloadedQuery<QueryType<TResponse, TVariables>>,
-    options?: {
-        UNSTABLE_renderPolicy?: RenderPolicy | undefined;
-    },
-): TResponse {
-	return usePreloadedQuery<QueryType<TResponse, TVariables>>(
-		query.taggedNode,
-		preloadedQuery,
-		options
-	);
-}
-
-export function useTypedLazyLoadQuery<TResponse, TVariables>(
-    query: RelayQuery<TResponse, TVariables>,
-    variables: TVariables,
-    options?: {
-        fetchKey?: string | number | undefined;
-        fetchPolicy?: FetchPolicy | undefined;
-        networkCacheConfig?: CacheConfig | undefined;
-        UNSTABLE_renderPolicy?: RenderPolicy | undefined;
-    },
-): TResponse {
-	return useLazyLoadQuery<QueryType<TResponse, TVariables>>(
-		query.taggedNode,
-		variables,
-		options
-	)
+export function createTypedMutation<TResponse extends object, TVariables extends object>(
+    name: string,
+    fetcher: Fetcher<"Mutation", TResponse, TVariables>
+): RelayQuery<TResponse, TVariables> {
+    return new RelayMutation<TResponse, TVariables>(name, fetcher);
 }
 
 export function createTypedFragment<
@@ -274,9 +223,111 @@ export function useTypedFragment<TFragmentName extends string, TFetchable extend
 
 
 
-////////////////////////////////////////////////////
+/*
+ * - - - - - - - - - - - - - - - - - - - - 
+ * loadTypedQuery
+ * useTypedQueryLoader
+ * useTypedPreloadedQuery
+ * useTypedLazyLoadQuery
+ * useTypedMutation
+ * - - - - - - - - - - - - - - - - - - - - 
+ */
+
+export function loadTypedQuery<
+    TResponse,
+	TVariables,
+    TEnvironmentProviderOptions extends EnvironmentProviderOptions = {}
+>(
+    environment: IEnvironment,
+    query: RelayQuery<TResponse, TVariables>,
+    variables: TVariables,
+    options?: LoadQueryOptions,
+    environmentProviderOptions?: TEnvironmentProviderOptions,
+): PreloadedQuery<OperationType<TResponse, TVariables>> {
+	return loadQuery<OperationType<TResponse, TVariables>>(
+		environment,
+		query.taggedNode,
+		variables,
+		options,
+		environmentProviderOptions
+	);
+}
+
+export function fetchTypedQuery<TResponse, TVariables>(
+    environment: Environment,
+    query: RelayQuery<TResponse, TVariables>,
+    variables: TVariables,
+    cacheConfig?: { networkCacheConfig?: CacheConfig | null | undefined, fetchPolicy?: FetchQueryFetchPolicy | null | undefined } | null,
+): RelayObservable<TResponse> {
+    return fetchQuery<OperationType<TResponse, TVariables>>(
+        environment,
+        query.taggedNode,
+        variables,
+        cacheConfig
+    );
+}
+
+export function useTypedQueryLoader<TResponse, TVariables>(
+	query: RelayQuery<TResponse, TVariables>,
+	initialQueryReference: PreloadedQuery<OperationType<TResponse, TVariables>> | null
+) {
+	return useQueryLoader<OperationType<TResponse, TVariables>>(
+		query.taggedNode,
+		initialQueryReference
+	);
+}
+
+export function useTypedPreloadedQuery<TResponse, TVariables>(
+    query: RelayQuery<TResponse, TVariables>,
+    preloadedQuery: PreloadedQuery<OperationType<TResponse, TVariables>>,
+    options?: {
+        UNSTABLE_renderPolicy?: RenderPolicy | undefined;
+    },
+): TResponse {
+	return usePreloadedQuery<OperationType<TResponse, TVariables>>(
+		query.taggedNode,
+		preloadedQuery,
+		options
+	);
+}
+
+export function useTypedLazyLoadQuery<TResponse, TVariables>(
+    query: RelayQuery<TResponse, TVariables>,
+    variables: TVariables,
+    options?: {
+        fetchKey?: string | number | undefined;
+        fetchPolicy?: FetchPolicy | undefined;
+        networkCacheConfig?: CacheConfig | undefined;
+        UNSTABLE_renderPolicy?: RenderPolicy | undefined;
+    },
+): TResponse {
+	return useLazyLoadQuery<OperationType<TResponse, TVariables>>(
+		query.taggedNode,
+		variables,
+		options
+	)
+}
+
+export function useTypedMutation<TResponse, TVariables>(
+    mutation: RelayMutation<TResponse, TVariables>,
+    commitMutationFn?: (
+        environment: IEnvironment, 
+        config: MutationConfig<OperationType<TResponse, TVariables>>
+    ) => Disposable,
+): [(config: UseMutationConfig<OperationType<TResponse, TVariables>>) => Disposable, boolean] {
+    return useMutation(mutation.taggedNode, commitMutationFn);
+}
 
 
+
+/*
+ * - - - - - - - - - - - - - - - - - - - - 
+ * RelayOperation
+ * RelayQuery
+ * RelayMutation
+ * RelayFragment
+ * - - - - - - - - - - - - - - - - - - - - 
+ */
 
 export abstract class RelayOperation<TResponse, TVariables> {
 
@@ -285,11 +336,7 @@ export abstract class RelayOperation<TResponse, TVariables> {
     constructor(
         operationType: "query" | "mutation",
         operationName: string,
-        operationField: string,
-        operationAlias: string | undefined,
-        operationVariableMap: { [key: string]: string },
-        plural: boolean,
-        fetcher?: Fetcher<string, object, object>
+        fetcher: Fetcher<string, object, object>
     ) {
         if (RELAY_OPERATION_MAP.has(operationName)) {
             throw new Error(
@@ -298,15 +345,7 @@ export abstract class RelayOperation<TResponse, TVariables> {
                 "2. Each relay operation has a unique name"
             );
         }
-        this.taggedNode = buildOperation(
-            operationType,
-            operationName,
-            operationField,
-            operationAlias,
-            operationVariableMap,
-            plural,
-            fetcher
-        );
+        this.taggedNode = buildOperation(operationType, operationName, fetcher);
         RELAY_OPERATION_MAP.set(operationName, this);
     }
 
@@ -315,87 +354,26 @@ export abstract class RelayOperation<TResponse, TVariables> {
     }
 }
 
-/*
- * Example:
- *
- * import { DEPARTMENT_FRAGMENT } form '...';
- * 
- * export const DEPARTMENT_LIST_QUERY =
- *     createQuery(
- *         "DepartmentListQuery",
- *         "findDepartmentsLikeName",
- *         department\$
- *         .on(DEPARTMENT_FRAGMENT)         
- *     );
- */
 export class RelayQuery<TResponse, TVariables> extends RelayOperation<TResponse, TVariables> {
 
     constructor(
         operationName: string,
-        operationField: string,
-        operationAlias: string | undefined,
-        operationVariableMap: { [key: string]: string },
-        plural: boolean,
-        fetcher?: Fetcher<string, object, object>
+        fetcher: Fetcher<string, object, object>
     ) {
-        super(
-            "query",
-            operationName,
-            operationField,
-            operationAlias,
-            operationVariableMap,
-            plural,
-            fetcher
-        );
+        super("query", operationName, fetcher);
     }
 }
 
-/*
- * Example:
- *
- * import { DEPARTMENT_FRAGMENT } form '...';
- * 
- * export const DEPARTMENT_MUTATION =
- *     createMutation(
- *         "DepartmentMutation",
- *         "mergeDepartment",
- *         department$\$           
- *     );
- */
 export class RelayMutation<TResponse, TVariables> extends RelayOperation<TResponse, TVariables> {
 
     constructor(
         operationName: string,
-        operationField: string,
-        operationAlias: string | undefined,
-        operationVariableMap: { [key: string]: string },
-        plural: boolean,
-        fetcher?: Fetcher<string, object, object>
+        fetcher: Fetcher<string, object, object>
     ) {
-        super(
-            "mutation",
-            operationName,
-            operationField,
-            operationAlias,
-            operationVariableMap,
-            plural,
-            fetcher
-        );
+        super("mutation", operationName, fetcher);
     }
 }
 
-/*
- * Example:
- * 
- * export const DEPARTMENT_FRAGMENT =
- *     createTypedFragment(
- *         "DepartmentFragment",
- *         department$\$
- *         .employees(
- *             employee$\$
- *         )           
- *     );
- */
 export class RelayFragment<TFragmentName extends string, TFetchable extends string, TData extends object, TUnresolvedVariables extends object> 
 extends FragmentWrapper<TFragmentName, TFetchable, TData, TUnresolvedVariables> {
 
@@ -418,51 +396,41 @@ extends FragmentWrapper<TFragmentName, TFetchable, TData, TUnresolvedVariables> 
     }
 }
 
-export type FragmentKey<T> =
-    T extends RelayFragment<infer TFragmentName, string, infer TData, object> ? 
-    { readonly " \$data": TData, readonly " \$fragmentRefs": TFragmentName } :
-    never
-;
-
 const RELAY_OPERATION_MAP = new Map<string, RelayOperation<any, any>>();
 
 const RELAY_FRAGMENT_MAP = new Map<string, RelayFragment<string, string, object, object>>();
 
 
 
-////////////////////////////////////////////////////
-
-
+/*
+ * - - - - - - - - - - - - - - - - - - - - 
+ * Internal functionalites: 
+ * Conver Fetcher AST to relay GraphQLTaggedNode tree
+ * 
+ * This is why the framework can remove babel-plugin-relay and relay-compiler
+ * - - - - - - - - - - - - - - - - - - - - 
+ */
 
 function buildOperation(
     operationType: "query" | "mutation",
     operationName: string,
-    operationField: string,
-    operationAlias: string | undefined,
-    operationVariableMap: { [key: string]: string },
-    plural: boolean,
-    fetcher?: Fetcher<string, object, object>
+    fetcher: Fetcher<string, object, object>
 ): ConcreteRequest {
-    const variableMap = new Map<string, string>();
-    for (const variableName in operationVariableMap) {
-        variableMap.set(variableName, operationVariableMap[variableName]);
-    }
-    if (fetcher !== undefined) {
-        util.iterateMap(fetcher.explicitVariableMap, ([name, type]) => {
-            if (variableMap.has(name) && variableMap.get(name) !== type) {
-                throw new Error(\`Conflict types '\${variableMap.get(name)}' and '\${type}' for variable '\${name}'\`);
-            }
-            variableMap.set(name, type);
-        });
-        util.iterateMap(fetcher.implicitVariableMap, ([name, type]) => {
-            if (variableMap.has(name) && variableMap.get(name) !== type) {
-                throw new Error(\`Conflict types '\${variableMap.get(name)}' and '\${type}' for variable '\${name}'\`);
-            }
-            variableMap.set(name, type);
-        });
-    }
+    const variableTypeMap = new Map<string, string>();
+    util.iterateMap(fetcher.explicitVariableTypeMap, ([name, type]) => {
+        if (variableTypeMap.has(name) && variableTypeMap.get(name) !== type) {
+            throw new Error(\`Conflict types '\${variableTypeMap.get(name)}' and '\${type}' for variable '\${name}'\`);
+        }
+        variableTypeMap.set(name, type);
+    });
+    util.iterateMap(fetcher.implicitVariableTypeMap, ([name, type]) => {
+        if (variableTypeMap.has(name) && variableTypeMap.get(name) !== type) {
+            throw new Error(\`Conflict types '\${variableTypeMap.get(name)}' and '\${type}' for variable '\${name}'\`);
+        }
+        variableTypeMap.set(name, type);
+    });
     const argumentDefinitions: ReaderArgumentDefinition[] = [];
-    util.iterateMap(variableMap, ([name, ]) => {
+    util.iterateMap(variableTypeMap, ([name, ]) => {
         argumentDefinitions.push({
             kind: "LocalArgument",
             name
@@ -470,7 +438,7 @@ function buildOperation(
     });
 
     const args: ReaderArgument[] = [];
-    util.iterateMap(variableMap, ([name, ]) => {
+    util.iterateMap(variableTypeMap, ([name, ]) => {
         args.push({
             kind: "Variable",
             name: name,
@@ -483,63 +451,29 @@ function buildOperation(
         metadata: null,
         name: operationName,
         argumentDefinitions,
-        type: "Query",
-        selections: [{
-            concreteType: fetcher?.fetchableType?.entityName,
-            kind: fetcher !== undefined ? "LinkedField" : "ScalarField",
-            name: operationField,
-            plural,
-            args, 
-            alias: operationAlias,
-            selections: fetcher !== undefined ? buildSelections(fetcher, false) : []
-        }]
+        type: operationType === 'query' ? "Query" : "Mutation",
+        selections: buildSelections(fetcher, false)
     };
 
     const operation: NormalizationOperation = {
         kind: "Operation",
         name: operationName,
         argumentDefinitions: argumentDefinitions as NormalizationLocalArgumentDefinition[],
-        selections: [{
-            concreteType: fetcher?.fetchableType?.entityName,
-            kind: fetcher !== undefined ? "LinkedField" : "ScalarField",
-            name: operationField,
-            plural,
-            args, 
-            alias: operationAlias,
-            selections: fetcher !== undefined ? buildSelections(fetcher, true) : []
-        } as NormalizationSelection]
+        selections: buildSelections(fetcher, true) as NormalizationSelection[]
     }
 
     const writer = new TextWriter();
     writer.text(\`\${operationType} \${operationName}\`);
-    if (variableMap.size !== 0) {
-        writer.scope({type: "ARGUMENTS", multiLines: variableMap.size > 2, suffix: " "}, () => {
-            for (const [name, type] of variableMap) {
-                writer.seperator();
+    if (variableTypeMap.size !== 0) {
+        writer.scope({type: "ARGUMENTS", multiLines: variableTypeMap.size > 2, suffix: " "}, () => {
+            util.iterateMap(variableTypeMap, ([name, type]) => {
+                writer.seperator(", ");
                 writer.text(\`$\${name}: \${type}\`);
-            }
+            });
         });
     }
-    writer.scope({type: "BLOCK", multiLines: true, suffix: "\\n"}, () => {
-        if (operationAlias !== undefined && operationAlias !== operationField) {
-            writer.text(\`\${operationAlias}: \`);
-        }
-        writer.text(operationField);
-        if (variableMap.size !== 0) {
-            writer.scope({type: "ARGUMENTS", multiLines: variableMap.size > 2, suffix: " "}, () => {
-                for (const [name, ] of variableMap) {
-                    writer.seperator();
-                    writer.text(\`\${name}: $\${name}\`);
-                }
-            });
-        }
-        if (fetcher !== undefined) {
-            writer.text(fetcher.toString());
-        }
-    });
-    if (fetcher !== undefined) {
-        writer.text(fetcher.toFragmentString());
-    }
+    writer.text(fetcher.toString());
+    writer.text(fetcher.toFragmentString());
     const text = writer.toString();
 
     const params: RequestParameters = {
@@ -623,7 +557,7 @@ function collectFieldSelections(fieldName: string, field: FetcherField, forceInl
             }
             output.push({
                 kind: "LinkedField",
-                alias: undefined,
+                alias: actualAlias(fieldName, field),
                 name: fieldName,
                 storageKey: undefined,
                 args: null,
@@ -635,11 +569,19 @@ function collectFieldSelections(fieldName: string, field: FetcherField, forceInl
     } else {
         output.push({
             kind: "ScalarField",
-            alias: undefined,
+            alias: actualAlias(fieldName, field),
             name: fieldName,
             args: undefined,
             storageKey: undefined
         });
     }
+}
+
+function actualAlias(fieldName: string, field: FetcherField): string | undefined {
+    const alias = field.optionsValue?.alias;
+    if (alias === undefined || alias === "" || alias === fieldName) {
+        return undefined;
+    }
+    return alias;
 }
 `;

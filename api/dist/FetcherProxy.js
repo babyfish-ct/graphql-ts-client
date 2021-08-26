@@ -11,6 +11,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createFetchableType = exports.createFetcher = void 0;
 const Fetcher_1 = require("./Fetcher");
+const FieldOptions_1 = require("./FieldOptions");
+const Parameter_1 = require("./Parameter");
 /*
  * In order to reduce compacity of compiled target code,
  * the code generator does not generate derived classes of AbstractFetcher.
@@ -24,8 +26,8 @@ function createFetcher(fetchableType, unionEntityTypes) {
 }
 exports.createFetcher = createFetcher;
 class FetcherTarget extends Fetcher_1.AbstractFetcher {
-    createFetcher(negative, field, args, child) {
-        return new FetcherTarget(this, negative, field, args, child);
+    createFetcher(negative, field, args, child, optionsValue) {
+        return new FetcherTarget(this, negative, field, args, child, optionsValue);
     }
 }
 function proxyHandler(fetchableType) {
@@ -41,6 +43,12 @@ function proxyHandler(fetchableType) {
                     if (fetchableType.fields.has(rest)) {
                         const removeField = Reflect.get(target, "removeField");
                         return new Proxy(removeField.call(target, rest), handler);
+                    }
+                }
+                else if (p.endsWith("+")) {
+                    const rest = p.substring(0, p.length - 1);
+                    if (fetchableType.fields.has(rest)) {
+                        return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, rest));
                     }
                 }
                 else if (p === "on" || ((_a = fetchableType.fields.get(p)) === null || _a === void 0 ? void 0 : _a.isFunction) === true) {
@@ -60,6 +68,7 @@ function proxyHandler(fetchableType) {
 function methodProxyHandler(targetFetcher, handler, field) {
     return {
         apply: (_1, _2, argArray) => {
+            var _a;
             if (field === "on") {
                 const child = argArray[0];
                 const fragmentName = argArray[1];
@@ -71,24 +80,29 @@ function methodProxyHandler(targetFetcher, handler, field) {
             }
             let args = undefined;
             let child = undefined;
-            switch (argArray.length) {
-                case 1:
-                    if (argArray[0] instanceof Fetcher_1.AbstractFetcher) {
-                        child = argArray[0];
+            let optionsValue = undefined;
+            for (const arg of argArray) {
+                if (arg instanceof Fetcher_1.AbstractFetcher) {
+                    child = arg;
+                }
+                else if (FieldOptions_1.isFieldOptions(arg)) {
+                    optionsValue = arg.value;
+                }
+                else {
+                    args = arg;
+                }
+            }
+            if (args === undefined) {
+                const argGraphQLTypeMap = (_a = targetFetcher.fetchableType.declaredFields.get(field)) === null || _a === void 0 ? void 0 : _a.argGraphQLTypeMap;
+                if (argGraphQLTypeMap !== undefined && argGraphQLTypeMap.size !== 0) {
+                    args = {};
+                    for (const [name,] of argGraphQLTypeMap) {
+                        args[name] = Parameter_1.ParameterRef.of(name);
                     }
-                    else {
-                        args = argArray[0];
-                    }
-                    break;
-                case 2:
-                    child = argArray[0];
-                    args = argArray[1];
-                    break;
-                default:
-                    throw new Error("Fetcher method must have 1 or 2 argument(s)");
+                }
             }
             const addField = Reflect.get(targetFetcher, "addField");
-            return new Proxy(addField.call(targetFetcher, field, args, child), handler);
+            return new Proxy(addField.call(targetFetcher, field, args, child, optionsValue), handler);
         }
     };
 }

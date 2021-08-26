@@ -31,8 +31,10 @@ export declare class FetcherWriter extends Writer {
     protected writeCode(): void;
     private writePositiveProp;
     private writeNegativeProp;
+    private writePositivePropImpl;
+    private writePositivePropChangedDataType;
     private writeInstances;
-    private writeArgsTypesInterface;
+    private writeArgsInterface;
     private declaredFieldNames;
     private removeSuperFieldNames;
 }

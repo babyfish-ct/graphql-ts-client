@@ -8,9 +8,7 @@ import { InheritanceInfo } from "../InheritanceInfo";
 export declare class RelayGenerator extends Generator {
     constructor(config: GeneratorConfig);
     protected createFetcheWriter(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, inheritanceInfo: InheritanceInfo, stream: WriteStream, config: GeneratorConfig): FetcherWriter;
-    protected generateServices(queryFields: GraphQLField<unknown, unknown>[], mutationFields: GraphQLField<unknown, unknown>[], promises: Promise<void>[]): Promise<void>;
-    private generateQueries;
-    private generateMutations;
+    protected generateServices(_1: GraphQLField<unknown, unknown>[], _2: GraphQLField<unknown, unknown>[], promises: Promise<void>[]): Promise<void>;
     private generateRelayFragment;
     protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
 }

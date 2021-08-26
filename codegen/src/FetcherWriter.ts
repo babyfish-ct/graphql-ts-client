@@ -72,7 +72,7 @@ export class FetcherWriter extends Writer {
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName]!;
             const associatedType = associatedTypeOf(field.type);
-            if (associatedType === undefined) {
+            if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation" && associatedType === undefined && field.args.length === 0) {
                 if (config.defaultFetcherExcludeMap !== undefined) {
                     const excludeProps = config.defaultFetcherExcludeMap[modelType.name];
                     if (excludeProps !== undefined && excludeProps.filter(name => name === fieldName).length !== 0) {
@@ -101,11 +101,13 @@ export class FetcherWriter extends Writer {
 
     protected prepareImportings() {
         
-        this.importStatement("import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';");
         if (this.hasArgs) {
-            this.importStatement("import type { AcceptableVariables, UnresolvedVariables } from 'graphql-ts-client-api';");   
+            this.importStatement("import type { AcceptableVariables, UnresolvedVariables, FieldOptions } from 'graphql-ts-client-api';");   
+        } else {
+            this.importStatement("import type { FieldOptions } from 'graphql-ts-client-api';");
         }
-        this.importStatement("import { WithTypeName, ImplementationType } from '../CommonTypes';");
+        this.importStatement("import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';");
+        this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
         if (this.relay) {
             this.importStatement("import { FragmentRefs } from 'relay-runtime';");
             this.importStatement("import { RelayFragment } from '../Relay';");
@@ -145,59 +147,56 @@ export class FetcherWriter extends Writer {
         t("', T, TUnresolvedVariables> ");
         this.enter("BLOCK", true);
 
-        t("\n");
-        t("readonly fetchedEntityType: '");
-        t(this.modelType.name);
-        t("';\n");
-        
-        t("\n");
-        t("readonly __typename: ");
-        t(this.fetcherTypeName);
-        t("<T & {__typename: ImplementationType<'");
-        t(this.modelType.name);
-        t("'>}, TUnresolvedVariables>;\n");
-
-        t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object, XUnresolvedVariables extends object>`);
-        this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
-            t("child: Fetcher<XName, X, XUnresolvedVariables>");
-            if (!(this.modelType instanceof GraphQLUnionType)) {
-                this.separator(", ");
-                t("fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment");
-            }
-        });
-        t(`: ${this.fetcherTypeName}`);
-        this.scope({type: "GENERIC", multiLines: true}, () => {
-            t(`XName extends '${this.modelType.name}' ?\n`);
-            t("T & X :\n");
-            t(`WithTypeName<T, ImplementationType<'${this.modelType.name}'>> & `);
-            this.scope({type: "BLANK", multiLines: true, prefix: "(", suffix: ")"}, () => {
-                t("WithTypeName<X, ImplementationType<XName>>");
-                this.separator(" | ");
-                t(`{__typename: Exclude<ImplementationType<'${this.modelType}'>, ImplementationType<XName>>}`);
-            });
-            this.separator(", ");
-            t("TUnresolvedVariables & XUnresolvedVariables");
-        });
-        t(";\n");
-
-        if (this.relay) {
-
-            t(`\non<XFragmentName extends string, XData extends object, XUnresolvedVariables extends object>`);
+        if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
+            t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object, XUnresolvedVariables extends object>`);
             this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
-                t(`child: RelayFragment<XFragmentName, "${this.modelType.name}", XData, XUnresolvedVariables>`);
+                t("child: Fetcher<XName, X, XUnresolvedVariables>");
+                if (!(this.modelType instanceof GraphQLUnionType)) {
+                    this.separator(", ");
+                    t("fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment");
+                }
             });
             t(`: ${this.fetcherTypeName}`);
             this.scope({type: "GENERIC", multiLines: true}, () => {
-                t('T & ');
-                this.scope({type: "BLOCK", multiLines: true}, () => {
-                    t('readonly " $data": XData');
-                    this.separator(", ");
-                    t('readonly " $fragmentRefs": FragmentRefs<XFragmentName>');
+                t(`XName extends '${this.modelType.name}' ?\n`);
+                t("T & X :\n");
+                t(`WithTypeName<T, ImplementationType<'${this.modelType.name}'>> & `);
+                this.scope({type: "BLANK", multiLines: true, prefix: "(", suffix: ")"}, () => {
+                    t("WithTypeName<X, ImplementationType<XName>>");
+                    this.separator(" | ");
+                    t(`{__typename: Exclude<ImplementationType<'${this.modelType}'>, ImplementationType<XName>>}`);
                 });
                 this.separator(", ");
                 t("TUnresolvedVariables & XUnresolvedVariables");
             });
             t(";\n");
+
+            if (this.relay) {
+
+                t(`\non<XFragmentName extends string, XData extends object, XUnresolvedVariables extends object>`);
+                this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
+                    t(`child: RelayFragment<XFragmentName, "${this.modelType.name}", XData, XUnresolvedVariables>`);
+                });
+                t(`: ${this.fetcherTypeName}`);
+                this.scope({type: "GENERIC", multiLines: true}, () => {
+                    t('T & ');
+                    this.scope({type: "BLOCK", multiLines: true}, () => {
+                        t('readonly " $data": XData');
+                        this.separator(", ");
+                        t('readonly " $fragmentRefs": FragmentRefs<XFragmentName>');
+                    });
+                    this.separator(", ");
+                    t("TUnresolvedVariables & XUnresolvedVariables");
+                });
+                t(";\n");
+            }
+
+            t("\n\n");
+            t("readonly __typename: ");
+            t(this.fetcherTypeName);
+            t("<T & {__typename: ImplementationType<'");
+            t(this.modelType.name);
+            t("'>}, TUnresolvedVariables>;\n");
         }
 
         for (const fieldName in this.fieldMap) {
@@ -210,85 +209,24 @@ export class FetcherWriter extends Writer {
 
         this.writeInstances();
 
-        this.writeArgsTypesInterface();
+        this.writeArgsInterface();
     }
 
     private writePositiveProp(field: GraphQLField<unknown, unknown>) {
-
-        const t = this.text.bind(this);
-
-        const associatedType = associatedTypeOf(field.type);
         
-        if (field.args.length === 0 && associatedType === undefined) {
-            t("readonly ");
-            t(field.name);
-        } else {
-            t(field.name);
-            this.scope({type: "GENERIC", multiLines: field.args.length !== 0}, () => {
-                if (associatedType !== undefined) {
-                    this.separator(", ");
-                    t("X extends object");
-                    this.separator(", ");
-                    t("XUnresolvedVariables extends object");
-                };
-                if (field.args.length !== 0) {
-                    this.separator(", ");
-                    t(`XArgs extends AcceptableVariables<ArgsTypes['${field.name}']>`);
-                }
-            })
-            this.enter("PARAMETERS", true);
-            {
-                if (associatedType !== undefined) {
-                    this.separator(", ");
-                    t("child: ");
-                    t("Fetcher<'");
-                    t(associatedType.name);
-                    t("', X, XUnresolvedVariables>");
-                }
-                if (field.args.length !== 0) {
-                    this.separator(", ");
-                    let hasNonNullArgs = false;
-                    for (const argName in field.args) {
-                        if (field.args[argName].type instanceof GraphQLNonNull) {
-                            hasNonNullArgs = true;
-                            break;
-                        }
-                    }
-                    if (hasNonNullArgs) {
-                        t("args: XArgs");
-                    } else {
-                        t("args?: XArgs");
-                    }
-                }
-            }
-            this.leave();
+        const associatedType = associatedTypeOf(field.type);
+
+        const isField = field.args.length === 0 && associatedType === undefined;
+        
+        if (!isField && (this.modelType.name === "Query" || this.modelType.name === "Mutation")) {
+            this.writePositivePropImpl(field, "NO_ARGS");
         }
 
-        t(": ");
-        t(this.fetcherTypeName);
-        this.scope({type: "GENERIC", multiLines: this.methodFields.has(field.name), suffix: ";\n"}, () => {
-            
-            t("T & {");
-            if (!this.config.objectEditable) {
-                t("readonly ");
-            }
-            t(field.name);
-            if (!(field.type instanceof GraphQLNonNull)) {
-                t("?");
-            }
-            t(": ");
-            this.typeRef(field.type, associatedType !== undefined ? "X" : undefined);
-            t("}");
+        this.writePositivePropImpl(field, "NORMAL");
 
-            this.separator(", ");
-            t("TUnresolvedVariables");
-            if (associatedType !== undefined) {
-                t(" & XUnresolvedVariables");
-            }
-            if (field.args.length !== 0) {
-                t(` & UnresolvedVariables<XArgs, ArgsTypes['${field.name}']>`);
-            }
-        });
+        if (isField) {
+            this.writePositivePropImpl(field, "FIELD_PLUS");
+        }
     }
 
     private writeNegativeProp(field: GraphQLField<unknown, unknown>) {
@@ -299,13 +237,119 @@ export class FetcherWriter extends Writer {
 
         const t = this.text.bind(this);
 
-        t('readonly "~');
+        t('\nreadonly "~');
         t(field.name);
         t('": ');
         t(this.fetcherTypeName);
         t("<Omit<T, '");
         t(field.name);
         t("'>, TUnresolvedVariables>;\n");
+    }
+
+    private writePositivePropImpl(field: GraphQLField<unknown, unknown>, mode: "NORMAL" | "NO_ARGS" | "FIELD_PLUS") {
+
+        const t = this.text.bind(this);
+
+        const associatedType = associatedTypeOf(field.type);
+        
+        const renderAsField = field.args.length === 0 && associatedType === undefined && mode !== "FIELD_PLUS";
+
+        const nonNull = field.type instanceof GraphQLNonNull;
+
+        t("\n");
+        if (renderAsField) {
+            t("readonly ");
+            t(field.name);
+        } else {
+            t(mode === "FIELD_PLUS" ? `"${field.name}+"` : field.name);
+            this.scope({type: "GENERIC", multiLines: true}, () => {
+                if (field.args.length !== 0 && mode != "NO_ARGS") {
+                    this.separator(", ");
+                    t(`XArgs extends AcceptableVariables<${this.modelType.name}Args['${field.name}']>`);
+                }
+                if (associatedType !== undefined) {
+                    this.separator(", ");
+                    t("X extends object");
+                    this.separator(", ");
+                    t("XUnresolvedVariables extends object");
+                }
+                this.separator(", ");
+                t(`TAlias extends string = "${field.name}"`);
+                if (nonNull) {
+                    this.separator(", ");
+                    t(`TDirectives extends object = {}`);
+                }
+            });
+            this.scope({ type: "PARAMETERS", multiLines: true }, () => {
+                if (field.args.length !== 0 && mode !== "NO_ARGS") {
+                    this.separator(", ");
+                    t("args: XArgs");
+                }
+                if (associatedType !== undefined) {
+                    this.separator(", ");
+                    t("child: ");
+                    t("Fetcher<'");
+                    t(associatedType.name);
+                    t("', X, XUnresolvedVariables>");
+                }
+                this.separator(", ");
+                t(`options?: FieldOptions<TAlias, ${nonNull ? "TDirectives" : "object"}>`);
+            });
+        }
+
+        t(": ");
+        t(this.fetcherTypeName);
+        this.scope({type: "GENERIC", multiLines: !renderAsField, suffix: ";\n"}, () => {
+            
+            t("T & ");
+            
+            if (nonNull) {
+                if (renderAsField) {
+                    this.writePositivePropChangedDataType(field, renderAsField, false);
+                } else {
+                    t("TDirectives extends { readonly include: any } | { readonly skip: any } ? ");
+                    this.scope({type: "BLANK", multiLines: true}, () => {
+                        this.writePositivePropChangedDataType(field, renderAsField, true);
+                        this.separator(" : ");
+                        this.writePositivePropChangedDataType(field, renderAsField, false);    
+                    });
+                }
+            } else {
+                this.writePositivePropChangedDataType(field, renderAsField, true);
+            }
+
+            this.separator(", ");
+            t("TUnresolvedVariables");
+            if (associatedType !== undefined) {
+                t(" & XUnresolvedVariables");
+            }
+            if (field.args.length !== 0) {
+                if (mode === "NO_ARGS") {
+                    t(` & ${this.modelType.name}Args["${field.name}"]`);
+                } else {
+                    t(` & UnresolvedVariables<XArgs, ${this.modelType.name}Args['${field.name}']>`);
+                }
+            }
+        });
+    }
+
+    private writePositivePropChangedDataType(field: GraphQLField<unknown, unknown>, renderAsField: boolean, nullable: boolean) {
+        const t = this.text.bind(this);
+        t("{");
+        if (!this.config.objectEditable) {
+            t("readonly ");
+        }
+        if (renderAsField) {
+            t(`"${field.name}"`);
+        } else {
+            t(`[key in TAlias]`);
+        }
+        if (nullable) {
+            t("?");
+        }
+        t(": ");
+        this.typeRef(field.type, associatedTypeOf(field.type) !== undefined ? "X" : undefined);
+        t("}");
     }
 
     private writeInstances() {
@@ -398,24 +442,26 @@ export class FetcherWriter extends Writer {
         }
     }
 
-    private writeArgsTypesInterface() {
+    private writeArgsInterface() {
 
         if (!this.hasArgs) {
             return;
         }
 
         const t = this.text.bind(this);
-        t("\ninterface ArgsTypes ");
+        t(`\ninterface ${this.modelType.name}Args `);
         this.scope({type: "BLOCK", multiLines: true}, () => {
             for (const fieldName in this.fieldMap) {
                 const field = this.fieldMap[fieldName];
                 if (field.args.length !== 0) {
-                    t(`${field.name}: `);
-                    this.scope({type: "BLOCK", multiLines: field.args.length > 1}, () => {
+                    this.separator(", ");
+                    t(`\nreadonly ${field.name}: `);
+                    this.scope({type: "BLOCK", multiLines: true}, () => {
                         for (const arg of field.args) {
                             this.separator(", ");
+                            t("readonly ");
                             t(arg.name);
-                            if (!(arg instanceof GraphQLNonNull)) {
+                            if (!(arg.type instanceof GraphQLNonNull)) {
                                 t("?");
                             }
                             t(": ");

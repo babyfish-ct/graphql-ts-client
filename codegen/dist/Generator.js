@@ -55,18 +55,16 @@ class Generator {
             for (const typeName in typeMap) {
                 if (!typeName.startsWith("__") && !this.excludedTypeNames.has(typeName)) {
                     const type = typeMap[typeName];
-                    if (type !== queryType && type !== mutationType) {
-                        if (type instanceof graphql_1.GraphQLObjectType ||
-                            type instanceof graphql_1.GraphQLInterfaceType ||
-                            type instanceof graphql_1.GraphQLUnionType) {
-                            fetcherTypes.push(type);
-                        }
-                        else if (type instanceof graphql_1.GraphQLInputObjectType) {
-                            inputTypes.push(type);
-                        }
-                        else if (type instanceof graphql_1.GraphQLEnumType) {
-                            enumTypes.push(type);
-                        }
+                    if (type instanceof graphql_1.GraphQLObjectType ||
+                        type instanceof graphql_1.GraphQLInterfaceType ||
+                        type instanceof graphql_1.GraphQLUnionType) {
+                        fetcherTypes.push(type);
+                    }
+                    else if (type instanceof graphql_1.GraphQLInputObjectType) {
+                        inputTypes.push(type);
+                    }
+                    else if (type instanceof graphql_1.GraphQLEnumType) {
+                        enumTypes.push(type);
                     }
                 }
             }

@@ -8,6 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
+import { FieldOptionsValue } from "./FieldOptions";
 import { ParameterRef } from "./Parameter";
 import { TextWriter } from "./TextWriter";
 
@@ -23,11 +24,13 @@ import { TextWriter } from "./TextWriter";
 
     toJSON(): string; // for recoil
 
-    explicitVariableMap: ReadonlyMap<string, string>;
+    explicitVariableTypeMap: ReadonlyMap<string, string>;
 
-    implicitVariableMap: ReadonlyMap<string, string>;
+    implicitVariableTypeMap: ReadonlyMap<string, string>;
 
-    __supressWarnings__(value: T, unresolvedVariables: TUnresolvedVariables): never;
+    implicitVariableValueMap: ReadonlyMap<string, any>;
+
+    " $supressWarnings"(_1: T, _2: TUnresolvedVariables): never;
 }
 
 export type ModelType<F> = 
@@ -52,7 +55,8 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         private _negative: boolean,
         private _field: string,
         private _args?: {[key: string]: any},
-        private _child?: AbstractFetcher<string, object, object>
+        private _child?: AbstractFetcher<string, object, object>,
+        private _optionsValue?: FieldOptionsValue<string, object>
     ) {
         if (Array.isArray(ctx)) {
             this._fetchableType = ctx[0];
@@ -71,13 +75,15 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
     protected addField<F extends AbstractFetcher<string, object, object>>(
         field: string, 
         args?: {[key: string]: any},
-        child?: AbstractFetcher<string, object, object>
+        child?: AbstractFetcher<string, object, object>,
+        optionsValue?: FieldOptionsValue<string, object>
     ): F {
         return this.createFetcher(
             false,
             field,
             args,
-            child
+            child,
+            optionsValue
         ) as F;
     }
 
@@ -121,7 +127,8 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
-        child?: AbstractFetcher<string, object, object>
+        child?: AbstractFetcher<string, object, object>,
+        optionsValue?: FieldOptionsValue<string, object>
     ): AbstractFetcher<string, object, object>;
 
     get fieldMap(): ReadonlyMap<string, FetcherField> {
@@ -159,6 +166,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
                     fieldMap.set(fetcher._field, { 
                         argGraphQLTypes: fetcher.fetchableType.fields.get(fetcher._field)?.argGraphQLTypeMap,
                         args: fetcher._args, 
+                        optionsValue: fetcher._optionsValue,
                         plural: fetcher.fetchableType.fields.get(fetcher._field)!.isPlural,
                         childFetchers: fetcher._child === undefined ? undefined: [fetcher._child] // Association only cause one child fetcher
                     });
@@ -168,12 +176,16 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         return fieldMap;
     }
 
-    get explicitVariableMap(): ReadonlyMap<string, string> {
-        return this.result.explicitVariableMap;
+    get explicitVariableTypeMap(): ReadonlyMap<string, string> {
+        return this.result.explicitVariableTypeMap;
     }
 
-    get implicitVariableMap(): ReadonlyMap<string, string> {
-        return this.result.implicitVariableMap;
+    get implicitVariableTypeMap(): ReadonlyMap<string, string> {
+        return this.result.implicitVariableTypeMap;
+    }
+
+    get implicitVariableValueMap(): ReadonlyMap<string, any> {
+        return this.result.implicitVariableValueMap;
     }
 
     toString(): string {
@@ -225,13 +237,14 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         return {
             text: writer.toString(),
             fragmentText: fragmentWriter.toString(),
-            explicitVariableMap: ctx.explicitVariableMap,
-            implicitVariableMap: ctx.implicitVariableMap
+            explicitVariableTypeMap: ctx.explicitVariableTypeMap,
+            implicitVariableTypeMap: ctx.implicitVariableTypeMap,
+            implicitVariableValueMap: ctx.implicitVariableValueMap
         };
     }
 
-    __supressWarnings__(_: T, unresolvedVariables: TUnresolvedVariables): never {
-        throw new Error("__supressWarnings is not supported");
+    " $supressWarnings"(_: T, _2: TUnresolvedVariables): never {
+        throw new Error("' $supressWarnings' is not supported");
     }
 }
 
@@ -252,6 +265,7 @@ export interface FetchableField {
 export interface FetcherField {
     readonly argGraphQLTypes?: ReadonlyMap<string, string>;
     readonly args?: {readonly [key: string]: any};
+    readonly optionsValue?: FieldOptionsValue<string, object>;
     readonly plural: boolean;
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
@@ -264,24 +278,28 @@ export abstract class FragmentWrapper<TFragmentName extends string, E extends st
 interface Result {
     readonly text: string;
     readonly fragmentText: string;
-    readonly explicitVariableMap: ReadonlyMap<string, string>;
-    readonly implicitVariableMap: ReadonlyMap<string, string>;
+    readonly explicitVariableTypeMap: ReadonlyMap<string, string>;
+    readonly implicitVariableTypeMap: ReadonlyMap<string, string>;
+    readonly implicitVariableValueMap: ReadonlyMap<string, any>;
 }
 
 class ResultContext {
 
     readonly namedFragmentMap = new Map<string, Fetcher<string, object, object>>();
 
-    readonly explicitVariableMap: Map<string, string>;
+    readonly explicitVariableTypeMap: Map<string, string>;
 
-    readonly implicitVariableMap: Map<string, string>;
+    readonly implicitVariableTypeMap: Map<string, string>;
+
+    readonly implicitVariableValueMap: Map<string, any>;
 
     constructor(
         readonly writer: TextWriter = new TextWriter(), 
         ctx?: ResultContext
     ) {
-        this.explicitVariableMap = ctx?.explicitVariableMap ?? new Map<string, string>();
-        this.implicitVariableMap = ctx?.implicitVariableMap ?? new Map<string, string>();
+        this.explicitVariableTypeMap = ctx?.explicitVariableTypeMap ?? new Map<string, string>();
+        this.implicitVariableTypeMap = ctx?.implicitVariableTypeMap ?? new Map<string, string>();
+        this.implicitVariableValueMap = ctx?.implicitVariableValueMap ?? new Map<string, string>();
     }
 
     accept(fetcher: Fetcher<string, object, object>) {
@@ -289,24 +307,46 @@ class ResultContext {
         const t = this.writer.text.bind(this.writer);
 
         for (const [fieldName, field] of fetcher.fieldMap) {
+            const alias = field.optionsValue?.alias;
+            if (alias !== undefined && alias !== "" && alias !== fieldName) {
+                t(`${alias}: `);
+            }
             t(fieldName);
-            if (field.args !== undefined && Object.keys(field).length !== 0) {
-                this.writer.scope({type: "ARGUMENTS", multiLines: isMultLineJSON(field.args)}, () => {
-                    for (const argName in field.args) {
-                        this.writer.seperator();
-                        const arg = field.args[argName];
-                        t(argName);
-                        t(": ");
-                        if (arg instanceof ParameterRef) {
-                            this.explicitVariableMap.set(arg.name, field.argGraphQLTypes![argName]!);
-                            t(arg.name);
-                        } else {
-                            const text = `__implicitArgs__[${this.implicitVariableMap.size}]`; 
-                            t(text);
-                            this.implicitVariableMap.set(text, fetcher.fetchableType.fields.get(fieldName)!.argGraphQLTypeMap.get(argName)!);
-                        }
+            if (field.args !== undefined) {
+                let hasField = false;
+                for (const argName in field.args) {
+                    const argGraphQLTypeName = field.argGraphQLTypes?.get(argName);
+                    if (argGraphQLTypeName !== undefined) {
+                        hasField = true;
+                        break;
+                    } else {
+                        console.warn(`Unexpected argument: ${argName}`);
                     }
-                });
+                }
+                if (hasField) {
+                    this.writer.scope({type: "ARGUMENTS", multiLines: isMultLineJSON(field.args)}, () => {
+                        for (const argName in field.args) {
+                            this.writer.seperator();
+                            const arg = field.args[argName];
+                            const argGraphQLTypeName = field.argGraphQLTypes?.get(argName);
+                            if (argGraphQLTypeName !== undefined) {
+                                t(argName);
+                                t(": ");
+                                if (arg instanceof ParameterRef) {
+                                    this.explicitVariableTypeMap.set(arg.name, argGraphQLTypeName);
+                                    t(`$${arg.name}`);
+                                } else if (arg !== undefined || arg !== null) {
+                                    const text = `$__implicitArgs__[${this.implicitVariableTypeMap.size}]`; 
+                                    t(text);
+                                    this.implicitVariableTypeMap.set(text, argGraphQLTypeName);
+                                    this.implicitVariableValueMap.set(text, arg);
+                                } else {
+                                    t("null");
+                                }
+                            }
+                        }
+                    });
+                }
             }
             const childFetchers = field.childFetchers;
             if (childFetchers !== undefined && childFetchers.length !== 0) {

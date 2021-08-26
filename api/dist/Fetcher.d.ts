@@ -7,15 +7,17 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
+import { FieldOptionsValue } from "./FieldOptions";
 export interface Fetcher<E extends string, T extends object, TUnresolvedVariables extends object> {
     readonly fetchableType: FetchableType<E>;
     readonly fieldMap: ReadonlyMap<string, FetcherField>;
     toString(): string;
     toFragmentString(): string;
     toJSON(): string;
-    explicitVariableMap: ReadonlyMap<string, string>;
-    implicitVariableMap: ReadonlyMap<string, string>;
-    __supressWarnings__(value: T, unresolvedVariables: TUnresolvedVariables): never;
+    explicitVariableTypeMap: ReadonlyMap<string, string>;
+    implicitVariableTypeMap: ReadonlyMap<string, string>;
+    implicitVariableValueMap: ReadonlyMap<string, any>;
+    " $supressWarnings"(_1: T, _2: TUnresolvedVariables): never;
 }
 export declare type ModelType<F> = F extends Fetcher<string, infer M, object> ? M : never;
 export declare abstract class AbstractFetcher<E extends string, T extends object, TUnresolvedVariables extends object> implements Fetcher<E, T, TUnresolvedVariables> {
@@ -23,6 +25,7 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     private _field;
     private _args?;
     private _child?;
+    private _optionsValue?;
     private _fetchableType;
     private _unionItemTypes?;
     private _prev?;
@@ -30,26 +33,27 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     private _result;
     constructor(ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, string[] | undefined], _negative: boolean, _field: string, _args?: {
         [key: string]: any;
-    } | undefined, _child?: AbstractFetcher<string, object, object> | undefined);
+    } | undefined, _child?: AbstractFetcher<string, object, object> | undefined, _optionsValue?: FieldOptionsValue<string, object> | undefined);
     get fetchableType(): FetchableType<E>;
     protected addField<F extends AbstractFetcher<string, object, object>>(field: string, args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<string, object, object>): F;
+    }, child?: AbstractFetcher<string, object, object>, optionsValue?: FieldOptionsValue<string, object>): F;
     protected removeField<F extends AbstractFetcher<string, object, object>>(field: string): F;
     protected addEmbbeddable<F extends AbstractFetcher<string, object, object>>(child: AbstractFetcher<string, object, object>, fragmentName?: string): F;
     protected abstract createFetcher(negative: boolean, field: string, args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<string, object, object>): AbstractFetcher<string, object, object>;
+    }, child?: AbstractFetcher<string, object, object>, optionsValue?: FieldOptionsValue<string, object>): AbstractFetcher<string, object, object>;
     get fieldMap(): ReadonlyMap<string, FetcherField>;
     private _getFieldMap0;
-    get explicitVariableMap(): ReadonlyMap<string, string>;
-    get implicitVariableMap(): ReadonlyMap<string, string>;
+    get explicitVariableTypeMap(): ReadonlyMap<string, string>;
+    get implicitVariableTypeMap(): ReadonlyMap<string, string>;
+    get implicitVariableValueMap(): ReadonlyMap<string, any>;
     toString(): string;
     toFragmentString(): string;
     toJSON(): string;
     private get result();
     private createResult;
-    __supressWarnings__(_: T, unresolvedVariables: TUnresolvedVariables): never;
+    " $supressWarnings"(_: T, _2: TUnresolvedVariables): never;
 }
 export interface FetchableType<E extends string> {
     readonly entityName: E;
@@ -68,6 +72,7 @@ export interface FetcherField {
     readonly args?: {
         readonly [key: string]: any;
     };
+    readonly optionsValue?: FieldOptionsValue<string, object>;
     readonly plural: boolean;
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
