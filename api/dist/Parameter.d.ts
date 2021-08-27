@@ -1,7 +1,12 @@
+/**
+ * 1. If object is used by field arguments, don't specify the graphqlTypeName
+ * 2. If object is used by directive arguments, graphqlTypeName is required
+ */
 export declare class ParameterRef<TName extends string> {
     readonly name: TName;
+    readonly graphqlTypeName?: string | undefined;
     private constructor();
-    static of<TName extends string>(name: TName): ParameterRef<TName>;
+    static of<TName extends string>(name: TName, graphqlTypeName?: string): ParameterRef<TName>;
 }
 export declare type AcceptableVariables<T extends object> = {
     [K in keyof T]: T[K] | ParameterRef<string>;

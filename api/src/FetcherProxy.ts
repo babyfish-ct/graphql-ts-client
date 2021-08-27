@@ -8,8 +8,8 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { AbstractFetcher, FetchableField, FetchableType, Fetcher, FragmentWrapper } from './Fetcher';
-import { FieldOptions, FieldOptionsValue, isFieldOptions } from './FieldOptions';
+import { AbstractFetcher, DirectiveArgs, FetchableField, FetchableType, Fetcher, FragmentWrapper } from './Fetcher';
+import { createFieldOptions, FieldOptions, FieldOptionsValue } from './FieldOptions';
 import { ParameterRef } from './Parameter';
 
 /*
@@ -37,7 +37,9 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object, object>
         field: string,
         args?: {[key: string]: any},
         child?: AbstractFetcher<string, object, object>,
-        optionsValue?: FieldOptionsValue<string, object>
+        optionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>,
+        directive?: string,
+        directiveArgs?: DirectiveArgs
     ): AbstractFetcher<string, object, object> {
         return new FetcherTarget(
             this,
@@ -45,7 +47,9 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object, object>
             field,
             args,
             child,
-            optionsValue
+            optionsValue,
+            directive,
+            directiveArgs
         );
     }
 }
@@ -77,7 +81,7 @@ function proxyHandler(
                             methodProxyHandler(target, handler, rest)
                         );
                     }
-                } else if (p === "on" || fetchableType.fields.get(p)?.isFunction === true) {
+                } else if (p === "on" || p === "directive" || fetchableType.fields.get(p)?.isFunction === true) {
                     return new Proxy(
                         dummyTargetMethod,
                         methodProxyHandler(target, handler, p)
@@ -105,8 +109,8 @@ function methodProxyHandler(
     return {
         apply: (_1: Function, _2: any, argArray: any[]): any => {
             if (field === "on") {
-                const child = argArray[0];
-                const fragmentName = argArray[1] as string | undefined
+                const child = argArray[0] as AbstractFetcher<string, object, object>;
+                const fragmentName = argArray[1] as string | undefined;
                 const addEmbbeddable = Reflect.get(targetFetcher, "addEmbbeddable") as ADD_EMBBEDDABLE;
                 if (child instanceof FragmentWrapper) {
                     return new Proxy(
@@ -118,15 +122,23 @@ function methodProxyHandler(
                     addEmbbeddable.call(targetFetcher, child, fragmentName),
                     handler
                 );
+            } else if (field === "directive") {
+                const directive = argArray[0] as string;
+                const directiveArgs = argArray[1] as DirectiveArgs;
+                const addDirective = Reflect.get(targetFetcher, "addDirective") as ADD_DIRECTIVE;
+                return new Proxy(
+                    addDirective.call(targetFetcher, directive, directiveArgs),
+                    handler
+                );
             }
             let args: {[key: string]: any} | undefined = undefined;
             let child: AbstractFetcher<string, object, object> | undefined = undefined;
-            let optionsValue: FieldOptionsValue<string, object> | undefined = undefined;
+            let optionsValue: FieldOptionsValue<string, any> | undefined = undefined;
             for (const arg of argArray) {
                 if (arg instanceof AbstractFetcher) {
                     child = arg as AbstractFetcher<string, object, object>;
-                } else if (isFieldOptions(arg)) {
-                    optionsValue = (arg as FieldOptions<string, object>).value;
+                } else if (typeof arg === 'function') {
+                    optionsValue = arg(createFieldOptions()).value;
                 } else {
                     args = arg;
                 }
@@ -153,7 +165,7 @@ type ADD_FILED = (
     field: string, 
     args?: {[key: string]: any}, 
     child?: AbstractFetcher<string, object, object>,
-    optionsValue?: FieldOptionsValue<string, object>
+    optionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>
 ) => AbstractFetcher<string, object, object>;
  
 type REMOVE_FILED = (
@@ -165,6 +177,11 @@ type REMOVE_FILED = (
 type ADD_EMBBEDDABLE = (
     child: AbstractFetcher<string, object, object>,
     fragmentName?: string
+) => AbstractFetcher<string, object, object>;
+
+type ADD_DIRECTIVE = (
+    directive: string,
+    directiveArgs?: DirectiveArgs
 ) => AbstractFetcher<string, object, object>;
 
 function dummyTargetMethod() {}

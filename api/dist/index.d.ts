@@ -7,12 +7,11 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
-export type { Fetcher, ModelType, FetcherField, FetchableField, FetchableType } from './Fetcher';
-export { AbstractFetcher, FragmentWrapper } from './Fetcher';
+export type { Fetcher, ModelType, FetcherField, FetchableField, FetchableType, DirectiveArgs } from './Fetcher';
+export { AbstractFetcher, FragmentWrapper, StringValue } from './Fetcher';
 export type { AcceptableVariables, UnresolvedVariables } from './Parameter';
 export type { ParameterRef } from "./Parameter";
 export type { FieldOptions } from './FieldOptions';
-export { fieldOptions } from './FieldOptions';
 export { TextWriter } from './TextWriter';
 export { DependencyManager } from './DependencyManager';
 export { createFetcher, createFetchableType } from './FetcherProxy';

@@ -79,10 +79,10 @@ class FetcherWriter extends Writer_1.Writer {
     prepareImportings() {
         var _a;
         if (this.hasArgs) {
-            this.importStatement("import type { AcceptableVariables, UnresolvedVariables, FieldOptions } from 'graphql-ts-client-api';");
+            this.importStatement("import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';");
         }
         else {
-            this.importStatement("import type { FieldOptions } from 'graphql-ts-client-api';");
+            this.importStatement("import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';");
         }
         this.importStatement("import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';");
         this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
@@ -111,18 +111,32 @@ class FetcherWriter extends Writer_1.Writer {
         return "OTHER_DIR";
     }
     writeCode() {
+        this.writeFragment();
+        this.writeDirective();
+        this.writeTypeName();
+        for (const fieldName in this.fieldMap) {
+            this.text("\n");
+            const field = this.fieldMap[fieldName];
+            this.writePositiveProp(field);
+            this.writeNegativeProp(field);
+        }
+        this.leave("\n");
+        this.writeInstances();
+        this.writeArgsInterface();
+    }
+    writeFragment() {
         const t = this.text.bind(this);
         t(COMMENT);
         t("export interface ");
         t(this.fetcherTypeName);
-        t("<T extends object, TUnresolvedVariables extends object> extends Fetcher<'");
+        t("<T extends object, TVariables extends object> extends Fetcher<'");
         t(this.modelType.name);
-        t("', T, TUnresolvedVariables> ");
+        t("', T, TVariables> ");
         this.enter("BLOCK", true);
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
-            t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object, XUnresolvedVariables extends object>`);
+            t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object, XVariables extends object>`);
             this.scope({ type: "PARAMETERS", multiLines: !(this.modelType instanceof graphql_1.GraphQLUnionType) }, () => {
-                t("child: Fetcher<XName, X, XUnresolvedVariables>");
+                t("child: Fetcher<XName, X, XVariables>");
                 if (!(this.modelType instanceof graphql_1.GraphQLUnionType)) {
                     this.separator(", ");
                     t("fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment");
@@ -139,13 +153,13 @@ class FetcherWriter extends Writer_1.Writer {
                     t(`{__typename: Exclude<ImplementationType<'${this.modelType}'>, ImplementationType<XName>>}`);
                 });
                 this.separator(", ");
-                t("TUnresolvedVariables & XUnresolvedVariables");
+                t("TVariables & XVariables");
             });
             t(";\n");
             if (this.relay) {
-                t(`\non<XFragmentName extends string, XData extends object, XUnresolvedVariables extends object>`);
+                t(`\non<XFragmentName extends string, XData extends object, XVariables extends object>`);
                 this.scope({ type: "PARAMETERS", multiLines: !(this.modelType instanceof graphql_1.GraphQLUnionType) }, () => {
-                    t(`child: RelayFragment<XFragmentName, "${this.modelType.name}", XData, XUnresolvedVariables>`);
+                    t(`child: RelayFragment<XFragmentName, "${this.modelType.name}", XData, XVariables>`);
                 });
                 t(`: ${this.fetcherTypeName}`);
                 this.scope({ type: "GENERIC", multiLines: true }, () => {
@@ -156,26 +170,26 @@ class FetcherWriter extends Writer_1.Writer {
                         t('readonly " $fragmentRefs": FragmentRefs<XFragmentName>');
                     });
                     this.separator(", ");
-                    t("TUnresolvedVariables & XUnresolvedVariables");
+                    t("TVariables & XVariables");
                 });
                 t(";\n");
             }
+        }
+    }
+    writeDirective() {
+        const t = this.text.bind(this);
+        t(`\n\ndirective(name: string, args?: DirectiveArgs): ${this.fetcherTypeName}<T, TVariables>;\n`);
+    }
+    writeTypeName() {
+        if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
+            const t = this.text.bind(this);
             t("\n\n");
             t("readonly __typename: ");
             t(this.fetcherTypeName);
             t("<T & {__typename: ImplementationType<'");
             t(this.modelType.name);
-            t("'>}, TUnresolvedVariables>;\n");
+            t("'>}, TVariables>;\n");
         }
-        for (const fieldName in this.fieldMap) {
-            t("\n");
-            const field = this.fieldMap[fieldName];
-            this.writePositiveProp(field);
-            this.writeNegativeProp(field);
-        }
-        this.leave("\n");
-        this.writeInstances();
-        this.writeArgsInterface();
     }
     writePositiveProp(field) {
         const associatedType = Utils_1.associatedTypeOf(field.type);
@@ -199,7 +213,7 @@ class FetcherWriter extends Writer_1.Writer {
         t(this.fetcherTypeName);
         t("<Omit<T, '");
         t(field.name);
-        t("'>, TUnresolvedVariables>;\n");
+        t("'>, TVariables>;\n");
     }
     writePositivePropImpl(field, mode) {
         const t = this.text.bind(this);
@@ -222,13 +236,13 @@ class FetcherWriter extends Writer_1.Writer {
                     this.separator(", ");
                     t("X extends object");
                     this.separator(", ");
-                    t("XUnresolvedVariables extends object");
+                    t("XVariables extends object");
                 }
                 this.separator(", ");
-                t(`TAlias extends string = "${field.name}"`);
+                t(`XAlias extends string = "${field.name}"`);
                 if (nonNull) {
                     this.separator(", ");
-                    t(`TDirectives extends object = {}`);
+                    t(`XDirectives extends { readonly [key: string]: DirectiveArgs } = {}`);
                 }
             });
             this.scope({ type: "PARAMETERS", multiLines: true }, () => {
@@ -241,10 +255,14 @@ class FetcherWriter extends Writer_1.Writer {
                     t("child: ");
                     t("Fetcher<'");
                     t(associatedType.name);
-                    t("', X, XUnresolvedVariables>");
+                    t("', X, XVariables>");
                 }
                 this.separator(", ");
-                t(`options?: FieldOptions<TAlias, ${nonNull ? "TDirectives" : "object"}>`);
+                t("optionsConfigurer?: ");
+                this.scope({ type: "PARAMETERS", multiLines: true }, () => {
+                    t(`options: FieldOptions<"${field.name}", {}>`);
+                });
+                t(` => FieldOptions<XAlias, ${nonNull ? "XDirectives" : "{readonly [key: string]: DirectiveArgs}"}>`);
             });
         }
         t(": ");
@@ -256,11 +274,13 @@ class FetcherWriter extends Writer_1.Writer {
                     this.writePositivePropChangedDataType(field, renderAsField, false);
                 }
                 else {
-                    t("TDirectives extends { readonly include: any } | { readonly skip: any } ? ");
-                    this.scope({ type: "BLANK", multiLines: true }, () => {
-                        this.writePositivePropChangedDataType(field, renderAsField, true);
-                        this.separator(" : ");
-                        this.writePositivePropChangedDataType(field, renderAsField, false);
+                    this.scope({ type: "PARAMETERS", multiLines: true }, () => {
+                        t("XDirectives extends { readonly include: any } | { readonly skip: any } ? ");
+                        this.scope({ type: "BLANK", multiLines: true }, () => {
+                            this.writePositivePropChangedDataType(field, renderAsField, true);
+                            this.separator(" : ");
+                            this.writePositivePropChangedDataType(field, renderAsField, false);
+                        });
                     });
                 }
             }
@@ -268,9 +288,9 @@ class FetcherWriter extends Writer_1.Writer {
                 this.writePositivePropChangedDataType(field, renderAsField, true);
             }
             this.separator(", ");
-            t("TUnresolvedVariables");
+            t("TVariables");
             if (associatedType !== undefined) {
-                t(" & XUnresolvedVariables");
+                t(" & XVariables");
             }
             if (field.args.length !== 0) {
                 if (mode === "NO_ARGS") {
@@ -292,7 +312,7 @@ class FetcherWriter extends Writer_1.Writer {
             t(`"${field.name}"`);
         }
         else {
-            t(`[key in TAlias]`);
+            t(`[key in XAlias]`);
         }
         if (nullable) {
             t("?");

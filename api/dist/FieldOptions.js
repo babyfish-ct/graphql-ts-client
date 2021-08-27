@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isFieldOptions = exports.fieldOptions = void 0;
+exports.createFieldOptions = void 0;
 class FieldOptionsImpl {
     constructor(_prev, _alias, _directive, _directiveArgs) {
         this._prev = _prev;
@@ -12,6 +12,9 @@ class FieldOptionsImpl {
         return new FieldOptionsImpl(this, alias);
     }
     directive(directive, args) {
+        if (directive.startsWith("@")) {
+            throw new Error("directive name should not start with '@' because it will be prepended by this framework automatcially");
+        }
         return new FieldOptionsImpl(this, undefined, directive, args);
     }
     get value() {
@@ -40,8 +43,7 @@ class FieldOptionsImpl {
         return { alias, directives };
     }
 }
-exports.fieldOptions = new FieldOptionsImpl();
-function isFieldOptions(options) {
-    return options instanceof FieldOptionsImpl;
+function createFieldOptions() {
+    return new FieldOptionsImpl();
 }
-exports.isFieldOptions = isFieldOptions;
+exports.createFieldOptions = createFieldOptions;

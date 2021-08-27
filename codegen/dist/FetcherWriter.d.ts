@@ -29,6 +29,9 @@ export declare class FetcherWriter extends Writer {
     protected prepareImportings(): void;
     protected importingBehavior(type: GraphQLNamedType): ImportingBehavior;
     protected writeCode(): void;
+    private writeFragment;
+    private writeDirective;
+    private writeTypeName;
     private writePositiveProp;
     private writeNegativeProp;
     private writePositivePropImpl;

@@ -8,52 +8,62 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 import { FieldOptionsValue } from "./FieldOptions";
-export interface Fetcher<E extends string, T extends object, TUnresolvedVariables extends object> {
+import { ParameterRef } from "./Parameter";
+export interface Fetcher<E extends string, T extends object, TVariables extends object> {
     readonly fetchableType: FetchableType<E>;
     readonly fieldMap: ReadonlyMap<string, FetcherField>;
+    readonly directiveMap: ReadonlyMap<string, DirectiveArgs>;
     toString(): string;
     toFragmentString(): string;
     toJSON(): string;
-    explicitVariableTypeMap: ReadonlyMap<string, string>;
-    implicitVariableTypeMap: ReadonlyMap<string, string>;
-    implicitVariableValueMap: ReadonlyMap<string, any>;
-    " $supressWarnings"(_1: T, _2: TUnresolvedVariables): never;
+    variableTypeMap: ReadonlyMap<string, string>;
+    " $supressWarnings"(_1: T, _2: TVariables): never;
 }
 export declare type ModelType<F> = F extends Fetcher<string, infer M, object> ? M : never;
-export declare abstract class AbstractFetcher<E extends string, T extends object, TUnresolvedVariables extends object> implements Fetcher<E, T, TUnresolvedVariables> {
+export declare abstract class AbstractFetcher<E extends string, T extends object, TVariables extends object> implements Fetcher<E, T, TVariables> {
     private _negative;
     private _field;
     private _args?;
     private _child?;
-    private _optionsValue?;
+    private _fieldOptionsValue?;
+    private _directive?;
+    private _directiveArgs?;
     private _fetchableType;
     private _unionItemTypes?;
     private _prev?;
     private _fieldMap?;
+    private _directiveMap;
     private _result;
     constructor(ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, string[] | undefined], _negative: boolean, _field: string, _args?: {
         [key: string]: any;
-    } | undefined, _child?: AbstractFetcher<string, object, object> | undefined, _optionsValue?: FieldOptionsValue<string, object> | undefined);
+    } | undefined, _child?: AbstractFetcher<string, object, object> | undefined, _fieldOptionsValue?: FieldOptionsValue<string, {
+        readonly [key: string]: DirectiveArgs;
+    }> | undefined, _directive?: string | undefined, _directiveArgs?: DirectiveArgs);
     get fetchableType(): FetchableType<E>;
     protected addField<F extends AbstractFetcher<string, object, object>>(field: string, args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<string, object, object>, optionsValue?: FieldOptionsValue<string, object>): F;
+    }, child?: AbstractFetcher<string, object, object>, optionsValue?: FieldOptionsValue<string, {
+        readonly [key: string]: DirectiveArgs;
+    }>): F;
     protected removeField<F extends AbstractFetcher<string, object, object>>(field: string): F;
     protected addEmbbeddable<F extends AbstractFetcher<string, object, object>>(child: AbstractFetcher<string, object, object>, fragmentName?: string): F;
+    protected addDirective<F extends AbstractFetcher<string, object, object>>(directive: string, directiveArgs?: DirectiveArgs): F;
     protected abstract createFetcher(negative: boolean, field: string, args?: {
         [key: string]: any;
-    }, child?: AbstractFetcher<string, object, object>, optionsValue?: FieldOptionsValue<string, object>): AbstractFetcher<string, object, object>;
+    }, child?: AbstractFetcher<string, object, object>, optionsValue?: FieldOptionsValue<string, {
+        readonly [key: string]: DirectiveArgs;
+    }>, directive?: string, directiveArgs?: object): AbstractFetcher<string, object, object>;
     get fieldMap(): ReadonlyMap<string, FetcherField>;
     private _getFieldMap0;
-    get explicitVariableTypeMap(): ReadonlyMap<string, string>;
-    get implicitVariableTypeMap(): ReadonlyMap<string, string>;
-    get implicitVariableValueMap(): ReadonlyMap<string, any>;
+    get directiveMap(): ReadonlyMap<string, DirectiveArgs>;
+    private getDirectiveMap0;
+    get variableTypeMap(): ReadonlyMap<string, string>;
     toString(): string;
     toFragmentString(): string;
     toJSON(): string;
     private get result();
     private createResult;
-    " $supressWarnings"(_: T, _2: TUnresolvedVariables): never;
+    " $supressWarnings"(_: T, _2: TVariables): never;
 }
 export interface FetchableType<E extends string> {
     readonly entityName: E;
@@ -72,12 +82,22 @@ export interface FetcherField {
     readonly args?: {
         readonly [key: string]: any;
     };
-    readonly optionsValue?: FieldOptionsValue<string, object>;
+    readonly fieldOptionsValue?: FieldOptionsValue<string, {
+        readonly [key: string]: DirectiveArgs;
+    }>;
     readonly plural: boolean;
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
-export declare abstract class FragmentWrapper<TFragmentName extends string, E extends string, T extends object, TUnresolvedVariables extends object> {
+export declare abstract class FragmentWrapper<TFragmentName extends string, E extends string, T extends object, TVariables extends object> {
     readonly name: TFragmentName;
-    readonly fetcher: Fetcher<E, T, TUnresolvedVariables>;
-    protected constructor(name: TFragmentName, fetcher: Fetcher<E, T, TUnresolvedVariables>);
+    readonly fetcher: Fetcher<E, T, TVariables>;
+    protected constructor(name: TFragmentName, fetcher: Fetcher<E, T, TVariables>);
+}
+export declare type DirectiveArgs = {
+    readonly [key: string]: ParameterRef<string> | StringValue | any;
+} | undefined;
+export declare class StringValue {
+    readonly value: any;
+    readonly quotationMarks: boolean;
+    constructor(value: any, quotationMarks?: boolean);
 }

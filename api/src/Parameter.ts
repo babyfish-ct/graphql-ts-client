@@ -1,13 +1,17 @@
+/**
+ * 1. If object is used by field arguments, don't specify the graphqlTypeName
+ * 2. If object is used by directive arguments, graphqlTypeName is required
+ */
 export class ParameterRef<TName extends string> {
 
-    private constructor(readonly name: TName) {
+    private constructor(readonly name: TName, readonly graphqlTypeName?: string) {
         if (name.startsWith("$")) {
             throw new Error("parameter name cannot start with '$'");
         }
     }
 
-    static of<TName extends string>(name: TName): ParameterRef<TName> {
-        return new ParameterRef<TName>(name);
+    static of<TName extends string>(name: TName, graphqlTypeName?: string): ParameterRef<TName> {
+        return new ParameterRef<TName>(name, graphqlTypeName);
     }
 }
 

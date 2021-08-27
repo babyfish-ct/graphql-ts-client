@@ -416,21 +416,8 @@ function buildOperation(
     operationName: string,
     fetcher: Fetcher<string, object, object>
 ): ConcreteRequest {
-    const variableTypeMap = new Map<string, string>();
-    util.iterateMap(fetcher.explicitVariableTypeMap, ([name, type]) => {
-        if (variableTypeMap.has(name) && variableTypeMap.get(name) !== type) {
-            throw new Error(\`Conflict types '\${variableTypeMap.get(name)}' and '\${type}' for variable '\${name}'\`);
-        }
-        variableTypeMap.set(name, type);
-    });
-    util.iterateMap(fetcher.implicitVariableTypeMap, ([name, type]) => {
-        if (variableTypeMap.has(name) && variableTypeMap.get(name) !== type) {
-            throw new Error(\`Conflict types '\${variableTypeMap.get(name)}' and '\${type}' for variable '\${name}'\`);
-        }
-        variableTypeMap.set(name, type);
-    });
     const argumentDefinitions: ReaderArgumentDefinition[] = [];
-    util.iterateMap(variableTypeMap, ([name, ]) => {
+    util.iterateMap(fetcher.variableTypeMap, ([name, ]) => {
         argumentDefinitions.push({
             kind: "LocalArgument",
             name
@@ -438,7 +425,7 @@ function buildOperation(
     });
 
     const args: ReaderArgument[] = [];
-    util.iterateMap(variableTypeMap, ([name, ]) => {
+    util.iterateMap(fetcher.variableTypeMap, ([name, ]) => {
         args.push({
             kind: "Variable",
             name: name,
@@ -464,9 +451,9 @@ function buildOperation(
 
     const writer = new TextWriter();
     writer.text(\`\${operationType} \${operationName}\`);
-    if (variableTypeMap.size !== 0) {
-        writer.scope({type: "ARGUMENTS", multiLines: variableTypeMap.size > 2, suffix: " "}, () => {
-            util.iterateMap(variableTypeMap, ([name, type]) => {
+    if (fetcher.variableTypeMap.size !== 0) {
+        writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
+            util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
                 writer.seperator(", ");
                 writer.text(\`$\${name}: \${type}\`);
             });
@@ -578,7 +565,7 @@ function collectFieldSelections(fieldName: string, field: FetcherField, forceInl
 }
 
 function actualAlias(fieldName: string, field: FetcherField): string | undefined {
-    const alias = field.optionsValue?.alias;
+    const alias = field.fieldOptionsValue?.alias;
     if (alias === undefined || alias === "" || alias === fieldName) {
         return undefined;
     }

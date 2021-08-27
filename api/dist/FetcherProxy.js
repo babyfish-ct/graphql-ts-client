@@ -26,8 +26,8 @@ function createFetcher(fetchableType, unionEntityTypes) {
 }
 exports.createFetcher = createFetcher;
 class FetcherTarget extends Fetcher_1.AbstractFetcher {
-    createFetcher(negative, field, args, child, optionsValue) {
-        return new FetcherTarget(this, negative, field, args, child, optionsValue);
+    createFetcher(negative, field, args, child, optionsValue, directive, directiveArgs) {
+        return new FetcherTarget(this, negative, field, args, child, optionsValue, directive, directiveArgs);
     }
 }
 function proxyHandler(fetchableType) {
@@ -51,7 +51,7 @@ function proxyHandler(fetchableType) {
                         return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, rest));
                     }
                 }
-                else if (p === "on" || ((_a = fetchableType.fields.get(p)) === null || _a === void 0 ? void 0 : _a.isFunction) === true) {
+                else if (p === "on" || p === "directive" || ((_a = fetchableType.fields.get(p)) === null || _a === void 0 ? void 0 : _a.isFunction) === true) {
                     return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, p));
                 }
                 else if (fetchableType.fields.has(p)) {
@@ -78,6 +78,12 @@ function methodProxyHandler(targetFetcher, handler, field) {
                 }
                 return new Proxy(addEmbbeddable.call(targetFetcher, child, fragmentName), handler);
             }
+            else if (field === "directive") {
+                const directive = argArray[0];
+                const directiveArgs = argArray[1];
+                const addDirective = Reflect.get(targetFetcher, "addDirective");
+                return new Proxy(addDirective.call(targetFetcher, directive, directiveArgs), handler);
+            }
             let args = undefined;
             let child = undefined;
             let optionsValue = undefined;
@@ -85,8 +91,8 @@ function methodProxyHandler(targetFetcher, handler, field) {
                 if (arg instanceof Fetcher_1.AbstractFetcher) {
                     child = arg;
                 }
-                else if (FieldOptions_1.isFieldOptions(arg)) {
-                    optionsValue = arg.value;
+                else if (typeof arg === 'function') {
+                    optionsValue = arg(FieldOptions_1.createFieldOptions()).value;
                 }
                 else {
                     args = arg;

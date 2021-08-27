@@ -12,11 +12,13 @@ import { FieldOptionsValue } from "./FieldOptions";
 import { ParameterRef } from "./Parameter";
 import { TextWriter } from "./TextWriter";
 
- export interface Fetcher<E extends string, T extends object, TUnresolvedVariables extends object> {
+export interface Fetcher<E extends string, T extends object, TVariables extends object> {
 
     readonly fetchableType: FetchableType<E>;
 
     readonly fieldMap: ReadonlyMap<string, FetcherField>;
+
+    readonly directiveMap: ReadonlyMap<string, DirectiveArgs>;
 
     toString(): string;
 
@@ -24,13 +26,9 @@ import { TextWriter } from "./TextWriter";
 
     toJSON(): string; // for recoil
 
-    explicitVariableTypeMap: ReadonlyMap<string, string>;
+    variableTypeMap: ReadonlyMap<string, string>;
 
-    implicitVariableTypeMap: ReadonlyMap<string, string>;
-
-    implicitVariableValueMap: ReadonlyMap<string, any>;
-
-    " $supressWarnings"(_1: T, _2: TUnresolvedVariables): never;
+    " $supressWarnings"(_1: T, _2: TVariables): never;
 }
 
 export type ModelType<F> = 
@@ -38,7 +36,7 @@ export type ModelType<F> =
     M : 
     never;
 
-export abstract class AbstractFetcher<E extends string, T extends object, TUnresolvedVariables extends object> implements Fetcher<E, T, TUnresolvedVariables> {
+export abstract class AbstractFetcher<E extends string, T extends object, TVariables extends object> implements Fetcher<E, T, TVariables> {
 
     private _fetchableType: FetchableType<E>;
 
@@ -46,9 +44,11 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
 
     private _prev?: AbstractFetcher<string, object, object>;
 
-    private _fieldMap?: Map<string, FetcherField>;
+    private _fieldMap?: ReadonlyMap<string, FetcherField>;
 
-    private _result: Result;    
+    private _directiveMap: ReadonlyMap<string, DirectiveArgs>;
+
+    private _result: Result; 
 
     constructor(
         ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, string[] | undefined],
@@ -56,7 +56,9 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         private _field: string,
         private _args?: {[key: string]: any},
         private _child?: AbstractFetcher<string, object, object>,
-        private _optionsValue?: FieldOptionsValue<string, object>
+        private _fieldOptionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs}>,
+        private _directive?: string,
+        private _directiveArgs?: DirectiveArgs
     ) {
         if (Array.isArray(ctx)) {
             this._fetchableType = ctx[0];
@@ -76,7 +78,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         field: string, 
         args?: {[key: string]: any},
         child?: AbstractFetcher<string, object, object>,
-        optionsValue?: FieldOptionsValue<string, object>
+        optionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>
     ): F {
         return this.createFetcher(
             false,
@@ -100,7 +102,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
     protected addEmbbeddable<F extends AbstractFetcher<string, object, object>>(
         child: AbstractFetcher<string, object, object>,
         fragmentName?: string
-    ) {
+    ): F {
         let fieldName: string;
         if (fragmentName !== undefined) {
             if (fragmentName.length === 0) {
@@ -123,12 +125,29 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         ) as F;
     }
 
+    protected addDirective<F extends AbstractFetcher<string, object, object>>(
+        directive: string,
+        directiveArgs?: DirectiveArgs
+    ): F {
+        return this.createFetcher(
+            false,
+            "",
+            undefined,
+            undefined,
+            undefined,
+            directive,
+            directiveArgs
+        ) as F;
+    }
+
     protected abstract createFetcher(
         negative: boolean,
         field: string,
         args?: {[key: string]: any},
         child?: AbstractFetcher<string, object, object>,
-        optionsValue?: FieldOptionsValue<string, object>
+        optionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>,
+        directive?: string,
+        directiveArgs?: object
     ): AbstractFetcher<string, object, object>;
 
     get fieldMap(): ReadonlyMap<string, FetcherField> {
@@ -139,7 +158,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         return m;
     }
 
-    private _getFieldMap0(): Map<string, FetcherField> {
+    private _getFieldMap0(): ReadonlyMap<string, FetcherField> {
         const fetchers: AbstractFetcher<string, object, object>[] = [];
         for (let fetcher: AbstractFetcher<string, object, object> | undefined = this; 
             fetcher !== undefined; 
@@ -166,7 +185,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
                     fieldMap.set(fetcher._field, { 
                         argGraphQLTypes: fetcher.fetchableType.fields.get(fetcher._field)?.argGraphQLTypeMap,
                         args: fetcher._args, 
-                        optionsValue: fetcher._optionsValue,
+                        fieldOptionsValue: fetcher._fieldOptionsValue,
                         plural: fetcher.fetchableType.fields.get(fetcher._field)!.isPlural,
                         childFetchers: fetcher._child === undefined ? undefined: [fetcher._child] // Association only cause one child fetcher
                     });
@@ -176,16 +195,31 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         return fieldMap;
     }
 
-    get explicitVariableTypeMap(): ReadonlyMap<string, string> {
-        return this.result.explicitVariableTypeMap;
+    get directiveMap(): ReadonlyMap<string, DirectiveArgs> {
+        let m = this._directiveMap;
+        if (m === undefined) {
+            this._directiveMap = m = this.getDirectiveMap0();
+        }
+        return m;
     }
 
-    get implicitVariableTypeMap(): ReadonlyMap<string, string> {
-        return this.result.implicitVariableTypeMap;
+    private getDirectiveMap0(): ReadonlyMap<string, DirectiveArgs> {
+        const map = new Map<string, DirectiveArgs>();
+        for (let fetcher: AbstractFetcher<string, object, object> | undefined = this; 
+            fetcher !== undefined; 
+            fetcher = fetcher._prev
+        ) {
+            if (fetcher._directive !== undefined) {
+                if (!map.has(fetcher._directive)) {
+                    map.set(fetcher._directive, fetcher._directiveArgs);
+                }
+            }
+        }
+        return map;
     }
 
-    get implicitVariableValueMap(): ReadonlyMap<string, any> {
-        return this.result.implicitVariableValueMap;
+    get variableTypeMap(): ReadonlyMap<string, string> {
+        return this.result.variableTypeMap;
     }
 
     toString(): string {
@@ -213,6 +247,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         const fragmentWriter = new TextWriter();
         let ctx = new ResultContext(writer);
         
+        ctx.acceptDirectives(this.directiveMap);
         writer.scope({type: "BLOCK", multiLines: true, suffix: '\n'}, () => {
             ctx.accept(this);
         });
@@ -227,6 +262,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
             for (const [fragmentName, fragment] of fragmentMap) {
                 if (renderedFragmentNames.add(fragmentName)) {
                     fragmentWriter.text(`fragment ${fragmentName} on ${fragment.fetchableType.entityName} `);
+                    ctx.acceptDirectives(fragment.directiveMap);
                     fragmentWriter.scope({type: "BLOCK", multiLines: true, suffix: '\n'}, () => {
                         ctx.accept(fragment);     
                     });
@@ -237,13 +273,11 @@ export abstract class AbstractFetcher<E extends string, T extends object, TUnres
         return {
             text: writer.toString(),
             fragmentText: fragmentWriter.toString(),
-            explicitVariableTypeMap: ctx.explicitVariableTypeMap,
-            implicitVariableTypeMap: ctx.implicitVariableTypeMap,
-            implicitVariableValueMap: ctx.implicitVariableValueMap
+            variableTypeMap: ctx.variableTypeMap
         };
     }
 
-    " $supressWarnings"(_: T, _2: TUnresolvedVariables): never {
+    " $supressWarnings"(_: T, _2: TVariables): never {
         throw new Error("' $supressWarnings' is not supported");
     }
 }
@@ -265,41 +299,45 @@ export interface FetchableField {
 export interface FetcherField {
     readonly argGraphQLTypes?: ReadonlyMap<string, string>;
     readonly args?: {readonly [key: string]: any};
-    readonly optionsValue?: FieldOptionsValue<string, object>;
+    readonly fieldOptionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>;
     readonly plural: boolean;
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
 
-export abstract class FragmentWrapper<TFragmentName extends string, E extends string, T extends object, TUnresolvedVariables extends object> {
+export abstract class FragmentWrapper<TFragmentName extends string, E extends string, T extends object, TVariables extends object> {
 
-    protected constructor(readonly name: TFragmentName, readonly fetcher: Fetcher<E, T, TUnresolvedVariables>) {}
+    protected constructor(readonly name: TFragmentName, readonly fetcher: Fetcher<E, T, TVariables>) {}
+}
+
+export type DirectiveArgs = {
+    readonly [key: string]: ParameterRef<string> | StringValue | any;
+} | undefined;
+
+export class StringValue {
+    constructor(
+        readonly value: any,
+        readonly quotationMarks: boolean = true
+    ) {
+    }
 }
 
 interface Result {
     readonly text: string;
     readonly fragmentText: string;
-    readonly explicitVariableTypeMap: ReadonlyMap<string, string>;
-    readonly implicitVariableTypeMap: ReadonlyMap<string, string>;
-    readonly implicitVariableValueMap: ReadonlyMap<string, any>;
+    readonly variableTypeMap: ReadonlyMap<string, string>;
 }
 
 class ResultContext {
 
     readonly namedFragmentMap = new Map<string, Fetcher<string, object, object>>();
 
-    readonly explicitVariableTypeMap: Map<string, string>;
-
-    readonly implicitVariableTypeMap: Map<string, string>;
-
-    readonly implicitVariableValueMap: Map<string, any>;
+    readonly variableTypeMap: Map<string, string>;
 
     constructor(
-        readonly writer: TextWriter = new TextWriter(), 
+        private readonly writer: TextWriter = new TextWriter(), 
         ctx?: ResultContext
     ) {
-        this.explicitVariableTypeMap = ctx?.explicitVariableTypeMap ?? new Map<string, string>();
-        this.implicitVariableTypeMap = ctx?.implicitVariableTypeMap ?? new Map<string, string>();
-        this.implicitVariableValueMap = ctx?.implicitVariableValueMap ?? new Map<string, string>();
+        this.variableTypeMap = ctx?.variableTypeMap ?? new Map<string, string>();
     }
 
     accept(fetcher: Fetcher<string, object, object>) {
@@ -307,47 +345,15 @@ class ResultContext {
         const t = this.writer.text.bind(this.writer);
 
         for (const [fieldName, field] of fetcher.fieldMap) {
-            const alias = field.optionsValue?.alias;
+            const alias = field.fieldOptionsValue?.alias;
             if (alias !== undefined && alias !== "" && alias !== fieldName) {
                 t(`${alias}: `);
             }
             t(fieldName);
-            if (field.args !== undefined) {
-                let hasField = false;
-                for (const argName in field.args) {
-                    const argGraphQLTypeName = field.argGraphQLTypes?.get(argName);
-                    if (argGraphQLTypeName !== undefined) {
-                        hasField = true;
-                        break;
-                    } else {
-                        console.warn(`Unexpected argument: ${argName}`);
-                    }
-                }
-                if (hasField) {
-                    this.writer.scope({type: "ARGUMENTS", multiLines: isMultLineJSON(field.args)}, () => {
-                        for (const argName in field.args) {
-                            this.writer.seperator();
-                            const arg = field.args[argName];
-                            const argGraphQLTypeName = field.argGraphQLTypes?.get(argName);
-                            if (argGraphQLTypeName !== undefined) {
-                                t(argName);
-                                t(": ");
-                                if (arg instanceof ParameterRef) {
-                                    this.explicitVariableTypeMap.set(arg.name, argGraphQLTypeName);
-                                    t(`$${arg.name}`);
-                                } else if (arg !== undefined || arg !== null) {
-                                    const text = `$__implicitArgs__[${this.implicitVariableTypeMap.size}]`; 
-                                    t(text);
-                                    this.implicitVariableTypeMap.set(text, argGraphQLTypeName);
-                                    this.implicitVariableValueMap.set(text, arg);
-                                } else {
-                                    t("null");
-                                }
-                            }
-                        }
-                    });
-                }
+            if (field.argGraphQLTypes !== undefined) {
+                this.acceptArgs(field.args, field.argGraphQLTypes);
             }
+            this.acceptDirectives_(field.fieldOptionsValue?.directives);
             const childFetchers = field.childFetchers;
             if (childFetchers !== undefined && childFetchers.length !== 0) {
                 if (fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
@@ -369,6 +375,143 @@ class ResultContext {
                 }
             }
             t('\n');
+        }
+    }
+
+    acceptDirectives(directives?: ReadonlyMap<string, DirectiveArgs>) {
+        if (directives !== undefined) {
+            for (const [directive, args] of directives) {
+                this.writer.text(`\n@${directive}`);
+                this.acceptArgs(args);
+            }
+        }
+    }
+
+    private acceptDirectives_(directives?: {readonly [key: string]: DirectiveArgs}) {
+        if (directives !== undefined) {
+            for (const directive in directives) {
+                this.writer.text(`\n@${directive}`);
+                this.acceptArgs(directives[directive]);
+            }
+        }
+    }
+
+    private acceptArgs(
+        args?: object, 
+        argGraphQLTypeMap?: ReadonlyMap<string, string> // undefined: directive args; otherwise: field args 
+    ) {
+        if (args === undefined) {
+            return;
+        }
+        const t = this.writer.text.bind(this.writer);
+
+        let hasField: boolean;
+        if (argGraphQLTypeMap !== undefined) {
+            hasField = false;
+            for (const argName in args) {
+                const argGraphQLTypeName = argGraphQLTypeMap.get(argName);
+                if (argGraphQLTypeName !== undefined) {
+                    hasField = true;
+                    break;
+                } else {
+                    console.warn(`Unexpected argument: ${argName}`);
+                }
+            }
+        } else {
+            hasField = Object.keys(args).length !== 0;
+        }
+        if (hasField) {
+            this.writer.scope({type: "ARGUMENTS", multiLines: isMultLineJSON(args)}, () => {
+                for (const argName in args) {
+                    this.writer.seperator();
+                    const arg = args[argName];
+                    let argGraphQLTypeName: string | undefined;
+                    if (argGraphQLTypeMap !== undefined) {
+                        argGraphQLTypeName = argGraphQLTypeMap.get(argName);
+                        if (argGraphQLTypeName !== undefined) {
+                            if (arg instanceof ParameterRef) {
+                                if (arg.graphqlTypeName !== undefined && arg.graphqlTypeName !== argGraphQLTypeName) {
+                                    throw new Error(`Argument '${arg.name}' has conflict type, the type of paremter '${argName}' is '${argGraphQLTypeName}' but the graphqlTypeName of ParameterRef is '${arg.graphqlTypeName}'`);
+                                }
+                                const registeredType = this.variableTypeMap.get(arg.name);
+                                if (registeredType !== undefined && registeredType !== argGraphQLTypeName) {
+                                    throw new Error(`Argument '${arg.name}' has conflict type, it's typed has been specified twice, one as '${registeredType}' and one as '${argGraphQLTypeName}'`);
+                                }
+                                this.variableTypeMap.set(arg.name, argGraphQLTypeName);
+                                t(`${argName}: $${arg.name}`);
+                            } else {
+                                t(`${argName}: `);
+                                this.acceptLiteral(arg);
+                            }
+                        } else {
+                            throw new Error(`Unknown argument '${argName}'`);
+                        }
+                    } else {
+                        if (arg instanceof ParameterRef) {
+                            if (arg.graphqlTypeName === undefined) {
+                                throw new Error(`The graphqlTypeName of directive argument '${arg.name}' is not specifed`);
+                            }
+                            this.variableTypeMap.set(arg.name, arg.graphqlTypeName);
+                            t(`${argName}: $${arg.name}`);
+                        } else {
+                            t(`${argName}: `);
+                            this.acceptLiteral(arg);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    private acceptLiteral(value: any) {
+
+        const t = this.writer.text.bind(this.writer);
+
+        if (value === undefined || value === null) {
+            t("null");
+        } else if (typeof value === 'number') {
+            t(value.toString());
+        } else if (typeof value === 'string') {
+            t(`"${value.replace('"', '\\"')}"`);
+        } else if (typeof value === 'boolean') {
+            t(value ? "true" : "false");
+        } else if (value instanceof StringValue) {
+            if (value.quotationMarks) {
+                t(`"${value.value.replace('"', '\\"')}"`);
+            } else {
+                t(value.value);
+            }
+        } else if (Array.isArray(value) || value instanceof Set) {
+            this.writer.scope({type: "ARRAY"}, () => {
+                for (const e of value) {
+                    this.writer.seperator();
+                    this.acceptLiteral(e);
+                }
+            });
+        } else if (value instanceof Map) {
+            for (const [k, v] of value) {
+                this.writer.seperator();
+                this.acceptMapKey(k);
+                t(": ");
+                this.acceptLiteral(v);
+            }
+        } else if (typeof value === 'object') {
+            for (const k in value) {
+                this.writer.seperator();
+                this.acceptMapKey(k);
+                t(": ");
+                this.acceptLiteral(value[k]);
+            }
+        }
+    }
+
+    private acceptMapKey(key: any) {
+        if (typeof key === "string") {
+            this.writer.text(`"${key.replace('"', '\\"')}"`);
+        } else if (typeof key === "number") {
+            this.writer.text("${key}");
+        } else {
+            throw new Error(`Unsupported map key ${key}`);
         }
     }
 }

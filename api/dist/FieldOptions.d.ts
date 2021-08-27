@@ -1,13 +1,17 @@
-export interface FieldOptions<TAlias extends string, TDirectives extends object> {
+import { DirectiveArgs } from "./Fetcher";
+export interface FieldOptions<TAlias extends string, TDirectives extends {
+    readonly [key: string]: DirectiveArgs;
+}> {
     alias<XAlias extends string>(alias: XAlias): FieldOptions<XAlias, TDirectives>;
-    directive<XDirective extends string, XArgs extends object = {}>(directive: XDirective, args?: XArgs): FieldOptions<TAlias, TDirectives & {
+    directive<XDirective extends string, XArgs extends DirectiveArgs = {}>(directive: XDirective, args?: XArgs): FieldOptions<TAlias, TDirectives & {
         readonly [key in XDirective]: XArgs;
     }>;
     readonly value: FieldOptionsValue<TAlias, TDirectives>;
 }
-export interface FieldOptionsValue<TAlias extends string, TDirectives extends object> {
+export interface FieldOptionsValue<TAlias extends string, TDirectives extends {
+    readonly [key: string]: DirectiveArgs;
+}> {
     readonly alias?: TAlias;
     readonly directives: TDirectives;
 }
-export declare const fieldOptions: FieldOptions<"", {}>;
-export declare function isFieldOptions(options: any): boolean;
+export declare function createFieldOptions<TAlias extends string>(): FieldOptions<TAlias, {}>;
