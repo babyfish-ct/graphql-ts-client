@@ -72,7 +72,7 @@ class FetcherWriter extends Writer_1.Writer {
         this.defaultFetcherProps = defaultFetcherProps;
         this.pluralFields = pluralFields;
         this.methodFields = methodFields;
-        let prefix = instancePrefix(this.modelType.name);
+        let prefix = Utils_1.instancePrefix(this.modelType.name);
         this.emptyFetcherName = `${prefix}$`;
         this.defaultFetcherName = defaultFetcherProps.length !== 0 ? `${prefix}$$` : undefined;
     }
@@ -97,7 +97,7 @@ class FetcherWriter extends Writer_1.Writer {
         const upcastTypes = this.inheritanceInfo.upcastTypeMap.get(this.modelType);
         if (upcastTypes !== undefined) {
             for (const upcastType of upcastTypes) {
-                this.importStatement(`import { ${instancePrefix(upcastType.name)}$ } from './${upcastType.name}${(_a = this.config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher"}';`);
+                this.importStatement(`import { ${Utils_1.instancePrefix(upcastType.name)}$ } from './${upcastType.name}${(_a = this.config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher"}';`);
             }
         }
     }
@@ -179,6 +179,7 @@ class FetcherWriter extends Writer_1.Writer {
     writeDirective() {
         const t = this.text.bind(this);
         t(`\n\ndirective(name: string, args?: DirectiveArgs): ${this.fetcherTypeName}<T, TVariables>;\n`);
+        t(`\ninvisibleDirective(name: string, args?: DirectiveArgs): ${this.fetcherTypeName}<T, TVariables>;\n`);
     }
     writeTypeName() {
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
@@ -248,7 +249,7 @@ class FetcherWriter extends Writer_1.Writer {
             this.scope({ type: "PARAMETERS", multiLines: true }, () => {
                 if (field.args.length !== 0 && mode !== "NO_ARGS") {
                     this.separator(", ");
-                    t("args: XArgs");
+                    t("args: XArgs | undefined");
                 }
                 if (associatedType !== undefined) {
                     this.separator(", ");
@@ -341,7 +342,7 @@ class FetcherWriter extends Writer_1.Writer {
                         if (upcastTypes !== undefined) {
                             for (const upcastType of upcastTypes) {
                                 this.separator(", ");
-                                t(`${instancePrefix(upcastType.name)}$.fetchableType`);
+                                t(`${Utils_1.instancePrefix(upcastType.name)}$.fetchableType`);
                             }
                         }
                     });
@@ -477,6 +478,3 @@ const COMMENT = `/*
  * So any instance of this interface is reuseable.
  */
 `;
-function instancePrefix(name) {
-    return name.substring(0, 1).toLowerCase() + name.substring(1);
-}

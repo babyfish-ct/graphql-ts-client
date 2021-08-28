@@ -20,6 +20,8 @@ export interface Fetcher<E extends string, T extends object, TVariables extends 
 
     readonly directiveMap: ReadonlyMap<string, DirectiveArgs>;
 
+    readonly invisibleDirectiveMap: ReadonlyMap<string, DirectiveArgs>;
+
     toString(): string;
 
     toFragmentString(): string;
@@ -48,6 +50,8 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
 
     private _directiveMap: ReadonlyMap<string, DirectiveArgs>;
 
+    private _invisibleDirectiveMap: ReadonlyMap<string, DirectiveArgs>;
+
     private _result: Result; 
 
     constructor(
@@ -58,6 +62,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         private _child?: AbstractFetcher<string, object, object>,
         private _fieldOptionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs}>,
         private _directive?: string,
+        private _directiveInvisible?: boolean,
         private _directiveArgs?: DirectiveArgs
     ) {
         if (Array.isArray(ctx)) {
@@ -127,6 +132,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
 
     protected addDirective<F extends AbstractFetcher<string, object, object>>(
         directive: string,
+        directiveInvisible: boolean,
         directiveArgs?: DirectiveArgs
     ): F {
         return this.createFetcher(
@@ -136,6 +142,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
             undefined,
             undefined,
             directive,
+            directiveInvisible,
             directiveArgs
         ) as F;
     }
@@ -147,6 +154,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         child?: AbstractFetcher<string, object, object>,
         optionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>,
         directive?: string,
+        directiveInvisible?: boolean,
         directiveArgs?: object
     ): AbstractFetcher<string, object, object>;
 
@@ -186,7 +194,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
                         argGraphQLTypes: fetcher.fetchableType.fields.get(fetcher._field)?.argGraphQLTypeMap,
                         args: fetcher._args, 
                         fieldOptionsValue: fetcher._fieldOptionsValue,
-                        plural: fetcher.fetchableType.fields.get(fetcher._field)!.isPlural,
+                        plural: fetcher.fetchableType.fields.get(fetcher._field)?.isPlural ?? false,
                         childFetchers: fetcher._child === undefined ? undefined: [fetcher._child] // Association only cause one child fetcher
                     });
                 }
@@ -196,26 +204,57 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
     }
 
     get directiveMap(): ReadonlyMap<string, DirectiveArgs> {
-        let m = this._directiveMap;
-        if (m === undefined) {
-            this._directiveMap = m = this.getDirectiveMap0();
-        }
-        return m;
+        return this.getDirectiveMap(false);
     }
 
-    private getDirectiveMap0(): ReadonlyMap<string, DirectiveArgs> {
+    get invisibleDirectiveMap(): ReadonlyMap<string, DirectiveArgs> {
+        return this.getDirectiveMap(true);
+    }
+
+    private getDirectiveMap(invisible: boolean): ReadonlyMap<string, DirectiveArgs> {
+        let map = invisible ? this._invisibleDirectiveMap : this._directiveMap;
+        if (map === undefined) {
+            const maps = this.getDirectiveMap0();
+            this._directiveMap = maps[0];
+            this._invisibleDirectiveMap = maps[1];
+            map = invisible ? this._invisibleDirectiveMap : this._directiveMap;
+        }
+        return map;
+    }
+
+    private getDirectiveMap0(): [ReadonlyMap<string, DirectiveArgs>, ReadonlyMap<string, DirectiveArgs>] {
+        
         const map = new Map<string, DirectiveArgs>();
         for (let fetcher: AbstractFetcher<string, object, object> | undefined = this; 
             fetcher !== undefined; 
             fetcher = fetcher._prev
         ) {
             if (fetcher._directive !== undefined) {
-                if (!map.has(fetcher._directive)) {
-                    map.set(fetcher._directive, fetcher._directiveArgs);
+                if (!fetcher._directiveInvisible) {
+                    if (!map.has(fetcher._directive)) {
+                        map.set(fetcher._directive, fetcher._directiveArgs);
+                    }
                 }
             }
         }
-        return map;
+
+        const invisibleMap = new Map<string, DirectiveArgs>();
+        for (let fetcher: AbstractFetcher<string, object, object> | undefined = this; 
+            fetcher !== undefined; 
+            fetcher = fetcher._prev
+        ) {
+            if (fetcher._directive !== undefined) {
+                if (fetcher._directiveInvisible) {
+                    if (map[fetcher._directive] !== undefined) {
+                        throw new Error(`'${fetcher._directive}' is used as both directive and invisible directive`);
+                    }
+                    if (!invisibleMap.has(fetcher._directive)) {
+                        invisibleMap.set(fetcher._directive, fetcher._directiveArgs);
+                    }
+                }
+            }
+        }
+        return [map, invisibleMap];
     }
 
     get variableTypeMap(): ReadonlyMap<string, string> {

@@ -29,3 +29,7 @@ export function isPluralType(type: GraphQLType) {
     }
     return type instanceof GraphQLList;
 }
+
+export function instancePrefix(name: string): string {
+    return name.substring(0, 1).toLowerCase() + name.substring(1);
+}

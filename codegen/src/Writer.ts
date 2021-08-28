@@ -16,7 +16,7 @@ export abstract class Writer {
 
     private scopes: Scope[] = [];
 
-    private indent: string;
+    protected readonly indent: string;
 
     private needIndent = false;
 

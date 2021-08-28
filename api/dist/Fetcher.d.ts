@@ -13,6 +13,7 @@ export interface Fetcher<E extends string, T extends object, TVariables extends 
     readonly fetchableType: FetchableType<E>;
     readonly fieldMap: ReadonlyMap<string, FetcherField>;
     readonly directiveMap: ReadonlyMap<string, DirectiveArgs>;
+    readonly invisibleDirectiveMap: ReadonlyMap<string, DirectiveArgs>;
     toString(): string;
     toFragmentString(): string;
     toJSON(): string;
@@ -27,18 +28,20 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     private _child?;
     private _fieldOptionsValue?;
     private _directive?;
+    private _directiveInvisible?;
     private _directiveArgs?;
     private _fetchableType;
     private _unionItemTypes?;
     private _prev?;
     private _fieldMap?;
     private _directiveMap;
+    private _invisibleDirectiveMap;
     private _result;
     constructor(ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, string[] | undefined], _negative: boolean, _field: string, _args?: {
         [key: string]: any;
     } | undefined, _child?: AbstractFetcher<string, object, object> | undefined, _fieldOptionsValue?: FieldOptionsValue<string, {
         readonly [key: string]: DirectiveArgs;
-    }> | undefined, _directive?: string | undefined, _directiveArgs?: DirectiveArgs);
+    }> | undefined, _directive?: string | undefined, _directiveInvisible?: boolean | undefined, _directiveArgs?: DirectiveArgs);
     get fetchableType(): FetchableType<E>;
     protected addField<F extends AbstractFetcher<string, object, object>>(field: string, args?: {
         [key: string]: any;
@@ -47,15 +50,17 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     }>): F;
     protected removeField<F extends AbstractFetcher<string, object, object>>(field: string): F;
     protected addEmbbeddable<F extends AbstractFetcher<string, object, object>>(child: AbstractFetcher<string, object, object>, fragmentName?: string): F;
-    protected addDirective<F extends AbstractFetcher<string, object, object>>(directive: string, directiveArgs?: DirectiveArgs): F;
+    protected addDirective<F extends AbstractFetcher<string, object, object>>(directive: string, directiveInvisible: boolean, directiveArgs?: DirectiveArgs): F;
     protected abstract createFetcher(negative: boolean, field: string, args?: {
         [key: string]: any;
     }, child?: AbstractFetcher<string, object, object>, optionsValue?: FieldOptionsValue<string, {
         readonly [key: string]: DirectiveArgs;
-    }>, directive?: string, directiveArgs?: object): AbstractFetcher<string, object, object>;
+    }>, directive?: string, directiveInvisible?: boolean, directiveArgs?: object): AbstractFetcher<string, object, object>;
     get fieldMap(): ReadonlyMap<string, FetcherField>;
     private _getFieldMap0;
     get directiveMap(): ReadonlyMap<string, DirectiveArgs>;
+    get invisibleDirectiveMap(): ReadonlyMap<string, DirectiveArgs>;
+    private getDirectiveMap;
     private getDirectiveMap0;
     get variableTypeMap(): ReadonlyMap<string, string>;
     toString(): string;

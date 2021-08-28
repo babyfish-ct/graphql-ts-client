@@ -13,13 +13,14 @@ exports.StringValue = exports.FragmentWrapper = exports.AbstractFetcher = void 0
 const Parameter_1 = require("./Parameter");
 const TextWriter_1 = require("./TextWriter");
 class AbstractFetcher {
-    constructor(ctx, _negative, _field, _args, _child, _fieldOptionsValue, _directive, _directiveArgs) {
+    constructor(ctx, _negative, _field, _args, _child, _fieldOptionsValue, _directive, _directiveInvisible, _directiveArgs) {
         this._negative = _negative;
         this._field = _field;
         this._args = _args;
         this._child = _child;
         this._fieldOptionsValue = _fieldOptionsValue;
         this._directive = _directive;
+        this._directiveInvisible = _directiveInvisible;
         this._directiveArgs = _directiveArgs;
         if (Array.isArray(ctx)) {
             this._fetchableType = ctx[0];
@@ -62,8 +63,8 @@ class AbstractFetcher {
         }
         return this.createFetcher(false, fieldName, undefined, child);
     }
-    addDirective(directive, directiveArgs) {
-        return this.createFetcher(false, "", undefined, undefined, undefined, directive, directiveArgs);
+    addDirective(directive, directiveInvisible, directiveArgs) {
+        return this.createFetcher(false, "", undefined, undefined, undefined, directive, directiveInvisible, directiveArgs);
     }
     get fieldMap() {
         let m = this._fieldMap;
@@ -73,7 +74,7 @@ class AbstractFetcher {
         return m;
     }
     _getFieldMap0() {
-        var _a, _b;
+        var _a, _b, _c, _d;
         const fetchers = [];
         for (let fetcher = this; fetcher !== undefined; fetcher = fetcher._prev) {
             if (fetcher._field !== "") {
@@ -100,7 +101,7 @@ class AbstractFetcher {
                         argGraphQLTypes: (_b = fetcher.fetchableType.fields.get(fetcher._field)) === null || _b === void 0 ? void 0 : _b.argGraphQLTypeMap,
                         args: fetcher._args,
                         fieldOptionsValue: fetcher._fieldOptionsValue,
-                        plural: fetcher.fetchableType.fields.get(fetcher._field).isPlural,
+                        plural: (_d = (_c = fetcher.fetchableType.fields.get(fetcher._field)) === null || _c === void 0 ? void 0 : _c.isPlural) !== null && _d !== void 0 ? _d : false,
                         childFetchers: fetcher._child === undefined ? undefined : [fetcher._child] // Association only cause one child fetcher
                     });
                 }
@@ -109,22 +110,46 @@ class AbstractFetcher {
         return fieldMap;
     }
     get directiveMap() {
-        let m = this._directiveMap;
-        if (m === undefined) {
-            this._directiveMap = m = this.getDirectiveMap0();
+        return this.getDirectiveMap(false);
+    }
+    get invisibleDirectiveMap() {
+        return this.getDirectiveMap(true);
+    }
+    getDirectiveMap(invisible) {
+        let map = invisible ? this._invisibleDirectiveMap : this._directiveMap;
+        if (map === undefined) {
+            const maps = this.getDirectiveMap0();
+            this._directiveMap = maps[0];
+            this._invisibleDirectiveMap = maps[1];
+            map = invisible ? this._invisibleDirectiveMap : this._directiveMap;
         }
-        return m;
+        return map;
     }
     getDirectiveMap0() {
         const map = new Map();
         for (let fetcher = this; fetcher !== undefined; fetcher = fetcher._prev) {
             if (fetcher._directive !== undefined) {
-                if (!map.has(fetcher._directive)) {
-                    map.set(fetcher._directive, fetcher._directiveArgs);
+                if (!fetcher._directiveInvisible) {
+                    if (!map.has(fetcher._directive)) {
+                        map.set(fetcher._directive, fetcher._directiveArgs);
+                    }
                 }
             }
         }
-        return map;
+        const invisibleMap = new Map();
+        for (let fetcher = this; fetcher !== undefined; fetcher = fetcher._prev) {
+            if (fetcher._directive !== undefined) {
+                if (fetcher._directiveInvisible) {
+                    if (map[fetcher._directive] !== undefined) {
+                        throw new Error(`'${fetcher._directive}' is used as both directive and invisible directive`);
+                    }
+                    if (!invisibleMap.has(fetcher._directive)) {
+                        invisibleMap.set(fetcher._directive, fetcher._directiveArgs);
+                    }
+                }
+            }
+        }
+        return [map, invisibleMap];
     }
     get variableTypeMap() {
         return this.result.variableTypeMap;

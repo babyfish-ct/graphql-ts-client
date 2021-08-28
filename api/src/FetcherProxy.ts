@@ -9,7 +9,7 @@
  */
 
 import { AbstractFetcher, DirectiveArgs, FetchableField, FetchableType, Fetcher, FragmentWrapper } from './Fetcher';
-import { createFieldOptions, FieldOptions, FieldOptionsValue } from './FieldOptions';
+import { createFieldOptions, FieldOptionsValue } from './FieldOptions';
 import { ParameterRef } from './Parameter';
 
 /*
@@ -39,6 +39,7 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object, object>
         child?: AbstractFetcher<string, object, object>,
         optionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>,
         directive?: string,
+        directiveInvisible?: boolean,
         directiveArgs?: DirectiveArgs
     ): AbstractFetcher<string, object, object> {
         return new FetcherTarget(
@@ -49,6 +50,7 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object, object>
             child,
             optionsValue,
             directive,
+            directiveInvisible,
             directiveArgs
         );
     }
@@ -81,7 +83,7 @@ function proxyHandler(
                             methodProxyHandler(target, handler, rest)
                         );
                     }
-                } else if (p === "on" || p === "directive" || fetchableType.fields.get(p)?.isFunction === true) {
+                } else if (p === "on" || p === "directive" || p === "invisibleDirective" || fetchableType.fields.get(p)?.isFunction === true) {
                     return new Proxy(
                         dummyTargetMethod,
                         methodProxyHandler(target, handler, p)
@@ -109,17 +111,17 @@ function methodProxyHandler(
     return {
         apply: (_1: Function, _2: any, argArray: any[]): any => {
             if (field === "on") {
-                const child = argArray[0] as AbstractFetcher<string, object, object>;
-                const fragmentName = argArray[1] as string | undefined;
-                const addEmbbeddable = Reflect.get(targetFetcher, "addEmbbeddable") as ADD_EMBBEDDABLE;
-                if (child instanceof FragmentWrapper) {
-                    return new Proxy(
-                        addEmbbeddable.call(targetFetcher, child.fetcher, child.name),
-                        handler
-                    );
+                const child = argArray[0];
+                const childFetcher = child instanceof FragmentWrapper ? child.fetcher : child as Fetcher<string, object, object>;
+                const fragmentName = argArray[1] as string | undefined ?? (child instanceof FragmentWrapper ? child.name : undefined);
+                let parentFetcher = targetFetcher;
+                if (field === "on" && targetFetcher.fetchableType.entityName !== childFetcher.fetchableType.entityName) {
+                    const addField = Reflect.get(targetFetcher, "addField") as ADD_FILED;
+                    parentFetcher = addField.call(targetFetcher, "__typename");
                 }
+                const addEmbbeddable = Reflect.get(parentFetcher, "addEmbbeddable") as ADD_EMBBEDDABLE;
                 return new Proxy(
-                    addEmbbeddable.call(targetFetcher, child, fragmentName),
+                    addEmbbeddable.call(parentFetcher, childFetcher, fragmentName),
                     handler
                 );
             } else if (field === "directive") {
@@ -127,7 +129,15 @@ function methodProxyHandler(
                 const directiveArgs = argArray[1] as DirectiveArgs;
                 const addDirective = Reflect.get(targetFetcher, "addDirective") as ADD_DIRECTIVE;
                 return new Proxy(
-                    addDirective.call(targetFetcher, directive, directiveArgs),
+                    addDirective.call(targetFetcher, directive, false, directiveArgs),
+                    handler
+                );
+            } else if (field === "invisibleDirective") {
+                const directive = argArray[0] as string;
+                const directiveArgs = argArray[1] as DirectiveArgs;
+                const addDirective = Reflect.get(targetFetcher, "addDirective") as ADD_DIRECTIVE;
+                return new Proxy(
+                    addDirective.call(targetFetcher, directive, true, directiveArgs),
                     handler
                 );
             }
@@ -181,6 +191,7 @@ type ADD_EMBBEDDABLE = (
 
 type ADD_DIRECTIVE = (
     directive: string,
+    directiveInvisible: boolean,
     directiveArgs?: DirectiveArgs
 ) => AbstractFetcher<string, object, object>;
 

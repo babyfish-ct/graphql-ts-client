@@ -10,7 +10,7 @@
 
 import { WriteStream } from "fs";
 import { GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLUnionType } from "graphql";
-import { associatedTypeOf, isPluralType } from "./Utils";
+import { associatedTypeOf, instancePrefix, isPluralType } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { InheritanceInfo } from "./InheritanceInfo";
 import { ImportingBehavior, Writer } from "./Writer";
@@ -217,6 +217,8 @@ export class FetcherWriter extends Writer {
         const t = this.text.bind(this);
 
         t(`\n\ndirective(name: string, args?: DirectiveArgs): ${this.fetcherTypeName}<T, TVariables>;\n`);
+
+        t(`\ninvisibleDirective(name: string, args?: DirectiveArgs): ${this.fetcherTypeName}<T, TVariables>;\n`);
     }
 
     private writeTypeName() {
@@ -305,7 +307,7 @@ export class FetcherWriter extends Writer {
             this.scope({ type: "PARAMETERS", multiLines: true }, () => {
                 if (field.args.length !== 0 && mode !== "NO_ARGS") {
                     this.separator(", ");
-                    t("args: XArgs");
+                    t("args: XArgs | undefined");
                 }
                 if (associatedType !== undefined) {
                     this.separator(", ");
@@ -545,6 +547,3 @@ const COMMENT = `/*
  */
 `;
 
-function instancePrefix(name: string): string {
-    return name.substring(0, 1).toLowerCase() + name.substring(1);
-}

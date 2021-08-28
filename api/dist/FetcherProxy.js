@@ -26,8 +26,8 @@ function createFetcher(fetchableType, unionEntityTypes) {
 }
 exports.createFetcher = createFetcher;
 class FetcherTarget extends Fetcher_1.AbstractFetcher {
-    createFetcher(negative, field, args, child, optionsValue, directive, directiveArgs) {
-        return new FetcherTarget(this, negative, field, args, child, optionsValue, directive, directiveArgs);
+    createFetcher(negative, field, args, child, optionsValue, directive, directiveInvisible, directiveArgs) {
+        return new FetcherTarget(this, negative, field, args, child, optionsValue, directive, directiveInvisible, directiveArgs);
     }
 }
 function proxyHandler(fetchableType) {
@@ -51,7 +51,7 @@ function proxyHandler(fetchableType) {
                         return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, rest));
                     }
                 }
-                else if (p === "on" || p === "directive" || ((_a = fetchableType.fields.get(p)) === null || _a === void 0 ? void 0 : _a.isFunction) === true) {
+                else if (p === "on" || p === "directive" || p === "invisibleDirective" || ((_a = fetchableType.fields.get(p)) === null || _a === void 0 ? void 0 : _a.isFunction) === true) {
                     return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, p));
                 }
                 else if (fetchableType.fields.has(p)) {
@@ -68,21 +68,30 @@ function proxyHandler(fetchableType) {
 function methodProxyHandler(targetFetcher, handler, field) {
     return {
         apply: (_1, _2, argArray) => {
-            var _a;
+            var _a, _b;
             if (field === "on") {
                 const child = argArray[0];
-                const fragmentName = argArray[1];
-                const addEmbbeddable = Reflect.get(targetFetcher, "addEmbbeddable");
-                if (child instanceof Fetcher_1.FragmentWrapper) {
-                    return new Proxy(addEmbbeddable.call(targetFetcher, child.fetcher, child.name), handler);
+                const childFetcher = child instanceof Fetcher_1.FragmentWrapper ? child.fetcher : child;
+                const fragmentName = (_a = argArray[1]) !== null && _a !== void 0 ? _a : (child instanceof Fetcher_1.FragmentWrapper ? child.name : undefined);
+                let parentFetcher = targetFetcher;
+                if (field === "on" && targetFetcher.fetchableType.entityName !== childFetcher.fetchableType.entityName) {
+                    const addField = Reflect.get(targetFetcher, "addField");
+                    parentFetcher = addField.call(targetFetcher, "__typename");
                 }
-                return new Proxy(addEmbbeddable.call(targetFetcher, child, fragmentName), handler);
+                const addEmbbeddable = Reflect.get(parentFetcher, "addEmbbeddable");
+                return new Proxy(addEmbbeddable.call(parentFetcher, childFetcher, fragmentName), handler);
             }
             else if (field === "directive") {
                 const directive = argArray[0];
                 const directiveArgs = argArray[1];
                 const addDirective = Reflect.get(targetFetcher, "addDirective");
-                return new Proxy(addDirective.call(targetFetcher, directive, directiveArgs), handler);
+                return new Proxy(addDirective.call(targetFetcher, directive, false, directiveArgs), handler);
+            }
+            else if (field === "invisibleDirective") {
+                const directive = argArray[0];
+                const directiveArgs = argArray[1];
+                const addDirective = Reflect.get(targetFetcher, "addDirective");
+                return new Proxy(addDirective.call(targetFetcher, directive, true, directiveArgs), handler);
             }
             let args = undefined;
             let child = undefined;
@@ -99,7 +108,7 @@ function methodProxyHandler(targetFetcher, handler, field) {
                 }
             }
             if (args === undefined) {
-                const argGraphQLTypeMap = (_a = targetFetcher.fetchableType.declaredFields.get(field)) === null || _a === void 0 ? void 0 : _a.argGraphQLTypeMap;
+                const argGraphQLTypeMap = (_b = targetFetcher.fetchableType.declaredFields.get(field)) === null || _b === void 0 ? void 0 : _b.argGraphQLTypeMap;
                 if (argGraphQLTypeMap !== undefined && argGraphQLTypeMap.size !== 0) {
                     args = {};
                     for (const [name,] of argGraphQLTypeMap) {

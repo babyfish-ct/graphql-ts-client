@@ -15,7 +15,7 @@ export declare abstract class Writer {
     private stream;
     protected config: GeneratorConfig;
     private scopes;
-    private indent;
+    protected readonly indent: string;
     private needIndent;
     private importStatements;
     private importedTypes;
