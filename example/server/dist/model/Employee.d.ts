@@ -15,10 +15,8 @@ export declare class Employee extends Node {
     readonly salary: number;
     readonly departmentId: string;
     readonly supervisorId?: string;
+    department(): Department;
+    supervisor(): Employee | undefined;
+    subordinates(): Employee[];
     constructor(row: TEmployee);
-}
-export declare class EmployeeResolver {
-    department(self: Employee): Department;
-    supervisor(self: Employee): Employee | undefined;
-    subordinates(self: Employee): Employee[];
 }

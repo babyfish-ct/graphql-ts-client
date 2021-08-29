@@ -30,7 +30,7 @@ export interface DependencyManagerProviderConfig {
 }
 
 export interface RefetchableDependencies<T extends object> {
-    ofResult(oldObject: T | undefined, newObject: T | undefined): string[];
+    ofData(oldData: T | null | undefined, newData: T | null | undefined): string[];
     ofError(): string[];
 }
 

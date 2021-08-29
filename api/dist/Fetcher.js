@@ -239,7 +239,7 @@ class ResultContext {
             if (field.argGraphQLTypes !== undefined) {
                 this.acceptArgs(field.args, field.argGraphQLTypes);
             }
-            this.acceptDirectives_((_b = field.fieldOptionsValue) === null || _b === void 0 ? void 0 : _b.directives);
+            this.acceptDirectives((_b = field.fieldOptionsValue) === null || _b === void 0 ? void 0 : _b.directives);
             const childFetchers = field.childFetchers;
             if (childFetchers !== undefined && childFetchers.length !== 0) {
                 if (fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
@@ -269,14 +269,6 @@ class ResultContext {
             for (const [directive, args] of directives) {
                 this.writer.text(`\n@${directive}`);
                 this.acceptArgs(args);
-            }
-        }
-    }
-    acceptDirectives_(directives) {
-        if (directives !== undefined) {
-            for (const directive in directives) {
-                this.writer.text(`\n@${directive}`);
-                this.acceptArgs(directives[directive]);
             }
         }
     }

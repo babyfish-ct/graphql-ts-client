@@ -102,7 +102,7 @@ __decorate([
     __param(0, type_graphql_1.Arg("input", () => EmployeeInput_1.EmployeeInput))
 ], EmployeeService.prototype, "mergeEmployee", null);
 __decorate([
-    type_graphql_1.Mutation(() => String),
-    __param(0, type_graphql_1.Arg("id", () => String))
+    type_graphql_1.Mutation(() => type_graphql_1.ID),
+    __param(0, type_graphql_1.Arg("id", () => type_graphql_1.ID))
 ], EmployeeService.prototype, "deleteEmployee", null);
 exports.EmployeeService = EmployeeService;

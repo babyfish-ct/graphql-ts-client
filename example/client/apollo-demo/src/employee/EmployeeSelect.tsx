@@ -2,7 +2,7 @@ import { ChangeEvent, FC, memo, useCallback, useEffect } from "react";
 import { ERROR_CSS } from "../common/CssClasses";
 import { Loading } from "../common/Loading";
 import { useTypedQuery } from "../__generated";
-import { employee$ } from "../__generated/fetchers";
+import { employee$, query$ } from "../__generated/fetchers";
 
 const EMPLOYEE_OPTION_FETCHER = 
     employee$
@@ -18,8 +18,10 @@ export const EmployeeSelect: FC<{
 }> = memo(({optional = false, departmentId, value, onChange}) => {
 
     const { loading, error, data } = useTypedQuery(
-        { queryKey: "findEmployees", dataKey: "options" }, 
-        EMPLOYEE_OPTION_FETCHER,
+        query$.findEmployees(
+            EMPLOYEE_OPTION_FETCHER,
+            options => options.alias("options")
+        ),
         {
             variables: { departmentId }
         }

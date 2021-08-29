@@ -37,7 +37,7 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object, object>
         field: string,
         args?: {[key: string]: any},
         child?: AbstractFetcher<string, object, object>,
-        optionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>,
+        optionsValue?: FieldOptionsValue,
         directive?: string,
         directiveInvisible?: boolean,
         directiveArgs?: DirectiveArgs
@@ -143,7 +143,7 @@ function methodProxyHandler(
             }
             let args: {[key: string]: any} | undefined = undefined;
             let child: AbstractFetcher<string, object, object> | undefined = undefined;
-            let optionsValue: FieldOptionsValue<string, any> | undefined = undefined;
+            let optionsValue: FieldOptionsValue | undefined = undefined;
             for (const arg of argArray) {
                 if (arg instanceof AbstractFetcher) {
                     child = arg as AbstractFetcher<string, object, object>;
@@ -175,7 +175,7 @@ type ADD_FILED = (
     field: string, 
     args?: {[key: string]: any}, 
     child?: AbstractFetcher<string, object, object>,
-    optionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>
+    optionsValue?: FieldOptionsValue
 ) => AbstractFetcher<string, object, object>;
  
 type REMOVE_FILED = (

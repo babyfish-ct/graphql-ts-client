@@ -6,7 +6,7 @@ import { ERROR_CSS, FORM_CSS } from "../common/CssClasses";
 import { Dialog } from "../common/Dialog";
 import { Loading } from "../common/Loading";
 import { useTypedMutation } from "../__generated";
-import { department$$ } from "../__generated/fetchers";
+import { department$$, mutation$ } from "../__generated/fetchers";
 import { DepartmentInput } from "../__generated/inputs";
 
 export const DEPARTMENT_MUTATION_FETCHER =
@@ -32,8 +32,9 @@ export const DepartmentDialog: FC<{
     }, [input]);
 
     const [mutate, { loading, error }] = useTypedMutation(
-        "mergeDepartment",
-        DEPARTMENT_MUTATION_FETCHER, // Mutation Fetcher
+        mutation$.mergeDepartment(
+            DEPARTMENT_MUTATION_FETCHER // Mutation Fetcher
+        ),
         { 
             variables: { input: input as DepartmentInput }, // Unsafe cast, depends on "valid"
             
@@ -46,7 +47,10 @@ export const DepartmentDialog: FC<{
 
                 // If the mutation added an new department('value' is undefined but 'result.data?.mergeDepartment' is not)
                 // The queries returns department lists will be refetched.
-                return result.dependencies.ofResult(value, result.data?.mergeDepartment);
+                return result.dependencies.ofData(
+                    value === undefined ? undefined : { mergeDepartment: value }, 
+                    result.data
+                );
             }
         }
     );

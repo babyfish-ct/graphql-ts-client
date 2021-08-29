@@ -60,7 +60,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         private _field: string,
         private _args?: {[key: string]: any},
         private _child?: AbstractFetcher<string, object, object>,
-        private _fieldOptionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs}>,
+        private _fieldOptionsValue?: FieldOptionsValue,
         private _directive?: string,
         private _directiveInvisible?: boolean,
         private _directiveArgs?: DirectiveArgs
@@ -83,7 +83,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         field: string, 
         args?: {[key: string]: any},
         child?: AbstractFetcher<string, object, object>,
-        optionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>
+        optionsValue?: FieldOptionsValue
     ): F {
         return this.createFetcher(
             false,
@@ -152,7 +152,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         field: string,
         args?: {[key: string]: any},
         child?: AbstractFetcher<string, object, object>,
-        optionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>,
+        optionsValue?: FieldOptionsValue,
         directive?: string,
         directiveInvisible?: boolean,
         directiveArgs?: object
@@ -338,7 +338,7 @@ export interface FetchableField {
 export interface FetcherField {
     readonly argGraphQLTypes?: ReadonlyMap<string, string>;
     readonly args?: {readonly [key: string]: any};
-    readonly fieldOptionsValue?: FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }>;
+    readonly fieldOptionsValue?: FieldOptionsValue;
     readonly plural: boolean;
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
@@ -392,7 +392,7 @@ class ResultContext {
             if (field.argGraphQLTypes !== undefined) {
                 this.acceptArgs(field.args, field.argGraphQLTypes);
             }
-            this.acceptDirectives_(field.fieldOptionsValue?.directives);
+            this.acceptDirectives(field.fieldOptionsValue?.directives);
             const childFetchers = field.childFetchers;
             if (childFetchers !== undefined && childFetchers.length !== 0) {
                 if (fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
@@ -422,15 +422,6 @@ class ResultContext {
             for (const [directive, args] of directives) {
                 this.writer.text(`\n@${directive}`);
                 this.acceptArgs(args);
-            }
-        }
-    }
-
-    private acceptDirectives_(directives?: {readonly [key: string]: DirectiveArgs}) {
-        if (directives !== undefined) {
-            for (const directive in directives) {
-                this.writer.text(`\n@${directive}`);
-                this.acceptArgs(directives[directive]);
             }
         }
     }

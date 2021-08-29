@@ -10,8 +10,6 @@ import { Node } from './Node';
 export declare class Department extends Node {
     readonly name: string;
     constructor(row: TDepartment);
-}
-export declare class DepartmentResolver {
-    employees(self: Department): Employee[];
-    avgSalary(self: Department): number;
+    employees(): Employee[];
+    avgSalary(): number;
 }

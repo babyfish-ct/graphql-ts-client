@@ -8,7 +8,7 @@ import { ErrorText } from "../common/ErrorText";
 import { Loading } from "../common/Loading";
 import { DepartmentSelect } from "../department/DepartmentSelect";
 import { useTypedMutation } from "../__generated";
-import { department$, employee$, employee$$ } from "../__generated/fetchers";
+import { department$, employee$, employee$$, mutation$ } from "../__generated/fetchers";
 import { EmployeeInput } from "../__generated/inputs";
 import { EmployeeSelect } from "./EmployeeSelect";
 
@@ -46,8 +46,9 @@ export const EmployeeDialog: FC<{
     }, [input]);
 
     const [mutate, {loading, error}] = useTypedMutation(
-        "mergeEmployee",
-        EMPLOYEE_FORM_FETCHER, // Mutation Fetcher
+        mutation$.mergeEmployee(
+        EMPLOYEE_FORM_FETCHER // Mutation Fetcher
+        ),
         {
             variables: { input: input as EmployeeInput }, // Unsafe cast, depends on "valid"
             
@@ -77,7 +78,10 @@ export const EmployeeDialog: FC<{
                  * 4. If the mutation added an new employee('value' is undefined but 'result.data?.mergeEmployee' is not),
                  * Refetchs all the queries returns 'Employee' and execute 1, 2 and 3.
                  */
-                return result.dependencies.ofResult(value, result.data?.mergeEmployee);
+                return result.dependencies.ofData(
+                    value === undefined ? undefined : { mergeEmployee: value }, 
+                    result.data
+                );
             }
         }
     );

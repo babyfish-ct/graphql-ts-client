@@ -24,12 +24,12 @@ export interface FieldOptions<TAlias extends string, TDirectives extends { reado
         TDirectives & { readonly [key in XDirective]: XArgs }
     >;
 
-    readonly value: FieldOptionsValue<TAlias, TDirectives>;
+    readonly value: FieldOptionsValue;
 }
 
 class FieldOptionsImpl<TAlias extends string, TDirectives extends { readonly [key: string]: DirectiveArgs }> implements FieldOptions<TAlias, TDirectives> {
 
-    private _value?: FieldOptionsValue<TAlias, TDirectives>;
+    private _value?: FieldOptionsValue;
 
     constructor(
         private _prev?: FieldOptionsImpl<string, any>, 
@@ -77,42 +77,42 @@ class FieldOptionsImpl<TAlias extends string, TDirectives extends { readonly [ke
         return new FieldOptionsImpl<TAlias, TDirectives & { readonly [key in XDirective]: XArgs}>(this, undefined, undefined, undefined, directive, args);
     }
 
-    get value(): FieldOptionsValue<TAlias, TDirectives> {
+    get value(): FieldOptionsValue {
         let v = this._value;
         if (v === undefined) {
-            this._value = v = this.createValue() as FieldOptionsValue<TAlias, TDirectives>;
+            this._value = v = this.createValue();
         }
         return v;
     }
 
-    private createValue(): FieldOptionsValue<string, { readonly [key: string]: DirectiveArgs }> {
+    private createValue(): FieldOptionsValue {
         let alias: string | undefined = undefined;
-        const directives = {};
-        const invisibleDirectives = {};
+        const directives = new Map<string, DirectiveArgs>();
+        const invisibleDirectives = new Map<string, DirectiveArgs>();
         for (let options: FieldOptionsImpl<string, any> | undefined = this; options !== undefined; options = options._prev) {
             if (options._alias !== undefined && alias === undefined) {
                 alias = options._alias;
             }
-            if (options._directive !== undefined && !directives[options._directive] === undefined) {
+            if (options._directive !== undefined && !directives.has(options._directive)) {
                 const args = options._directiveArgs;
-                directives[options._directive] = args !== undefined && Object.keys(args).length !== 0 ? args : undefined;
+                directives.set(options._directive, args !== undefined && Object.keys(args).length !== 0 ? args : undefined);
             }
-            if (options._invisibleDirective !== undefined && invisibleDirectives[options._invisibleDirective] === undefined) {
-                if (directives[options._invisibleDirective] !== undefined) {
+            if (options._invisibleDirective !== undefined && !invisibleDirectives.has(options._invisibleDirective)) {
+                if (directives.has(options._invisibleDirective)) {
                     throw new Error(`'${options._invisibleDirective}' is used both directive and invisible directive`);
                 }
                 const args = options._invisibleDirectiveArgs;
-                invisibleDirectives[options._invisibleDirective] = args !== undefined && Object.keys(args).length !== 0 ? args : undefined;
+                invisibleDirectives.set(options._invisibleDirective, args !== undefined && Object.keys(args).length !== 0 ? args : undefined);
             }
         }
         return { alias, directives, invisibleDirectives };
     }
 }
 
-export interface FieldOptionsValue<TAlias extends string, TDirectives extends {readonly [key: string]: DirectiveArgs}> {
-    readonly alias?: TAlias;
-    readonly directives: TDirectives;
-    readonly invisibleDirectives?: TDirectives;
+export interface FieldOptionsValue {
+    readonly alias?: string;
+    readonly directives: ReadonlyMap<string, DirectiveArgs>;
+    readonly invisibleDirectives: ReadonlyMap<string, DirectiveArgs>;
 }
 
 export function createFieldOptions<TAlias extends string>(): FieldOptions<TAlias, {}> {

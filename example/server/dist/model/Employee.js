@@ -10,11 +10,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
+var Employee_1;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.EmployeeResolver = exports.Employee = void 0;
+exports.Employee = void 0;
 require("reflect-metadata");
 const type_graphql_1 = require("type-graphql");
 const DepartmentRepostiory_1 = require("../dal/DepartmentRepostiory");
@@ -22,7 +20,7 @@ const EmployeeRepository_1 = require("../dal/EmployeeRepository");
 const Department_1 = require("./Department");
 const Gender_1 = require("./Gender");
 const Node_1 = require("./Node");
-let Employee = class Employee extends Node_1.Node {
+let Employee = Employee_1 = class Employee extends Node_1.Node {
     constructor(row) {
         super(row.id);
         this.firstName = row.firstName;
@@ -31,6 +29,20 @@ let Employee = class Employee extends Node_1.Node {
         this.salary = row.salary;
         this.departmentId = row.departmentId;
         this.supervisorId = row.supervisorId;
+    }
+    department() {
+        return new Department_1.Department(DepartmentRepostiory_1.departmentTable.findNonNullById(this.departmentId));
+    }
+    supervisor() {
+        if (this.supervisorId === undefined) {
+            return undefined;
+        }
+        return new Employee_1(EmployeeRepository_1.employeeTable.findNonNullById(this.supervisorId));
+    }
+    subordinates() {
+        return EmployeeRepository_1.employeeTable
+            .findByProp("supervisorId", this.id)
+            .map(row => new Employee_1(row));
     }
 };
 __decorate([
@@ -45,45 +57,16 @@ __decorate([
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Float)
 ], Employee.prototype, "salary", void 0);
-Employee = __decorate([
-    type_graphql_1.ObjectType()
+__decorate([
+    type_graphql_1.Field(() => Department_1.Department)
+], Employee.prototype, "department", null);
+__decorate([
+    type_graphql_1.Field(() => Employee_1, { nullable: true })
+], Employee.prototype, "supervisor", null);
+__decorate([
+    type_graphql_1.Field(() => [Employee_1])
+], Employee.prototype, "subordinates", null);
+Employee = Employee_1 = __decorate([
+    type_graphql_1.ObjectType({ implements: Node_1.Node })
 ], Employee);
 exports.Employee = Employee;
-/*
- * This simple demo uses data in memory to mock database,
- * so there is no performance issues, "N + 1" query is not a problem
- *
- * That means "Resvoler" is enough and "DataLoader" optimization is unnecessary.
- */
-let EmployeeResolver = class EmployeeResolver {
-    department(self) {
-        return new Department_1.Department(DepartmentRepostiory_1.departmentTable.findNonNullById(self.departmentId));
-    }
-    supervisor(self) {
-        if (self.supervisorId === undefined) {
-            return undefined;
-        }
-        return new Employee(EmployeeRepository_1.employeeTable.findNonNullById(self.supervisorId));
-    }
-    subordinates(self) {
-        return EmployeeRepository_1.employeeTable
-            .findByProp("supervisorId", self.id)
-            .map(row => new Employee(row));
-    }
-};
-__decorate([
-    type_graphql_1.FieldResolver(() => Department_1.Department),
-    __param(0, type_graphql_1.Root())
-], EmployeeResolver.prototype, "department", null);
-__decorate([
-    type_graphql_1.FieldResolver(() => Employee, { nullable: true }),
-    __param(0, type_graphql_1.Root())
-], EmployeeResolver.prototype, "supervisor", null);
-__decorate([
-    type_graphql_1.FieldResolver(() => [Employee]),
-    __param(0, type_graphql_1.Root())
-], EmployeeResolver.prototype, "subordinates", null);
-EmployeeResolver = __decorate([
-    type_graphql_1.Resolver(Employee)
-], EmployeeResolver);
-exports.EmployeeResolver = EmployeeResolver;

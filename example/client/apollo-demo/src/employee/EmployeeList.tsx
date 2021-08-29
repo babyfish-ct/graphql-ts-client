@@ -7,6 +7,7 @@ import { Loading } from "../common/Loading";
 import { EmployeeDialog } from "./EmployeeDialog";
 import { DepartmentSelect } from "../department/DepartmentSelect";
 import { EmployeeSelect } from "./EmployeeSelect";
+import { query$ } from "../__generated/fetchers";
 
 export const EmployeeList: FC = memo(() => {
 
@@ -15,8 +16,9 @@ export const EmployeeList: FC = memo(() => {
     const [supervisorId, setSupervisorId] = useState<string>();
 
     const { loading, error, data, refetch } = useTypedQuery(
-        "findEmployees",
-        EMPLOYEE_ITEM_FETCHER,
+        query$.findEmployees(
+            EMPLOYEE_ITEM_FETCHER
+        ),
         {
             notifyOnNetworkStatusChange: true, // consider "refetching" as "loading"
             variables: { 

@@ -15,8 +15,7 @@ import { GeneratorConfig } from "../GeneratorConfig";
 export declare class ApolloGenerator extends Generator {
     constructor(config: GeneratorConfig);
     protected generateServices(queryFields: GraphQLField<unknown, unknown>[], mutationFields: GraphQLField<unknown, unknown>[], promises: Promise<void>[]): Promise<void>;
-    private generateQueries;
-    private generateMutations;
+    private generateApollo;
     private generateDependencyManager;
     protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
 }

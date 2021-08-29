@@ -7,8 +7,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Gender = void 0;
 require("reflect-metadata");
+const type_graphql_1 = require("type-graphql");
 var Gender;
 (function (Gender) {
-    Gender["MALE"] = "MALE";
-    Gender["FEMALE"] = "FEMALE";
+    Gender[Gender["MALE"] = 0] = "MALE";
+    Gender[Gender["FEMALE"] = 1] = "FEMALE";
 })(Gender = exports.Gender || (exports.Gender = {}));
+type_graphql_1.registerEnumType(Gender, { name: "Gender" });

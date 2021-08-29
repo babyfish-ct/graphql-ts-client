@@ -4,9 +4,9 @@ import { ModelType } from "graphql-ts-client-api";
 import { Dialog } from "../common/Dialog";
 import { ErrorText } from "../common/ErrorText";
 import { Loading } from "../common/Loading";
-import { useSimpleMutation } from "../__generated";
-import { department$ } from "../__generated/fetchers";
+import { department$, mutation$ } from "../__generated/fetchers";
 import { useDependencyManager } from "../__generated/DependencyManager";
+import { useTypedMutation } from "../__generated";
 
 const DELETED_DEPARTMENT_FETCHER =
     department$
@@ -19,8 +19,8 @@ export const DeleteDepartmentDialog: FC<{
 }> = memo(({value, onClose}) => {
 
     const dependencyManager = useDependencyManager();
-    const [mutate, {loading, error}] = useSimpleMutation(
-        "deleteDepartment", 
+    const [mutate, {loading, error}] = useTypedMutation(
+        mutation$.deleteDepartment(),
         { 
             variables: { id: value.id },
             refetchQueries: () => {

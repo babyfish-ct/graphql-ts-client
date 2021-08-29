@@ -60,6 +60,7 @@ const EXPORT_RELAY_VARS_CODE = `export {
     createTypedQuery,
     createTypedMutation,
     createTypedFragment,
+    createTypedOperationDescriptor,
     loadTypedQuery,
     useTypedQueryLoader,
     useTypedPreloadedQuery,

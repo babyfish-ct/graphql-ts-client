@@ -10,11 +10,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __param = (this && this.__param) || function (paramIndex, decorator) {
-    return function (target, key) { decorator(target, key, paramIndex); }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DepartmentResolver = exports.Department = void 0;
+exports.Department = void 0;
 require("reflect-metadata");
 const type_graphql_1 = require("type-graphql");
 const EmployeeRepository_1 = require("../dal/EmployeeRepository");
@@ -25,29 +22,14 @@ let Department = class Department extends Node_1.Node {
         super(row.id);
         this.name = row.name;
     }
-};
-__decorate([
-    type_graphql_1.Field(() => String)
-], Department.prototype, "name", void 0);
-Department = __decorate([
-    type_graphql_1.ObjectType()
-], Department);
-exports.Department = Department;
-/*
- * This simple demo uses data in memory to mock database,
- * so there is no performance issues, "N + 1" query is not a problem
- *
- * That means "Resvoler" is enough and "DataLoader" optimization is unnecessary.
- */
-let DepartmentResolver = class DepartmentResolver {
-    employees(self) {
+    employees() {
         return EmployeeRepository_1.employeeTable
-            .findByProp("departmentId", self.id)
+            .findByProp("departmentId", this.id)
             .map(row => new Employee_1.Employee(row));
     }
-    avgSalary(self) {
+    avgSalary() {
         const arr = EmployeeRepository_1.employeeTable
-            .findByProp("departmentId", self.id)
+            .findByProp("departmentId", this.id)
             .map(row => row.salary);
         return arr.length !== 0 ?
             arr.reduce((p, c) => p + c, 0) / arr.length :
@@ -55,14 +37,15 @@ let DepartmentResolver = class DepartmentResolver {
     }
 };
 __decorate([
-    type_graphql_1.FieldResolver(() => [Employee_1.Employee]),
-    __param(0, type_graphql_1.Root())
-], DepartmentResolver.prototype, "employees", null);
+    type_graphql_1.Field(() => String)
+], Department.prototype, "name", void 0);
 __decorate([
-    type_graphql_1.FieldResolver(() => type_graphql_1.Float),
-    __param(0, type_graphql_1.Root())
-], DepartmentResolver.prototype, "avgSalary", null);
-DepartmentResolver = __decorate([
-    type_graphql_1.Resolver(Department)
-], DepartmentResolver);
-exports.DepartmentResolver = DepartmentResolver;
+    type_graphql_1.Field(() => [Employee_1.Employee])
+], Department.prototype, "employees", null);
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Float)
+], Department.prototype, "avgSalary", null);
+Department = __decorate([
+    type_graphql_1.ObjectType({ implements: Node_1.Node })
+], Department);
+exports.Department = Department;

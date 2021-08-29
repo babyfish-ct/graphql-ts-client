@@ -37,9 +37,9 @@ class DependencyManager {
         removeResource(this.rootTypeResourceMap, resource);
         removeResource(this.fieldResourceMap, resource);
     }
-    resources(fetcher, oldObject, newObject) {
+    resources(fetcher, oldData, newData) {
         const resources = new Set();
-        this.collectResources(fetcher, nullToUndefined(oldObject), nullToUndefined(newObject), resources);
+        this.collectResources(fetcher, nullToUndefined(oldData), nullToUndefined(newData), resources);
         return Array.from(resources);
     }
     allResources(fetcher) {
@@ -49,14 +49,17 @@ class DependencyManager {
     }
     registerTypes(resource, fetchers) {
         for (const fetcher of fetchers) {
+            const isOperation = isOperationFetcher(fetcher);
             for (const [fieldName, field] of fetcher.fieldMap) {
-                const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
-                for (const declaringTypeName of declaringTypeNames) {
-                    compute(this.rootTypeResourceMap, declaringTypeName, () => new Resources()).retain(resource);
-                }
-                if (fieldName.startsWith("...")) { //only register recursivly for fragment
+                if (isOperation || fieldName.startsWith("...")) { //only register recursivly for fragment
                     if (field.childFetchers !== undefined) {
                         this.registerTypes(resource, field.childFetchers);
+                    }
+                }
+                else {
+                    const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
+                    for (const declaringTypeName of declaringTypeNames) {
+                        compute(this.rootTypeResourceMap, declaringTypeName, () => new Resources()).retain(resource);
                     }
                 }
             }
@@ -64,8 +67,9 @@ class DependencyManager {
     }
     registerFields(resource, fetchers) {
         for (const fetcher of fetchers) {
+            const isOperation = isOperationFetcher(fetcher);
             for (const [fieldName, field] of fetcher.fieldMap) {
-                if (!fieldName.startsWith("...")) {
+                if (!isOperation && !fieldName.startsWith("...")) {
                     const subMap = compute(this.fieldResourceMap, fieldName, () => new Map());
                     const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
                     for (const declaringTypeName of declaringTypeNames) {
@@ -83,17 +87,14 @@ class DependencyManager {
         if (oldObject === newObject) { // Include both undefined
             return;
         }
-        let objDiff = false;
         if (oldObject === undefined || newObject === undefined) {
             (_a = this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)) === null || _a === void 0 ? void 0 : _a.copyTo(output);
-            objDiff = true;
         }
-        else {
+        else if (!isOperationFetcher(fetcher)) {
             const oldId = this._idGetter(oldObject);
             const newId = this._idGetter(newObject);
             if (oldId !== newId) {
                 (_b = this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)) === null || _b === void 0 ? void 0 : _b.copyTo(output);
-                objDiff = true;
             }
         }
         for (const [fieldName, field] of fetcher.fieldMap) {
@@ -212,6 +213,10 @@ class Resources {
         }
     }
 }
+function isOperationFetcher(fetcher) {
+    const fetcherName = fetcher.fetchableType.entityName;
+    return fetcherName === "Query" || fetcherName === 'Mutation';
+}
 function getDeclaringTypeNames(fieldName, fetcher) {
     const declaringTypeNames = new Set();
     if (fieldName !== '' && fieldName !== '...') {
@@ -266,8 +271,10 @@ function removeResource(recursiveResourceMap, resource) {
 function associatedBy(values, keyGetter) {
     const map = new Map();
     for (const value of values) {
-        const key = keyGetter(value);
-        map.set(key, value);
+        if (value !== undefined && value !== null) {
+            const key = keyGetter(value);
+            map.set(key, value);
+        }
     }
     return map;
 }

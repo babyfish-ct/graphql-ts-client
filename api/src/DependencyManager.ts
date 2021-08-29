@@ -44,13 +44,18 @@ export class DependencyManager {
         removeResource(this.fieldResourceMap, resource);
     }
 
-    resources<T extends object>(
-        fetcher: Fetcher<string, T, object>, 
-        oldObject: T | undefined, 
-        newObject: T | undefined
+    resources<TData extends object>(
+        fetcher: Fetcher<string, TData, object>, 
+        oldData: TData | null | undefined, 
+        newData: TData | null | undefined
     ): string[] {
         const resources = new Set<string>();
-        this.collectResources(fetcher, nullToUndefined(oldObject), nullToUndefined(newObject), resources);
+        this.collectResources(
+            fetcher, 
+            nullToUndefined(oldData), 
+            nullToUndefined(newData), 
+            resources
+        );
         return Array.from(resources);
     }
 
@@ -62,14 +67,16 @@ export class DependencyManager {
 
     private registerTypes(resource: string, fetchers: readonly Fetcher<string, object, object>[]) {
         for (const fetcher of fetchers) {
+            const isOperation = isOperationFetcher(fetcher);
             for (const [fieldName, field] of fetcher.fieldMap) {
-                const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
-                for (const declaringTypeName of declaringTypeNames) {
-                    compute(this.rootTypeResourceMap, declaringTypeName, () => new Resources()).retain(resource);
-                }
-                if (fieldName.startsWith("...")) { //only register recursivly for fragment
+                if (isOperation || fieldName.startsWith("...")) { //only register recursivly for fragment
                     if (field.childFetchers !== undefined) {
                         this.registerTypes(resource, field.childFetchers);
+                    }
+                } else {
+                    const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
+                    for (const declaringTypeName of declaringTypeNames) {
+                        compute(this.rootTypeResourceMap, declaringTypeName, () => new Resources()).retain(resource);
                     }
                 }
             }
@@ -78,8 +85,9 @@ export class DependencyManager {
 
     private registerFields(resource: string, fetchers: readonly Fetcher<string, object, object>[]) {
         for (const fetcher of fetchers) {
+            const isOperation = isOperationFetcher(fetcher);
             for (const [fieldName, field] of fetcher.fieldMap) {
-                if (!fieldName.startsWith("...")) {
+                if (!isOperation && !fieldName.startsWith("...")) {
                     const subMap = compute(this.fieldResourceMap, fieldName, () => new Map<string, Resources>());
                     const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
                     for (const declaringTypeName of declaringTypeNames) {
@@ -103,16 +111,13 @@ export class DependencyManager {
             return;
         }
         
-        let objDiff =false;
         if (oldObject === undefined || newObject === undefined) {
             this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)?.copyTo(output);
-            objDiff = true;
-        } else {
+        } else if (!isOperationFetcher(fetcher)) {
             const oldId = this._idGetter(oldObject);
             const newId = this._idGetter(newObject);
             if (oldId !== newId) {
                 this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)?.copyTo(output);
-                objDiff = true;
             }
         }
 
@@ -234,6 +239,11 @@ class Resources {
     }
 }
 
+function isOperationFetcher(fetcher: Fetcher<string, object, object>): boolean {
+    const fetcherName = fetcher.fetchableType.entityName;
+    return fetcherName === "Query" || fetcherName === 'Mutation';
+}
+
 function getDeclaringTypeNames(fieldName: string, fetcher: Fetcher<string, object, object>): Set<string> {
     const declaringTypeNames = new Set<string>();
     if (fieldName !== '' && fieldName !== '...') {
@@ -291,8 +301,10 @@ function removeResource(recursiveResourceMap: RecursiveResourceMap, resource: st
 function associatedBy<K, V>(values: V[], keyGetter: (value: V) => K): Map<K, V> {
     const map = new Map<K, V>();
     for (const value of values) {
-        const key = keyGetter(value);
-        map.set(key, value);
+        if (value !== undefined && value !== null) {
+            const key = keyGetter(value);
+            map.set(key, value);
+        }
     }
     return map;
 }

@@ -5,13 +5,11 @@
  */
 
 import 'reflect-metadata';
-import { Arg, Field, Float, ObjectType, Root } from 'type-graphql';
+import { Field, Float, ObjectType } from 'type-graphql';
 import { TDepartment } from '../dal/DepartmentRepostiory';
 import { employeeTable } from '../dal/EmployeeRepository';
-import { Employee, orderedValueOf } from './Employee';
-import { EmployeeOrderedField } from './EmployeeOrderedField';
+import { Employee } from './Employee';
 import { Node } from './Node';
-import { OrderMode } from './OrderMode';
 
 @ObjectType({implements: Node})
 export class Department extends Node {
@@ -25,33 +23,14 @@ export class Department extends Node {
     }
 
     @Field(() => [Employee])
-    employees(
-        @Arg("orderBy", () => EmployeeOrderedField, {nullable: true}) orderBy?: EmployeeOrderedField,
-        @Arg("orderMode", () => OrderMode, {nullable: true}) orderMode?: OrderMode
-    ): Employee[] {
-        const employees = employeeTable
+    employees(): Employee[] {
+        return employeeTable
             .findByProp("departmentId", this.id)
             .map(row => new Employee(row));
-        if (orderBy !== undefined) {
-            employees.sort((a, b) => {
-                const valueA = orderedValueOf(a, orderBy!);
-                const valueB = orderedValueOf(b, orderBy!);
-                let result: number;
-                if(valueA < valueB) {
-                    result = -1;
-                } else if (valueA > valueB) {
-                    result = +1;
-                } else {
-                    result = 0;
-                }
-                return orderMode === OrderMode.DESC ? -result : +result;
-            });
-        }
-        return employees;
     }
 
     @Field(() => Float)
-    avgSalary(@Root() self: Department): number {
+    avgSalary(): number {
         const arr = employeeTable
             .findByProp("departmentId", this.id)
             .map(row => row.salary);

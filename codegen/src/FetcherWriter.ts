@@ -107,7 +107,9 @@ export class FetcherWriter extends Writer {
             this.importStatement("import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';");
         }
         this.importStatement("import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';");
-        this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
+        if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
+            this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
+        }
         if (this.relay) {
             this.importStatement("import { FragmentRefs } from 'relay-runtime';");
             this.importStatement("import { RelayFragment } from '../Relay';");

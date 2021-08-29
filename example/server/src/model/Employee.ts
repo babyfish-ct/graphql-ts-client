@@ -9,7 +9,6 @@ import { Field, Float, ObjectType } from 'type-graphql';
 import { departmentTable } from '../dal/DepartmentRepostiory';
 import { employeeTable, TEmployee } from '../dal/EmployeeRepository';
 import { Department } from './Department';
-import { EmployeeOrderedField } from './EmployeeOrderedField';
 import { Gender } from './Gender';
 import { Node } from './Node';
 
@@ -60,16 +59,5 @@ export class Employee extends Node {
         this.salary = row.salary;
         this.departmentId = row.departmentId;
         this.supervisorId = row.supervisorId;
-    }
-}
-
-export function orderedValueOf(employee: Employee, orderedBy: EmployeeOrderedField) {
-    switch (orderedBy) {
-        case EmployeeOrderedField.FIRST_NAME:
-            return employee.firstName;
-        case EmployeeOrderedField.LAST_NAME:
-            return employee.lastName;
-        case EmployeeOrderedField.SALARY:
-            return employee.salary;
     }
 }

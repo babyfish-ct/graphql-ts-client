@@ -2,7 +2,7 @@ import { ChangeEvent, FC, memo, useCallback, useEffect } from "react";
 import { ERROR_CSS } from "../common/CssClasses";
 import { Loading } from "../common/Loading";
 import { useTypedQuery } from "../__generated";
-import { department$ } from "../__generated/fetchers";
+import { department$, query$ } from "../__generated/fetchers";
 
 const DEPARTMENT_OTPITON_FETCHER = 
     department$
@@ -16,8 +16,10 @@ export const DepartmentSelect: FC<{
 }> = memo(({optional = false, value, onChange}) => {
 
     const { loading, error, data } = useTypedQuery(
-        { queryKey: "findDepartmentsLikeName", dataKey: "options" }, 
-        DEPARTMENT_OTPITON_FETCHER
+        query$.findDepartmentsLikeName( 
+            DEPARTMENT_OTPITON_FETCHER,
+            options => options.alias("options")
+        )
     );
 
     const onSelectChange = useCallback((e: ChangeEvent<HTMLSelectElement>) => {

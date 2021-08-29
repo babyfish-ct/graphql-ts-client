@@ -122,7 +122,10 @@ const IMPORT_RELAY_RUTNIME = `import {
     Disposable,
     Environment,
     FetchQueryFetchPolicy,
-    ReaderRefetchMetadata
+    ReaderRefetchMetadata,
+    OperationDescriptor,
+    DataID,
+    createOperationDescriptor
 } from "relay-runtime";`;
 
 const RELAY_CODE = `
@@ -143,7 +146,7 @@ const RELAY_CODE = `
 
 export type PreloadedQueryOf<TRelayQuery> =
 	TRelayQuery extends RelayQuery<infer TResponse, infer TVariables> ?
-    PreloadedQuery<OperationType<TResponse, TVariables>> :
+	PreloadedQuery<OperationType<TResponse, TVariables>> :
     never
 ;
 
@@ -222,6 +225,20 @@ export function createTypedFragment<
     return new RelayFragment<TFragmentName, E, T, TUnresolvedVariables>(name, fetcher);
 }
 
+export function createTypedOperationDescriptor<TResponse extends object, TVariables extends object>(
+    operation: RelayOperation<TResponse, TVariables>,
+    variables: TVariables,
+    cacheConfig?: CacheConfig | null,
+    dataID?: DataID,
+): OperationDescriptor {
+    return createOperationDescriptor(
+        operation.taggedNode,
+        variables,
+        cacheConfig,
+        dataID
+    )
+}
+
 
 
 /*
@@ -272,7 +289,7 @@ export function fetchTypedQuery<TResponse, TVariables>(
 
 export function useTypedQueryLoader<TResponse, TVariables>(
 	query: RelayQuery<TResponse, TVariables>,
-	initialQueryReference: PreloadedQuery<OperationType<TResponse, TVariables>> | null
+	initialQueryReference?: PreloadedQuery<OperationType<TResponse, TVariables>> | null
 ) {
 	return useQueryLoader<OperationType<TResponse, TVariables>>(
 		query.taggedNode,
@@ -379,12 +396,12 @@ export function useTypedRefetchableFragment<TFragmentName extends string, TFetch
 
 export abstract class RelayOperation<TResponse, TVariables> {
 
-    readonly taggedNode: GraphQLTaggedNode;
+    readonly taggedNode: ConcreteRequest;
 
     constructor(
-        operationType: "query" | "mutation",
-        operationName: string,
-        fetcher: Fetcher<string, object, object>
+        readonly operationType: "query" | "mutation",
+        readonly operationName: string,
+        readonly fetcher: Fetcher<string, object, object>
     ) {
         if (RELAY_OPERATION_MAP.has(operationName)) {
             throw new Error(
@@ -580,7 +597,7 @@ class TaggedNodeFactory {
                 variableName: argName
             });
         }
-
+    
         if (field.childFetchers !== undefined) {
             if (fieldName === '...') {
                 for (const childFetcher of field.childFetchers) {
@@ -636,6 +653,16 @@ class TaggedNodeFactory {
                 args,
                 storageKey: undefined
             });
+            if (field.fieldOptionsValue?.invisibleDirectives.has("deleteRecord") === true) {
+                console.log("Add deleteRecord");
+                output.push({
+                    kind: "ScalarHandle",
+                    alias: this.actualAlias(fieldName, field),
+                    name: fieldName,
+                    args,
+                    handle: "deleteRecord"
+                } as any);
+            }
         }
     }
 

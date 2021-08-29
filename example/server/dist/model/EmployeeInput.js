@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmployeeInput = void 0;
 require("reflect-metadata");
 const type_graphql_1 = require("type-graphql");
+const Gender_1 = require("./Gender");
 let EmployeeInput = class EmployeeInput {
 };
 __decorate([
@@ -26,7 +27,7 @@ __decorate([
     type_graphql_1.Field(() => String)
 ], EmployeeInput.prototype, "lastName", void 0);
 __decorate([
-    type_graphql_1.Field(() => String)
+    type_graphql_1.Field(() => Gender_1.Gender)
 ], EmployeeInput.prototype, "gender", void 0);
 __decorate([
     type_graphql_1.Field(() => type_graphql_1.Float)

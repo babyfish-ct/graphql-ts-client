@@ -76,7 +76,7 @@ __decorate([
     __param(0, type_graphql_1.Arg("input", () => DepartmentInput_1.DepartmentInput))
 ], DepartmentService.prototype, "mergeDepartment", null);
 __decorate([
-    type_graphql_1.Mutation(() => String),
-    __param(0, type_graphql_1.Arg("id", () => String))
+    type_graphql_1.Mutation(() => type_graphql_1.ID),
+    __param(0, type_graphql_1.Arg("id", () => type_graphql_1.ID))
 ], DepartmentService.prototype, "deleteDepartment", null);
 exports.DepartmentService = DepartmentService;

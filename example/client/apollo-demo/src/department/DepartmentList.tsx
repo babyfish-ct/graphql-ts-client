@@ -3,7 +3,7 @@ import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { LABEL_CSS } from "../common/CssClasses";
 import { Loading } from "../common/Loading";
 import { useTypedQuery } from "../__generated";
-import { employee$ } from "../__generated/fetchers";
+import { employee$, query$ } from "../__generated/fetchers";
 import { DepartmentDialog } from "./DepartmentDialog";
 import { DepartmentItem, DEPARTMENT_ITEM_FETCHER } from "./DepartmentItem";
 
@@ -14,8 +14,9 @@ export const DepartmentList: FC = memo(() => {
     const [dialog, setDialog] = useState(false);
 
     const { loading, error, data, refetch } = useTypedQuery(
-        "findDepartmentsLikeName", 
-        DEPARTMENT_ITEM_FETCHER,
+        query$.findDepartmentsLikeName(
+            DEPARTMENT_ITEM_FETCHER
+        ),
         { 
             notifyOnNetworkStatusChange: true, // consider "refetching" as "loading"
             variables: { name },

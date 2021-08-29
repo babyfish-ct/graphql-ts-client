@@ -5,7 +5,7 @@
  */
 
 import 'reflect-metadata';
-import { Arg, Mutation, Query } from 'type-graphql';
+import { Arg, ID, Mutation, Query } from 'type-graphql';
 import { departmentTable, TDepartment } from '../dal/DepartmentRepostiory';
 import { Predicate } from '../dal/Table';
 import { Department } from '../model/Department';
@@ -48,9 +48,9 @@ export class DepartmentService {
         return new Department(input);
     }
 
-    @Mutation(() => String)
+    @Mutation(() => ID)
     async deleteDepartment(
-        @Arg("id", () => String) id: string
+        @Arg("id", () => ID) id: string
     ): Promise<string | undefined> {
         
         /*

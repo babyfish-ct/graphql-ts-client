@@ -7,6 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Node = void 0;
+require("reflect-metadata");
 const type_graphql_1 = require("type-graphql");
 let Node = class Node {
     constructor(id) {
@@ -17,6 +18,6 @@ __decorate([
     type_graphql_1.Field(() => type_graphql_1.ID)
 ], Node.prototype, "id", void 0);
 Node = __decorate([
-    type_graphql_1.InterfaceType()
+    type_graphql_1.InterfaceType({ autoRegisterImplementations: false })
 ], Node);
 exports.Node = Node;

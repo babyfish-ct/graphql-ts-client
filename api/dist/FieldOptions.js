@@ -34,22 +34,22 @@ class FieldOptionsImpl {
     }
     createValue() {
         let alias = undefined;
-        const directives = {};
-        const invisibleDirectives = {};
+        const directives = new Map();
+        const invisibleDirectives = new Map();
         for (let options = this; options !== undefined; options = options._prev) {
             if (options._alias !== undefined && alias === undefined) {
                 alias = options._alias;
             }
-            if (options._directive !== undefined && !directives[options._directive] === undefined) {
+            if (options._directive !== undefined && !directives.has(options._directive)) {
                 const args = options._directiveArgs;
-                directives[options._directive] = args !== undefined && Object.keys(args).length !== 0 ? args : undefined;
+                directives.set(options._directive, args !== undefined && Object.keys(args).length !== 0 ? args : undefined);
             }
-            if (options._invisibleDirective !== undefined && invisibleDirectives[options._invisibleDirective] === undefined) {
-                if (directives[options._invisibleDirective] !== undefined) {
+            if (options._invisibleDirective !== undefined && !invisibleDirectives.has(options._invisibleDirective)) {
+                if (directives.has(options._invisibleDirective)) {
                     throw new Error(`'${options._invisibleDirective}' is used both directive and invisible directive`);
                 }
                 const args = options._invisibleDirectiveArgs;
-                invisibleDirectives[options._invisibleDirective] = args !== undefined && Object.keys(args).length !== 0 ? args : undefined;
+                invisibleDirectives.set(options._invisibleDirective, args !== undefined && Object.keys(args).length !== 0 ? args : undefined);
             }
         }
         return { alias, directives, invisibleDirectives };

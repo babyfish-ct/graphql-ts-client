@@ -1,65 +1,4 @@
-/**
- * @author ChenTao
- * 
- * 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
- * 
- * 1. Supports GraphQL queries with strongly typed code
- *
- * 2. Automatically infers the type of the returned data according to the strongly typed query
- */
-
-import { WriteStream } from "fs";
-import { GraphQLField, GraphQLSchema } from "graphql";
-import { join } from "path";
-import { associatedTypeOf } from "../Utils";
-import { awaitStream, createStreamAndLog, Generator } from "../Generator";
-import { GeneratorConfig } from "../GeneratorConfig";
-
-export class ApolloGenerator extends Generator {
-    
-    constructor(config: GeneratorConfig) {
-        super(config);
-    }
-
-    protected async generateServices(
-        queryFields: GraphQLField<unknown, unknown>[],
-        mutationFields: GraphQLField<unknown, unknown>[],
-        promises: Promise<void>[]
-    ) {
-        const stream = createStreamAndLog(
-            join(this.config.targetDir, "Apollo.ts"),
-        );
-        stream.write(APOLLO_CODE);
-        promises.push(this.generateDependencyManager());
-    }
-
-    private async generateApollo() {
-        const stream = createStreamAndLog(
-            join(this.config.targetDir, "DependencyManager.tsx")
-        );
-        stream.write(DEPENDENCY_MANAGER_CODE);
-        await awaitStream(stream);
-    }
-
-    private async generateDependencyManager() {
-        const stream = createStreamAndLog(
-            join(this.config.targetDir, "DependencyManager.tsx")
-        );
-        stream.write(DEPENDENCY_MANAGER_CODE);
-        await awaitStream(stream);
-    }
-
-    protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
-        
-        stream.write("export { useTypedQuery, useTypedLazyQuery, useTypedMutation } from './Apollo';");
-        stream.write("export { DependencyManagerProvider } from './DependencyManager';\n");
-        stream.write("export type { RefetchableDependencies } from './DependencyManager';\n");
-
-        super.writeIndexCode(stream, schema);
-    }
-}
-
-const APOLLO_CODE = `import { 
+import { 
     useQuery,
     useLazyQuery, 
     useMutation, 
@@ -93,8 +32,8 @@ export function useTypedQuery<
     const body = requestBody(fetcher);
 
 	const [operationName, request] = useMemo<[string, DocumentNode]>(() => {
-		const operationName = options?.operationName ?? \`query_\${util.toMd5(body)}\`;
-		return [operationName, gql\`query \${operationName}\${body}\`];
+		const operationName = options?.operationName ?? `query_${util.toMd5(body)}`;
+		return [operationName, gql`query ${operationName}${body}`];
 	}, [body, options?.operationName]);
 
 	const [dependencyManager, config] = useContext(dependencyManagerContext);
@@ -134,8 +73,8 @@ export function useTypedLazyQuery<
     const body = requestBody(fetcher);
 
 	const [operationName, request] = useMemo<[string, DocumentNode]>(() => {
-		const operationName = options?.operationName ?? \`query_\${util.toMd5(body)}\`;
-		return [operationName, gql\`query \${operationName}\${body}\`];
+		const operationName = options?.operationName ?? `query_${util.toMd5(body)}`;
+		return [operationName, gql`query ${operationName}${body}`];
 	}, [body, options?.operationName]);
 
 	const [dependencyManager, config] = useContext(dependencyManagerContext);
@@ -183,8 +122,8 @@ export function useTypedMutation<
     const body = requestBody(fetcher);
 
     const request = useMemo<DocumentNode>(() => {
-		const operationName = options?.operationName ?? \`mutation_\${util.toMd5(body)}\`;
-		return gql\`mutation \${operationName}\${body}\`;
+		const operationName = options?.operationName ?? `mutation_${util.toMd5(body)}`;
+		return gql`mutation ${operationName}${body}`;
 	}, [body, options?.operationName]);
 
 	const [dependencyManager] = useContext(dependencyManagerContext);
@@ -236,52 +175,11 @@ function requestBody(fetcher: Fetcher<string, object, object>): string {
     writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
         for (const [name, type] of fetcher.variableTypeMap) {
             writer.seperator();
-            writer.text(\`$\${name}: \${type}\`);
+            writer.text(`$${name}: ${type}`);
         }
     });
     writer.text(fetcher.toString());
-    writer.text("\\n");
+    writer.text("\n");
     writer.text(fetcher.toFragmentString());
     return writer.toString();
 }
-`;
-
-const DEPENDENCY_MANAGER_CODE = `import { createContext, FC, memo, PropsWithChildren, useMemo, useContext } from "react";
-import { DependencyManager } from "graphql-ts-client-api";
-
-export const DependencyManagerProvider: FC<
-    PropsWithChildren<DependencyManagerProviderConfig>
-> = memo(({children, defaultRegisterDependencies}) => {
-    const arr = useMemo<[DependencyManager, DependencyManagerProviderConfig]>(() => {
-        return [
-            new DependencyManager(),
-            { defaultRegisterDependencies } 
-        ];
-    }, [defaultRegisterDependencies]);
-    return (
-        <dependencyManagerContext.Provider value={arr}>
-            {children}
-        </dependencyManagerContext.Provider>
-    );
-});
-
-export function useDependencyManager(): DependencyManager {
-    const dependencyManager = useContext(dependencyManagerContext)[0];
-    if (dependencyManager === undefined) {
-        throw new Error("'useDependencyManager()' can only be used under <DependencyManagerProvider/>");
-    }
-    return dependencyManager;
-}
-
-export interface DependencyManagerProviderConfig {
-    defaultRegisterDependencies: boolean;
-}
-
-export interface RefetchableDependencies<T extends object> {
-    ofData(oldData: T | null | undefined, newData: T | null | undefined): string[];
-    ofError(): string[];
-}
-
-// Internal, used by usedTypedQuery, useLazyTypedQuery, useTypedMutation
-export const dependencyManagerContext = createContext<[DependencyManager | undefined, DependencyManagerProviderConfig | undefined]>([undefined, undefined]);
-`;

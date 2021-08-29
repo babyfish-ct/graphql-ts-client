@@ -5,7 +5,7 @@
  */
 
 import 'reflect-metadata';
-import { Arg, Int, Mutation, Query } from 'type-graphql';
+import { Arg, ID, Int, Mutation, Query } from 'type-graphql';
 import { employeeTable } from '../dal/EmployeeRepository';
 import { Employee } from '../model/Employee';
 import { EmployeeInput } from '../model/EmployeeInput';
@@ -80,9 +80,9 @@ export class EmployeeService {
         return new Employee(input);
     }
 
-    @Mutation(() => String)
+    @Mutation(() => ID)
     async deleteEmployee(
-        @Arg("id", () => String) id: string
+        @Arg("id", () => ID) id: string
     ): Promise<string | undefined> {
 
         /*

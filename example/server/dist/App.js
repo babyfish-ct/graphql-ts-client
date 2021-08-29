@@ -13,15 +13,13 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const express_graphql_1 = require("express-graphql");
 const DepartmentService_1 = require("./bll/DepartmentService");
-const Department_1 = require("./model/Department");
-const Employee_1 = require("./model/Employee");
 const Gender_1 = require("./model/Gender");
 const EmployeeService_1 = require("./bll/EmployeeService");
+const NodeService_1 = require("./bll/NodeService");
 type_graphql_1.registerEnumType(Gender_1.Gender, { name: "Gender" });
 const schema = type_graphql_1.buildSchemaSync({
     resolvers: [
-        Department_1.DepartmentResolver,
-        Employee_1.EmployeeResolver,
+        NodeService_1.NodeService,
         DepartmentService_1.DepartmentService,
         EmployeeService_1.EmployeeService
     ]

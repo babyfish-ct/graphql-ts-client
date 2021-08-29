@@ -5,6 +5,6 @@
  */
 import "reflect-metadata";
 export declare enum Gender {
-    MALE = "MALE",
-    FEMALE = "FEMALE"
+    MALE = 0,
+    FEMALE = 1
 }

@@ -1,5 +1,6 @@
+import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
-import { WithTypeName, ImplementationType } from '../CommonTypes';
+import type { WithTypeName, ImplementationType } from '../CommonTypes';
 
 /*
  * Any instance of this interface is immutable,
@@ -8,14 +9,10 @@ import { WithTypeName, ImplementationType } from '../CommonTypes';
  * 
  * So any instance of this interface is reuseable.
  */
-export interface NodeFetcher<T extends object> extends Fetcher<'Node', T> {
+export interface NodeFetcher<T extends object, TVariables extends object> extends Fetcher<'Node', T, TVariables> {
 
-	readonly fetchedEntityType: 'Node';
-
-	readonly __typename: NodeFetcher<T & {__typename: ImplementationType<'Node'>}>;
-
-	on<XName extends ImplementationType<'Node'>, X extends object>(
-		child: Fetcher<XName, X>, 
+	on<XName extends ImplementationType<'Node'>, X extends object, XVariables extends object>(
+		child: Fetcher<XName, X, XVariables>, 
 		fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
 	): NodeFetcher<
 		XName extends 'Node' ?
@@ -23,22 +20,48 @@ export interface NodeFetcher<T extends object> extends Fetcher<'Node', T> {
 		WithTypeName<T, ImplementationType<'Node'>> & (
 			WithTypeName<X, ImplementationType<XName>> | 
 			{__typename: Exclude<ImplementationType<'Node'>, ImplementationType<XName>>}
-		)
+		), 
+		TVariables & XVariables
 	>;
 
-	readonly id: NodeFetcher<T & {readonly id: string}>;
-	readonly "~id": NodeFetcher<Omit<T, 'id'>>;
+
+	directive(name: string, args?: DirectiveArgs): NodeFetcher<T, TVariables>;
+
+	invisibleDirective(name: string, args?: DirectiveArgs): NodeFetcher<T, TVariables>;
+
+
+	readonly __typename: NodeFetcher<T & {__typename: ImplementationType<'Node'>}, TVariables>;
+
+
+	readonly id: NodeFetcher<T & {readonly "id": string}, TVariables>;
+
+	"id+"<
+		XAlias extends string = "id", 
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+	>(
+		optionsConfigurer?: (
+			options: FieldOptions<"id", {}>
+		) => FieldOptions<XAlias, XDirectives>
+	): NodeFetcher<
+		T & (
+			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+				{readonly [key in XAlias]?: string} : 
+				{readonly [key in XAlias]: string}
+		), 
+		TVariables
+	>;
+
+	readonly "~id": NodeFetcher<Omit<T, 'id'>, TVariables>;
 }
 
-export const node$: NodeFetcher<{}> = 
+export const node$: NodeFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(
 			"Node", 
 			[], 
 			["id"]
 		), 
-		undefined, 
-		[]
+		undefined
 	)
 ;
 
