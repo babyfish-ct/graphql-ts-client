@@ -104,7 +104,7 @@ const EMPLOYEE_LIST_QUERY =
         .subordinates(
             employee$.id.firstName.lastName
         )
-    )
+    );
 
 function App() {
 
