@@ -19,58 +19,89 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AsyncGenerator = void 0;
-const AsyncOperationWriter_1 = require("./AsyncOperationWriter");
-const AsyncEnvironmentWriter_1 = require("./AsyncEnvironmentWriter");
 const Generator_1 = require("../Generator");
 const path_1 = require("path");
 class AsyncGenerator extends Generator_1.Generator {
     constructor(config) {
         super(config);
     }
-    generateServices(queryFields, mutationFields, promises) {
+    generateServices(_, promises) {
         return __awaiter(this, void 0, void 0, function* () {
-            promises.push(this.generateEnvironment());
-            if (queryFields.length !== 0) {
-                yield this.mkdirIfNecessary("queries");
-                promises.push(this.generateOperations(false, queryFields));
-            }
-            if (mutationFields.length !== 0) {
-                yield this.mkdirIfNecessary("mutations");
-                promises.push(this.generateOperations(true, mutationFields));
-            }
+            promises.push(this.generateAsync());
         });
     }
-    generateEnvironment() {
+    generateAsync() {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Environment.ts"));
-            new AsyncEnvironmentWriter_1.AsyncEnvironmentWriter(stream, this.config).write();
+            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Async.ts"));
+            stream.write(ASYNC_CODE);
             yield Generator_1.awaitStream(stream);
-        });
-    }
-    generateOperations(mutation, fields) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const subDir = mutation ? "mutations" : "queries";
-            const promises = fields.map((field) => __awaiter(this, void 0, void 0, function* () {
-                const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, subDir, `${field.name}.ts`));
-                new AsyncOperationWriter_1.AsyncOperationWriter(mutation, field, stream, this.config).write();
-                yield Generator_1.awaitStream(stream);
-            }));
-            const writeIndex = () => __awaiter(this, void 0, void 0, function* () {
-                const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, subDir, "index.ts"));
-                for (const field of fields) {
-                    stream.write(`export {${field.name}} from './${field.name}';\n`);
-                    const argsWrapperName = AsyncOperationWriter_1.argsWrapperTypeName(field);
-                    if (argsWrapperName !== undefined) {
-                        stream.write(`export type {${argsWrapperName}} from './${field.name}';\n`);
-                    }
-                }
-                stream.end();
-            });
-            yield Promise.all([
-                ...promises,
-                writeIndex()
-            ]);
         });
     }
 }
 exports.AsyncGenerator = AsyncGenerator;
+const ASYNC_CODE = `
+import { Fetcher, TextWriter, util } from "graphql-ts-client-api";
+
+export type GraphQLExecutor = (request: string, variables: object) => Promise<any>;
+
+export function setGraphQLExecutor(exeucotr: GraphQLExecutor, override: boolean = false) {
+    if (graphQLExecutor !== undefined && !override) {
+        throw new Error("'setGraphQLExecutor' can only be called once");
+    }
+    graphQLExecutor = exeucotr;
+}
+
+export async function execute<TData extends object, TVariables extends object>(
+    fetcher: Fetcher<"Query" | "Mutation", TData, TVariables>,
+    options?: {
+        readonly operationName?: string,
+        readonly variables?: TVariables
+    }
+) : Promise<TData> {
+
+    const executor = graphQLExecutor;
+    if (executor === undefined) {
+        throw new Error("'setGraphQLExecutor' has not been called");
+    }
+
+    const writer = new TextWriter();
+    writer.text(\`\${fetcher.fetchableType.entityName.toLowerCase()} \${options?.operationName ?? ''}\`);
+    if (fetcher.variableTypeMap.size !== 0) {
+        writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
+            util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
+                writer.seperator();
+                writer.text(\`$\${name}: \${type}\`);
+            });
+        });
+    }
+    writer.text(fetcher.toString());
+    writer.text(fetcher.toFragmentString());
+
+    const rawResponse = util.removeNullValues(await executor(writer.toString(), options?.variables ?? {}));
+    if (rawResponse.errors) {
+        throw new GraphQLError(rawResponse.errors);
+    }
+    return rawResponse.data as TData;
+}
+
+export interface Response<TData> {
+    readonly data?: TData;
+    readonly error?: Error;
+}
+
+export class GraphQLError extends Error {
+    
+    readonly errors: readonly GraphQLSubError[];
+
+    constructor(errors: any) {
+        super();
+        this.errors = errors;
+    }
+}
+
+export interface GraphQLSubError {
+    readonly message: string,
+    readonly path: string[]
+}
+
+let graphQLExecutor: GraphQLExecutor | undefined = undefined;`;

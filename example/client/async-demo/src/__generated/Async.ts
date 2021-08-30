@@ -1,38 +1,4 @@
-/**
- * @author ChenTao
- * 
- * 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
- * 
- * 1. Supports GraphQL queries with strongly typed code
- *
- * 2. Automatically infers the type of the returned data according to the strongly typed query
- */
 
-import { GraphQLField, GraphQLSchema } from "graphql";
-import { awaitStream, createStreamAndLog, Generator } from "../Generator";
-import { GeneratorConfig } from "../GeneratorConfig";
-import { join } from "path";
-
-export class AsyncGenerator extends Generator {
-
-    constructor(config: GeneratorConfig) {
-        super(config);
-    }
-
-    protected async generateServices(_: GraphQLSchema, promises: Promise<void>[]) {
-        promises.push(this.generateAsync());
-    }
-
-    private async generateAsync() {
-        const stream = createStreamAndLog(
-            join(this.config.targetDir, "Async.ts")
-        );
-        stream.write(ASYNC_CODE);
-        await awaitStream(stream);
-    }
-}
-
-const ASYNC_CODE = `
 import { Fetcher, TextWriter, util } from "graphql-ts-client-api";
 
 export type GraphQLExecutor = (request: string, variables: object) => Promise<any>;
@@ -58,12 +24,12 @@ export async function execute<TData extends object, TVariables extends object>(
     }
 
     const writer = new TextWriter();
-    writer.text(\`\${fetcher.fetchableType.entityName.toLowerCase()} \${options?.operationName ?? ''}\`);
+    writer.text(`${fetcher.fetchableType.entityName.toLowerCase()} ${options?.operationName ?? ''}`);
     if (fetcher.variableTypeMap.size !== 0) {
         writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
             util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
                 writer.seperator();
-                writer.text(\`$\${name}: \${type}\`);
+                writer.text(`$${name}: ${type}`);
             });
         });
     }
@@ -97,4 +63,4 @@ export interface GraphQLSubError {
     readonly path: string[]
 }
 
-let graphQLExecutor: GraphQLExecutor | undefined = undefined;`;
+let graphQLExecutor: GraphQLExecutor | undefined = undefined;

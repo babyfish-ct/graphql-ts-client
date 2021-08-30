@@ -7,12 +7,11 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
-import { GraphQLField } from "graphql";
+import { GraphQLSchema } from "graphql";
 import { Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 export declare class AsyncGenerator extends Generator {
     constructor(config: GeneratorConfig);
-    protected generateServices(queryFields: GraphQLField<unknown, unknown>[], mutationFields: GraphQLField<unknown, unknown>[], promises: Promise<void>[]): Promise<void>;
-    private generateEnvironment;
-    private generateOperations;
+    protected generateServices(_: GraphQLSchema, promises: Promise<void>[]): Promise<void>;
+    private generateAsync;
 }

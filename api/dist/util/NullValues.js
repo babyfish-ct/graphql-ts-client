@@ -12,6 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.exceptNullValues = exports.removeNullValues = void 0;
 const immer_1 = require("immer");
 function removeNullValues(value) {
+    removeNullValues0(value);
+    return value;
+}
+exports.removeNullValues = removeNullValues;
+function removeNullValues0(value) {
     if (typeof value === 'object') {
         if (Array.isArray(value)) {
             for (let i = value.length - 1; i >= 0; --i) {
@@ -20,7 +25,7 @@ function removeNullValues(value) {
                     value[i] = undefined;
                 }
                 else if (childValue !== undefined) {
-                    removeNullValues(childValue);
+                    removeNullValues0(childValue);
                 }
             }
         }
@@ -31,13 +36,12 @@ function removeNullValues(value) {
                     value[fieldName] = undefined;
                 }
                 else if (childValue !== undefined) {
-                    removeNullValues(childValue);
+                    removeNullValues0(childValue);
                 }
             }
         }
     }
 }
-exports.removeNullValues = removeNullValues;
 /**
  * In typescript, undefined is better than null, for example
  *

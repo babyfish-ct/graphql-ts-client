@@ -82,7 +82,7 @@ export class Generator {
         const queryFields = this.operationFields(queryType);
         const mutationFields = this.operationFields(mutationType);
         if (queryFields.length !== 0 || mutationFields.length !== 0) {
-            this.generateServices(queryFields, mutationFields, promises);
+            this.generateServices(schema, promises);
         }
 
         promises.push(this.writeIndex(schema));
@@ -242,11 +242,7 @@ export class Generator {
         }
     }
 
-    protected async generateServices(
-        queryFields: GraphQLField<unknown, unknown>[],
-        mutationFields: GraphQLField<unknown, unknown>[],
-        promises: Promise<void>[]
-    ) {}
+    protected async generateServices(schema: GraphQLSchema, promises: Promise<void>[]) {}
 
     private operationFields(
         type: Maybe<GraphQLObjectType>

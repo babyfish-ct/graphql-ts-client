@@ -10,7 +10,12 @@
 
 import { produce } from 'immer';
 
-export function removeNullValues(value: any) {
+export function removeNullValues<T>(value: T): T {
+    removeNullValues0(value);
+    return value;
+}
+
+function removeNullValues0(value: any) {
     if (typeof value === 'object') {
         if (Array.isArray(value)) {
             for (let i = value.length - 1; i >= 0; --i) {
@@ -18,7 +23,7 @@ export function removeNullValues(value: any) {
                 if (childValue === null) {
                     value[i] = undefined;
                 } else if (childValue !== undefined) {
-                    removeNullValues(childValue);
+                    removeNullValues0(childValue);
                 }
             }
         } else {
@@ -27,7 +32,7 @@ export function removeNullValues(value: any) {
                 if (childValue === null) {
                     value[fieldName] = undefined;
                 } else if (childValue !== undefined) {
-                    removeNullValues(childValue);
+                    removeNullValues0(childValue);
                 }
             }
         }

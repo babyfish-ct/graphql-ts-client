@@ -25,10 +25,9 @@ class ApolloGenerator extends Generator_1.Generator {
     constructor(config) {
         super(config);
     }
-    generateServices(queryFields, mutationFields, promises) {
+    generateServices(_, promises) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Apollo.ts"));
-            stream.write(APOLLO_CODE);
+            promises.push(this.generateApollo());
             promises.push(this.generateDependencyManager());
         });
     }

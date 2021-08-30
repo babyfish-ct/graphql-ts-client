@@ -85,7 +85,7 @@ class Generator {
             const queryFields = this.operationFields(queryType);
             const mutationFields = this.operationFields(mutationType);
             if (queryFields.length !== 0 || mutationFields.length !== 0) {
-                this.generateServices(queryFields, mutationFields, promises);
+                this.generateServices(schema, promises);
             }
             promises.push(this.writeIndex(schema));
             yield Promise.all(promises);
@@ -221,7 +221,7 @@ class Generator {
             }
         });
     }
-    generateServices(queryFields, mutationFields, promises) {
+    generateServices(schema, promises) {
         return __awaiter(this, void 0, void 0, function* () { });
     }
     operationFields(type) {

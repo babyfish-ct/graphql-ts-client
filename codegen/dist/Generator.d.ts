@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 /// <reference types="node" />
-import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
+import { GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { WriteStream } from "fs";
 import { FetcherWriter } from "./FetcherWriter";
@@ -28,7 +28,7 @@ export declare class Generator {
     private writeSimpleIndex;
     private rmdirIfNecessary;
     protected mkdirIfNecessary(subDir?: string): Promise<void>;
-    protected generateServices(queryFields: GraphQLField<unknown, unknown>[], mutationFields: GraphQLField<unknown, unknown>[], promises: Promise<void>[]): Promise<void>;
+    protected generateServices(schema: GraphQLSchema, promises: Promise<void>[]): Promise<void>;
     private operationFields;
     private writeIndex;
     protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;

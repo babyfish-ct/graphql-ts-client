@@ -5,7 +5,7 @@ const generator = new AsyncGenerator({
     schemaLoader: async() => {
       return loadRemoteSchema("http://localhost:8080/graphql");
     },
-    targetDir: path.join(__dirname, "../src/generated"),
+    targetDir: path.join(__dirname, "../src/__generated"),
     recreateTargetDir: true,
 
     /*

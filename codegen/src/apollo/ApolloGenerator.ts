@@ -21,15 +21,8 @@ export class ApolloGenerator extends Generator {
         super(config);
     }
 
-    protected async generateServices(
-        queryFields: GraphQLField<unknown, unknown>[],
-        mutationFields: GraphQLField<unknown, unknown>[],
-        promises: Promise<void>[]
-    ) {
-        const stream = createStreamAndLog(
-            join(this.config.targetDir, "Apollo.ts"),
-        );
-        stream.write(APOLLO_CODE);
+    protected async generateServices(_: GraphQLSchema, promises: Promise<void>[]) {
+        promises.push(this.generateApollo());
         promises.push(this.generateDependencyManager());
     }
 

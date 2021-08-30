@@ -9,12 +9,12 @@
  */
 /// <reference types="node" />
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLSchema } from "graphql";
+import { GraphQLSchema } from "graphql";
 import { Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 export declare class ApolloGenerator extends Generator {
     constructor(config: GeneratorConfig);
-    protected generateServices(queryFields: GraphQLField<unknown, unknown>[], mutationFields: GraphQLField<unknown, unknown>[], promises: Promise<void>[]): Promise<void>;
+    protected generateServices(_: GraphQLSchema, promises: Promise<void>[]): Promise<void>;
     private generateApollo;
     private generateDependencyManager;
     protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;

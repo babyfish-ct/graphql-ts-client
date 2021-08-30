@@ -21,8 +21,13 @@ class RelayGenerator extends Generator_1.Generator {
     createFetcheWriter(modelType, inheritanceInfo, stream, config) {
         return new FetcherWriter_1.FetcherWriter(true, modelType, inheritanceInfo, stream, config);
     }
-    generateServices(queryFields, mutationsFields, promises) {
+    generateServices(schema, promises) {
         return __awaiter(this, void 0, void 0, function* () {
+            const queryFieldMap = schema.getQueryType();
+            const queryFields = [];
+            for (const fieldName in queryFieldMap) {
+                queryFields.push(queryFieldMap[fieldName]);
+            }
             promises.push(this.generateRelayCode(queryFields));
         });
     }
@@ -38,8 +43,6 @@ class RelayGenerator extends Generator_1.Generator {
             stream.write(EXPORT_RELAY_TYPES_CODE);
             stream.write(EXPORT_RELAY_VARS_CODE);
         });
-    }
-    writeBuildRefetchQuery(stream, queryFields) {
     }
 }
 exports.RelayGenerator = RelayGenerator;

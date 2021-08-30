@@ -1,0 +1,236 @@
+import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
+import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import type { WithTypeName, ImplementationType } from '../CommonTypes';
+import { node$ } from './NodeFetcher';
+import {Gender} from '../enums';
+
+/*
+ * Any instance of this interface is immutable,
+ * all the properties and functions can only be used to create new instances,
+ * they cannot modify the current instance.
+ * 
+ * So any instance of this interface is reuseable.
+ */
+export interface EmployeeFetcher<T extends object, TVariables extends object> extends Fetcher<'Employee', T, TVariables> {
+
+	on<XName extends ImplementationType<'Employee'>, X extends object, XVariables extends object>(
+		child: Fetcher<XName, X, XVariables>, 
+		fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
+	): EmployeeFetcher<
+		XName extends 'Employee' ?
+		T & X :
+		WithTypeName<T, ImplementationType<'Employee'>> & (
+			WithTypeName<X, ImplementationType<XName>> | 
+			{__typename: Exclude<ImplementationType<'Employee'>, ImplementationType<XName>>}
+		), 
+		TVariables & XVariables
+	>;
+
+
+	directive(name: string, args?: DirectiveArgs): EmployeeFetcher<T, TVariables>;
+
+	invisibleDirective(name: string, args?: DirectiveArgs): EmployeeFetcher<T, TVariables>;
+
+
+	readonly __typename: EmployeeFetcher<T & {__typename: ImplementationType<'Employee'>}, TVariables>;
+
+
+	readonly id: EmployeeFetcher<T & {readonly "id": string}, TVariables>;
+
+	"id+"<
+		XAlias extends string = "id", 
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+	>(
+		optionsConfigurer?: (
+			options: FieldOptions<"id", {}>
+		) => FieldOptions<XAlias, XDirectives>
+	): EmployeeFetcher<
+		T & (
+			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+				{readonly [key in XAlias]?: string} : 
+				{readonly [key in XAlias]: string}
+		), 
+		TVariables
+	>;
+
+	readonly "~id": EmployeeFetcher<Omit<T, 'id'>, TVariables>;
+
+
+	readonly firstName: EmployeeFetcher<T & {readonly "firstName": string}, TVariables>;
+
+	"firstName+"<
+		XAlias extends string = "firstName", 
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+	>(
+		optionsConfigurer?: (
+			options: FieldOptions<"firstName", {}>
+		) => FieldOptions<XAlias, XDirectives>
+	): EmployeeFetcher<
+		T & (
+			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+				{readonly [key in XAlias]?: string} : 
+				{readonly [key in XAlias]: string}
+		), 
+		TVariables
+	>;
+
+	readonly "~firstName": EmployeeFetcher<Omit<T, 'firstName'>, TVariables>;
+
+
+	readonly lastName: EmployeeFetcher<T & {readonly "lastName": string}, TVariables>;
+
+	"lastName+"<
+		XAlias extends string = "lastName", 
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+	>(
+		optionsConfigurer?: (
+			options: FieldOptions<"lastName", {}>
+		) => FieldOptions<XAlias, XDirectives>
+	): EmployeeFetcher<
+		T & (
+			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+				{readonly [key in XAlias]?: string} : 
+				{readonly [key in XAlias]: string}
+		), 
+		TVariables
+	>;
+
+	readonly "~lastName": EmployeeFetcher<Omit<T, 'lastName'>, TVariables>;
+
+
+	readonly gender: EmployeeFetcher<T & {readonly "gender": Gender}, TVariables>;
+
+	"gender+"<
+		XAlias extends string = "gender", 
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+	>(
+		optionsConfigurer?: (
+			options: FieldOptions<"gender", {}>
+		) => FieldOptions<XAlias, XDirectives>
+	): EmployeeFetcher<
+		T & (
+			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+				{readonly [key in XAlias]?: Gender} : 
+				{readonly [key in XAlias]: Gender}
+		), 
+		TVariables
+	>;
+
+	readonly "~gender": EmployeeFetcher<Omit<T, 'gender'>, TVariables>;
+
+
+	readonly salary: EmployeeFetcher<T & {readonly "salary": number}, TVariables>;
+
+	"salary+"<
+		XAlias extends string = "salary", 
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+	>(
+		optionsConfigurer?: (
+			options: FieldOptions<"salary", {}>
+		) => FieldOptions<XAlias, XDirectives>
+	): EmployeeFetcher<
+		T & (
+			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+				{readonly [key in XAlias]?: number} : 
+				{readonly [key in XAlias]: number}
+		), 
+		TVariables
+	>;
+
+	readonly "~salary": EmployeeFetcher<Omit<T, 'salary'>, TVariables>;
+
+
+	department<
+		X extends object, 
+		XVariables extends object, 
+		XAlias extends string = "department", 
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+	>(
+		child: Fetcher<'Department', X, XVariables>, 
+		optionsConfigurer?: (
+			options: FieldOptions<"department", {}>
+		) => FieldOptions<XAlias, XDirectives>
+	): EmployeeFetcher<
+		T & (
+			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+				{readonly [key in XAlias]?: X} : 
+				{readonly [key in XAlias]: X}
+		), 
+		TVariables & XVariables
+	>;
+
+
+	supervisor<
+		X extends object, 
+		XVariables extends object, 
+		XAlias extends string = "supervisor"
+	>(
+		child: Fetcher<'Employee', X, XVariables>, 
+		optionsConfigurer?: (
+			options: FieldOptions<"supervisor", {}>
+		) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}>
+	): EmployeeFetcher<
+		T & {readonly [key in XAlias]?: X}, 
+		TVariables & XVariables
+	>;
+
+
+	subordinates<
+		X extends object, 
+		XVariables extends object, 
+		XAlias extends string = "subordinates", 
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+	>(
+		child: Fetcher<'Employee', X, XVariables>, 
+		optionsConfigurer?: (
+			options: FieldOptions<"subordinates", {}>
+		) => FieldOptions<XAlias, XDirectives>
+	): EmployeeFetcher<
+		T & (
+			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+				{readonly [key in XAlias]?: readonly X[]} : 
+				{readonly [key in XAlias]: readonly X[]}
+		), 
+		TVariables & XVariables
+	>;
+}
+
+export const employee$: EmployeeFetcher<{}, {}> = 
+	createFetcher(
+		createFetchableType(
+			"Employee", 
+			[node$.fetchableType], 
+			[
+				"firstName", 
+				"lastName", 
+				"gender", 
+				"salary", 
+				{
+					isFunction: true, 
+					isPlural: false, 
+					name: "department"
+				}, 
+				{
+					isFunction: true, 
+					isPlural: false, 
+					name: "supervisor"
+				}, 
+				{
+					isFunction: true, 
+					isPlural: true, 
+					name: "subordinates"
+				}
+			]
+		), 
+		undefined
+	)
+;
+
+export const employee$$ = 
+	employee$
+		.id
+		.firstName
+		.lastName
+		.gender
+		.salary
+;

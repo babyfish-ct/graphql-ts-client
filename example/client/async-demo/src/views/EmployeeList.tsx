@@ -19,17 +19,63 @@ import {
     makeStyles
 } from "@material-ui/core";
 import { DepartmentSelector } from "./DepartmentSelector";
-import { useRecoilValueLoadable } from "recoil";
-import { selectEmployees } from "../state/EmployeeSelector";
-import { department$, employee$, employee$$ } from "../generated/fetchers";
-import { ClientError } from "graphql-request";
-import { useReferesher } from "../state/common/Dependency";
+import { department$, employee$, employee$$, query$ } from "../__generated/fetchers";
+import { ModelType } from "graphql-ts-client-api";
+import { execute, GraphQLError } from "../__generated/Async";
+import { useEffect } from "react";
+
+const EMPLOYEE_LIST_FETCHER =
+    query$
+    .findEmployees(
+        employee$$
+        .department(
+            department$
+                .name
+        )
+        .supervisor(
+            employee$
+                .firstName
+                .lastName
+        )
+        .subordinates(
+            employee$
+                .firstName
+                .lastName
+        )
+    );
 
 export const EmployeeList: FC = memo(() => {
+
+    const [data, setData] = useState<ModelType<typeof EMPLOYEE_LIST_FETCHER>>();
+    const [error, setError] = useState<Error>();
+    const [loading, setLoading] = useState(false);
 
     const [name, setName] = useState<string>();
     const [departmentId, setDepartmentId] = useState<string>();
     const [mockedErrorProbability, setMockedErrorProbability] = useState(0);
+
+    const findEmployees = useCallback(async () => {
+        setLoading(true);
+        setError(undefined);
+        setData(undefined);
+        try {
+            const data = await execute(
+                EMPLOYEE_LIST_FETCHER,
+                {
+                    variables: {
+                        name,
+                        departmentId,
+                        mockedErrorProbability
+                    }
+                }
+            );
+            setData(data);
+        } catch (e) {
+            setError(e);
+        } finally {
+            setLoading(false);
+        }
+    }, [name, departmentId, mockedErrorProbability]);
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const v = e.target.value;
@@ -41,32 +87,13 @@ export const EmployeeList: FC = memo(() => {
         setMockedErrorProbability(isNaN(v) ? 0 : v);
     }, []);
 
-    const loadable = useRecoilValueLoadable(
-        selectEmployees(
-            { name, departmentId, mockedErrorProbability },
-            employee$$
-            .department(
-                department$
-                    .name
-            )
-            .supervisor(
-                employee$
-                    .firstName
-                    .lastName
-            )
-            .subordinates(
-                employee$
-                    .firstName
-                    .lastName
-            )
-        )
-    );
-
-    const refresh = useReferesher("Employee");
+    useEffect(() => {
+        findEmployees();
+    }, [findEmployees]);
 
     const onRefreshClick = useCallback(() => {
-        refresh();
-    }, [refresh]);
+        findEmployees();
+    }, [findEmployees]);
 
     const classes = useStyles();
 
@@ -75,7 +102,7 @@ export const EmployeeList: FC = memo(() => {
             <Grid container spacing={3} className={classes.conditionBar}>
                 <Grid item xs={4}>
                     <TextField 
-                    value={name}
+                    value={name ?? ""}
                     onChange={onNameChange}
                     label="FirstName/lastname" 
                     fullWidth={true}/>
@@ -118,24 +145,22 @@ export const EmployeeList: FC = memo(() => {
                 </TableHead>
                 <TableBody>
                     {
-                        loadable.state === 'loading' ?
+                        loading &&
                         <TableRow>
                             <TableCell colSpan={8}>
                                 <CircularProgress/>
                             </TableCell>
-                        </TableRow> :
-                        undefined
+                        </TableRow>
                     }
                     {
-                        loadable.state === 'hasError' ?
+                        error instanceof GraphQLError &&
                         <TableRow>
                             <TableCell colSpan={8}>
                                 <div className={classes.error}>
                                     <div className={classes.errorTitle}>Errors raised</div>
                                     <ul>
                                         {
-                                            (loadable.errorMaybe() as ClientError)
-                                            .response
+                                            error
                                             .errors
                                             ?.map((error, index) => {
                                                 return (
@@ -148,39 +173,34 @@ export const EmployeeList: FC = memo(() => {
                                     </ul>
                                 </div>
                             </TableCell>
-                        </TableRow> :
-                        undefined
+                        </TableRow>
                     }
                     {
-                        loadable.state === 'hasValue' ?
-                        loadable.getValue().map(employee => {
-                            return (
-                                <TableRow key={employee.id}>
-                                    <TableCell>{employee.id}</TableCell>
-                                    <TableCell>{employee.firstName}</TableCell>
-                                    <TableCell>{employee.lastName}</TableCell>
-                                    <TableCell>{employee.gender}</TableCell>
-                                    <TableCell>{employee.salary}</TableCell>
-                                    <TableCell>{employee.department.name}</TableCell>
-                                    <TableCell>
-                                        {
-                                            employee.supervisor !== undefined ?
-                                            `${employee.supervisor?.firstName} ${employee.supervisor?.lastName}` :
-                                            undefined
-                                        }
-                                    </TableCell>
-                                    <TableCell>
-                                        {
-                                            employee
-                                                .subordinates
-                                                .map(subordinate => `${subordinate.firstName} ${subordinate.lastName}`)
-                                                .join(", ")
-                                        }
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        }) :
-                        []
+                        data?.findEmployees?.map(employee => 
+                            <TableRow key={employee.id}>
+                                <TableCell>{employee.id}</TableCell>
+                                <TableCell>{employee.firstName}</TableCell>
+                                <TableCell>{employee.lastName}</TableCell>
+                                <TableCell>{employee.gender}</TableCell>
+                                <TableCell>{employee.salary}</TableCell>
+                                <TableCell>{employee.department.name}</TableCell>
+                                <TableCell>
+                                    {
+                                        employee.supervisor !== undefined ?
+                                        `${employee.supervisor?.firstName} ${employee.supervisor?.lastName}` :
+                                        undefined
+                                    }
+                                </TableCell>
+                                <TableCell>
+                                    {
+                                        employee
+                                            .subordinates
+                                            .map(subordinate => `${subordinate.firstName} ${subordinate.lastName}`)
+                                            .join(", ")
+                                    }
+                                </TableCell>
+                            </TableRow>
+                        )
                     }
                 </TableBody>
             </Table>
