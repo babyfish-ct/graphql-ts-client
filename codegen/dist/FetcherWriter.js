@@ -88,7 +88,7 @@ class FetcherWriter extends Writer_1.Writer {
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
         }
-        if (this.relay) {
+        if (this.relay && this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             this.importStatement("import { FragmentRefs } from 'relay-runtime';");
             this.importStatement("import { RelayFragment } from '../Relay';");
         }
@@ -197,7 +197,7 @@ class FetcherWriter extends Writer_1.Writer {
     writePositiveProp(field) {
         const associatedType = Utils_1.associatedTypeOf(field.type);
         const isField = field.args.length === 0 && associatedType === undefined;
-        if (!isField && (this.modelType.name === "Query" || this.modelType.name === "Mutation")) {
+        if (field.args.length !== 0) {
             this.writePositivePropImpl(field, "NO_ARGS");
         }
         this.writePositivePropImpl(field, "NORMAL");
@@ -251,7 +251,7 @@ class FetcherWriter extends Writer_1.Writer {
             this.scope({ type: "PARAMETERS", multiLines: true }, () => {
                 if (field.args.length !== 0 && mode !== "NO_ARGS") {
                     this.separator(", ");
-                    t("args: XArgs | undefined");
+                    t("args: XArgs");
                 }
                 if (associatedType !== undefined) {
                     this.separator(", ");

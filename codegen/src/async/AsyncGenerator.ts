@@ -12,6 +12,7 @@ import { GraphQLField, GraphQLSchema } from "graphql";
 import { awaitStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { join } from "path";
+import { WriteStream } from "fs";
 
 export class AsyncGenerator extends Generator {
 
@@ -30,6 +31,12 @@ export class AsyncGenerator extends Generator {
         stream.write(ASYNC_CODE);
         await awaitStream(stream);
     }
+
+    protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
+        stream.write(`export type { GraphQLExecutor } from "./Async";\n`);
+        stream.write(`export { setGraphQLExecutor, execute } from "./Async";\n`);
+        await super.writeIndexCode(stream, schema);
+    }
 }
 
 const ASYNC_CODE = `
@@ -37,10 +44,7 @@ import { Fetcher, TextWriter, util } from "graphql-ts-client-api";
 
 export type GraphQLExecutor = (request: string, variables: object) => Promise<any>;
 
-export function setGraphQLExecutor(exeucotr: GraphQLExecutor, override: boolean = false) {
-    if (graphQLExecutor !== undefined && !override) {
-        throw new Error("'setGraphQLExecutor' can only be called once");
-    }
+export function setGraphQLExecutor(exeucotr: GraphQLExecutor) {
     graphQLExecutor = exeucotr;
 }
 

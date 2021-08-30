@@ -22,11 +22,13 @@ class RelayGenerator extends Generator_1.Generator {
         return new FetcherWriter_1.FetcherWriter(true, modelType, inheritanceInfo, stream, config);
     }
     generateServices(schema, promises) {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const queryFieldMap = schema.getQueryType();
+            const queryFieldMap = (_b = (_a = schema.getQueryType()) === null || _a === void 0 ? void 0 : _a.getFields()) !== null && _b !== void 0 ? _b : {};
             const queryFields = [];
             for (const fieldName in queryFieldMap) {
-                queryFields.push(queryFieldMap[fieldName]);
+                const queryField = queryFieldMap[fieldName];
+                queryFields.push(queryField);
             }
             promises.push(this.generateRelayCode(queryFields));
         });
@@ -39,9 +41,13 @@ class RelayGenerator extends Generator_1.Generator {
         });
     }
     writeIndexCode(stream, schema) {
+        const _super = Object.create(null, {
+            writeIndexCode: { get: () => super.writeIndexCode }
+        });
         return __awaiter(this, void 0, void 0, function* () {
             stream.write(EXPORT_RELAY_TYPES_CODE);
             stream.write(EXPORT_RELAY_VARS_CODE);
+            yield _super.writeIndexCode.call(this, stream, schema);
         });
     }
 }

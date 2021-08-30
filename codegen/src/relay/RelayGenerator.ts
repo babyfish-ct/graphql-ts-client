@@ -29,10 +29,11 @@ export class RelayGenerator extends Generator {
     }
 
     protected async generateServices(schema: GraphQLSchema, promises: Promise<void>[]) {
-        const queryFieldMap = schema.getQueryType();
+        const queryFieldMap = schema.getQueryType()?.getFields() ?? {};
         const queryFields: GraphQLField<unknown, unknown>[] = [];
         for (const fieldName in queryFieldMap) {
-            queryFields.push(queryFieldMap[fieldName]);
+            const queryField = queryFieldMap[fieldName];
+            queryFields.push(queryField);
         }
         promises.push(this.generateRelayCode(queryFields));
     }
@@ -48,6 +49,7 @@ export class RelayGenerator extends Generator {
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
         stream.write(EXPORT_RELAY_TYPES_CODE);
         stream.write(EXPORT_RELAY_VARS_CODE);
+        await super.writeIndexCode(stream, schema);
     }
 }
 

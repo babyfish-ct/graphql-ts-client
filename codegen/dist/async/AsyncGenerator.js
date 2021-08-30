@@ -37,6 +37,16 @@ class AsyncGenerator extends Generator_1.Generator {
             yield Generator_1.awaitStream(stream);
         });
     }
+    writeIndexCode(stream, schema) {
+        const _super = Object.create(null, {
+            writeIndexCode: { get: () => super.writeIndexCode }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            stream.write(`export type { GraphQLExecutor } from "./Async";\n`);
+            stream.write(`export { setGraphQLExecutor, execute } from "./Async";\n`);
+            yield _super.writeIndexCode.call(this, stream, schema);
+        });
+    }
 }
 exports.AsyncGenerator = AsyncGenerator;
 const ASYNC_CODE = `
@@ -44,10 +54,7 @@ import { Fetcher, TextWriter, util } from "graphql-ts-client-api";
 
 export type GraphQLExecutor = (request: string, variables: object) => Promise<any>;
 
-export function setGraphQLExecutor(exeucotr: GraphQLExecutor, override: boolean = false) {
-    if (graphQLExecutor !== undefined && !override) {
-        throw new Error("'setGraphQLExecutor' can only be called once");
-    }
+export function setGraphQLExecutor(exeucotr: GraphQLExecutor) {
     graphQLExecutor = exeucotr;
 }
 

@@ -82,11 +82,7 @@ class Generator {
                 promises.push(this.generateEnumTypes(enumTypes));
             }
             promises.push(this.generateCommonTypes(schema, inheritanceInfo));
-            const queryFields = this.operationFields(queryType);
-            const mutationFields = this.operationFields(mutationType);
-            if (queryFields.length !== 0 || mutationFields.length !== 0) {
-                this.generateServices(schema, promises);
-            }
+            this.generateServices(schema, promises);
             promises.push(this.writeIndex(schema));
             yield Promise.all(promises);
         });
@@ -221,33 +217,17 @@ class Generator {
             }
         });
     }
-    generateServices(schema, promises) {
-        return __awaiter(this, void 0, void 0, function* () { });
-    }
-    operationFields(type) {
-        if (type === undefined || type === null) {
-            return [];
-        }
-        const fieldMap = type.getFields();
-        const fields = [];
-        for (const fieldName in fieldMap) {
-            if (!this.excludedOperationNames.has(fieldName)) {
-                fields.push(fieldMap[fieldName]);
-            }
-        }
-        return fields;
-    }
     writeIndex(schema) {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = createStreamAndLog(path_1.join(this.config.targetDir, "index.ts"));
             this.writeIndexCode(stream, schema);
-            yield stream.end();
+            yield awaitStream(stream);
         });
     }
     writeIndexCode(stream, schema) {
         return __awaiter(this, void 0, void 0, function* () {
             stream.write("export type { ImplementationType } from './CommonTypes';\n");
-            stream.write("export type { upcastTypes, downcastTypes } from './CommonTypes';\n");
+            stream.write("export { upcastTypes, downcastTypes } from './CommonTypes';\n");
         });
     }
 }

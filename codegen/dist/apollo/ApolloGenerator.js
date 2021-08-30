@@ -52,7 +52,7 @@ class ApolloGenerator extends Generator_1.Generator {
         return __awaiter(this, void 0, void 0, function* () {
             stream.write("export { useTypedQuery, useTypedLazyQuery, useTypedMutation } from './Apollo';");
             stream.write("export { DependencyManagerProvider } from './DependencyManager';\n");
-            _super.writeIndexCode.call(this, stream, schema);
+            yield _super.writeIndexCode.call(this, stream, schema);
         });
     }
 }

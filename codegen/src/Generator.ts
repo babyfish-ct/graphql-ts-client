@@ -16,11 +16,10 @@ import { join } from "path";
 import { FetcherWriter, generatedFetcherTypeName } from "./FetcherWriter";
 import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
-import { Maybe } from "graphql/jsutils/Maybe";
 import { CommonTypesWriter } from "./CommonTypesWriter";
 import { InheritanceInfo } from "./InheritanceInfo";
 
-export class Generator {
+export abstract class Generator {
 
     private excludedTypeNames: Set<string>;
 
@@ -79,11 +78,7 @@ export class Generator {
 
         promises.push(this.generateCommonTypes(schema, inheritanceInfo));
 
-        const queryFields = this.operationFields(queryType);
-        const mutationFields = this.operationFields(mutationType);
-        if (queryFields.length !== 0 || mutationFields.length !== 0) {
-            this.generateServices(schema, promises);
-        }
+        this.generateServices(schema, promises);
 
         promises.push(this.writeIndex(schema));
 
@@ -242,33 +237,17 @@ export class Generator {
         }
     }
 
-    protected async generateServices(schema: GraphQLSchema, promises: Promise<void>[]) {}
-
-    private operationFields(
-        type: Maybe<GraphQLObjectType>
-    ): GraphQLField<unknown, unknown>[] {
-        if (type === undefined || type === null) {
-            return [];
-        }
-        const fieldMap = type.getFields();
-        const fields: GraphQLField<any, any>[] = [];
-        for (const fieldName in fieldMap) {
-            if (!this.excludedOperationNames.has(fieldName)) {
-                fields.push(fieldMap[fieldName]!);
-            }
-        }
-        return fields;
-    }
+    protected abstract generateServices(schema: GraphQLSchema, promises: Promise<void>[]): Promise<void>;
 
     private async writeIndex(schema: GraphQLSchema) {
         const stream = createStreamAndLog(join(this.config.targetDir, "index.ts"));
         this.writeIndexCode(stream, schema);
-        await stream.end();
+        await awaitStream(stream);
     }
 
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
         stream.write("export type { ImplementationType } from './CommonTypes';\n");
-        stream.write("export type { upcastTypes, downcastTypes } from './CommonTypes';\n");
+        stream.write("export { upcastTypes, downcastTypes } from './CommonTypes';\n");
     }
 }
 

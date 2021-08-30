@@ -46,7 +46,7 @@ export class ApolloGenerator extends Generator {
         
         stream.write("export { useTypedQuery, useTypedLazyQuery, useTypedMutation } from './Apollo';");
         stream.write("export { DependencyManagerProvider } from './DependencyManager';\n");
-        super.writeIndexCode(stream, schema);
+        await super.writeIndexCode(stream, schema);
     }
 }
 

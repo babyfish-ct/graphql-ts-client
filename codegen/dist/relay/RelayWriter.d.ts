@@ -4,7 +4,6 @@ import { GraphQLField } from "graphql";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { Writer } from "../Writer";
 export declare class RelayWriter extends Writer {
-    private queryFields;
     private readonly nodeField?;
     private readonly noNodeFieldError?;
     private readonly nodeTypeName?;

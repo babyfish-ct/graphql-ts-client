@@ -7,11 +7,14 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
+/// <reference types="node" />
 import { GraphQLSchema } from "graphql";
 import { Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
+import { WriteStream } from "fs";
 export declare class AsyncGenerator extends Generator {
     constructor(config: GeneratorConfig);
     protected generateServices(_: GraphQLSchema, promises: Promise<void>[]): Promise<void>;
     private generateAsync;
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
 }

@@ -1,84 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RelayWriter = void 0;
-const Utils_1 = require("../Utils");
-const Writer_1 = require("../Writer");
-class RelayWriter extends Writer_1.Writer {
-    constructor(queryFields, stream, config) {
-        var _a;
-        super(stream, config);
-        const field = queryFields.find(field => field.name === "node");
-        if (field === undefined || field.args.length !== 1) {
-            this.noNodeFieldError = "@refetchable becasue the service-side does not support the query: 'node(id: ID!): Node'";
-        }
-        else {
-            const nodeTypeName = (_a = Utils_1.associatedTypeOf(field.type)) === null || _a === void 0 ? void 0 : _a.name;
-            if (Utils_1.isPluralType(field.type)) {
-                this.noNodeFieldError = "Canot use @refetchable, the node query should not be plural";
-            }
-            else if (nodeTypeName === null) {
-                this.noNodeFieldError = "Canot use @refetchable, the node query should return object";
-            }
-            else {
-                this.nodeField = field;
-                this.nodeTypeName = nodeTypeName;
-            }
-        }
-    }
-    isUnderGlobalDir() {
-        return true;
-    }
-    prepareImportings() {
-        this.importStatement(`import { useMemo } from 'react';`);
-        this.importStatement(`import type { Fetcher, FetcherField } from "graphql-ts-client-api";`);
-        this.importStatement(`import { FragmentWrapper, TextWriter, util } from "graphql-ts-client-api";`);
-        this.importStatement(IMPORT_REACT_RELAY);
-        this.importStatement(IMPORT_RELAY_RUTNIME);
-        this.importStatement(`import { RelayObservable } from "relay-runtime/lib/network/RelayObservable";`);
-        this.importStatement(`import { useRefetchableFragmentHookType } from "react-relay/relay-hooks/useRefetchableFragment";`);
-        if (this.nodeField !== undefined && this.nodeTypeName !== undefined) {
-            this.importStatement(`import { downcastTypes } from  "./CommonTypes";`);
-            this.importStatement(`import { query$, ${Utils_1.instancePrefix(this.nodeTypeName)}$ } from  "./fetchers";`);
-        }
-    }
-    writeCode() {
-        let relayCode;
-        if (this.indent === STATIC_IDENT) {
-            relayCode = RELAY_CODE;
-        }
-        else {
-            relayCode = RELAY_CODE.replace(STATIC_IDENT, this.indent);
-        }
-        this.text(relayCode);
-        this.writeBuildRefetchQueryRequest();
-    }
-    writeBuildRefetchQueryRequest() {
-        const t = this.text.bind(this);
-        t("\nfunction createRefetchQueryRequest");
-        this.scope({ type: "PARAMETERS", suffix: " " }, () => {
-            t("queryName: string");
-            this.separator(", ");
-            t("fragmentName: string");
-            this.separator(", ");
-            t("fetcher: Fetcher<string, object, object>");
-        });
-        t(": ConcreteRequest ");
-        this.scope({ type: "BLOCK", multiLines: true }, () => {
-            if (this.nodeField === undefined || this.nodeTypeName === undefined) {
-                t(`throw new Error("${this.noNodeFieldError}");\n`);
-                return;
-            }
-            t(`if (downcastTypes("${this.nodeTypeName}").findIndex(downcastType => downcastType === fetcher.fetchableType.entityName) === -1) `);
-            this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
-                t(`throw new Error(\`'\${fetcher.fetchableType.entityName}' does not inherit the node type '${this.nodeTypeName}'\`);`);
-            });
-            t(`const refetchFetcher = query$.node((${Utils_1.instancePrefix(this.nodeTypeName)}$ as any).on(fetcher, fragmentName));\n`);
-            t(`return new TaggedNodeFactory(true).createOperation(queryName, refetchFetcher);\n`);
-        });
-    }
-}
-exports.RelayWriter = RelayWriter;
-const IMPORT_REACT_RELAY = `import { 
+import { useMemo } from 'react';
+import type { Fetcher, FetcherField } from "graphql-ts-client-api";
+import { FragmentWrapper, TextWriter, util } from "graphql-ts-client-api";
+import { 
     loadQuery, 
     useQueryLoader, 
     usePreloadedQuery,
@@ -90,8 +13,8 @@ const IMPORT_REACT_RELAY = `import {
     PreloadedQuery, 
     LoadQueryOptions,
     UseMutationConfig
-} from "react-relay";`;
-const IMPORT_RELAY_RUTNIME = `import { 
+} from "react-relay";
+import { 
     GraphQLTaggedNode,
     ConcreteRequest, 
     NormalizationLocalArgumentDefinition, 
@@ -116,8 +39,13 @@ const IMPORT_RELAY_RUTNIME = `import {
     OperationDescriptor,
     DataID,
     createOperationDescriptor
-} from "relay-runtime";`;
-const RELAY_CODE = `
+} from "relay-runtime";
+import { RelayObservable } from "relay-runtime/lib/network/RelayObservable";
+import { useRefetchableFragmentHookType } from "react-relay/relay-hooks/useRefetchableFragment";
+import { downcastTypes } from  "./CommonTypes";
+import { query$, node$ } from  "./fetchers";
+
+
 /*
  * - - - - - - - - - - - - - - - - - - - - 
  *
@@ -140,7 +68,7 @@ export type PreloadedQueryOf<TRelayQuery> =
 ;
 
 export type OperationOf<TRelayOperation> =
-    TRelayOperation extends RelayOperation<infer TResponse, infer TVariables> ?
+	TRelayOperation extends RelayOperation<infer TResponse, infer TVariables> ?
     OperationType<TResponse, TVariables> :
     never
 ;
@@ -174,8 +102,8 @@ export type OperationType<TResponse, TVariables> = {
 };
 
 export type FragmentKeyType<TFragmentName extends string, TData extends object> = { 
-    readonly " \$data": TData, 
-    readonly " \$fragmentRefs": FragmentRefs<TFragmentName> 
+    readonly " $data": TData, 
+    readonly " $fragmentRefs": FragmentRefs<TFragmentName> 
 } 
 
 
@@ -394,7 +322,7 @@ export abstract class RelayOperation<TResponse, TVariables> {
     ) {
         if (RELAY_OPERATION_MAP.has(operationName)) {
             throw new Error(
-                \`The relay operation '\${operationName}' is aleary exists, please make sure: \` + 
+                `The relay operation '${operationName}' is aleary exists, please make sure: ` + 
                 "1. Each relay operation is created and saved as constant under GLOBAL scope, " +
                 "2. Each relay operation has a unique name"
             );
@@ -440,7 +368,7 @@ extends FragmentWrapper<TFragmentName, TFetchable, TData, TUnresolvedVariables> 
         super(name, fetcher);
         if (RELAY_FRAGMENT_MAP.has(name)) {
             throw new Error(
-                \`The relay fragment '\${name} is aleary exists, please make sure: \` +
+                `The relay fragment '${name} is aleary exists, please make sure: ` +
                 "1. Each relay fragment is created and saved as constant under GLOBAL scope " +
                 "2. Each relay fragment has a unique name"
             );
@@ -505,12 +433,12 @@ class TaggedNodeFactory {
         }
 
         const writer = new TextWriter();
-        writer.text(\`\${operationType} \${operationName}\`);
+        writer.text(`${operationType} ${operationName}`);
         if (fetcher.variableTypeMap.size !== 0) {
             writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
                 util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
                     writer.seperator(", ");
-                    writer.text(\`$\${name}: \${type}\`);
+                    writer.text(`$${name}: ${type}`);
                 });
             });
         }
@@ -673,5 +601,11 @@ class TaggedNodeFactory {
         }
     }
 }
-`;
-const STATIC_IDENT = "    ";
+
+function createRefetchQueryRequest(queryName: string, fragmentName: string, fetcher: Fetcher<string, object, object>) : ConcreteRequest {
+	if (downcastTypes("Node").findIndex(downcastType => downcastType === fetcher.fetchableType.entityName) === -1) {
+		throw new Error(`'${fetcher.fetchableType.entityName}' does not inherit the node type 'Node'`);
+	}
+	const refetchFetcher = query$.node((node$ as any).on(fetcher, fragmentName));
+	return new TaggedNodeFactory(true).createOperation(queryName, refetchFetcher);
+}

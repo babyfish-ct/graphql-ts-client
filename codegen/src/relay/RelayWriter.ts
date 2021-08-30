@@ -12,9 +12,9 @@ export class RelayWriter extends Writer {
 
     private readonly nodeTypeName?: string;
 
-    constructor(private queryFields: GraphQLField<unknown, unknown>[], stream: WriteStream, config: GeneratorConfig) {
+    constructor(queryFields: GraphQLField<unknown, unknown>[], stream: WriteStream, config: GeneratorConfig) {
         super(stream, config);
-        const field = this.queryFields.find(field => field.name === "node");
+        const field = queryFields.find(field => field.name === "node");
         if (field === undefined || field.args.length !== 1) {
             this.noNodeFieldError = "@refetchable becasue the service-side does not support the query: 'node(id: ID!): Node'";
         } else {
@@ -147,7 +147,7 @@ const RELAY_CODE = `
 export type PreloadedQueryOf<TRelayQuery> =
 	TRelayQuery extends RelayQuery<infer TResponse, infer TVariables> ?
 	PreloadedQuery<OperationType<TResponse, TVariables>> :
-    never
+	never
 ;
 
 export type OperationOf<TRelayOperation> =
@@ -579,9 +579,9 @@ class TaggedNodeFactory {
     }
 
     private collectFetcherSelections(fetcher: Fetcher<string, object, object>, output: ReaderSelection[]) {
-        for (const [fieldName, field] of fetcher.fieldMap) {
+        util.iterateMap(fetcher.fieldMap, ([fieldName, field]) => {
             this.collectFieldSelections(fieldName, field, output);
-        }
+        });
     }
 
     private collectFieldSelections(fieldName: string, field: FetcherField, output: ReaderSelection[]) {
@@ -618,7 +618,7 @@ class TaggedNodeFactory {
                     } 
                     group.push(childFetcher);
                 }
-                for (const [typeName, childFetchers] of fetcherGroupByTypeMap) {
+                util.iterateMap(fetcherGroupByTypeMap, ([typeName, childFetchers]) => {
                     const childSelections: ReaderSelection[] = [];
                     for (const childFetcher of childFetchers) {
                         this.collectFetcherSelections(childFetcher, childSelections);
@@ -628,7 +628,7 @@ class TaggedNodeFactory {
                         type: typeName,
                         selections: childSelections
                     });
-                }
+                });
             } else {
                 const childSelections: ReaderSelection[] = [];
                 for (const childFetcher of field.childFetchers) {
