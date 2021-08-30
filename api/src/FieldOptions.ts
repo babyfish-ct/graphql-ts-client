@@ -1,38 +1,51 @@
 import { DirectiveArgs } from "./Fetcher";
+import { UnresolvedVariables } from "./Parameter";
 
-export interface FieldOptions<TAlias extends string, TDirectives extends { readonly [key: string]: DirectiveArgs }> {
+export interface FieldOptions<
+    TAlias extends string, 
+    TDirectives extends { readonly [key: string]: DirectiveArgs },
+    TDirectiveVaraibles extends object
+> {
     
-    alias<XAlias extends string>(alias: XAlias): FieldOptions<XAlias, TDirectives>;
+    alias<XAlias extends string>(alias: XAlias): FieldOptions<XAlias, TDirectives, TDirectiveVaraibles>;
 
     directive<
         XDirective extends string, 
-        XArgs extends DirectiveArgs = {}>(
+        XArgs extends DirectiveArgs = {}
+    >(
         directive: XDirective, 
         args?: XArgs
     ): FieldOptions<
         TAlias, 
-        TDirectives & { readonly [key in XDirective]: XArgs }
+        TDirectives & { readonly [key in XDirective]: XArgs },
+        TDirectiveVaraibles & UnresolvedVariables<XArgs, Record<keyof XArgs, any>>
     >;
 
     invisibleDirective<
         XDirective extends string, 
-        XArgs extends DirectiveArgs = {}>(
+        XArgs extends DirectiveArgs = {}
+    >(
         directive: XDirective, 
         args?: XArgs
     ): FieldOptions<
         TAlias, 
-        TDirectives & { readonly [key in XDirective]: XArgs }
+        TDirectives & { readonly [key in XDirective]: XArgs },
+        TDirectiveVaraibles & UnresolvedVariables<XArgs, Record<keyof XArgs, any>>
     >;
 
     readonly value: FieldOptionsValue;
 }
 
-class FieldOptionsImpl<TAlias extends string, TDirectives extends { readonly [key: string]: DirectiveArgs }> implements FieldOptions<TAlias, TDirectives> {
+class FieldOptionsImpl<
+    TAlias extends string, 
+    TDirectives extends { readonly [key: string]: DirectiveArgs },
+    TDirectiveVaraibles extends object
+> implements FieldOptions<TAlias, TDirectives, TDirectiveVaraibles> {
 
     private _value?: FieldOptionsValue;
 
     constructor(
-        private _prev?: FieldOptionsImpl<string, any>, 
+        private _prev?: FieldOptionsImpl<string, any, any>, 
         private _alias?: string, 
         private _directive?: string,
         private _directiveArgs?: object,
@@ -41,8 +54,8 @@ class FieldOptionsImpl<TAlias extends string, TDirectives extends { readonly [ke
     ) {
     }
 
-    alias<XAlias extends string>(alias: XAlias): FieldOptions<XAlias, TDirectives> {
-        return new FieldOptionsImpl<XAlias, TDirectives>(this, alias);
+    alias<XAlias extends string>(alias: XAlias): FieldOptions<XAlias, TDirectives, TDirectiveVaraibles> {
+        return new FieldOptionsImpl<XAlias, TDirectives, TDirectiveVaraibles>(this, alias);
     }
 
     directive<
@@ -53,12 +66,17 @@ class FieldOptionsImpl<TAlias extends string, TDirectives extends { readonly [ke
         args?: XArgs
     ): FieldOptions<
         TAlias, 
-        TDirectives & { readonly [key in XDirective]: XArgs}
+        TDirectives & { readonly [key in XDirective]: XArgs},
+        TDirectiveVaraibles & UnresolvedVariables<XArgs, Record<keyof XArgs, any>>
     > {
         if (directive.startsWith("@")) {
             throw new Error("directive name should not start with '@' because it will be prepended by this framework automatcially"); 
         }
-        return new FieldOptionsImpl<TAlias, TDirectives & { readonly [key in XDirective]: XArgs}>(this, undefined, directive, args);
+        return new FieldOptionsImpl<
+            TAlias, 
+            TDirectives & { readonly [key in XDirective]: XArgs},
+            TDirectiveVaraibles & UnresolvedVariables<XArgs, XArgs>
+        >(this, undefined, directive, args);
     }
 
     invisibleDirective<
@@ -69,12 +87,17 @@ class FieldOptionsImpl<TAlias extends string, TDirectives extends { readonly [ke
         args?: XArgs
     ): FieldOptions<
         TAlias, 
-        TDirectives & { readonly [key in XDirective]: XArgs}
+        TDirectives & { readonly [key in XDirective]: XArgs},
+        TDirectiveVaraibles & UnresolvedVariables<XArgs, Record<keyof XArgs, any>>
     > {
         if (directive.startsWith("@")) {
             throw new Error("directive name should not start with '@' because it will be prepended by this framework automatcially"); 
         }
-        return new FieldOptionsImpl<TAlias, TDirectives & { readonly [key in XDirective]: XArgs}>(this, undefined, undefined, undefined, directive, args);
+        return new FieldOptionsImpl<
+            TAlias, 
+            TDirectives & { readonly [key in XDirective]: XArgs},
+            TDirectiveVaraibles & UnresolvedVariables<XArgs, XArgs>
+        >(this, undefined, undefined, undefined, directive, args);
     }
 
     get value(): FieldOptionsValue {
@@ -89,7 +112,7 @@ class FieldOptionsImpl<TAlias extends string, TDirectives extends { readonly [ke
         let alias: string | undefined = undefined;
         const directives = new Map<string, DirectiveArgs>();
         const invisibleDirectives = new Map<string, DirectiveArgs>();
-        for (let options: FieldOptionsImpl<string, any> | undefined = this; options !== undefined; options = options._prev) {
+        for (let options: FieldOptionsImpl<string, any, any> | undefined = this; options !== undefined; options = options._prev) {
             if (options._alias !== undefined && alias === undefined) {
                 alias = options._alias;
             }
@@ -115,6 +138,6 @@ export interface FieldOptionsValue {
     readonly invisibleDirectives: ReadonlyMap<string, DirectiveArgs>;
 }
 
-export function createFieldOptions<TAlias extends string>(): FieldOptions<TAlias, {}> {
-    return new FieldOptionsImpl<TAlias, {}>();
+export function createFieldOptions<TAlias extends string>(): FieldOptions<TAlias, {}, {}> {
+    return new FieldOptionsImpl<TAlias, {}, {}>();
 }

@@ -1,5 +1,7 @@
 # Guide for apollo-client user
 
+## Notes: This document is wrote since 2.1.4, now the framework is 3.0.0.Preview but this document has not been modified, it will modified soon.
+
 1. This framework is integrated with '@apollo/client' to support out-of-the-box since 2.1.4
 
 2. In addition, an optional functionality named "DependencyManager" is provided, it can help the developers to reduce the difficulty of using "refetchQueries" of apollo mutation.

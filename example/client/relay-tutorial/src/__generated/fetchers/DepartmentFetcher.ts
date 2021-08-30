@@ -50,18 +50,19 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
 
 	"id+"<
 		XAlias extends string = "id", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"id", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"id", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): DepartmentFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: string} : 
 				{readonly [key in XAlias]: string}
 		), 
-		TVariables
+		TVariables & XDirectiveVariables
 	>;
 
 	readonly "~id": DepartmentFetcher<Omit<T, 'id'>, TVariables>;
@@ -71,18 +72,19 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
 
 	"name+"<
 		XAlias extends string = "name", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"name", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"name", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): DepartmentFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: string} : 
 				{readonly [key in XAlias]: string}
 		), 
-		TVariables
+		TVariables & XDirectiveVariables
 	>;
 
 	readonly "~name": DepartmentFetcher<Omit<T, 'name'>, TVariables>;
@@ -92,19 +94,20 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "employees", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		child: Fetcher<'Employee', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"employees", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"employees", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): DepartmentFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: readonly X[]} : 
 				{readonly [key in XAlias]: readonly X[]}
 		), 
-		TVariables & XVariables
+		TVariables & XVariables & XDirectiveVariables
 	>;
 
 
@@ -112,18 +115,19 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
 
 	"avgSalary+"<
 		XAlias extends string = "avgSalary", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"avgSalary", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"avgSalary", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): DepartmentFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: number} : 
 				{readonly [key in XAlias]: number}
 		), 
-		TVariables
+		TVariables & XDirectiveVariables
 	>;
 
 	readonly "~avgSalary": DepartmentFetcher<Omit<T, 'avgSalary'>, TVariables>;

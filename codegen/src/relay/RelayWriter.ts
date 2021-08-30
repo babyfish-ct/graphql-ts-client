@@ -37,7 +37,7 @@ export class RelayWriter extends Writer {
     protected prepareImportings() {
         this.importStatement(`import { useMemo } from 'react';`);
         this.importStatement(`import type { Fetcher, FetcherField } from "graphql-ts-client-api";`);
-        this.importStatement(`import { FragmentWrapper, TextWriter, util } from "graphql-ts-client-api";`);
+        this.importStatement(`import { FragmentWrapper, TextWriter, ParameterRef, util } from "graphql-ts-client-api";`);
         this.importStatement(IMPORT_REACT_RELAY);
         this.importStatement(IMPORT_RELAY_RUTNIME);
         this.importStatement(`import { RelayObservable } from "relay-runtime/lib/network/RelayObservable";`);
@@ -151,8 +151,8 @@ export type PreloadedQueryOf<TRelayQuery> =
 ;
 
 export type OperationOf<TRelayOperation> =
-    TRelayOperation extends RelayOperation<infer TResponse, infer TVariables> ?
-    OperationType<TResponse, TVariables> :
+	TRelayOperation extends RelayOperation<infer TResponse, infer TVariables> ?
+	OperationType<TResponse, TVariables> :
     never
 ;
 
@@ -254,8 +254,8 @@ export function createTypedOperationDescriptor<TResponse extends object, TVariab
  */
 
 export function loadTypedQuery<
-    TResponse,
-	TVariables,
+    TResponse extends object, 
+    TVariables extends object,
     TEnvironmentProviderOptions extends EnvironmentProviderOptions = {}
 >(
     environment: IEnvironment,
@@ -273,7 +273,7 @@ export function loadTypedQuery<
 	);
 }
 
-export function fetchTypedQuery<TResponse, TVariables>(
+export function fetchTypedQuery<TResponse extends object, TVariables extends object>(
     environment: Environment,
     query: RelayQuery<TResponse, TVariables>,
     variables: TVariables,
@@ -287,7 +287,7 @@ export function fetchTypedQuery<TResponse, TVariables>(
     );
 }
 
-export function useTypedQueryLoader<TResponse, TVariables>(
+export function useTypedQueryLoader<TResponse extends object, TVariables extends object>(
 	query: RelayQuery<TResponse, TVariables>,
 	initialQueryReference?: PreloadedQuery<OperationType<TResponse, TVariables>> | null
 ) {
@@ -297,7 +297,7 @@ export function useTypedQueryLoader<TResponse, TVariables>(
 	);
 }
 
-export function useTypedPreloadedQuery<TResponse, TVariables>(
+export function useTypedPreloadedQuery<TResponse extends object, TVariables extends object>(
     query: RelayQuery<TResponse, TVariables>,
     preloadedQuery: PreloadedQuery<OperationType<TResponse, TVariables>>,
     options?: {
@@ -314,7 +314,7 @@ export function useTypedPreloadedQuery<TResponse, TVariables>(
     }, [response]);
 }
 
-export function useTypedLazyLoadQuery<TResponse, TVariables>(
+export function useTypedLazyLoadQuery<TResponse extends object, TVariables extends object>(
     query: RelayQuery<TResponse, TVariables>,
     variables: TVariables,
     options?: {
@@ -334,7 +334,7 @@ export function useTypedLazyLoadQuery<TResponse, TVariables>(
     }, [response]);
 }
 
-export function useTypedMutation<TResponse, TVariables>(
+export function useTypedMutation<TResponse extends object, TVariables extends object>(
     mutation: RelayMutation<TResponse, TVariables>,
     commitMutationFn?: (
         environment: IEnvironment, 
@@ -394,32 +394,28 @@ export function useTypedRefetchableFragment<TFragmentName extends string, TFetch
  * - - - - - - - - - - - - - - - - - - - - 
  */
 
-export abstract class RelayOperation<TResponse, TVariables> {
+export abstract class RelayOperation<TResponse extends object, TVariables extends object> {
 
     readonly taggedNode: ConcreteRequest;
 
     constructor(
         readonly operationType: "query" | "mutation",
         readonly operationName: string,
-        readonly fetcher: Fetcher<string, object, object>
+        readonly fetcher: Fetcher<string, TResponse, TVariables>
     ) {
         if (RELAY_OPERATION_MAP.has(operationName)) {
-            throw new Error(
-                \`The relay operation '\${operationName}' is aleary exists, please make sure: \` + 
-                "1. Each relay operation is created and saved as constant under GLOBAL scope, " +
-                "2. Each relay operation has a unique name"
+            handleGlobalNameConflictError(
+                \`The relay operation '\${operationName}' is aleary exists, please make sure: \\n\` + 
+                "1. Each relay operation is created and saved as constant under GLOBAL scope, \\n" +
+                "2. Each relay operation has a unique name\\n"
             );
         }
         this.taggedNode = new TaggedNodeFactory().createOperation(operationName, fetcher);
         RELAY_OPERATION_MAP.set(operationName, this);
     }
-
-    __supressWarnings(vaiables: TVariables, response: TResponse) {
-        throw new Error("Unspported function __supressWarnings");
-    }
 }
 
-export class RelayQuery<TResponse, TVariables> extends RelayOperation<TResponse, TVariables> {
+export class RelayQuery<TResponse extends object, TVariables extends object> extends RelayOperation<TResponse, TVariables> {
 
     constructor(
         operationName: string,
@@ -429,7 +425,7 @@ export class RelayQuery<TResponse, TVariables> extends RelayOperation<TResponse,
     }
 }
 
-export class RelayMutation<TResponse, TVariables> extends RelayOperation<TResponse, TVariables> {
+export class RelayMutation<TResponse extends object, TVariables extends object> extends RelayOperation<TResponse, TVariables> {
 
     constructor(
         operationName: string,
@@ -450,10 +446,10 @@ extends FragmentWrapper<TFragmentName, TFetchable, TData, TUnresolvedVariables> 
     ) {
         super(name, fetcher);
         if (RELAY_FRAGMENT_MAP.has(name)) {
-            throw new Error(
-                \`The relay fragment '\${name} is aleary exists, please make sure: \` +
-                "1. Each relay fragment is created and saved as constant under GLOBAL scope " +
-                "2. Each relay fragment has a unique name"
+            handleGlobalNameConflictError(
+                \`The relay fragment '\${name} is aleary exists, please make sure: \\n\` +
+                "1. Each relay fragment is created and saved as constant under GLOBAL scope \\n" +
+                "2. Each relay fragment has a unique name\\n"
             );
         }
         this.taggedNode = new TaggedNodeFactory().createFragment(name, fetcher);
@@ -479,6 +475,8 @@ const RELAY_FRAGMENT_MAP = new Map<string, RelayFragment<string, string, object,
 class TaggedNodeFactory {
 
     private inlineFragment: boolean = false;
+
+    private ignoreCondition: boolean = false;
 
     constructor(private ignoreMetadata: boolean = false) {}
 
@@ -586,6 +584,45 @@ class TaggedNodeFactory {
 
     private collectFieldSelections(fieldName: string, field: FetcherField, output: ReaderSelection[]) {
 
+        if (!this.ignoreCondition && (
+            field.fieldOptionsValue?.directives.has("include") || 
+            field.fieldOptionsValue?.directives.has("skip"))
+        ) {
+            const include = field.fieldOptionsValue.directives.get("include")?.["if"];
+            const skip = field.fieldOptionsValue.directives.get("skip")?.["if"];
+            if (include === undefined && skip === undefined) {
+                throw new Error("No argument for @inlcude/@skip");
+            }
+            if (include !== undefined && skip !== undefined) {
+                throw new Error("Both @include and @skip is applied on one field");
+            }
+            if (include === false || skip === true) {
+                return;
+            }
+            if (include instanceof ParameterRef) {
+                const selections: ReaderSelection[] = [];
+                this.ignoringCondition(() => this.collectFieldSelections(fieldName, field, selections));
+                output.push({
+                    "kind": "Condition",
+                    "condition": include.name,
+                    "passingValue": true,
+                    "selections": selections
+                });
+                return;
+            }
+            if (skip instanceof ParameterRef) {
+                const selections: ReaderSelection[] = [];
+                this.ignoringCondition(() => this.collectFieldSelections(fieldName, field, selections));
+                output.push({
+                    "kind": "Condition",
+                    "condition": skip.name,
+                    "passingValue": false,
+                    "selections": selections
+                });
+                return;
+            }
+        }
+
         let args: ReaderArgument[] | undefined = undefined;
         for (const argName in field.args) {
             if (args === undefined) {
@@ -675,13 +712,35 @@ class TaggedNodeFactory {
     }
 
     private inliningFragment<R>(action: () => R): R {
-        const old = this.inlineFragment;
+        if (this.inlineFragment) {
+            return action();
+        }
         this.inlineFragment = true;
         try {
             return action();
         } finally {
-            this.inlineFragment = old;
+            this.inlineFragment = false;
         }
+    }
+
+    private ignoringCondition<R>(action: () => R): R {
+        if (this.ignoreCondition) {
+            return action();
+        }
+        this.ignoreCondition = true;
+        try {
+            return action();
+        } finally {
+            this.ignoreCondition = false;
+        }
+    }
+}
+
+function handleGlobalNameConflictError(message: string) {
+    if (process.env.NODE_ENV === 'development') {
+        console.warn(\`\${message}\\n3. If you guarantee the above two points but this problem is caused by hot deployment of webpack, please ignore this message\`)
+    } else {
+        throw new Error(message);
     }
 }
 `;

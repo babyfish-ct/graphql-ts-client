@@ -9,11 +9,13 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.util = exports.buildRequest = exports.createFetchableType = exports.createFetcher = exports.DependencyManager = exports.TextWriter = exports.StringValue = exports.FragmentWrapper = exports.AbstractFetcher = void 0;
+exports.util = exports.createFetchableType = exports.createFetcher = exports.DependencyManager = exports.TextWriter = exports.ParameterRef = exports.StringValue = exports.FragmentWrapper = exports.AbstractFetcher = void 0;
 var Fetcher_1 = require("./Fetcher");
 Object.defineProperty(exports, "AbstractFetcher", { enumerable: true, get: function () { return Fetcher_1.AbstractFetcher; } });
 Object.defineProperty(exports, "FragmentWrapper", { enumerable: true, get: function () { return Fetcher_1.FragmentWrapper; } });
 Object.defineProperty(exports, "StringValue", { enumerable: true, get: function () { return Fetcher_1.StringValue; } });
+var Parameter_1 = require("./Parameter");
+Object.defineProperty(exports, "ParameterRef", { enumerable: true, get: function () { return Parameter_1.ParameterRef; } });
 var TextWriter_1 = require("./TextWriter");
 Object.defineProperty(exports, "TextWriter", { enumerable: true, get: function () { return TextWriter_1.TextWriter; } });
 var DependencyManager_1 = require("./DependencyManager");
@@ -21,8 +23,6 @@ Object.defineProperty(exports, "DependencyManager", { enumerable: true, get: fun
 var FetcherProxy_1 = require("./FetcherProxy");
 Object.defineProperty(exports, "createFetcher", { enumerable: true, get: function () { return FetcherProxy_1.createFetcher; } });
 Object.defineProperty(exports, "createFetchableType", { enumerable: true, get: function () { return FetcherProxy_1.createFetchableType; } });
-var Request_1 = require("./Request");
-Object.defineProperty(exports, "buildRequest", { enumerable: true, get: function () { return Request_1.buildRequest; } });
 const Md5_1 = require("./util/Md5");
 const NullValues_1 = require("./util/NullValues");
 const MapIterator_1 = require("./util/MapIterator");

@@ -7,7 +7,7 @@ class RelayHookWriter extends AbstractOperationWriter_1.AbstractHookWriter {
         super(operationType, fields, stream, config);
     }
     prepareImportings() {
-        this.importStatement('import { Fetcher, buildRequest } from "graphql-ts-client-api";');
+        this.importStatement('import { Fetcher } from "graphql-ts-client-api";');
         this.importStatement(`import { Relay${this.operationType} } from "./Relay";`);
         super.prepareImportings();
     }

@@ -304,6 +304,10 @@ export class FetcherWriter extends Writer {
                     this.separator(", ");
                     t(`XDirectives extends { readonly [key: string]: DirectiveArgs } = {}`);
                 }
+                if (!renderAsField) {
+                    this.separator(", ");
+                    t(`XDirectiveVariables extends object = {}`);
+                }
             });
             this.scope({ type: "PARAMETERS", multiLines: true }, () => {
                 if (field.args.length !== 0 && mode !== "NO_ARGS") {
@@ -320,9 +324,9 @@ export class FetcherWriter extends Writer {
                 this.separator(", ");
                 t("optionsConfigurer?: ");
                 this.scope({type: "PARAMETERS", multiLines: true}, () => {
-                    t(`options: FieldOptions<"${field.name}", {}>`);
+                    t(`options: FieldOptions<"${field.name}", {}, {}>`);
                 });
-                t(` => FieldOptions<XAlias, ${nonNull ? "XDirectives" : "{readonly [key: string]: DirectiveArgs}"}>`);
+                t(` => FieldOptions<XAlias, ${nonNull ? "XDirectives" : "{readonly [key: string]: DirectiveArgs}"}, XDirectiveVariables>`);
             });
         }
 
@@ -360,6 +364,9 @@ export class FetcherWriter extends Writer {
                 } else {
                     t(` & UnresolvedVariables<XArgs, ${this.modelType.name}Args['${field.name}']>`);
                 }
+            }
+            if (!renderAsField) {
+                t(" & XDirectiveVariables");
             }
         });
     }

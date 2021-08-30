@@ -22,19 +22,20 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "mergeDepartment", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		child: Fetcher<'Department', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"mergeDepartment", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"mergeDepartment", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): MutationFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: X} : 
 				{readonly [key in XAlias]: X}
 		), 
-		TVariables & XVariables & MutationArgs["mergeDepartment"]
+		TVariables & XVariables & MutationArgs["mergeDepartment"] & XDirectiveVariables
 	>;
 
 	mergeDepartment<
@@ -42,55 +43,58 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "mergeDepartment", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		args: XArgs, 
 		child: Fetcher<'Department', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"mergeDepartment", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"mergeDepartment", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): MutationFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: X} : 
 				{readonly [key in XAlias]: X}
 		), 
-		TVariables & XVariables & UnresolvedVariables<XArgs, MutationArgs['mergeDepartment']>
+		TVariables & XVariables & UnresolvedVariables<XArgs, MutationArgs['mergeDepartment']> & XDirectiveVariables
 	>;
 
 
 	deleteDepartment<
 		XAlias extends string = "deleteDepartment", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"deleteDepartment", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"deleteDepartment", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): MutationFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: string} : 
 				{readonly [key in XAlias]: string}
 		), 
-		TVariables & MutationArgs["deleteDepartment"]
+		TVariables & MutationArgs["deleteDepartment"] & XDirectiveVariables
 	>;
 
 	deleteDepartment<
 		XArgs extends AcceptableVariables<MutationArgs['deleteDepartment']>, 
 		XAlias extends string = "deleteDepartment", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		args: XArgs, 
 		optionsConfigurer?: (
-			options: FieldOptions<"deleteDepartment", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"deleteDepartment", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): MutationFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: string} : 
 				{readonly [key in XAlias]: string}
 		), 
-		TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteDepartment']>
+		TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteDepartment']> & XDirectiveVariables
 	>;
 
 
@@ -98,19 +102,20 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "mergeEmployee", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		child: Fetcher<'Employee', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"mergeEmployee", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"mergeEmployee", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): MutationFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: X} : 
 				{readonly [key in XAlias]: X}
 		), 
-		TVariables & XVariables & MutationArgs["mergeEmployee"]
+		TVariables & XVariables & MutationArgs["mergeEmployee"] & XDirectiveVariables
 	>;
 
 	mergeEmployee<
@@ -118,55 +123,58 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "mergeEmployee", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		args: XArgs, 
 		child: Fetcher<'Employee', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"mergeEmployee", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"mergeEmployee", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): MutationFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: X} : 
 				{readonly [key in XAlias]: X}
 		), 
-		TVariables & XVariables & UnresolvedVariables<XArgs, MutationArgs['mergeEmployee']>
+		TVariables & XVariables & UnresolvedVariables<XArgs, MutationArgs['mergeEmployee']> & XDirectiveVariables
 	>;
 
 
 	deleteEmployee<
 		XAlias extends string = "deleteEmployee", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"deleteEmployee", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"deleteEmployee", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): MutationFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: string} : 
 				{readonly [key in XAlias]: string}
 		), 
-		TVariables & MutationArgs["deleteEmployee"]
+		TVariables & MutationArgs["deleteEmployee"] & XDirectiveVariables
 	>;
 
 	deleteEmployee<
 		XArgs extends AcceptableVariables<MutationArgs['deleteEmployee']>, 
 		XAlias extends string = "deleteEmployee", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		args: XArgs, 
 		optionsConfigurer?: (
-			options: FieldOptions<"deleteEmployee", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"deleteEmployee", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): MutationFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: string} : 
 				{readonly [key in XAlias]: string}
 		), 
-		TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteEmployee']>
+		TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteEmployee']> & XDirectiveVariables
 	>;
 }
 

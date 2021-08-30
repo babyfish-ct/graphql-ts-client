@@ -1,97 +1,76 @@
-import { FC, memo, Suspense } from 'react';
+import { css, cx } from '@emotion/css';
+import { Suspense } from 'react';
 import { RelayEnvironmentProvider } from 'react-relay';
-import { Environment, Network, RecordSource, RequestParameters, Store, Variables } from 'relay-runtime';
+import { Redirect, Route, Switch, useLocation } from 'wouter';
 import './App.css';
-import { createTypedQuery, loadTypedQuery, PreloadedQueryOf, useTypedPreloadedQuery } from './__generated';
-import { department$$, employee$, query$ } from './__generated/fetchers';
+import { environment } from './Environment';
 
-export const environment = new Environment({
-    network: Network.create(async (params: RequestParameters, variables: Variables) => {
-        console.log(`fetching query ${params.name} with ${JSON.stringify(variables)}`);
-        const response = await fetch('http://localhost:8080/graphql', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                query: params.text,
-                variables,
-            }),
-        }); 
-        return await response.json()
-    }),
-    store: new Store(new RecordSource()),
-});
+import { Demo as Demo1 } from './demo1/Demo';
+import { Demo as Demo2 } from './demo2/Demo';
+import { Demo as Demo3 } from './demo3/Demo';
+import { Demo as Demo4 } from './demo4/Demo';
 
 function App() {
+
+    const [location, setLocation] = useLocation();
+
     return (
         <RelayEnvironmentProvider environment={environment}>
             <Suspense fallback="Loading...">
-                <Example queryReference={queryReference}/>
+                <div className={css({
+                    display: "flex",
+                    "&>div.left": {
+                        width: "280px",
+                        "&>div": {
+                            borderBottom: "solid 1px gray",
+                            padding: "1rem"
+                        }
+                    },
+                    "&>div.right": {
+                        padding: "1rem"
+                    }
+                })}>
+                    <div className="left">
+                        <div><h1>Demo List</h1></div>
+                        <div 
+                        className={cx({[SELECTED_MENU]: location === "/useTypedPreloadedQuery"})}
+                        onClick={() => setLocation("/useTypedPreloadedQuery")}>
+                            useTypedPreloadedQuery
+                        </div>
+                        <div 
+                        className={cx({[SELECTED_MENU]: location === "/useTypedLazyQuery"})}
+                        onClick={() => setLocation("/useTypedLazyQuery")}>
+                            useTypedLazyQuery
+                        </div>
+                        <div 
+                        className={cx({[SELECTED_MENU]: location === "/useTypedFragment"})}
+                        onClick={() => setLocation("/useTypedFragment")}>
+                            useTypedFragment
+                        </div>
+                        <div 
+                        className={cx({[SELECTED_MENU]: location === "/useTypedRefetchableFragment"})}
+                        onClick={() => setLocation("/useTypedRefetchableFragment")}>
+                            useTypedRefetchableFragment
+                        </div>
+                    </div>
+                    <div className="right">
+                        <Switch>
+                            <Route path="/useTypedPreloadedQuery" component={Demo1}/>
+                            <Route path="/useTypedLazyQuery" component={Demo2}/>
+                            <Route path="/useTypedFragment" component={Demo3}/>
+                            <Route path="/useTypedRefetchableFragment" component={Demo4}/>
+                            <Redirect to="/useTypedPreloadedQuery"/>
+                        </Switch>
+                    </div>
+                </div>
             </Suspense>
         </RelayEnvironmentProvider>
     );
 }
 
-const EMPLOYEE_LIST_QUERY = createTypedQuery(
-    "EmployeeListQuery",
-    query$
-    .findEmployees(
-        employee$.id.firstName.lastName
-        .department(
-            department$$.id.name
-        )
-        .supervisor(
-            employee$.id.firstName.lastName
-        )
-        .subordinates(
-            employee$.id.firstName.lastName
-        )
-    )
-)
-
-const queryReference = loadTypedQuery(
-    environment, 
-    EMPLOYEE_LIST_QUERY,
-    {}
-);
-
-const Example: FC<{
-    queryReference: PreloadedQueryOf<typeof EMPLOYEE_LIST_QUERY>
-}> = memo(({queryReference}) => {
-    const data = useTypedPreloadedQuery(EMPLOYEE_LIST_QUERY, queryReference);
-    return (
-        <>
-            {
-                data.findEmployees.map(employee => 
-                    <div key={employee.id} style={{border: "solid 1px gray", margin: "1rem"}}>
-                        <div>Name: {employee.firstName} {employee.lastName}</div>
-                        <div>Department: { employee.department.name} </div>
-                        <div>
-                            Supervisor: 
-                            { 
-                                employee.supervisor !== undefined ? 
-                                `${employee.supervisor.firstName} ${employee.supervisor.lastName}` : 
-                                'No supervisor' 
-                            }
-                        </div>
-                        <div>
-                            Suborinates: 
-                            {
-                                employee.subordinates.length !== 0 ?
-                                <ul style={{margin: 0}}>
-                                    {employee.subordinates.map(subordinate => 
-                                        <li key={subordinate.id}>${subordinate.firstName} {subordinate.lastName}</li>
-                                    )}
-                                </ul> :
-                                "No subordinates"
-                            }
-                        </div>
-                    </div>
-                )
-            }
-        </>
-    );
+const SELECTED_MENU = css({
+    backgroundColor: "darkblue",
+    color: "white"
 });
 
 export default App;

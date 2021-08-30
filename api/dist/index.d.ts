@@ -10,12 +10,11 @@
 export type { Fetcher, ModelType, FetcherField, FetchableField, FetchableType, DirectiveArgs } from './Fetcher';
 export { AbstractFetcher, FragmentWrapper, StringValue } from './Fetcher';
 export type { AcceptableVariables, UnresolvedVariables } from './Parameter';
-export type { ParameterRef } from "./Parameter";
+export { ParameterRef } from "./Parameter";
 export type { FieldOptions } from './FieldOptions';
 export { TextWriter } from './TextWriter';
 export { DependencyManager } from './DependencyManager';
 export { createFetcher, createFetchableType } from './FetcherProxy';
-export { buildRequest } from './Request';
 import { Draft, PatchListener } from "immer";
 interface UtilInterace {
     toMd5(value: string): string;

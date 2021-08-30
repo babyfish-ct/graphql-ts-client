@@ -179,6 +179,8 @@ Goto the root dir of your app, execute
 yarn start
 ```
 
+This is the simplest demo, you can view the full demo [relay-tutorial](example/client/relay-tutorial) to know more
+
 ____________________
 
 [Back to home](https://github.com/babyfish-ct/graphql-ts-client)
