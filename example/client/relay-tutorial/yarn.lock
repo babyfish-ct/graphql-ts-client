@@ -5509,18 +5509,18 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-ts-client-api@^2.1.5:
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-2.1.5.tgz#be867d93dcf966c85d139441d064bf8d6cd469be"
-  integrity sha512-dqagPzMUnfqrX/r2H8i9V7sHAkwiw/2DyGY1K+nodG2PDE9BVf23mdiUbqj5rUwhxKhmOgaMSJ9An/sJZGAHTA==
+graphql-ts-client-api@^3.0.0-preview:
+  version "3.0.0-preview"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.0-preview.tgz#2cf9219f7a43c33bdfb46013c2b2a80c3e631704"
+  integrity sha512-Nwim0fc0G6q7XM+WggForubl62/ttNWeC8+0TfvUrWsv8JHC/z/OUrbEkbk1EMhHmug+Vrimntl+SYpVYwZS5g==
   dependencies:
     immer "^9.0.5"
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^2.1.5:
-  version "2.1.5"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-2.1.5.tgz#26767cc94413c077921512b227190c3a50602e09"
-  integrity sha512-sGLEghwlea1U6NYFAicljPrf1BFEwhRWBg998Xo28UmBp0hx7bhDut4QL57uYBR9TExi14YXnzZ7hsTDuM1s+g==
+graphql-ts-client-codegen@^3.0.0-preview:
+  version "3.0.0-preview"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.0-preview.tgz#a2172822d2503fb394f6348893d516366b0cef3a"
+  integrity sha512-8OBUarteNoEPtUfRaJzc+jaOmvZ6M5xOui1NhhoCQw9dHjCJdWA3U3zJr0BFzglBd1jCMSPrHG5JFDk0d9Mpuw==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -5529,9 +5529,9 @@ graphql-ts-client-codegen@^2.1.5:
     typescript "^4.3.2"
 
 graphql@^15.5.1:
-  version "15.5.1"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.5.1.tgz#f2f84415d8985e7b84731e7f3536f8bb9d383aad"
-  integrity sha512-FeTRX67T3LoE3LWAxxOlW2K3Bz+rMYAC18rRguK4wgXaTZMiJwSUwDmPFo3UadAKbzirKIg5Qy+sNJXbpPRnQw==
+  version "15.5.2"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.5.2.tgz#efa19f8f2bf1a48eb7d5c85bf17e144ba8bb0480"
+  integrity sha512-dZjLPWNQqYv0dqV2RNbiFed0LtSp6yd4jchsDGnuhDKa9OQHJYCfovaOEvY91w9gqbYO7Se9LKDTl3xxYva/3w==
 
 growly@^1.3.0:
   version "1.3.0"

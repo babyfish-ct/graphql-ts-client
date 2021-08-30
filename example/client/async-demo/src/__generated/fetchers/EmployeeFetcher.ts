@@ -39,18 +39,19 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 
 	"id+"<
 		XAlias extends string = "id", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"id", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"id", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): EmployeeFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: string} : 
 				{readonly [key in XAlias]: string}
 		), 
-		TVariables
+		TVariables & XDirectiveVariables
 	>;
 
 	readonly "~id": EmployeeFetcher<Omit<T, 'id'>, TVariables>;
@@ -60,18 +61,19 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 
 	"firstName+"<
 		XAlias extends string = "firstName", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"firstName", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"firstName", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): EmployeeFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: string} : 
 				{readonly [key in XAlias]: string}
 		), 
-		TVariables
+		TVariables & XDirectiveVariables
 	>;
 
 	readonly "~firstName": EmployeeFetcher<Omit<T, 'firstName'>, TVariables>;
@@ -81,18 +83,19 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 
 	"lastName+"<
 		XAlias extends string = "lastName", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"lastName", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"lastName", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): EmployeeFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: string} : 
 				{readonly [key in XAlias]: string}
 		), 
-		TVariables
+		TVariables & XDirectiveVariables
 	>;
 
 	readonly "~lastName": EmployeeFetcher<Omit<T, 'lastName'>, TVariables>;
@@ -102,18 +105,19 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 
 	"gender+"<
 		XAlias extends string = "gender", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"gender", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"gender", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): EmployeeFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: Gender} : 
 				{readonly [key in XAlias]: Gender}
 		), 
-		TVariables
+		TVariables & XDirectiveVariables
 	>;
 
 	readonly "~gender": EmployeeFetcher<Omit<T, 'gender'>, TVariables>;
@@ -123,18 +127,19 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 
 	"salary+"<
 		XAlias extends string = "salary", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"salary", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"salary", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): EmployeeFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: number} : 
 				{readonly [key in XAlias]: number}
 		), 
-		TVariables
+		TVariables & XDirectiveVariables
 	>;
 
 	readonly "~salary": EmployeeFetcher<Omit<T, 'salary'>, TVariables>;
@@ -144,34 +149,36 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "department", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		child: Fetcher<'Department', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"department", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"department", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): EmployeeFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: X} : 
 				{readonly [key in XAlias]: X}
 		), 
-		TVariables & XVariables
+		TVariables & XVariables & XDirectiveVariables
 	>;
 
 
 	supervisor<
 		X extends object, 
 		XVariables extends object, 
-		XAlias extends string = "supervisor"
+		XAlias extends string = "supervisor", 
+		XDirectiveVariables extends object = {}
 	>(
 		child: Fetcher<'Employee', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"supervisor", {}>
-		) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}>
+			options: FieldOptions<"supervisor", {}, {}>
+		) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
 	): EmployeeFetcher<
 		T & {readonly [key in XAlias]?: X}, 
-		TVariables & XVariables
+		TVariables & XVariables & XDirectiveVariables
 	>;
 
 
@@ -179,19 +186,20 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "subordinates", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		child: Fetcher<'Employee', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"subordinates", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"subordinates", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): EmployeeFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: readonly X[]} : 
 				{readonly [key in XAlias]: readonly X[]}
 		), 
-		TVariables & XVariables
+		TVariables & XVariables & XDirectiveVariables
 	>;
 }
 

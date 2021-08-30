@@ -37,18 +37,19 @@ export interface NodeFetcher<T extends object, TVariables extends object> extend
 
 	"id+"<
 		XAlias extends string = "id", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		optionsConfigurer?: (
-			options: FieldOptions<"id", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"id", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): NodeFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: string} : 
 				{readonly [key in XAlias]: string}
 		), 
-		TVariables
+		TVariables & XDirectiveVariables
 	>;
 
 	readonly "~id": NodeFetcher<Omit<T, 'id'>, TVariables>;

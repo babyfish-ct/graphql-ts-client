@@ -20,19 +20,20 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "findDepartmentsLikeName", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		child: Fetcher<'Department', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"findDepartmentsLikeName", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"findDepartmentsLikeName", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): QueryFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: readonly X[]} : 
 				{readonly [key in XAlias]: readonly X[]}
 		), 
-		TVariables & XVariables & QueryArgs["findDepartmentsLikeName"]
+		TVariables & XVariables & QueryArgs["findDepartmentsLikeName"] & XDirectiveVariables
 	>;
 
 	findDepartmentsLikeName<
@@ -40,20 +41,21 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "findDepartmentsLikeName", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
-		args: XArgs | undefined, 
+		args: XArgs, 
 		child: Fetcher<'Department', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"findDepartmentsLikeName", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"findDepartmentsLikeName", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): QueryFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: readonly X[]} : 
 				{readonly [key in XAlias]: readonly X[]}
 		), 
-		TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findDepartmentsLikeName']>
+		TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findDepartmentsLikeName']> & XDirectiveVariables
 	>;
 
 
@@ -61,19 +63,20 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "findEmployees", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
 		child: Fetcher<'Employee', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"findEmployees", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"findEmployees", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): QueryFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: readonly X[]} : 
 				{readonly [key in XAlias]: readonly X[]}
 		), 
-		TVariables & XVariables & QueryArgs["findEmployees"]
+		TVariables & XVariables & QueryArgs["findEmployees"] & XDirectiveVariables
 	>;
 
 	findEmployees<
@@ -81,51 +84,54 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 		X extends object, 
 		XVariables extends object, 
 		XAlias extends string = "findEmployees", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}
+		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+		XDirectiveVariables extends object = {}
 	>(
-		args: XArgs | undefined, 
+		args: XArgs, 
 		child: Fetcher<'Employee', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"findEmployees", {}>
-		) => FieldOptions<XAlias, XDirectives>
+			options: FieldOptions<"findEmployees", {}, {}>
+		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): QueryFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
 				{readonly [key in XAlias]?: readonly X[]} : 
 				{readonly [key in XAlias]: readonly X[]}
 		), 
-		TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findEmployees']>
+		TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findEmployees']> & XDirectiveVariables
 	>;
 
 
 	node<
 		X extends object, 
 		XVariables extends object, 
-		XAlias extends string = "node"
+		XAlias extends string = "node", 
+		XDirectiveVariables extends object = {}
 	>(
 		child: Fetcher<'Node', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"node", {}>
-		) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}>
+			options: FieldOptions<"node", {}, {}>
+		) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
 	): QueryFetcher<
 		T & {readonly [key in XAlias]?: X}, 
-		TVariables & XVariables & QueryArgs["node"]
+		TVariables & XVariables & QueryArgs["node"] & XDirectiveVariables
 	>;
 
 	node<
 		XArgs extends AcceptableVariables<QueryArgs['node']>, 
 		X extends object, 
 		XVariables extends object, 
-		XAlias extends string = "node"
+		XAlias extends string = "node", 
+		XDirectiveVariables extends object = {}
 	>(
-		args: XArgs | undefined, 
+		args: XArgs, 
 		child: Fetcher<'Node', X, XVariables>, 
 		optionsConfigurer?: (
-			options: FieldOptions<"node", {}>
-		) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}>
+			options: FieldOptions<"node", {}, {}>
+		) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
 	): QueryFetcher<
 		T & {readonly [key in XAlias]?: X}, 
-		TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['node']>
+		TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['node']> & XDirectiveVariables
 	>;
 }
 

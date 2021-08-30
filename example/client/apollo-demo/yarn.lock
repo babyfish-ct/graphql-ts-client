@@ -1899,9 +1899,9 @@
   integrity sha512-niAuZrwrjKck4+XhoCw6AAVQBENHftpXw9F4ryk66fTgYaKQ53R4FI7c9vUGGw5vQis1HKBHDR1gcYI/Bq1xvw==
 
 "@types/node@^15.12.2":
-  version "15.14.7"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-15.14.7.tgz#29fea9a5b14e2b75c19028e1c7a32edd1e89fe92"
-  integrity sha512-FA45p37/mLhpebgbPWWCKfOisTjxGK9lwcHlJ6XVLfu3NgfcazOJHdYUZCWPMK8QX4LhNZdmfo6iMz9FqpUbaw==
+  version "15.14.9"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-15.14.9.tgz#bc43c990c3c9be7281868bbc7b8fdd6e2b57adfa"
+  integrity sha512-qjd88DrCxupx/kJD5yQgZdcYKZKSIGBVDIBE1/LTGcNm3d2Np/jxojkdePDdfnBHJc5W7vSMpbJ1aB7p/Py69A==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -5527,18 +5527,18 @@ graphql-tag@^2.12.3:
   dependencies:
     tslib "^2.1.0"
 
-graphql-ts-client-api@^2.1.4:
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-2.1.4.tgz#b7f3ab9a8c19590f2798ee624f0aee8de21ef8b3"
-  integrity sha512-+/yjHMFOQcGBkzvQRH0o/rG2W86bHHhCsb0cohfSk+6uvoASHvyzuxk4oMrk3zQ2zp4PYUEAw1sFYTL6TGKipA==
+graphql-ts-client-api@^3.0.0-preview:
+  version "3.0.0-preview"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.0-preview.tgz#2cf9219f7a43c33bdfb46013c2b2a80c3e631704"
+  integrity sha512-Nwim0fc0G6q7XM+WggForubl62/ttNWeC8+0TfvUrWsv8JHC/z/OUrbEkbk1EMhHmug+Vrimntl+SYpVYwZS5g==
   dependencies:
     immer "^9.0.5"
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^2.1.4:
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-2.1.4.tgz#618fcf3ff03bf58c4989f3098e79bfa2423515e0"
-  integrity sha512-n7HhjJw8nJZMyJ6eqo+WB9Xf49Js3ijOhEycmop80+OyClE+Eui6A3v4+0Sfi+4aCzlu9BKMivIEGvZGEIp1JQ==
+graphql-ts-client-codegen@^3.0.0-preview:
+  version "3.0.0-preview"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.0-preview.tgz#a2172822d2503fb394f6348893d516366b0cef3a"
+  integrity sha512-8OBUarteNoEPtUfRaJzc+jaOmvZ6M5xOui1NhhoCQw9dHjCJdWA3U3zJr0BFzglBd1jCMSPrHG5JFDk0d9Mpuw==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -10982,10 +10982,15 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typescript@^4.1.2, typescript@^4.3.2:
+typescript@^4.1.2:
   version "4.3.5"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.3.5.tgz#4d1c37cc16e893973c45a06886b7113234f119f4"
   integrity sha512-DqQgihaQ9cUrskJo9kIyW/+g0Vxsk8cDtZ52a3NGh0YNTfpUSArXSohyUGnvbPazEPLu398C0UxmKSOrPumUzA==
+
+typescript@^4.3.2:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.4.2.tgz#6d618640d430e3569a1dfb44f7d7e600ced3ee86"
+  integrity sha512-gzP+t5W4hdy4c+68bfcv0t400HVJMMd2+H9B7gae1nQlBzCqvrXX+6GL/b3GAgyTH966pzrZ70/fRjwAtZksSQ==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"
