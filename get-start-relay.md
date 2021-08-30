@@ -177,6 +177,7 @@ export default App;
 Goto the root dir of your app, execute 
 ```
 yarn start
+```
 
 ____________________
 
