@@ -11,6 +11,7 @@ import { useTypedMutation } from "../__generated";
 import { department$, employee$, employee$$, mutation$ } from "../__generated/fetchers";
 import { EmployeeInput } from "../__generated/inputs";
 import { EmployeeSelect } from "./EmployeeSelect";
+import { useDependencyManager } from "../__generated/DependencyManager";
 
 export const EMPLOYEE_FORM_FETCHER =
     employee$$
@@ -45,6 +46,8 @@ export const EmployeeDialog: FC<{
         return input.firstName !== undefined && input.lastName !== undefined && input.departmentId !== undefined;
     }, [input]);
 
+    const dependencyManager = useDependencyManager();
+
     const [mutate, {loading, error}] = useTypedMutation(
         mutation$.mergeEmployee(
         EMPLOYEE_FORM_FETCHER // Mutation Fetcher
@@ -52,11 +55,11 @@ export const EmployeeDialog: FC<{
         {
             variables: { input: input as EmployeeInput }, // Unsafe cast, depends on "valid"
             
-            refetchDependencies: result => {
+            refetchQueries: result => {
 
                 if (result.errors) { 
                     // Refetch all the affected queries becasue error means client does not know whether server side has done the mutation or not.
-                    return result.dependencies.ofError(); 
+                    return dependencyManager.allResources(EMPLOYEE_FORM_FETCHER); 
                 }
 
                 /*
@@ -78,9 +81,10 @@ export const EmployeeDialog: FC<{
                  * 4. If the mutation added an new employee('value' is undefined but 'result.data?.mergeEmployee' is not),
                  * Refetchs all the queries returns 'Employee' and execute 1, 2 and 3.
                  */
-                return result.dependencies.ofData(
-                    value === undefined ? undefined : { mergeEmployee: value }, 
-                    result.data
+                return dependencyManager.resources(
+                    EMPLOYEE_FORM_FETCHER,
+                    value, 
+                    result.data?.mergeEmployee
                 );
             }
         }

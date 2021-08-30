@@ -25,12 +25,10 @@ export const DeleteDepartmentDialog: FC<{
             variables: { id: value.id },
             refetchQueries: () => {
                 /*
-                 * 1. Be diffeant with 'allResources' accept empty fetcher without fields
-                 * 
-                 * 2. If serve side supports cascade deletation on the one-to-many assocation "department.employees",
+                 * 1. If serve side supports cascade deletation on the one-to-many assocation "department.employees",
                  * change the argument to "department$.employees(employee$)"
                  * 
-                 * 3. Now, the server-side does not supports cascade deletation,
+                 * 2. Now, the server-side does not supports cascade deletation,
                  * so this is a simple deleting operation and you can remove this "refetchQuires" 
                  * and add "update" with "cache.evict" to optimize the performance.
                  */

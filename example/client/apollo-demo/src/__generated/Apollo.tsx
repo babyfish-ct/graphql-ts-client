@@ -6,8 +6,6 @@ import {
     ApolloCache, 
     DefaultContext, 
     DocumentNode, 
-    FetchResult, 
-    InternalRefetchQueriesInclude, 
     MutationHookOptions, 
     MutationTuple, 
     QueryHookOptions, 
@@ -16,7 +14,7 @@ import {
 } from "@apollo/client";
 import { Fetcher, TextWriter, util } from "graphql-ts-client-api";
 import { useContext, useEffect, useMemo } from "react";
-import { dependencyManagerContext, RefetchableDependencies } from "./DependencyManager";
+import { dependencyManagerContext } from "./DependencyManager";
 
 export function useTypedQuery<
     TData extends object,
@@ -108,10 +106,7 @@ export function useTypedMutation<
 >(
     fetcher: Fetcher<"Mutation", TData, TVariables>,
     options?: MutationHookOptions<TData, TVariables, TContext> & {
-        readonly operationName?: string,
-		readonly refetchDependencies?: (
-			result: FetchResult<TData> &{ dependencies: RefetchableDependencies<TData> }
-		) => InternalRefetchQueriesInclude
+        readonly operationName?: string
 	}
 ): MutationTuple<
     TData, 
@@ -126,43 +121,12 @@ export function useTypedMutation<
 		return gql`mutation ${operationName}${body}`;
 	}, [body, options?.operationName]);
 
-	const [dependencyManager] = useContext(dependencyManagerContext);
-	if (options?.refetchDependencies && dependencyManager === undefined) {
-		throw new Error("The property 'refetchDependencies' of options requires <DependencyManagerProvider/>");
-	}
-    const dependencies = useMemo<RefetchableDependencies<TData>>(() => {
-		const ofData = (oldData: TData | null | undefined, newData?: TData | null | undefined): string[] => {
-			return dependencyManager!.resources(fetcher, oldData, newData);
-		};
-		const ofError = (): string[] => {
-			return dependencyManager!.allResources(fetcher);
-		};
-		return { ofData, ofError };
-		// eslint-disable-next-line
-	}, [dependencyManager, request]); // Eslint disable is required becasue 'fetcher' is replaced by 'request' here.
-	if (options?.refetchDependencies && options?.refetchQueries) {
-		throw new Error("The property 'refetchDependencies' and 'refetchQueries' of options cannot be specified at the same time");
-	}
-	const newOptions = useMemo<
-        MutationHookOptions<TData, TVariables, TContext> | 
-        undefined
-    >(() => {
-		const refetchDependencies = options?.refetchDependencies;
-		if (refetchDependencies === undefined) {
-			return options;
-		}
-		const cloned: MutationHookOptions<TData, TVariables, TContext> = { ...options };
-		cloned.refetchQueries = result => {
-			return refetchDependencies({...result, dependencies});
-		}
-		return cloned;
-	}, [options, dependencies]);
 	const response = useMutation<
 		TData, 
 		TVariables, 
 		TContext, 
 		TCache
-	>(request, newOptions);
+	>(request, options);
 	const responseData = response[1].data;
 	const newResponseData = useMemo(() => util.exceptNullValues(responseData), [responseData]);
 	return newResponseData === responseData ? response : util.produce(response, draft => {
@@ -173,10 +137,10 @@ export function useTypedMutation<
 function requestBody(fetcher: Fetcher<string, object, object>): string {
     const writer = new TextWriter();
     writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
-        for (const [name, type] of fetcher.variableTypeMap) {
+        util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
             writer.seperator();
             writer.text(`$${name}: ${type}`);
-        }
+        });
     });
     writer.text(fetcher.toString());
     writer.text("\n");

@@ -15,7 +15,7 @@ export declare class DependencyManager {
     constructor(idGetter?: (obj: any) => any);
     register(resource: string, fetcher: Fetcher<string, object, object>, fieldDependencies?: readonly Fetcher<string, object, object>[]): void;
     unregister(resource: string): void;
-    resources<TData extends object>(fetcher: Fetcher<string, TData, object>, oldData: TData | null | undefined, newData: TData | null | undefined): string[];
+    resources<TObject extends object>(fetcher: Fetcher<string, TObject, object>, oldObject: TObject | null | undefined, newObject: TObject | null | undefined): string[];
     allResources(fetcher: Fetcher<string, object, object>): string[];
     private registerTypes;
     private registerFields;

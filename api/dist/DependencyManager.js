@@ -37,9 +37,9 @@ class DependencyManager {
         removeResource(this.rootTypeResourceMap, resource);
         removeResource(this.fieldResourceMap, resource);
     }
-    resources(fetcher, oldData, newData) {
+    resources(fetcher, oldObject, newObject) {
         const resources = new Set();
-        this.collectResources(fetcher, nullToUndefined(oldData), nullToUndefined(newData), resources);
+        this.collectResources(fetcher, nullToUndefined(oldObject), nullToUndefined(newObject), resources);
         return Array.from(resources);
     }
     allResources(fetcher) {

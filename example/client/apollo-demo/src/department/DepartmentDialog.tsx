@@ -8,12 +8,13 @@ import { Loading } from "../common/Loading";
 import { useTypedMutation } from "../__generated";
 import { department$$, mutation$ } from "../__generated/fetchers";
 import { DepartmentInput } from "../__generated/inputs";
+import { useDependencyManager } from "../__generated/DependencyManager";
 
-export const DEPARTMENT_MUTATION_FETCHER =
+export const DEPARTMENT_FORM_FETCHER =
     department$$;
 
 export const DepartmentDialog: FC<{
-    value?: ModelType<typeof DEPARTMENT_MUTATION_FETCHER>,
+    value?: ModelType<typeof DEPARTMENT_FORM_FETCHER>,
     onClose: () => void
 }> = memo(({value, onClose}) => {
 
@@ -31,25 +32,28 @@ export const DepartmentDialog: FC<{
         return input.id !== undefined && input.name !== undefined;
     }, [input]);
 
+    const dependencyManager = useDependencyManager();
+
     const [mutate, { loading, error }] = useTypedMutation(
         mutation$.mergeDepartment(
-            DEPARTMENT_MUTATION_FETCHER // Mutation Fetcher
+            DEPARTMENT_FORM_FETCHER // Mutation Fetcher
         ),
         { 
             variables: { input: input as DepartmentInput }, // Unsafe cast, depends on "valid"
             
-            refetchDependencies: result => {
+            refetchQueries: result => {
                 
                 if (result.errors) { 
                     // Refetch all the affected queries becasue error means client does not know whether server side has done the mutation or not.
-                    return result.dependencies.ofError(); 
+                    return dependencyManager.allResources(DEPARTMENT_FORM_FETCHER);
                 }
 
                 // If the mutation added an new department('value' is undefined but 'result.data?.mergeDepartment' is not)
                 // The queries returns department lists will be refetched.
-                return result.dependencies.ofData(
-                    value === undefined ? undefined : { mergeDepartment: value }, 
-                    result.data
+                return dependencyManager.resources(
+                    DEPARTMENT_FORM_FETCHER,
+                    value, 
+                    result.data?.mergeDepartment
                 );
             }
         }

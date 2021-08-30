@@ -44,16 +44,16 @@ export class DependencyManager {
         removeResource(this.fieldResourceMap, resource);
     }
 
-    resources<TData extends object>(
-        fetcher: Fetcher<string, TData, object>, 
-        oldData: TData | null | undefined, 
-        newData: TData | null | undefined
+    resources<TObject extends object>(
+        fetcher: Fetcher<string, TObject, object>, 
+        oldObject: TObject | null | undefined, 
+        newObject: TObject | null | undefined
     ): string[] {
         const resources = new Set<string>();
         this.collectResources(
             fetcher, 
-            nullToUndefined(oldData), 
-            nullToUndefined(newData), 
+            nullToUndefined(oldObject), 
+            nullToUndefined(newObject), 
             resources
         );
         return Array.from(resources);

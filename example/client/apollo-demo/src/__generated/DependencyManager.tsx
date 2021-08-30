@@ -29,10 +29,5 @@ export interface DependencyManagerProviderConfig {
     defaultRegisterDependencies: boolean;
 }
 
-export interface RefetchableDependencies<T extends object> {
-    ofData(oldData: T | null | undefined, newData: T | null | undefined): string[];
-    ofError(): string[];
-}
-
 // Internal, used by usedTypedQuery, useLazyTypedQuery, useTypedMutation
 export const dependencyManagerContext = createContext<[DependencyManager | undefined, DependencyManagerProviderConfig | undefined]>([undefined, undefined]);
