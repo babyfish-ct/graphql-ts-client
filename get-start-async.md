@@ -72,7 +72,7 @@ yarn codegen
 Change 'src/App.tsx' of your app, copy & paste this code
 ```tsx
 import { useCallback, useEffect, useState } from 'react';
-import { ModelType } from '../../../git/graphql-ts-client/api/dist';
+import { ModelType } from 'graphql-ts-client-api';
 import './App.css';
 import { execute, setGraphQLExecutor } from './__generated';
 import { department$, employee$, query$ } from './__generated/fetchers';
