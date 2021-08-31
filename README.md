@@ -1,4 +1,4 @@
-'graphql-ts-client' is a graphql client for TypeScript
+A new Graphql client for TypeScript
 
 1. Supports GraphQL queries with strongly typed code.
 2. **Automatically infers the type of the returned data according to the strongly typed query request**, This is the essential difference between this framework and other similar frameworks, and it is also the reason why I created it.
@@ -21,10 +21,9 @@
 4. [Polymorphism query & Fragment since 2.0.0](2.0.0.md)
 5. [@apollo/client integration since 2.1.4](/example/client/apollo-demo/README.md)
 
-# TODO items
+# Notes
 
-1. Support directives
-2. Integrate relay
+*My npm packages are 'graphql-ts-client-api' and 'graphql-ts-client-codegen'. There is another package named 'graphql-ts-client' in npm repository, but that's not my framework.*
 
 # Contact me
 babyfish.ct@gmail.com
