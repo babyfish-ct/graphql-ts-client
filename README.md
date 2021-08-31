@@ -2,7 +2,7 @@
 
 1. Supports GraphQL queries with strongly typed code.
 2. **Automatically infers the type of the returned data according to the strongly typed query request**, This is the essential difference between this framework and other similar frameworks, and it is also the reason why I created it.
-
+3. Because of point 2, unlike other client-side code generation tools and relay-compiler, **the code generation work is one-time**. Once the code is generated, it can be developed continuously until the server interface changes, without the need to generate code again and again.
 
 ![ImageText](graphql-ts-client.gif)
 
