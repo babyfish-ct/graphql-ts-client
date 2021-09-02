@@ -5,19 +5,25 @@
  */
 
 import 'reflect-metadata';
-import { Arg, ID, Mutation, Query } from 'type-graphql';
+import { Arg, ID, Int, Mutation, Query } from 'type-graphql';
 import { departmentTable, TDepartment } from '../dal/DepartmentRepostiory';
 import { Predicate } from '../dal/Table';
-import { Department } from '../model/Department';
+import { Department, DepartmentConnection, DepartmentEdge } from '../model/Department';
 import { DepartmentInput } from '../model/DepartmentInput';
+import { PageInfo } from '../model/PageInfo';
+import { createConnection } from './Connections';
 import { delay } from './Delay';
 
 export class DepartmentService {
 
-    @Query(() => [Department])
+    @Query(() => DepartmentConnection)
     async findDepartmentsLikeName(
-        @Arg("name", () => String, {nullable: true}) name?: string
-    ): Promise<Department[]> {
+        @Arg("name", () => String, {nullable: true}) name?: string,
+        @Arg("first", () => Int, {nullable: true}) first?: number,
+        @Arg("after", () => String, {nullable: true}) after?: string,
+        @Arg("last", () => Int, {nullable: true}) last?: number,
+        @Arg("before", () => String, {nullable: true}) before?: string
+    ): Promise<DepartmentConnection> {
 
         /*
          * Mock the network delay
@@ -29,10 +35,20 @@ export class DepartmentService {
             lowercaseName !== undefined && lowercaseName !== "" ?
             d => d.name.toLowerCase().indexOf(lowercaseName) !== -1 :
             undefined
-        return departmentTable
+        const departments = departmentTable
             .find([], predicate)
             .map(row => new Department(row))
             .sort((a, b) => a.name > b.name ? + 1 : a.name < b.name ? -1 :0);
+        return createConnection<DepartmentConnection, DepartmentEdge, Department>({
+            totalCount: departments.length,
+            getNodes: (offset, count) => departments.slice(offset, offset + count),
+            createConnection: (totalCount, edges, pageInfo) => new DepartmentConnection(totalCount, edges, pageInfo),
+            createEdge: (node, cursor) => new DepartmentEdge(node, cursor),
+            first,
+            after,
+            last,
+            before
+        });
     }
 
     @Mutation(() => Department)

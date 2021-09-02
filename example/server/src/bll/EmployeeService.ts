@@ -7,19 +7,24 @@
 import 'reflect-metadata';
 import { Arg, ID, Int, Mutation, Query } from 'type-graphql';
 import { employeeTable } from '../dal/EmployeeRepository';
-import { Employee } from '../model/Employee';
+import { Employee, EmployeeConnection, EmployeeEdge } from '../model/Employee';
 import { EmployeeInput } from '../model/EmployeeInput';
+import { createConnection } from './Connections';
 import { delay } from './Delay';
 
 export class EmployeeService {
 
-    @Query(() => [Employee])
+    @Query(() => EmployeeConnection)
     async findEmployees(
         @Arg("name", () => String, {nullable: true}) name?: string,
         @Arg("departmentId", () => String, {nullable: true}) departmentId?: string,
         @Arg("supervisorId", () => String, {nullable: true}) supervisorId?: string,
-        @Arg("mockedErrorProbability", () => Int, {nullable: true}) mockedErrorProbability?: number
-    ): Promise<Employee[]> {
+        @Arg("mockedErrorProbability", () => Int, {nullable: true}) mockedErrorProbability?: number,
+        @Arg("first", () => Int, {nullable: true}) first?: number,
+        @Arg("after", () => String, {nullable: true}) after?: string,
+        @Arg("last", () => Int, {nullable: true}) last?: number,
+        @Arg("before", () => String, {nullable: true}) before?: string
+    ): Promise<EmployeeConnection> {
 
         /*
          * Mock the network delay
@@ -37,7 +42,7 @@ export class EmployeeService {
         }
         
         const lowercaseName = name?.toLocaleLowerCase();
-        return employeeTable
+        const employees = employeeTable
             .find(
                 [
                     departmentId !== undefined ? 
@@ -55,7 +60,17 @@ export class EmployeeService {
                 undefined
             )
             .map(row => new Employee(row))
-            .sort((a, b) => a.firstName > b.firstName ? + 1 : a.firstName < b.firstName ? -1 :0);;
+            .sort((a, b) => a.firstName > b.firstName ? + 1 : a.firstName < b.firstName ? -1 :0);
+        return createConnection<EmployeeConnection, EmployeeEdge, Employee>({
+            totalCount: employees.length,
+            getNodes: (offset, count) => employees.slice(offset, offset + count),
+            createEdge: (node, cursor) => new EmployeeEdge(node, cursor),
+            createConnection: (totalCount, edges, pageInfo) => new EmployeeConnection(totalCount, edges, pageInfo),
+            first,
+            after,
+            last,
+            before
+        });
     }
 
     @Mutation(() => Employee)

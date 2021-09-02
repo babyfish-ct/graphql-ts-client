@@ -78,9 +78,7 @@ export interface FetchableField {
 }
 export interface FetcherField {
     readonly argGraphQLTypes?: ReadonlyMap<string, string>;
-    readonly args?: {
-        readonly [key: string]: any;
-    };
+    readonly args?: object;
     readonly fieldOptionsValue?: FieldOptionsValue;
     readonly plural: boolean;
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
