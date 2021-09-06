@@ -20,7 +20,7 @@ export const EmployeeBasicInfo: FC<{
     const [data, refetch] = useTypedRefetchableFragment(DEMO4_EMPLOYEE_BASIC_INFO_FRAGMENT, info);
 
     const onRefresh = useCallback(() => {
-        refetch({});
+        refetch({}, { fetchPolicy: 'network-only' });
     }, [refetch]);
 
     return (

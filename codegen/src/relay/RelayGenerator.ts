@@ -56,7 +56,7 @@ const EXPORT_RELAY_TYPES_CODE = `export type {
     FragmentKeyOf, 
     OperationType,
     FragmentKeyType
-} from "graphql-ts-client-relay";
+} from "./Relay";
 `;
 
 const EXPORT_RELAY_CODE = `export {

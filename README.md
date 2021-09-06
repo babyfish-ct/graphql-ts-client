@@ -24,7 +24,7 @@ A new Graphql client for TypeScript
 
 # Notes
 
-*My npm packages are 'graphql-ts-client-api' and 'graphql-ts-client-codegen'. There is another package named 'graphql-ts-client' in npm repository, but that's not my framework.*
+*My npm packages are 'graphql-ts-client-api', 'graphql-ts-client-codegen' and 'graphql-ts-client-relay'. There is another package named 'graphql-ts-client' in npm repository, but that's not my framework.*
 
 # Contact me
 babyfish.ct@gmail.com

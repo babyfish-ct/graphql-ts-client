@@ -19,14 +19,14 @@ yarn create react-app <YourAppName> --template typescript
 
 Goto the root dir of your app, execute
 ```
-yarn add react-relay relay-runtime @types/react-relay @types/relay-runtime graphql-ts-client-api
+yarn add react-relay relay-runtime @types/react-relay @types/relay-runtime graphql-ts-client-api graphql-ts-client-relay
 yarn add graphql-ts-client-codegen --dev
 ``` 
 *Notes:*
 
 *1. relay-compiler & babel-plugin-relay are unnecessary, don't add them. Be different with relay-compiler, generating code by graphql-ts-client-codegen is one-time work!*
 
-*2. My npm libraries are 'graphql-ts-client-api' and 'graphql-ts-client-codegen'. There is another library named 'graphql-ts-client' in npm repository, but that's not my framework.*
+*2. My npm libraries are 'graphql-ts-client-api', 'graphql-ts-client-codegen' and 'graphql-ts-client-relay'. There is another library named 'graphql-ts-client' in npm repository, but that's not my framework.*
 
 ### 4. config code generator
 

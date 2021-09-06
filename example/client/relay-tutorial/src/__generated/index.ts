@@ -7,7 +7,7 @@ export type {
     FragmentKeyOf, 
     OperationType,
     FragmentKeyType
-} from "graphql-ts-client-relay";
+} from "./Relay";
 export {
     createTypedQuery,
     createTypedMutation,

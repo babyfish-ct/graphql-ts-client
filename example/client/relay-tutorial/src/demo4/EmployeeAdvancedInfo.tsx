@@ -24,7 +24,7 @@ export const EmployeeAdvancedInfo: FC<{
     const [data, refetch] = useTypedRefetchableFragment(DEMO4_EMPLOYEE_ADVANCED_INFO_FRAGEMNT, info);
 
     const onRefresh = useCallback(() => {
-        refetch({});
+        refetch({}, { fetchPolicy: 'network-only' });
     }, [refetch]);
 
     return (
