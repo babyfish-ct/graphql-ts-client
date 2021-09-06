@@ -12,7 +12,6 @@ A new Graphql client for TypeScript
 ## 1. [Step-by-step guide with nothing](get-start-async.md)
 ## 2. [Step-by-step guide with apollo](get-start-apollo.md)
 ## 3. [Step-by-step guide with relay](get-start-relay.md)
-(In 3.0.0-preview, relay intergration is not fully completed because it's diffcult, pleast wait for 3.0.0)
 
 # MoreLinks
 
