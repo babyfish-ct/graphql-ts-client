@@ -1,6 +1,6 @@
 {
   "name": "graphql-ts-client-relay",
-  "version": "3.0.0-preview",
+  "version": "3.0.0-alpha",
   "description": "Relay tools for graphql client",
   "author": "ChenTao",
   "license": "MIT",
@@ -17,7 +17,7 @@
     "@types/relay-runtime": "^11.0.3",
     "browser-process-hrtime": "^1.0.0",
     "graphql": "^15.5.2",
-    "graphql-ts-client-api": "^3.0.0-preview",
+    "graphql-ts-client-api": "^3.0.0-alpha",
     "relay-compiler": "^12.0.0",
     "relay-runtime": "^12.0.0",
     "ts-md5": "^1.2.9"
