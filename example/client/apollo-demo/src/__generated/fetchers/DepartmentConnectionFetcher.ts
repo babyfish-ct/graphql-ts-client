@@ -94,7 +94,6 @@ export interface DepartmentConnectionFetcher<T extends object, TVariables extend
 		TVariables & XVariables & XDirectiveVariables
 	>;
 }
-
 export const departmentConnection$: DepartmentConnectionFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(

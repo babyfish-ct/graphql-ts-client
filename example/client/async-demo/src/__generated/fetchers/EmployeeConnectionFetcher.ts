@@ -94,7 +94,6 @@ export interface EmployeeConnectionFetcher<T extends object, TVariables extends 
 		TVariables & XVariables & XDirectiveVariables
 	>;
 }
-
 export const employeeConnection$: EmployeeConnectionFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(

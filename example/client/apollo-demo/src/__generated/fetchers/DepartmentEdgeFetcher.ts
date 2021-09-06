@@ -73,7 +73,6 @@ export interface DepartmentEdgeFetcher<T extends object, TVariables extends obje
 
 	readonly "~cursor": DepartmentEdgeFetcher<Omit<T, 'cursor'>, TVariables>;
 }
-
 export const departmentEdge$: DepartmentEdgeFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(

@@ -200,7 +200,6 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 		TVariables & XVariables & XDirectiveVariables
 	>;
 }
-
 export const employee$: EmployeeFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(

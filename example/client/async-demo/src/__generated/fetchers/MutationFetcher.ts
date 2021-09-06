@@ -175,7 +175,6 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 		TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteEmployee']> & XDirectiveVariables
 	>;
 }
-
 export const mutation$: MutationFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(
