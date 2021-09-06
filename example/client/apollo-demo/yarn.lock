@@ -5527,18 +5527,18 @@ graphql-tag@^2.12.3:
   dependencies:
     tslib "^2.1.0"
 
-graphql-ts-client-api@^3.0.0-alpha:
-  version "3.0.0-alpha"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.0-alpha.tgz#d96962237456f6dc8c1dfef016f0128415b4d1df"
-  integrity sha512-QktWRWgjs+zIhdX/+9HAeaVAsSVf9mp+UUM3Bnb2Xx5rfGMxR/UrdfTk8kgjkUbXn4SGb7JjTA6pjSdp089H2w==
+graphql-ts-client-api@^3.0.0-beta:
+  version "3.0.0-beta"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.0-beta.tgz#7c0654dee57b276da0b8f778dfb486e5187d45ae"
+  integrity sha512-kAOwhu7pksEcp6ZWr+xT+ktkGeCY/D/ZL9LhgmHfm8vw9YgxzAR/Q8HYWuck1ZcxX9OSNmo9HP70u8SDz0w6jw==
   dependencies:
     immer "^9.0.5"
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.0-alpha:
-  version "3.0.0-alpha"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.0-alpha.tgz#624b2f47204a8f9b9fbfb300db3dbbcee7e48bcb"
-  integrity sha512-nxXd8Mb1r/p/1mUy+yeZi9uUSncHeydpGkLnh/7cQu3MnYkwN1qT29VidQ0TcoBEaNxTQs2YFj5IaLIBZbiWHA==
+graphql-ts-client-codegen@^3.0.0-beta:
+  version "3.0.0-beta"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.0-beta.tgz#71e09d2204e89dad3b68ef5caac4f58dc8a5b6e5"
+  integrity sha512-18whdkD0IfGAbyZXqkIKZi3ANQQ1YQ+hK39kZ32fsWN3YHRMh8DLBI5V8jUwmhUD9mtumDYPzZKMFH5vs3+mqQ==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -7642,9 +7642,9 @@ no-case@^3.0.4:
     tslib "^2.0.3"
 
 node-fetch@^2.6.1:
-  version "2.6.1"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
-  integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.2.tgz#986996818b73785e47b1965cc34eb093a1d464d0"
+  integrity sha512-aLoxToI6RfZ+0NOjmWAgn9+LEd30YCkJKFSyWacNZdEKTit/ZMcKjGkTRo8uWEsnIb/hfKecNPEbln02PdWbcA==
 
 node-forge@^0.10.0:
   version "0.10.0"

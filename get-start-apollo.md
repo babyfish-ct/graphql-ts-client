@@ -73,7 +73,7 @@ Change 'src/App.tsx' of your app, copy & paste this code
 ```tsx
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { useTypedQuery } from "./__generated";
-import { department$, employee$, query$ } from "./__generated/fetchers";
+import { department$, employee$, employeeConnection$, employeeEdge$, query$ } from "./__generated/fetchers";
 
 const client = new ApolloClient({
     uri: "http://localhost:8080/graphql",
@@ -91,15 +91,19 @@ function App() {
 function Example() {
     const { loading, error, data } = useTypedQuery(
         query$.findEmployees( 
-            employee$.id.firstName.lastName
-            .department(
-                department$.id.name
-            )
-            .supervisor(
-                employee$.id.firstName.lastName
-            )
-            .subordinates(
-                employee$.id.firstName.lastName
+            employeeConnection$.edges(
+                employeeEdge$.node(
+                    employee$.id.firstName.lastName
+                    .department(
+                        department$.id.name
+                    )
+                    .supervisor(
+                        employee$.id.firstName.lastName
+                    )
+                    .subordinates(
+                        employee$.id.firstName.lastName
+                    )
+                )
             )
         )
     );
@@ -108,33 +112,35 @@ function Example() {
             { error && <div>Error</div> }
             { loading && <div>Loading...</div> }
             {
-                data &&
-                data.findEmployees.map(employee => 
-                    <div key={employee.id} style={{border: "solid 1px gray", margin: "1rem"}}>
-                        <div>Name: {employee.firstName} {employee.lastName}</div>
-                        <div>Department: { employee.department.name} </div>
-                        <div>
-                            Supervisor: 
-                            { 
-                                employee.supervisor !== undefined ? 
-                                `${employee.supervisor.firstName} ${employee.supervisor.lastName}` : 
-                                'No supervisor' 
-                            }
+                data?.findEmployees.edges.map(edge => { 
+                    const employee = edge.node;
+                    return (
+                        <div key={employee.id} style={{border: "solid 1px gray", margin: "1rem"}}>
+                            <div>Name: {employee.firstName} {employee.lastName}</div>
+                            <div>Department: { employee.department.name} </div>
+                            <div>
+                                Supervisor: 
+                                { 
+                                    employee.supervisor !== undefined ? 
+                                    `${employee.supervisor.firstName} ${employee.supervisor.lastName}` : 
+                                    <span style={{fontStyle: "italic", color: "gray"}}>No supervisor</span>
+                                }
+                            </div>
+                            <div>
+                                Suborinates: 
+                                {
+                                    employee.subordinates.length !== 0 ?
+                                    <ul style={{margin: 0}}>
+                                        {employee.subordinates.map(subordinate => 
+                                            <li key={subordinate.id}>{subordinate.firstName} {subordinate.lastName}</li>
+                                        )}
+                                    </ul> :
+                                    <span style={{fontStyle: "italic", color: "gray"}}>No subordinates</span>
+                                }
+                            </div>
                         </div>
-                        <div>
-                            Suborinates: 
-                            {
-                                employee.subordinates.length !== 0 ?
-                                <ul style={{margin: 0}}>
-                                    {employee.subordinates.map(subordinate => 
-                                        <li key={subordinate.id}>${subordinate.firstName} {subordinate.lastName}</li>
-                                    )}
-                                </ul> :
-                                "No subordinates"
-                            }
-                        </div>
-                    </div>
-                )
+                    );
+                })
             }
         </>
     );
