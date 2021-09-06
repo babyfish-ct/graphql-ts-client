@@ -1,6 +1,6 @@
 {
   "name": "graphql-ts-client-api",
-  "version": "3.0.0-preview",
+  "version": "3.0.0-alpha",
   "description": "Strongly type API for graphql client",
   "author": "ChenTao",
   "license": "MIT",

@@ -2,7 +2,7 @@ import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 import { FragmentRefs } from 'relay-runtime';
-import { RelayFragment } from '../Relay';
+import { TypedFragment } from 'graphql-ts-client-relay';
 
 /*
  * Any instance of this interface is immutable,
@@ -27,7 +27,7 @@ export interface NodeFetcher<T extends object, TVariables extends object> extend
 	>;
 
 	on<XFragmentName extends string, XData extends object, XVariables extends object>(
-		child: RelayFragment<XFragmentName, "Node", XData, XVariables>
+		child: TypedFragment<XFragmentName, "Node", XData, XVariables>
 	): NodeFetcher<
 		T & {
 			readonly " $data": XData, 
@@ -38,8 +38,6 @@ export interface NodeFetcher<T extends object, TVariables extends object> extend
 
 
 	directive(name: string, args?: DirectiveArgs): NodeFetcher<T, TVariables>;
-
-	invisibleDirective(name: string, args?: DirectiveArgs): NodeFetcher<T, TVariables>;
 
 
 	readonly __typename: NodeFetcher<T & {__typename: ImplementationType<'Node'>}, TVariables>;

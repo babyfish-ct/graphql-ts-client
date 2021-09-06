@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
-import type { Fetcher, FetcherField } from "graphql-ts-client-api";
-import { FragmentWrapper, TextWriter, ParameterRef, util } from "graphql-ts-client-api";
+import { Fetcher, util } from "graphql-ts-client-api";
 import { 
-    loadQuery, 
+	loadQuery, 
     useQueryLoader, 
     usePreloadedQuery,
     useLazyLoadQuery, 
@@ -12,163 +11,59 @@ import {
     EnvironmentProviderOptions,
     PreloadedQuery, 
     LoadQueryOptions,
-    UseMutationConfig
+    UseMutationConfig,
+    usePaginationFragment
 } from "react-relay";
 import { 
-    GraphQLTaggedNode,
-    ConcreteRequest, 
-    NormalizationLocalArgumentDefinition, 
-    NormalizationOperation, 
-    NormalizationSelection, 
-    ReaderArgument, 
-    ReaderArgumentDefinition, 
-    ReaderFragment, 
-    ReaderSelection, 
-    RequestParameters, 
     IEnvironment,
     RenderPolicy,
     FetchPolicy,
     CacheConfig,
-    FragmentRefs,
     fetchQuery,
     MutationConfig,
     Disposable,
     Environment,
-    FetchQueryFetchPolicy,
-    ReaderRefetchMetadata,
-    OperationDescriptor,
-    DataID,
-    createOperationDescriptor
+    FetchQueryFetchPolicy
 } from "relay-runtime";
 import { RelayObservable } from "relay-runtime/lib/network/RelayObservable";
 import { useRefetchableFragmentHookType } from "react-relay/relay-hooks/useRefetchableFragment";
-import { downcastTypes } from  "./CommonTypes";
-import { query$, node$ } from  "./fetchers";
+import { usePaginationFragmentHookType } from 'react-relay/relay-hooks/usePaginationFragment';
+import { FragmentKeyType, OperationType, TypedFragment, TypedMutation, TypedQuery } from 'graphql-ts-client-relay';
+import { TypedEnvironment } from  'graphql-ts-client-relay';
 
-
-/*
- * - - - - - - - - - - - - - - - - - - - - 
- *
- * PreloadedQueryOf
- * OperationOf
- * QueryResponseOf
- * QueryVariablesOf
- * FragmentDataOf
- * FragmentKeyOf
- * 
- * OperationType
- * FragmentKeyType
- * - - - - - - - - - - - - - - - - - - - - 
- */
-
-export type PreloadedQueryOf<TRelayQuery> =
-	TRelayQuery extends RelayQuery<infer TResponse, infer TVariables> ?
-	PreloadedQuery<OperationType<TResponse, TVariables>> :
-	never
-;
-
-export type OperationOf<TRelayOperation> =
-	TRelayOperation extends RelayOperation<infer TResponse, infer TVariables> ?
-	OperationType<TResponse, TVariables> :
-	never
-;
-
-export type QueryResponseOf<TRelayQuery> =
-    TRelayQuery extends RelayQuery<infer TResponse, any> ?
-    TResponse :
-    never
-;
-
-export type QueryVariablesOf<TRelayQuery> =
-    TRelayQuery extends RelayQuery<any, infer TVariables> ?
-    TVariables :
-    never
-;
-
-export type FragmentDataOf<TRelayFragment> =
-    TRelayFragment extends RelayFragment<string, string, infer TData, object> ?
-    TData :
-    never;
-
-export type FragmentKeyOf<TRelayFragment> =
-    TRelayFragment extends RelayFragment<infer TFragmentName, string, infer TData, object> ? 
-    FragmentKeyType<TFragmentName, TData> :
-    never
-;
-
-export type OperationType<TResponse, TVariables> = {
-    readonly response: TResponse,
-    readonly variables: TVariables
-};
-
-export type FragmentKeyType<TFragmentName extends string, TData extends object> = { 
-    readonly " $data": TData, 
-    readonly " $fragmentRefs": FragmentRefs<TFragmentName> 
-} 
-
-
-
-/*
- * - - - - - - - - - - - - - - - - - - - - 
- * createTypedQuery
- * createTypedMutation
- * createTypedFragment
- * - - - - - - - - - - - - - - - - - - - - 
- */
+export type { ImplementationType } from './CommonTypes';
+export { upcastTypes, downcastTypes } from './CommonTypes';
 
 export function createTypedQuery<TResponse extends object, TVariables extends object>(
-    name: string,
+    name: string, 
     fetcher: Fetcher<"Query", TResponse, TVariables>
-): RelayQuery<TResponse, TVariables> {
-    return new RelayQuery<TResponse, TVariables>(name, fetcher);
+): TypedQuery<TResponse, TVariables> {
+    return typedEnvironment.query(name, fetcher);
 }
 
 export function createTypedMutation<TResponse extends object, TVariables extends object>(
-    name: string,
+    name: string, 
     fetcher: Fetcher<"Mutation", TResponse, TVariables>
-): RelayQuery<TResponse, TVariables> {
-    return new RelayMutation<TResponse, TVariables>(name, fetcher);
+): TypedMutation<TResponse, TVariables> {
+    return typedEnvironment.mutation(name, fetcher);
 }
 
 export function createTypedFragment<
     TFragmentName extends string, 
-    E extends string, 
-    T extends object, 
-    TUnresolvedVariables extends object
+    TFetchable extends string, 
+    TData extends object, 
+TUnresolvedVariables extends object
 >(
-    name: TFragmentName, 
-    fetcher: Fetcher<E, T, TUnresolvedVariables>
-): RelayFragment<TFragmentName, E, T, TUnresolvedVariables> {
-    return new RelayFragment<TFragmentName, E, T, TUnresolvedVariables>(name, fetcher);
+    name: TFragmentName,
+    fetcher: Fetcher<TFetchable, TData, TUnresolvedVariables>
+): TypedFragment<
+    TFragmentName, 
+    TFetchable, 
+    TData, 
+    TUnresolvedVariables
+> {
+    return typedEnvironment.fragment(name, fetcher);
 }
-
-export function createTypedOperationDescriptor<TResponse extends object, TVariables extends object>(
-    operation: RelayOperation<TResponse, TVariables>,
-    variables: TVariables,
-    cacheConfig?: CacheConfig | null,
-    dataID?: DataID,
-): OperationDescriptor {
-    return createOperationDescriptor(
-        operation.taggedNode,
-        variables,
-        cacheConfig,
-        dataID
-    )
-}
-
-
-
-/*
- * - - - - - - - - - - - - - - - - - - - - 
- * loadTypedQuery
- * useTypedQueryLoader
- * useTypedPreloadedQuery
- * useTypedLazyLoadQuery
- * useTypedMutation
- * useTypedFragment
- * useTypedRefetchableFragment
- * - - - - - - - - - - - - - - - - - - - - 
- */
 
 export function loadTypedQuery<
     TResponse extends object, 
@@ -176,7 +71,7 @@ export function loadTypedQuery<
     TEnvironmentProviderOptions extends EnvironmentProviderOptions = {}
 >(
     environment: IEnvironment,
-    query: RelayQuery<TResponse, TVariables>,
+    query: TypedQuery<TResponse, TVariables>,
     variables: TVariables,
     options?: LoadQueryOptions,
     environmentProviderOptions?: TEnvironmentProviderOptions,
@@ -192,7 +87,7 @@ export function loadTypedQuery<
 
 export function fetchTypedQuery<TResponse extends object, TVariables extends object>(
     environment: Environment,
-    query: RelayQuery<TResponse, TVariables>,
+    query: TypedQuery<TResponse, TVariables>,
     variables: TVariables,
     cacheConfig?: { networkCacheConfig?: CacheConfig | null | undefined, fetchPolicy?: FetchQueryFetchPolicy | null | undefined } | null,
 ): RelayObservable<TResponse> {
@@ -205,7 +100,7 @@ export function fetchTypedQuery<TResponse extends object, TVariables extends obj
 }
 
 export function useTypedQueryLoader<TResponse extends object, TVariables extends object>(
-	query: RelayQuery<TResponse, TVariables>,
+	query: TypedQuery<TResponse, TVariables>,
 	initialQueryReference?: PreloadedQuery<OperationType<TResponse, TVariables>> | null
 ) {
 	return useQueryLoader<OperationType<TResponse, TVariables>>(
@@ -215,7 +110,7 @@ export function useTypedQueryLoader<TResponse extends object, TVariables extends
 }
 
 export function useTypedPreloadedQuery<TResponse extends object, TVariables extends object>(
-    query: RelayQuery<TResponse, TVariables>,
+    query: TypedQuery<TResponse, TVariables>,
     preloadedQuery: PreloadedQuery<OperationType<TResponse, TVariables>>,
     options?: {
         UNSTABLE_renderPolicy?: RenderPolicy | undefined;
@@ -232,7 +127,7 @@ export function useTypedPreloadedQuery<TResponse extends object, TVariables exte
 }
 
 export function useTypedLazyLoadQuery<TResponse extends object, TVariables extends object>(
-    query: RelayQuery<TResponse, TVariables>,
+    query: TypedQuery<TResponse, TVariables>,
     variables: TVariables,
     options?: {
         fetchKey?: string | number | undefined;
@@ -252,7 +147,7 @@ export function useTypedLazyLoadQuery<TResponse extends object, TVariables exten
 }
 
 export function useTypedMutation<TResponse extends object, TVariables extends object>(
-    mutation: RelayMutation<TResponse, TVariables>,
+    mutation: TypedMutation<TResponse, TVariables>,
     commitMutationFn?: (
         environment: IEnvironment, 
         config: MutationConfig<OperationType<TResponse, TVariables>>
@@ -262,12 +157,12 @@ export function useTypedMutation<TResponse extends object, TVariables extends ob
 }
 
 export function useTypedFragment<TFragmentName extends string, TFetchable extends string, TData extends object>(
-    fragment: RelayFragment<TFragmentName, TFetchable, TData, object>,
+    fragment: TypedFragment<TFragmentName, TFetchable, TData, object>,
     fragmentRef: FragmentKeyType<TFragmentName, TData>,
 ): TData;
 
 export function useTypedFragment<TFragmentName extends string, TFetchable extends string, TData extends object>(
-    fragment: RelayFragment<TFragmentName, TFetchable, TData, object>,
+    fragment: TypedFragment<TFragmentName, TFetchable, TData, object>,
     fragmentRef: FragmentKeyType<TFragmentName, TData> | undefined,
 ): TData | undefined{
     const data = useFragment(
@@ -280,12 +175,12 @@ export function useTypedFragment<TFragmentName extends string, TFetchable extend
 }
 
 export function useTypedRefetchableFragment<TFragmentName extends string, TFetchable extends string, TData extends object, TVariables extends object>(
-    fragment: RelayFragment<TFragmentName, TFetchable, TData, TVariables>,
+    fragment: TypedFragment<TFragmentName, TFetchable, TData, TVariables>,
     fragmentRef: FragmentKeyType<TFragmentName, TData>,
 ): useRefetchableFragmentHookType<OperationType<TData, TVariables>, FragmentKeyType<TFragmentName, TVariables>, TData>;
 
 export function useTypedRefetchableFragment<TFragmentName extends string, TFetchable extends string, TData extends object, TVariables extends object>(
-    fragment: RelayFragment<TFragmentName, TFetchable, TData, TVariables>,
+    fragment: TypedFragment<TFragmentName, TFetchable, TData, TVariables>,
     fragmentRef: FragmentKeyType<TFragmentName, TData> | undefined,
 ): useRefetchableFragmentHookType<OperationType<TData, TVariables>, FragmentKeyType<TFragmentName, TVariables>, TData | undefined> {
     const tuple = useRefetchableFragment(
@@ -300,371 +195,79 @@ export function useTypedRefetchableFragment<TFragmentName extends string, TFetch
     }, [tuple]);
 }
 
+export function useTypedPaginationFragment<TFragmentName extends string, TFetchable extends string, TData extends object, TVariables extends object>(
+    fragment: TypedFragment<TFragmentName, TFetchable, TData, TVariables>,
+    parentFragmentRef: FragmentKeyType<TFragmentName, TData>,
+): usePaginationFragmentHookType<OperationType<TData, TVariables>, FragmentKeyType<TFragmentName, TVariables>, TData>;
 
-
-/*
- * - - - - - - - - - - - - - - - - - - - - 
- * RelayOperation
- * RelayQuery
- * RelayMutation
- * RelayFragment
- * - - - - - - - - - - - - - - - - - - - - 
- */
-
-export abstract class RelayOperation<TResponse extends object, TVariables extends object> {
-
-    readonly taggedNode: ConcreteRequest;
-
-    constructor(
-        readonly operationType: "query" | "mutation",
-        readonly operationName: string,
-        readonly fetcher: Fetcher<string, TResponse, TVariables>
-    ) {
-        if (RELAY_OPERATION_MAP.has(operationName)) {
-            handleGlobalNameConflictError(
-                `The relay operation '${operationName}' is aleary exists, please make sure: \n` + 
-                "1. Each relay operation is created and saved as constant under GLOBAL scope, \n" +
-                "2. Each relay operation has a unique name\n"
-            );
-        }
-        this.taggedNode = new TaggedNodeFactory().createOperation(operationName, fetcher);
-        RELAY_OPERATION_MAP.set(operationName, this);
-    }
-}
-
-export class RelayQuery<TResponse extends object, TVariables extends object> extends RelayOperation<TResponse, TVariables> {
-
-    constructor(
-        operationName: string,
-        fetcher: Fetcher<string, object, object>
-    ) {
-        super("query", operationName, fetcher);
-    }
-}
-
-export class RelayMutation<TResponse extends object, TVariables extends object> extends RelayOperation<TResponse, TVariables> {
-
-    constructor(
-        operationName: string,
-        fetcher: Fetcher<string, object, object>
-    ) {
-        super("mutation", operationName, fetcher);
-    }
-}
-
-export class RelayFragment<TFragmentName extends string, TFetchable extends string, TData extends object, TUnresolvedVariables extends object> 
-extends FragmentWrapper<TFragmentName, TFetchable, TData, TUnresolvedVariables> {
-
-    readonly taggedNode: GraphQLTaggedNode;
-
-    constructor(
-        name: TFragmentName, 
-        fetcher: Fetcher<TFetchable, TData, TUnresolvedVariables>
-    ) {
-        super(name, fetcher);
-        if (RELAY_FRAGMENT_MAP.has(name)) {
-            handleGlobalNameConflictError(
-                `The relay fragment '${name} is aleary exists, please make sure: \n` +
-                "1. Each relay fragment is created and saved as constant under GLOBAL scope \n" +
-                "2. Each relay fragment has a unique name\n"
-            );
-        }
-        this.taggedNode = new TaggedNodeFactory().createFragment(name, fetcher);
-        RELAY_FRAGMENT_MAP.set(name, this);
-    }
-}
-
-const RELAY_OPERATION_MAP = new Map<string, RelayOperation<any, any>>();
-
-const RELAY_FRAGMENT_MAP = new Map<string, RelayFragment<string, string, object, object>>();
-
-
-
-/*
- * - - - - - - - - - - - - - - - - - - - - 
- * Internal functionalites: 
- * Conver Fetcher AST to relay GraphQLTaggedNode tree
- * 
- * This is why the framework can remove babel-plugin-relay and relay-compiler
- * - - - - - - - - - - - - - - - - - - - - 
- */
-
-class TaggedNodeFactory {
-
-    private inlineFragment: boolean = false;
-
-    private ignoreCondition: boolean = false;
-
-    constructor(private ignoreMetadata: boolean = false) {}
-
-    createOperation(
-        operationName: string,
-        fetcher: Fetcher<string, object, object>
-    ): ConcreteRequest {
-
-        const operationType = fetcher.fetchableType.entityName === "Query" ? "query" : "mutation";
-
-        const argumentDefinitions: ReaderArgumentDefinition[] = [];
-        util.iterateMap(fetcher.variableTypeMap, ([name, ]) => {
-            argumentDefinitions.push({
-                kind: "LocalArgument",
-                name
-            });
-        });
-
-        const fragment: ReaderFragment = {
-            kind: "Fragment",
-            metadata: null,
-            name: operationName,
-            argumentDefinitions,
-            type: operationType === 'query' ? "Query" : "Mutation",
-            selections: this.createSelections(fetcher)
-        };
-
-        const operation: NormalizationOperation = {
-            kind: "Operation",
-            name: operationName,
-            argumentDefinitions: argumentDefinitions as NormalizationLocalArgumentDefinition[],
-            selections: this.inliningFragment(
-                () => this.createSelections(fetcher)
-            ) as NormalizationSelection[]
-        }
-
-        const writer = new TextWriter();
-        writer.text(`${operationType} ${operationName}`);
-        if (fetcher.variableTypeMap.size !== 0) {
-            writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
-                util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
-                    writer.seperator(", ");
-                    writer.text(`$${name}: ${type}`);
-                });
-            });
-        }
-        writer.text(fetcher.toString());
-        writer.text(fetcher.toFragmentString());
-        const text = writer.toString();
-
-        const params: RequestParameters = {
-            id: null,
-            cacheID: util.toMd5(text),
-            name: operationName,
-            operationKind: operationType,
-            metadata: {},
-            text
-        };
-
+export function useTypedPaginationFragment<TFragmentName extends string, TFetchable extends string, TData extends object, TVariables extends object>(
+    fragment: TypedFragment<TFragmentName, TFetchable, TData, TVariables>,
+    fragmentRef: FragmentKeyType<TFragmentName, TData> | undefined,
+): usePaginationFragmentHookType<OperationType<TData, TVariables>, FragmentKeyType<TFragmentName, TVariables>, TData | undefined> {
+    const obj = usePaginationFragment(
+        fragment.taggedNode,
+        fragmentRef ?? null
+    );
+    return useMemo(() => {
         return {
-            kind: "Request",
-            fragment,
-            operation,
-            params
-        }
-    }
-
-    createFragment(name: string, fetcher: Fetcher<string, object, object>): ReaderFragment {
-
-        let refetchMetadata: ReaderRefetchMetadata | undefined = undefined;
-        if (!this.ignoreMetadata) {
-            const refetchDirectiveArgs = fetcher.invisibleDirectiveMap.get("refetchable");
-            if (refetchDirectiveArgs !== undefined) {
-                const refetchQuery = createRefetchQueryRequest(refetchDirectiveArgs["queryName"] as string, name, fetcher);
-                refetchMetadata = {
-                    connection: null,
-                    operation: refetchQuery,
-                    fragmentPathInResult: ["node"],
-                    identifierField: "id"
-                };
-            }
-        }
-
-        return {
-            kind: "Fragment",
-            name,
-            metadata: refetchMetadata !== undefined ? { refetch: refetchMetadata } : undefined,
-            type: fetcher.fetchableType.entityName,
-            argumentDefinitions: [],
-            selections: this.createSelections(fetcher)
+            ...obj,
+            data: util.exceptNullValues(obj.data) as TData | undefined
         };
-    }
-
-    private createSelections(fetcher: Fetcher<string, object, object>): ReaderSelection[] {
-        const selections: ReaderSelection[] = [];
-        this.collectFetcherSelections(fetcher, selections);
-        return selections;
-    }
-
-    private collectFetcherSelections(fetcher: Fetcher<string, object, object>, output: ReaderSelection[]) {
-        util.iterateMap(fetcher.fieldMap, ([fieldName, field]) => {
-            this.collectFieldSelections(fieldName, field, output);
-        });
-    }
-
-    private collectFieldSelections(fieldName: string, field: FetcherField, output: ReaderSelection[]) {
-
-        if (!this.ignoreCondition && (
-            field.fieldOptionsValue?.directives.has("include") || 
-            field.fieldOptionsValue?.directives.has("skip"))
-        ) {
-            const include = field.fieldOptionsValue.directives.get("include")?.["if"];
-            const skip = field.fieldOptionsValue.directives.get("skip")?.["if"];
-            if (include === undefined && skip === undefined) {
-                throw new Error("No argument for @inlcude/@skip");
-            }
-            if (include !== undefined && skip !== undefined) {
-                throw new Error("Both @include and @skip is applied on one field");
-            }
-            if (include === false || skip === true) {
-                return;
-            }
-            if (include instanceof ParameterRef) {
-                const selections: ReaderSelection[] = [];
-                this.ignoringCondition(() => this.collectFieldSelections(fieldName, field, selections));
-                output.push({
-                    "kind": "Condition",
-                    "condition": include.name,
-                    "passingValue": true,
-                    "selections": selections
-                });
-                return;
-            }
-            if (skip instanceof ParameterRef) {
-                const selections: ReaderSelection[] = [];
-                this.ignoringCondition(() => this.collectFieldSelections(fieldName, field, selections));
-                output.push({
-                    "kind": "Condition",
-                    "condition": skip.name,
-                    "passingValue": false,
-                    "selections": selections
-                });
-                return;
-            }
-        }
-
-        let args: ReaderArgument[] | undefined = undefined;
-        for (const argName in field.args) {
-            if (args === undefined) {
-                args = [];
-            }
-            args.push({
-                kind: "Variable",
-                name: argName,
-                variableName: argName
-            });
-        }
-    
-        if (field.childFetchers !== undefined) {
-            if (fieldName === '...') {
-                for (const childFetcher of field.childFetchers) {
-                    this.collectFetcherSelections(childFetcher, output);
-                }
-            } else if (!this.inlineFragment && fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
-                const fragmentName = fieldName.substring(4).trim();
-                output.push({
-                    kind: "FragmentSpread",
-                    name: fragmentName
-                } as any);
-            } else if (fieldName.startsWith("...")) {
-                const fetcherGroupByTypeMap = new Map<string, Fetcher<string, object, object>[]>();
-                for (const childFetcher of field.childFetchers) {
-                    let group = fetcherGroupByTypeMap.get(childFetcher.fetchableType.entityName);
-                    if (group === undefined) {
-                        fetcherGroupByTypeMap.set(childFetcher.fetchableType.entityName, group = []);
-                    } 
-                    group.push(childFetcher);
-                }
-                util.iterateMap(fetcherGroupByTypeMap, ([typeName, childFetchers]) => {
-                    const childSelections: ReaderSelection[] = [];
-                    for (const childFetcher of childFetchers) {
-                        this.collectFetcherSelections(childFetcher, childSelections);
-                    }
-                    output.push({
-                        kind: "InlineFragment",
-                        type: typeName,
-                        selections: childSelections
-                    });
-                });
-            } else {
-                const childSelections: ReaderSelection[] = [];
-                for (const childFetcher of field.childFetchers) {
-                    this.collectFetcherSelections(childFetcher, childSelections);
-                }
-                output.push({
-                    kind: "LinkedField",
-                    alias: this.actualAlias(fieldName, field),
-                    name: fieldName,
-                    storageKey: undefined,
-                    args,
-                    concreteType: field.childFetchers[0].fetchableType.entityName,
-                    plural: field.plural,
-                    selections: childSelections
-                });
-            }
-        } else {
-            output.push({
-                kind: "ScalarField",
-                alias: this.actualAlias(fieldName, field),
-                name: fieldName,
-                args,
-                storageKey: undefined
-            });
-            if (field.fieldOptionsValue?.invisibleDirectives.has("deleteRecord") === true) {
-                console.log("Add deleteRecord");
-                output.push({
-                    kind: "ScalarHandle",
-                    alias: this.actualAlias(fieldName, field),
-                    name: fieldName,
-                    args,
-                    handle: "deleteRecord"
-                } as any);
-            }
-        }
-    }
-
-    private actualAlias(fieldName: string, field: FetcherField): string | undefined {
-        const alias = field.fieldOptionsValue?.alias;
-        if (alias === undefined || alias === "" || alias === fieldName) {
-            return undefined;
-        }
-        return alias;
-    }
-
-    private inliningFragment<R>(action: () => R): R {
-        if (this.inlineFragment) {
-            return action();
-        }
-        this.inlineFragment = true;
-        try {
-            return action();
-        } finally {
-            this.inlineFragment = false;
-        }
-    }
-
-    private ignoringCondition<R>(action: () => R): R {
-        if (this.ignoreCondition) {
-            return action();
-        }
-        this.ignoreCondition = true;
-        try {
-            return action();
-        } finally {
-            this.ignoreCondition = false;
-        }
-    }
+    }, [obj]);
 }
 
-function handleGlobalNameConflictError(message: string) {
-    if (process.env.NODE_ENV === 'development') {
-        console.warn(`${message}\n3. If you guarantee the above two points but this problem is caused by hot deployment of webpack, please ignore this message`)
-    } else {
-        throw new Error(message);
-    }
+const typedEnvironment = new TypedEnvironment(`type Query {
+  findDepartmentsLikeName(name: String): [Department!]!
+  findEmployees(mockedErrorProbability: Int, supervisorId: String, departmentId: String, name: String): [Employee!]!
+  node(id: ID!): Node
 }
 
-function createRefetchQueryRequest(queryName: string, fragmentName: string, fetcher: Fetcher<string, object, object>) : ConcreteRequest {
-	if (downcastTypes("Node").findIndex(downcastType => downcastType === fetcher.fetchableType.entityName) === -1) {
-		throw new Error(`'${fetcher.fetchableType.entityName}' does not inherit the node type 'Node'`);
-	}
-	const refetchFetcher = query$.node((node$ as any).on(fetcher, fragmentName));
-	return new TaggedNodeFactory(true).createOperation(queryName, refetchFetcher);
+type Department implements Node {
+  id: ID!
+  name: String!
+  employees: [Employee!]!
+  avgSalary: Float!
 }
+
+interface Node {
+  id: ID!
+}
+
+type Employee implements Node {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  gender: Gender!
+  salary: Float!
+  department: Department!
+  supervisor: Employee
+  subordinates: [Employee!]!
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+type Mutation {
+  mergeDepartment(input: DepartmentInput!): Department!
+  deleteDepartment(id: ID!): ID!
+  mergeEmployee(input: EmployeeInput!): Employee!
+  deleteEmployee(id: ID!): ID!
+}
+
+input DepartmentInput {
+  id: String!
+  name: String!
+}
+
+input EmployeeInput {
+  id: String!
+  firstName: String!
+  lastName: String!
+  gender: Gender!
+  salary: Float!
+  departmentId: String!
+  supervisorId: String
+}
+`);

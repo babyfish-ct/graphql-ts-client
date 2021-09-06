@@ -1,7 +1,7 @@
 import { ParameterRef } from "graphql-ts-client-api";
 import { FC, memo } from "react";
 import { css } from "@emotion/css";
-import { createTypedQuery, PreloadedQueryOf, useTypedPreloadedQuery } from "../__generated";
+import { PreloadedQueryOf, createTypedQuery, useTypedPreloadedQuery } from "../__generated";
 import { department$$, employee$, query$ } from "../__generated/fetchers";
 
 export const DEMO1_EMPLOYEE_LIST_QUERY =

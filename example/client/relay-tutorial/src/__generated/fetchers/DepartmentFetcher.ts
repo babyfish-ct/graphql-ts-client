@@ -2,7 +2,7 @@ import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 import { FragmentRefs } from 'relay-runtime';
-import { RelayFragment } from '../Relay';
+import { TypedFragment } from 'graphql-ts-client-relay';
 import { node$ } from './NodeFetcher';
 
 /*
@@ -28,7 +28,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
 	>;
 
 	on<XFragmentName extends string, XData extends object, XVariables extends object>(
-		child: RelayFragment<XFragmentName, "Department", XData, XVariables>
+		child: TypedFragment<XFragmentName, "Department", XData, XVariables>
 	): DepartmentFetcher<
 		T & {
 			readonly " $data": XData, 
@@ -39,8 +39,6 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
 
 
 	directive(name: string, args?: DirectiveArgs): DepartmentFetcher<T, TVariables>;
-
-	invisibleDirective(name: string, args?: DirectiveArgs): DepartmentFetcher<T, TVariables>;
 
 
 	readonly __typename: DepartmentFetcher<T & {__typename: ImplementationType<'Department'>}, TVariables>;

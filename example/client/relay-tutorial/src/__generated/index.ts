@@ -7,22 +7,20 @@ export type {
     FragmentKeyOf, 
     OperationType,
     FragmentKeyType
-} from "./Relay";
+} from "graphql-ts-client-relay";
 export {
-    RelayQuery, 
-    RelayMutation, 
-    RelayFragment, 
     createTypedQuery,
     createTypedMutation,
     createTypedFragment,
-    createTypedOperationDescriptor,
     loadTypedQuery,
+    fetchTypedQuery,
     useTypedQueryLoader,
     useTypedPreloadedQuery,
     useTypedLazyLoadQuery,
     useTypedMutation,
     useTypedFragment,
-    useTypedRefetchableFragment
-} from "./Relay";
+    useTypedRefetchableFragment,
+    useTypedPaginationFragment
+} from './Relay';
 export type { ImplementationType } from './CommonTypes';
 export { upcastTypes, downcastTypes } from './CommonTypes';

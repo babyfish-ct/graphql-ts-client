@@ -16,7 +16,7 @@ export class DepartmentService {
 
     @Query(() => [Department])
     async findDepartmentsLikeName(
-        @Arg("name", () => String, {nullable: true}) name?: string
+        @Arg("name", () => String, {nullable: true}) name?: string | null
     ): Promise<Department[]> {
 
         /*

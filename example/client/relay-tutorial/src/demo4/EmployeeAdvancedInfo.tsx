@@ -7,7 +7,7 @@ import { employee$ } from "../__generated/fetchers";
 export const DEMO4_EMPLOYEE_ADVANCED_INFO_FRAGEMNT = createTypedFragment(
     "Demo4EmployeeAdvancedInfoFragment",
     employee$
-    .invisibleDirective("refetchable", { queryName: "Demo4EmployeeAdvancedInfoRefetchQuery" })
+    .directive("refetchable", { queryName: "Demo4EmployeeAdvancedInfoRefetchQuery" })
     .id
     .supervisor(
         employee$.id.firstName.lastName

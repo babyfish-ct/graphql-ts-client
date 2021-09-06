@@ -90,7 +90,7 @@ class FetcherWriter extends Writer_1.Writer {
         }
         if (this.relay && this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             this.importStatement("import { FragmentRefs } from 'relay-runtime';");
-            this.importStatement("import { RelayFragment } from '../Relay';");
+            this.importStatement("import { TypedFragment } from 'graphql-ts-client-relay';");
         }
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
@@ -161,7 +161,7 @@ class FetcherWriter extends Writer_1.Writer {
             if (this.relay) {
                 t(`\non<XFragmentName extends string, XData extends object, XVariables extends object>`);
                 this.scope({ type: "PARAMETERS", multiLines: !(this.modelType instanceof graphql_1.GraphQLUnionType) }, () => {
-                    t(`child: RelayFragment<XFragmentName, "${this.modelType.name}", XData, XVariables>`);
+                    t(`child: TypedFragment<XFragmentName, "${this.modelType.name}", XData, XVariables>`);
                 });
                 t(`: ${this.fetcherTypeName}`);
                 this.scope({ type: "GENERIC", multiLines: true }, () => {
@@ -181,7 +181,6 @@ class FetcherWriter extends Writer_1.Writer {
     writeDirective() {
         const t = this.text.bind(this);
         t(`\n\ndirective(name: string, args?: DirectiveArgs): ${this.fetcherTypeName}<T, TVariables>;\n`);
-        t(`\ninvisibleDirective(name: string, args?: DirectiveArgs): ${this.fetcherTypeName}<T, TVariables>;\n`);
     }
     writeTypeName() {
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {

@@ -26,8 +26,8 @@ function createFetcher(fetchableType, unionEntityTypes) {
 }
 exports.createFetcher = createFetcher;
 class FetcherTarget extends Fetcher_1.AbstractFetcher {
-    createFetcher(negative, field, args, child, optionsValue, directive, directiveInvisible, directiveArgs) {
-        return new FetcherTarget(this, negative, field, args, child, optionsValue, directive, directiveInvisible, directiveArgs);
+    createFetcher(negative, field, args, child, optionsValue, directive, directiveArgs) {
+        return new FetcherTarget(this, negative, field, args, child, optionsValue, directive, directiveArgs);
     }
 }
 function proxyHandler(fetchableType) {
@@ -51,7 +51,7 @@ function proxyHandler(fetchableType) {
                         return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, rest));
                     }
                 }
-                else if (p === "on" || p === "directive" || p === "invisibleDirective" || ((_a = fetchableType.fields.get(p)) === null || _a === void 0 ? void 0 : _a.isFunction) === true) {
+                else if (p === "on" || p === "directive" || ((_a = fetchableType.fields.get(p)) === null || _a === void 0 ? void 0 : _a.isFunction) === true) {
                     return new Proxy(dummyTargetMethod, methodProxyHandler(target, handler, p));
                 }
                 else if (fetchableType.fields.has(p)) {
@@ -71,8 +71,8 @@ function methodProxyHandler(targetFetcher, handler, field) {
             var _a, _b;
             if (field === "on") {
                 const child = argArray[0];
-                const childFetcher = child instanceof Fetcher_1.FragmentWrapper ? child.fetcher : child;
-                const fragmentName = (_a = argArray[1]) !== null && _a !== void 0 ? _a : (child instanceof Fetcher_1.FragmentWrapper ? child.name : undefined);
+                const childFetcher = child instanceof Fetcher_1.InvisibleFragment ? child.fetcher : child;
+                const fragmentName = (_a = argArray[1]) !== null && _a !== void 0 ? _a : (child instanceof Fetcher_1.InvisibleFragment ? child.name : undefined);
                 let parentFetcher = targetFetcher;
                 if (field === "on" && targetFetcher.fetchableType.entityName !== childFetcher.fetchableType.entityName) {
                     const addField = Reflect.get(targetFetcher, "addField");
@@ -85,13 +85,7 @@ function methodProxyHandler(targetFetcher, handler, field) {
                 const directive = argArray[0];
                 const directiveArgs = argArray[1];
                 const addDirective = Reflect.get(targetFetcher, "addDirective");
-                return new Proxy(addDirective.call(targetFetcher, directive, false, directiveArgs), handler);
-            }
-            else if (field === "invisibleDirective") {
-                const directive = argArray[0];
-                const directiveArgs = argArray[1];
-                const addDirective = Reflect.get(targetFetcher, "addDirective");
-                return new Proxy(addDirective.call(targetFetcher, directive, true, directiveArgs), handler);
+                return new Proxy(addDirective.call(targetFetcher, directive, directiveArgs), handler);
             }
             let args = undefined;
             let child = undefined;

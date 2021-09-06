@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { ParameterRef } from "graphql-ts-client-api";
 import { FC, memo } from "react";
-import { createTypedQuery, QueryVariablesOf, useTypedLazyLoadQuery } from "../__generated";
+import { QueryVariablesOf, createTypedQuery, useTypedLazyLoadQuery } from "../__generated";
 import { department$$, employee$, query$ } from "../__generated/fetchers";
 
 export const DEMO2_EMPLOYEE_LIST_QUERY =

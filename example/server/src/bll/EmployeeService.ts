@@ -15,10 +15,10 @@ export class EmployeeService {
 
     @Query(() => [Employee])
     async findEmployees(
-        @Arg("name", () => String, {nullable: true}) name?: string,
-        @Arg("departmentId", () => String, {nullable: true}) departmentId?: string,
-        @Arg("supervisorId", () => String, {nullable: true}) supervisorId?: string,
-        @Arg("mockedErrorProbability", () => Int, {nullable: true}) mockedErrorProbability?: number
+        @Arg("name", () => String, {nullable: true}) name?: string | null,
+        @Arg("departmentId", () => String, {nullable: true}) departmentId?: string | null,
+        @Arg("supervisorId", () => String, {nullable: true}) supervisorId?: string | null,
+        @Arg("mockedErrorProbability", () => Int, {nullable: true}) mockedErrorProbability?: number | null
     ): Promise<Employee[]> {
 
         /*
@@ -29,7 +29,7 @@ export class EmployeeService {
         /*
          * Mock the network error
          */
-        if (mockedErrorProbability !== undefined && mockedErrorProbability > 0) {
+        if (mockedErrorProbability !== undefined && mockedErrorProbability !== null && mockedErrorProbability > 0) {
             const top = Math.min(mockedErrorProbability, 100);
             if (Math.floor(Math.random() * 100) < top) {
                 throw new Error(`Mocked error by nodejs at '${Date()}'`);
@@ -40,10 +40,10 @@ export class EmployeeService {
         return employeeTable
             .find(
                 [
-                    departmentId !== undefined ? 
+                    departmentId !== undefined && departmentId !== null ? 
                     { prop: "departmentId", value: departmentId } :
                     undefined,
-                    supervisorId !== undefined ? 
+                    supervisorId !== undefined && supervisorId !== null ? 
                     { prop: "supervisorId", value: supervisorId } :
                     undefined,
                 ], 

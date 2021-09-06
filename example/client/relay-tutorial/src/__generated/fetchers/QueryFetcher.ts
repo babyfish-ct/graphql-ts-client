@@ -13,8 +13,6 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 
 	directive(name: string, args?: DirectiveArgs): QueryFetcher<T, TVariables>;
 
-	invisibleDirective(name: string, args?: DirectiveArgs): QueryFetcher<T, TVariables>;
-
 
 	findDepartmentsLikeName<
 		X extends object, 
