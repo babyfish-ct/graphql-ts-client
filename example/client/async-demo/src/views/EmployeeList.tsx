@@ -19,7 +19,7 @@ import {
     makeStyles
 } from "@material-ui/core";
 import { DepartmentSelector } from "./DepartmentSelector";
-import { department$, employee$, employee$$, query$ } from "../__generated/fetchers";
+import { department$, employee$, employee$$, employeeConnection$, employeeEdge$, pageInfo$$, query$ } from "../__generated/fetchers";
 import { ModelType } from "graphql-ts-client-api";
 import { execute, GraphQLError } from "../__generated/Async";
 import { useEffect } from "react";
@@ -27,21 +27,27 @@ import { useEffect } from "react";
 const EMPLOYEE_LIST_FETCHER =
     query$
     .findEmployees(
-        employee$$
-        .department(
-            department$
-                .name
+        employeeConnection$
+        .edges(
+            employeeEdge$.node(
+                employee$$
+                .department(
+                    department$
+                        .name
+                )
+                .supervisor(
+                    employee$
+                        .firstName
+                        .lastName
+                )
+                .subordinates(
+                    employee$
+                        .firstName
+                        .lastName
+                )
+            )
         )
-        .supervisor(
-            employee$
-                .firstName
-                .lastName
-        )
-        .subordinates(
-            employee$
-                .firstName
-                .lastName
-        )
+        .pageInfo(pageInfo$$)
     );
 
 export const EmployeeList: FC = memo(() => {
@@ -54,6 +60,9 @@ export const EmployeeList: FC = memo(() => {
     const [departmentId, setDepartmentId] = useState<string>();
     const [mockedErrorProbability, setMockedErrorProbability] = useState(0);
 
+    const [paginationDirection, setPaginationDirection] = useState<"next" | "prev">("next");
+    const [paginationCursor, setPaginationCursor] = useState<string>();
+
     const findEmployees = useCallback(async () => {
         setLoading(true);
         setError(undefined);
@@ -65,7 +74,9 @@ export const EmployeeList: FC = memo(() => {
                     variables: {
                         name,
                         departmentId,
-                        mockedErrorProbability
+                        mockedErrorProbability,
+                        [paginationDirection === 'next' ? 'first' : 'last']: 5,
+                        [paginationDirection === 'next' ? 'after' : 'before']: paginationCursor
                     }
                 }
             );
@@ -75,16 +86,26 @@ export const EmployeeList: FC = memo(() => {
         } finally {
             setLoading(false);
         }
-    }, [name, departmentId, mockedErrorProbability]);
+    }, [name, departmentId, mockedErrorProbability, paginationDirection, paginationCursor]);
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const v = e.target.value;
         setName(v === "" ? undefined : v);
+        setPaginationDirection("next");
+        setPaginationCursor(undefined);
+    }, []);
+
+    const onDepartmentIdChange = useCallback((value?: string) => {
+        setDepartmentId(value);
+        setPaginationDirection("next");
+        setPaginationCursor(undefined);
     }, []);
 
     const onProbabilityChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const v = e.target.valueAsNumber;
         setMockedErrorProbability(isNaN(v) ? 0 : v);
+        setPaginationDirection("next");
+        setPaginationCursor(undefined);
     }, []);
 
     useEffect(() => {
@@ -94,6 +115,20 @@ export const EmployeeList: FC = memo(() => {
     const onRefreshClick = useCallback(() => {
         findEmployees();
     }, [findEmployees]);
+
+    const onPrevPageClick = useCallback(() => {
+        if (data?.findEmployees?.pageInfo?.hasPreviousPage) {
+            setPaginationDirection("prev");
+            setPaginationCursor(data.findEmployees.pageInfo.startCursor);
+        }
+    }, [data?.findEmployees?.pageInfo]);
+
+    const onNextPageClick = useCallback(() => {
+        if (data?.findEmployees?.pageInfo?.hasNextPage) {
+            setPaginationDirection("next");
+            setPaginationCursor(data.findEmployees.pageInfo.endCursor);
+        }
+    }, [data?.findEmployees?.pageInfo]);
 
     const classes = useStyles();
 
@@ -108,7 +143,7 @@ export const EmployeeList: FC = memo(() => {
                     fullWidth={true}/>
                 </Grid>
                 <Grid item xs={3}>
-                    <DepartmentSelector value={departmentId} onChange={setDepartmentId}/>
+                    <DepartmentSelector value={departmentId} onChange={onDepartmentIdChange}/>
                 </Grid>
                 <Grid item xs={3}>
                     <TextField
@@ -176,24 +211,24 @@ export const EmployeeList: FC = memo(() => {
                         </TableRow>
                     }
                     {
-                        data?.findEmployees?.map(employee => 
-                            <TableRow key={employee.id}>
-                                <TableCell>{employee.id}</TableCell>
-                                <TableCell>{employee.firstName}</TableCell>
-                                <TableCell>{employee.lastName}</TableCell>
-                                <TableCell>{employee.gender}</TableCell>
-                                <TableCell>{employee.salary}</TableCell>
-                                <TableCell>{employee.department.name}</TableCell>
+                        data?.findEmployees?.edges?.map(edge => 
+                            <TableRow key={edge.node.id}>
+                                <TableCell>{edge.node.id}</TableCell>
+                                <TableCell>{edge.node.firstName}</TableCell>
+                                <TableCell>{edge.node.lastName}</TableCell>
+                                <TableCell>{edge.node.gender}</TableCell>
+                                <TableCell>{edge.node.salary}</TableCell>
+                                <TableCell>{edge.node.department.name}</TableCell>
                                 <TableCell>
                                     {
-                                        employee.supervisor !== undefined ?
-                                        `${employee.supervisor?.firstName} ${employee.supervisor?.lastName}` :
+                                        edge.node.supervisor !== undefined ?
+                                        `${edge.node.supervisor?.firstName} ${edge.node.supervisor?.lastName}` :
                                         undefined
                                     }
                                 </TableCell>
                                 <TableCell>
                                     {
-                                        employee
+                                        edge.node
                                             .subordinates
                                             .map(subordinate => `${subordinate.firstName} ${subordinate.lastName}`)
                                             .join(", ")
@@ -204,6 +239,23 @@ export const EmployeeList: FC = memo(() => {
                     }
                 </TableBody>
             </Table>
+            <div className={classes.pagination}>
+                <Button 
+                color="secondary" 
+                variant="contained" 
+                disabled={loading || !data?.findEmployees?.pageInfo?.hasPreviousPage}
+                onClick={onPrevPageClick}>
+                    &lt;Prev page
+                </Button>
+                &nbsp;
+                <Button 
+                color="secondary" 
+                variant="contained" 
+                disabled={loading || !data?.findEmployees?.pageInfo?.hasNextPage}
+                onClick={onNextPageClick}>
+                    Next page&gt;
+                </Button>
+            </div>
         </div>
     );
 });
@@ -218,6 +270,10 @@ const useStyles = makeStyles(theme => {
         },
         errorTitle: {
             fontSize: '2rem'
+        },
+        pagination: {
+            textAlign: 'center',
+            padding: '1rem'
         }
     };
 });

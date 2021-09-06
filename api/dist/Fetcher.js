@@ -9,18 +9,17 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StringValue = exports.FragmentWrapper = exports.AbstractFetcher = void 0;
+exports.StringValue = exports.InvisibleFragment = exports.AbstractFetcher = void 0;
 const Parameter_1 = require("./Parameter");
 const TextWriter_1 = require("./TextWriter");
 class AbstractFetcher {
-    constructor(ctx, _negative, _field, _args, _child, _fieldOptionsValue, _directive, _directiveInvisible, _directiveArgs) {
+    constructor(ctx, _negative, _field, _args, _child, _fieldOptionsValue, _directive, _directiveArgs) {
         this._negative = _negative;
         this._field = _field;
         this._args = _args;
         this._child = _child;
         this._fieldOptionsValue = _fieldOptionsValue;
         this._directive = _directive;
-        this._directiveInvisible = _directiveInvisible;
         this._directiveArgs = _directiveArgs;
         if (Array.isArray(ctx)) {
             this._fetchableType = ctx[0];
@@ -63,8 +62,8 @@ class AbstractFetcher {
         }
         return this.createFetcher(false, fieldName, undefined, child);
     }
-    addDirective(directive, directiveInvisible, directiveArgs) {
-        return this.createFetcher(false, "", undefined, undefined, undefined, directive, directiveInvisible, directiveArgs);
+    addDirective(directive, directiveArgs) {
+        return this.createFetcher(false, "", undefined, undefined, undefined, directive, directiveArgs);
     }
     get fieldMap() {
         let m = this._fieldMap;
@@ -110,49 +109,42 @@ class AbstractFetcher {
         return fieldMap;
     }
     get directiveMap() {
-        return this.getDirectiveMap(false);
-    }
-    get invisibleDirectiveMap() {
-        return this.getDirectiveMap(true);
-    }
-    getDirectiveMap(invisible) {
-        let map = invisible ? this._invisibleDirectiveMap : this._directiveMap;
+        let map = this._directiveMap;
         if (map === undefined) {
-            const maps = this.getDirectiveMap0();
-            this._directiveMap = maps[0];
-            this._invisibleDirectiveMap = maps[1];
-            map = invisible ? this._invisibleDirectiveMap : this._directiveMap;
+            this._directiveMap = map = this._getDirectiveMap();
         }
         return map;
     }
-    getDirectiveMap0() {
+    _getDirectiveMap() {
         const map = new Map();
         for (let fetcher = this; fetcher !== undefined; fetcher = fetcher._prev) {
             if (fetcher._directive !== undefined) {
-                if (!fetcher._directiveInvisible) {
-                    if (!map.has(fetcher._directive)) {
-                        map.set(fetcher._directive, fetcher._directiveArgs);
-                    }
+                if (!map.has(fetcher._directive)) {
+                    map.set(fetcher._directive, fetcher._directiveArgs);
                 }
             }
         }
-        const invisibleMap = new Map();
-        for (let fetcher = this; fetcher !== undefined; fetcher = fetcher._prev) {
-            if (fetcher._directive !== undefined) {
-                if (fetcher._directiveInvisible) {
-                    if (map[fetcher._directive] !== undefined) {
-                        throw new Error(`'${fetcher._directive}' is used as both directive and invisible directive`);
-                    }
-                    if (!invisibleMap.has(fetcher._directive)) {
-                        invisibleMap.set(fetcher._directive, fetcher._directiveArgs);
-                    }
-                }
-            }
-        }
-        return [map, invisibleMap];
+        return map;
     }
     get variableTypeMap() {
         return this.result.variableTypeMap;
+    }
+    findField(fieldName) {
+        const field = this.fieldMap.get(fieldName);
+        if (field !== undefined) {
+            return field;
+        }
+        for (const [fieldName, field] of this.fieldMap) {
+            if (fieldName.startsWith("...") && field.childFetchers !== undefined) {
+                for (const fragmentFetcher of field.childFetchers) {
+                    const deeperField = fragmentFetcher.findField(fieldName);
+                    if (deeperField !== undefined) {
+                        return deeperField;
+                    }
+                }
+            }
+        }
+        return undefined;
     }
     toString() {
         return this.result.text;
@@ -206,13 +198,13 @@ class AbstractFetcher {
     }
 }
 exports.AbstractFetcher = AbstractFetcher;
-class FragmentWrapper {
+class InvisibleFragment {
     constructor(name, fetcher) {
         this.name = name;
         this.fetcher = fetcher;
     }
 }
-exports.FragmentWrapper = FragmentWrapper;
+exports.InvisibleFragment = InvisibleFragment;
 class StringValue {
     constructor(value, quotationMarks = true) {
         this.value = value;

@@ -1,5 +1,5 @@
 import { FC, memo } from "react";
-import { createTypedFragment, FragmentKeyOf, useTypedFragment } from "../__generated";
+import { createTypedFragment, useTypedFragment, FragmentKeyOf } from "../__generated";
 import { department$$, employee$$ } from "../__generated/fetchers";
 
 export const DEMO3_EMPLOYEE_BASIC_INFO_FRAGMENT = createTypedFragment(

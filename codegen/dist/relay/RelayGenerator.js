@@ -22,21 +22,14 @@ class RelayGenerator extends Generator_1.Generator {
         return new FetcherWriter_1.FetcherWriter(true, modelType, inheritanceInfo, stream, config);
     }
     generateServices(schema, promises) {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            const queryFieldMap = (_b = (_a = schema.getQueryType()) === null || _a === void 0 ? void 0 : _a.getFields()) !== null && _b !== void 0 ? _b : {};
-            const queryFields = [];
-            for (const fieldName in queryFieldMap) {
-                const queryField = queryFieldMap[fieldName];
-                queryFields.push(queryField);
-            }
-            promises.push(this.generateRelayCode(queryFields));
+            promises.push(this.generateRelayCode(schema));
         });
     }
-    generateRelayCode(queryFields) {
+    generateRelayCode(schema) {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Relay.ts"));
-            new RelayWriter_1.RelayWriter(queryFields, stream, this.config).write();
+            new RelayWriter_1.RelayWriter(schema, stream, this.config).write();
             yield Generator_1.awaitStream(stream);
         });
     }
@@ -46,7 +39,7 @@ class RelayGenerator extends Generator_1.Generator {
         });
         return __awaiter(this, void 0, void 0, function* () {
             stream.write(EXPORT_RELAY_TYPES_CODE);
-            stream.write(EXPORT_RELAY_VARS_CODE);
+            stream.write(EXPORT_RELAY_CODE);
             yield _super.writeIndexCode.call(this, stream, schema);
         });
     }
@@ -61,20 +54,20 @@ const EXPORT_RELAY_TYPES_CODE = `export type {
     FragmentKeyOf, 
     OperationType,
     FragmentKeyType
-} from "./Relay";\n`;
-const EXPORT_RELAY_VARS_CODE = `export {
-    RelayQuery, 
-    RelayMutation, 
-    RelayFragment, 
+} from "./Relay";
+`;
+const EXPORT_RELAY_CODE = `export {
     createTypedQuery,
     createTypedMutation,
     createTypedFragment,
-    createTypedOperationDescriptor,
     loadTypedQuery,
+    fetchTypedQuery,
     useTypedQueryLoader,
     useTypedPreloadedQuery,
     useTypedLazyLoadQuery,
     useTypedMutation,
     useTypedFragment,
-    useTypedRefetchableFragment
-} from "./Relay";\n`;
+    useTypedRefetchableFragment,
+    useTypedPaginationFragment
+} from './Relay';
+`;

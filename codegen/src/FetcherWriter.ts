@@ -110,9 +110,9 @@ export class FetcherWriter extends Writer {
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
         }
-        if (this.relay && this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
+        if (this.relay) {
             this.importStatement("import { FragmentRefs } from 'relay-runtime';");
-            this.importStatement("import { RelayFragment } from '../Relay';");
+            this.importStatement("import { TypedFragment } from 'graphql-ts-client-relay';");
         } 
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
@@ -139,17 +139,26 @@ export class FetcherWriter extends Writer {
     
     protected writeCode() {
         
-        this.writeFragment();
-        this.writeDirective();
-        this.writeTypeName();
+        const t = this.text.bind(this);
+        t(COMMENT);
+        t("export interface ");
+        t(this.fetcherTypeName);
+        t("<T extends object, TVariables extends object> extends Fetcher<'");
+        t(this.modelType.name);
+        t("', T, TVariables> ");
 
-        for (const fieldName in this.fieldMap) {
-            this.text("\n");
-            const field = this.fieldMap[fieldName]!;
-            this.writePositiveProp(field);
-            this.writeNegativeProp(field);
-        }
-        this.leave("\n");
+        this.scope({type: "BLOCK", multiLines: true}, () => {
+            this.writeFragment();
+            this.writeDirective();
+            this.writeTypeName();
+
+            for (const fieldName in this.fieldMap) {
+                this.text("\n");
+                const field = this.fieldMap[fieldName]!;
+                this.writePositiveProp(field);
+                this.writeNegativeProp(field);
+            }
+        });
 
         this.writeInstances();
 
@@ -159,14 +168,6 @@ export class FetcherWriter extends Writer {
     private writeFragment() {
 
         const t = this.text.bind(this);
-
-        t(COMMENT);
-        t("export interface ");
-        t(this.fetcherTypeName);
-        t("<T extends object, TVariables extends object> extends Fetcher<'");
-        t(this.modelType.name);
-        t("', T, TVariables> ");
-        this.enter("BLOCK", true);
 
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object, XVariables extends object>`);
@@ -191,26 +192,26 @@ export class FetcherWriter extends Writer {
                 t("TVariables & XVariables");
             });
             t(";\n");
+        }
 
-            if (this.relay) {
+        if (this.relay) {
 
-                t(`\non<XFragmentName extends string, XData extends object, XVariables extends object>`);
-                this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
-                    t(`child: RelayFragment<XFragmentName, "${this.modelType.name}", XData, XVariables>`);
-                });
-                t(`: ${this.fetcherTypeName}`);
-                this.scope({type: "GENERIC", multiLines: true}, () => {
-                    t('T & ');
-                    this.scope({type: "BLOCK", multiLines: true}, () => {
-                        t('readonly " $data": XData');
-                        this.separator(", ");
-                        t('readonly " $fragmentRefs": FragmentRefs<XFragmentName>');
-                    });
+            t(`\non<XFragmentName extends string, XData extends object, XVariables extends object>`);
+            this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
+                t(`child: TypedFragment<XFragmentName, "${this.modelType.name}", XData, XVariables>`);
+            });
+            t(`: ${this.fetcherTypeName}`);
+            this.scope({type: "GENERIC", multiLines: true}, () => {
+                t('T & ');
+                this.scope({type: "BLOCK", multiLines: true}, () => {
+                    t('readonly " $data": XData');
                     this.separator(", ");
-                    t("TVariables & XVariables");
+                    t('readonly " $fragmentRefs": FragmentRefs<XFragmentName>');
                 });
-                t(";\n");
-            }
+                this.separator(", ");
+                t("TVariables & XVariables");
+            });
+            t(";\n");
         }
     }
 
@@ -219,8 +220,6 @@ export class FetcherWriter extends Writer {
         const t = this.text.bind(this);
 
         t(`\n\ndirective(name: string, args?: DirectiveArgs): ${this.fetcherTypeName}<T, TVariables>;\n`);
-
-        t(`\ninvisibleDirective(name: string, args?: DirectiveArgs): ${this.fetcherTypeName}<T, TVariables>;\n`);
     }
 
     private writeTypeName() {

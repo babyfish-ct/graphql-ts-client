@@ -7,7 +7,7 @@ import { employee$ } from "../__generated/fetchers";
 export const DEMO4_EMPLOYEE_ADVANCED_INFO_FRAGEMNT = createTypedFragment(
     "Demo4EmployeeAdvancedInfoFragment",
     employee$
-    .invisibleDirective("refetchable", { queryName: "Demo4EmployeeAdvancedInfoRefetchQuery" })
+    .directive("refetchable", { queryName: "Demo4EmployeeAdvancedInfoRefetchQuery" })
     .id
     .supervisor(
         employee$.id.firstName.lastName
@@ -24,7 +24,7 @@ export const EmployeeAdvancedInfo: FC<{
     const [data, refetch] = useTypedRefetchableFragment(DEMO4_EMPLOYEE_ADVANCED_INFO_FRAGEMNT, info);
 
     const onRefresh = useCallback(() => {
-        refetch({});
+        refetch({}, { fetchPolicy: 'network-only' });
     }, [refetch]);
 
     return (

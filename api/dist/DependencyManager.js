@@ -51,16 +51,14 @@ class DependencyManager {
         for (const fetcher of fetchers) {
             const isOperation = isOperationFetcher(fetcher);
             for (const [fieldName, field] of fetcher.fieldMap) {
-                if (isOperation || fieldName.startsWith("...")) { //only register recursivly for fragment
-                    if (field.childFetchers !== undefined) {
-                        this.registerTypes(resource, field.childFetchers);
-                    }
-                }
-                else {
+                if (!fieldName.startsWith("...")) {
                     const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
                     for (const declaringTypeName of declaringTypeNames) {
                         compute(this.rootTypeResourceMap, declaringTypeName, () => new Resources()).retain(resource);
                     }
+                }
+                if (field.childFetchers !== undefined) {
+                    this.registerTypes(resource, field.childFetchers);
                 }
             }
         }

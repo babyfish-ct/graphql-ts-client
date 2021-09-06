@@ -7,7 +7,7 @@ import { department$$, employee$$ } from "../__generated/fetchers";
 export const DEMO4_EMPLOYEE_BASIC_INFO_FRAGMENT = createTypedFragment(
     "Demo4EmployeeBasicInfoFragment",
     employee$$
-    .invisibleDirective("refetchable", { queryName: "Demo4EmployeeBasicInfoRefetchQuery" })
+    .directive("refetchable", { queryName: "Demo4EmployeeBasicInfoRefetchQuery" })
     .department(
         department$$
     )
@@ -20,7 +20,7 @@ export const EmployeeBasicInfo: FC<{
     const [data, refetch] = useTypedRefetchableFragment(DEMO4_EMPLOYEE_BASIC_INFO_FRAGMENT, info);
 
     const onRefresh = useCallback(() => {
-        refetch({});
+        refetch({}, { fetchPolicy: 'network-only' });
     }, [refetch]);
 
     return (

@@ -5439,18 +5439,18 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-ts-client-api@^3.0.0-preview:
-  version "3.0.0-preview"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.0-preview.tgz#2cf9219f7a43c33bdfb46013c2b2a80c3e631704"
-  integrity sha512-Nwim0fc0G6q7XM+WggForubl62/ttNWeC8+0TfvUrWsv8JHC/z/OUrbEkbk1EMhHmug+Vrimntl+SYpVYwZS5g==
+graphql-ts-client-api@^3.0.0-alpha:
+  version "3.0.0-alpha"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.0-alpha.tgz#d96962237456f6dc8c1dfef016f0128415b4d1df"
+  integrity sha512-QktWRWgjs+zIhdX/+9HAeaVAsSVf9mp+UUM3Bnb2Xx5rfGMxR/UrdfTk8kgjkUbXn4SGb7JjTA6pjSdp089H2w==
   dependencies:
     immer "^9.0.5"
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.0-preview:
-  version "3.0.0-preview"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.0-preview.tgz#a2172822d2503fb394f6348893d516366b0cef3a"
-  integrity sha512-8OBUarteNoEPtUfRaJzc+jaOmvZ6M5xOui1NhhoCQw9dHjCJdWA3U3zJr0BFzglBd1jCMSPrHG5JFDk0d9Mpuw==
+graphql-ts-client-codegen@^3.0.0-alpha:
+  version "3.0.0-alpha"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.0-alpha.tgz#624b2f47204a8f9b9fbfb300db3dbbcee7e48bcb"
+  integrity sha512-nxXd8Mb1r/p/1mUy+yeZi9uUSncHeydpGkLnh/7cQu3MnYkwN1qT29VidQ0TcoBEaNxTQs2YFj5IaLIBZbiWHA==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -5824,9 +5824,9 @@ immer@8.0.1:
   integrity sha512-aqXhGP7//Gui2+UrEtvxZxSquQVXTpZ7KDxfCcKAF3Vysvw0CViVaW9RZ1j1xlIYqaaaipBoqdqeibkc18PNvA==
 
 immer@^9.0.5:
-  version "9.0.5"
-  resolved "https://registry.yarnpkg.com/immer/-/immer-9.0.5.tgz#a7154f34fe7064f15f00554cc94c66cc0bf453ec"
-  integrity sha512-2WuIehr2y4lmYz9gaQzetPR2ECniCifk4ORaQbU3g5EalLt+0IVTosEPJ5BoYl/75ky2mivzdRzV8wWgQGOSYQ==
+  version "9.0.6"
+  resolved "https://registry.yarnpkg.com/immer/-/immer-9.0.6.tgz#7a96bf2674d06c8143e327cbf73539388ddf1a73"
+  integrity sha512-G95ivKpy+EvVAnAab4fVa4YGYn24J1SpEktnJX7JJ45Bd7xqME/SCplFzYFmTbrkwZbQ4xJK1xMTUYBkN6pWsQ==
 
 import-cwd@^2.0.0:
   version "2.1.0"

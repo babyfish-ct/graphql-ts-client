@@ -27,8 +27,6 @@ export interface NodeFetcher<T extends object, TVariables extends object> extend
 
 	directive(name: string, args?: DirectiveArgs): NodeFetcher<T, TVariables>;
 
-	invisibleDirective(name: string, args?: DirectiveArgs): NodeFetcher<T, TVariables>;
-
 
 	readonly __typename: NodeFetcher<T & {__typename: ImplementationType<'Node'>}, TVariables>;
 

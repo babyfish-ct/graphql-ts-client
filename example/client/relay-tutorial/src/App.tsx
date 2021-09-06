@@ -9,6 +9,7 @@ import { Demo as Demo1 } from './demo1/Demo';
 import { Demo as Demo2 } from './demo2/Demo';
 import { Demo as Demo3 } from './demo3/Demo';
 import { Demo as Demo4 } from './demo4/Demo';
+import { Demo as Demo5 } from './demo5/Demo';
 
 function App() {
 
@@ -52,6 +53,11 @@ function App() {
                         onClick={() => setLocation("/useTypedRefetchableFragment")}>
                             useTypedRefetchableFragment
                         </div>
+                        <div 
+                        className={cx({[SELECTED_MENU]: location === "/useTypedPaginationFragment"})}
+                        onClick={() => setLocation("/useTypedPaginationFragment")}>
+                            useTypedPaginationFragment
+                        </div>
                     </div>
                     <div className="right">
                         <Switch>
@@ -59,6 +65,7 @@ function App() {
                             <Route path="/useTypedLazyQuery" component={Demo2}/>
                             <Route path="/useTypedFragment" component={Demo3}/>
                             <Route path="/useTypedRefetchableFragment" component={Demo4}/>
+                            <Route path="/useTypedPaginationFragment" component={Demo5}/>
                             <Redirect to="/useTypedPreloadedQuery"/>
                         </Switch>
                     </div>

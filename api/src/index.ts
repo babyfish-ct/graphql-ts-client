@@ -9,7 +9,7 @@
  */
 
 export type { Fetcher, ModelType, FetcherField, FetchableField, FetchableType, DirectiveArgs } from './Fetcher';
-export { AbstractFetcher, FragmentWrapper, StringValue } from './Fetcher';
+export { AbstractFetcher, InvisibleFragment, StringValue } from './Fetcher';
 export type { AcceptableVariables, UnresolvedVariables } from './Parameter';
 export { ParameterRef } from "./Parameter";
 export type { FieldOptions } from './FieldOptions';

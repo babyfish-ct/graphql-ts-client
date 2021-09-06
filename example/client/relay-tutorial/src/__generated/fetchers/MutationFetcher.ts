@@ -1,5 +1,7 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { FragmentRefs } from 'relay-runtime';
+import { TypedFragment } from 'graphql-ts-client-relay';
 import {DepartmentInput} from '../inputs';
 import {EmployeeInput} from '../inputs';
 
@@ -12,10 +14,18 @@ import {EmployeeInput} from '../inputs';
  */
 export interface MutationFetcher<T extends object, TVariables extends object> extends Fetcher<'Mutation', T, TVariables> {
 
+	on<XFragmentName extends string, XData extends object, XVariables extends object>(
+		child: TypedFragment<XFragmentName, "Mutation", XData, XVariables>
+	): MutationFetcher<
+		T & {
+			readonly " $data": XData, 
+			readonly " $fragmentRefs": FragmentRefs<XFragmentName>
+		}, 
+		TVariables & XVariables
+	>;
+
 
 	directive(name: string, args?: DirectiveArgs): MutationFetcher<T, TVariables>;
-
-	invisibleDirective(name: string, args?: DirectiveArgs): MutationFetcher<T, TVariables>;
 
 
 	mergeDepartment<
@@ -177,7 +187,6 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 		TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteEmployee']> & XDirectiveVariables
 	>;
 }
-
 export const mutation$: MutationFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(

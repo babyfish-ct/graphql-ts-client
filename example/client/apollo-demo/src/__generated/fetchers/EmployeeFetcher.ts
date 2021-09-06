@@ -29,8 +29,6 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 
 	directive(name: string, args?: DirectiveArgs): EmployeeFetcher<T, TVariables>;
 
-	invisibleDirective(name: string, args?: DirectiveArgs): EmployeeFetcher<T, TVariables>;
-
 
 	readonly __typename: EmployeeFetcher<T & {__typename: ImplementationType<'Employee'>}, TVariables>;
 

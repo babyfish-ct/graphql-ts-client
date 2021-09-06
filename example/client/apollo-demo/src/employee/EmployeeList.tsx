@@ -7,7 +7,7 @@ import { Loading } from "../common/Loading";
 import { EmployeeDialog } from "./EmployeeDialog";
 import { DepartmentSelect } from "../department/DepartmentSelect";
 import { EmployeeSelect } from "./EmployeeSelect";
-import { query$ } from "../__generated/fetchers";
+import { employeeConnection$, employeeEdge$, pageInfo$$, query$ } from "../__generated/fetchers";
 
 export const EmployeeList: FC = memo(() => {
 
@@ -15,16 +15,29 @@ export const EmployeeList: FC = memo(() => {
     const [departmentId, setDepartmentId] = useState<string>();
     const [supervisorId, setSupervisorId] = useState<string>();
 
+    const [paginationDirection, setPaginationDirection] = useState<"next" | "prev">("next");
+    const [paginationCursor, setPaginationCursor] = useState<string>();
+
     const { loading, error, data, refetch } = useTypedQuery(
         query$.findEmployees(
-            EMPLOYEE_ITEM_FETCHER
+            employeeConnection$
+            .edges(
+                employeeEdge$.node(
+                    EMPLOYEE_ITEM_FETCHER
+                )
+            )
+            .pageInfo(
+                pageInfo$$
+            )
         ),
         {
             notifyOnNetworkStatusChange: true, // consider "refetching" as "loading"
             variables: { 
                 name,
                 departmentId,
-                supervisorId
+                supervisorId,
+                [paginationDirection === 'next' ? "first" : "last"]: 4,
+                [paginationDirection === 'next' ? "after" : "before"]: paginationCursor
             }
         }
     );
@@ -32,12 +45,42 @@ export const EmployeeList: FC = memo(() => {
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const name = e.target.value.trim();
         setName(name === "" ? undefined : name);
+        setPaginationDirection("next");
+        setPaginationCursor(undefined);
     }, []);
+
+    const onDepartmentIdChange = useCallback((value?: string) => {
+        setDepartmentId(value);
+        setPaginationDirection("next");
+        setPaginationCursor(undefined);
+    }, []);
+
+    const onSupervsiorIdChange = useCallback((value?: string) => {
+        setSupervisorId(value);
+        setPaginationDirection("next");
+        setPaginationCursor(undefined);
+    }, []);
+
     const onRefetchClick = useCallback(() => {
         refetch();
     }, [refetch]);
 
     const [dialog, setDialog] = useState(false);
+
+    const onPrevPageClick = useCallback(() => {
+        if (data?.findEmployees.pageInfo.hasPreviousPage) {
+            setPaginationDirection("prev");
+            setPaginationCursor(data.findEmployees.pageInfo.startCursor);
+        }
+    }, [data]);
+
+    const onNextPageClick = useCallback(() => {
+        if (data?.findEmployees.pageInfo.hasNextPage) {
+            setPaginationDirection("next");
+            setPaginationCursor(data.findEmployees.pageInfo.endCursor);
+        }
+    }, [data]);
+
     const onNewClick = useCallback(() => {
         setDialog(true);
     }, []);
@@ -62,11 +105,11 @@ export const EmployeeList: FC = memo(() => {
                 </div>
                 <div>
                     <span className={LABEL_CSS}>Department: </span>
-                    <DepartmentSelect optional value={departmentId} onChange={setDepartmentId}/>
+                    <DepartmentSelect optional value={departmentId} onChange={onDepartmentIdChange}/>
                 </div>
                 <div>
                     <span className={LABEL_CSS}>Supervisor: </span>
-                    <EmployeeSelect optional value={supervisorId} onChange={setSupervisorId}/>
+                    <EmployeeSelect optional value={supervisorId} onChange={onSupervsiorIdChange}/>
                 </div>
                 <div>
                     <button onClick={onRefetchClick}>Refresh</button>
@@ -79,15 +122,30 @@ export const EmployeeList: FC = memo(() => {
             { error && <div>Error</div> }
             {
                 data && <div className={css({margin: "1rem 0 1rem 0"})}>
-                    {data.findEmployees.map(employee => 
-                        <EmployeeItem key={employee.id} employee={employee}/>
+                    {data.findEmployees.edges.map(edge => 
+                        <EmployeeItem key={edge.node.id} employee={edge.node}/>
                     )}
                 </div>
             }
-            <div className={css({margin: "1rem 0 1rem 0"})}>
-                <button onClick={onNewClick}>Add employee</button>
-                { dialog && <EmployeeDialog onClose={onDialogClose}/>}
-            </div>
+            {
+                data &&
+                <div className={css({margin: "1rem 0 1rem 0"})}>
+                    <button 
+                    disabled={loading || !data.findEmployees.pageInfo.hasPreviousPage}
+                    onClick={onPrevPageClick}>
+                        &lt;Prev page
+                    </button>
+                    &nbsp;
+                    <button 
+                    disabled={loading || !data.findEmployees.pageInfo.hasNextPage}
+                    onClick={onNextPageClick}>
+                        Next Page&gt;
+                    </button>
+                    &nbsp;
+                    <button onClick={onNewClick}>Add employee</button>
+                    { dialog && <EmployeeDialog onClose={onDialogClose}/>}
+                </div>
+            }
         </div>
     );
 });

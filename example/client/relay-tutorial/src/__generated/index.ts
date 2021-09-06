@@ -9,20 +9,18 @@ export type {
     FragmentKeyType
 } from "./Relay";
 export {
-    RelayQuery, 
-    RelayMutation, 
-    RelayFragment, 
     createTypedQuery,
     createTypedMutation,
     createTypedFragment,
-    createTypedOperationDescriptor,
     loadTypedQuery,
+    fetchTypedQuery,
     useTypedQueryLoader,
     useTypedPreloadedQuery,
     useTypedLazyLoadQuery,
     useTypedMutation,
     useTypedFragment,
-    useTypedRefetchableFragment
-} from "./Relay";
+    useTypedRefetchableFragment,
+    useTypedPaginationFragment
+} from './Relay';
 export type { ImplementationType } from './CommonTypes';
 export { upcastTypes, downcastTypes } from './CommonTypes';

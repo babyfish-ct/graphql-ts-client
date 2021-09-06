@@ -18,11 +18,11 @@ export class DepartmentService {
 
     @Query(() => DepartmentConnection)
     async findDepartmentsLikeName(
-        @Arg("name", () => String, {nullable: true}) name?: string,
-        @Arg("first", () => Int, {nullable: true}) first?: number,
-        @Arg("after", () => String, {nullable: true}) after?: string,
-        @Arg("last", () => Int, {nullable: true}) last?: number,
-        @Arg("before", () => String, {nullable: true}) before?: string
+        @Arg("name", () => String, {nullable: true}) name?: string | null,
+        @Arg("first", () => Int, {nullable: true}) first?: number | null,
+        @Arg("after", () => String, {nullable: true}) after?: string | null,
+        @Arg("last", () => Int, {nullable: true}) last?: number | null,
+        @Arg("before", () => String, {nullable: true}) before?: string | null
     ): Promise<DepartmentConnection> {
 
         /*

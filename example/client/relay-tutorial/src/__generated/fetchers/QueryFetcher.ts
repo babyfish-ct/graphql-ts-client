@@ -1,5 +1,7 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { FragmentRefs } from 'relay-runtime';
+import { TypedFragment } from 'graphql-ts-client-relay';
 
 /*
  * Any instance of this interface is immutable,
@@ -10,10 +12,18 @@ import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-a
  */
 export interface QueryFetcher<T extends object, TVariables extends object> extends Fetcher<'Query', T, TVariables> {
 
+	on<XFragmentName extends string, XData extends object, XVariables extends object>(
+		child: TypedFragment<XFragmentName, "Query", XData, XVariables>
+	): QueryFetcher<
+		T & {
+			readonly " $data": XData, 
+			readonly " $fragmentRefs": FragmentRefs<XFragmentName>
+		}, 
+		TVariables & XVariables
+	>;
+
 
 	directive(name: string, args?: DirectiveArgs): QueryFetcher<T, TVariables>;
-
-	invisibleDirective(name: string, args?: DirectiveArgs): QueryFetcher<T, TVariables>;
 
 
 	findDepartmentsLikeName<
@@ -23,15 +33,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
 		XDirectiveVariables extends object = {}
 	>(
-		child: Fetcher<'Department', X, XVariables>, 
+		child: Fetcher<'DepartmentConnection', X, XVariables>, 
 		optionsConfigurer?: (
 			options: FieldOptions<"findDepartmentsLikeName", {}, {}>
 		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): QueryFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-				{readonly [key in XAlias]?: readonly X[]} : 
-				{readonly [key in XAlias]: readonly X[]}
+				{readonly [key in XAlias]?: X} : 
+				{readonly [key in XAlias]: X}
 		), 
 		TVariables & XVariables & QueryArgs["findDepartmentsLikeName"] & XDirectiveVariables
 	>;
@@ -45,15 +55,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 		XDirectiveVariables extends object = {}
 	>(
 		args: XArgs, 
-		child: Fetcher<'Department', X, XVariables>, 
+		child: Fetcher<'DepartmentConnection', X, XVariables>, 
 		optionsConfigurer?: (
 			options: FieldOptions<"findDepartmentsLikeName", {}, {}>
 		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): QueryFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-				{readonly [key in XAlias]?: readonly X[]} : 
-				{readonly [key in XAlias]: readonly X[]}
+				{readonly [key in XAlias]?: X} : 
+				{readonly [key in XAlias]: X}
 		), 
 		TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findDepartmentsLikeName']> & XDirectiveVariables
 	>;
@@ -66,15 +76,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
 		XDirectiveVariables extends object = {}
 	>(
-		child: Fetcher<'Employee', X, XVariables>, 
+		child: Fetcher<'EmployeeConnection', X, XVariables>, 
 		optionsConfigurer?: (
 			options: FieldOptions<"findEmployees", {}, {}>
 		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): QueryFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-				{readonly [key in XAlias]?: readonly X[]} : 
-				{readonly [key in XAlias]: readonly X[]}
+				{readonly [key in XAlias]?: X} : 
+				{readonly [key in XAlias]: X}
 		), 
 		TVariables & XVariables & QueryArgs["findEmployees"] & XDirectiveVariables
 	>;
@@ -88,15 +98,15 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 		XDirectiveVariables extends object = {}
 	>(
 		args: XArgs, 
-		child: Fetcher<'Employee', X, XVariables>, 
+		child: Fetcher<'EmployeeConnection', X, XVariables>, 
 		optionsConfigurer?: (
 			options: FieldOptions<"findEmployees", {}, {}>
 		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
 	): QueryFetcher<
 		T & (
 			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-				{readonly [key in XAlias]?: readonly X[]} : 
-				{readonly [key in XAlias]: readonly X[]}
+				{readonly [key in XAlias]?: X} : 
+				{readonly [key in XAlias]: X}
 		), 
 		TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['findEmployees']> & XDirectiveVariables
 	>;
@@ -134,7 +144,6 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 		TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['node']> & XDirectiveVariables
 	>;
 }
-
 export const query$: QueryFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(
@@ -143,15 +152,25 @@ export const query$: QueryFetcher<{}, {}> =
 			[
 				{
 					isFunction: true, 
-					isPlural: true, 
+					isPlural: false, 
 					name: "findDepartmentsLikeName", 
-					argGraphQLTypeMap: {name: 'String'}
+					argGraphQLTypeMap: {
+						before: 'String', 
+						last: 'Int', 
+						after: 'String', 
+						first: 'Int', 
+						name: 'String'
+					}
 				}, 
 				{
 					isFunction: true, 
-					isPlural: true, 
+					isPlural: false, 
 					name: "findEmployees", 
 					argGraphQLTypeMap: {
+						before: 'String', 
+						last: 'Int', 
+						after: 'String', 
+						first: 'Int', 
 						mockedErrorProbability: 'Int', 
 						supervisorId: 'String', 
 						departmentId: 'String', 
@@ -173,10 +192,18 @@ export const query$: QueryFetcher<{}, {}> =
 interface QueryArgs {
 
 	readonly findDepartmentsLikeName: {
+		readonly before?: string, 
+		readonly last?: number, 
+		readonly after?: string, 
+		readonly first?: number, 
 		readonly name?: string
 	}, 
 
 	readonly findEmployees: {
+		readonly before?: string, 
+		readonly last?: number, 
+		readonly after?: string, 
+		readonly first?: number, 
 		readonly mockedErrorProbability?: number, 
 		readonly supervisorId?: string, 
 		readonly departmentId?: string, 

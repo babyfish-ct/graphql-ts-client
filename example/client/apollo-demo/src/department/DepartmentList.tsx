@@ -3,7 +3,7 @@ import { ChangeEvent, FC, memo, useCallback, useState } from "react";
 import { LABEL_CSS } from "../common/CssClasses";
 import { Loading } from "../common/Loading";
 import { useTypedQuery } from "../__generated";
-import { employee$, query$ } from "../__generated/fetchers";
+import { departmentConnection$, departmentEdge$, employee$, query$ } from "../__generated/fetchers";
 import { DepartmentDialog } from "./DepartmentDialog";
 import { DepartmentItem, DEPARTMENT_ITEM_FETCHER } from "./DepartmentItem";
 
@@ -15,7 +15,11 @@ export const DepartmentList: FC = memo(() => {
 
     const { loading, error, data, refetch } = useTypedQuery(
         query$.findDepartmentsLikeName(
-            DEPARTMENT_ITEM_FETCHER
+            departmentConnection$.edges(
+                departmentEdge$.node(
+                    DEPARTMENT_ITEM_FETCHER
+                )
+            )
         ),
         { 
             notifyOnNetworkStatusChange: true, // consider "refetching" as "loading"
@@ -77,8 +81,8 @@ export const DepartmentList: FC = memo(() => {
             { error && <div>Error</div> }
             {
                 data && <div className={css({margin: "1rem 0 1rem 0"})}>
-                    {data.findDepartmentsLikeName.map(department => 
-                        <DepartmentItem key={department.id} department={department}/>
+                    {data.findDepartmentsLikeName.edges.map(edge => 
+                        <DepartmentItem key={edge.node.id} department={edge.node}/>
                     )}
                 </div>
             }

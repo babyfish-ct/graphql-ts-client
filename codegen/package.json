@@ -1,6 +1,6 @@
 {
   "name": "graphql-ts-client-codegen",
-  "version": "3.0.0-preview",
+  "version": "3.0.0-alpha",
   "description": "A tool to generate strong type client code by GraphQL schema",
   "author": "ChenTao",
   "license": "MIT",

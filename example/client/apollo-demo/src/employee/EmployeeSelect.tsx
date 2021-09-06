@@ -2,7 +2,7 @@ import { ChangeEvent, FC, memo, useCallback, useEffect } from "react";
 import { ERROR_CSS } from "../common/CssClasses";
 import { Loading } from "../common/Loading";
 import { useTypedQuery } from "../__generated";
-import { employee$, query$ } from "../__generated/fetchers";
+import { employee$, employeeConnection$, employeeEdge$, query$ } from "../__generated/fetchers";
 
 const EMPLOYEE_OPTION_FETCHER = 
     employee$
@@ -19,8 +19,12 @@ export const EmployeeSelect: FC<{
 
     const { loading, error, data } = useTypedQuery(
         query$.findEmployees(
-            EMPLOYEE_OPTION_FETCHER,
-            options => options.alias("options")
+            employeeConnection$.edges(
+                employeeEdge$.node(
+                    EMPLOYEE_OPTION_FETCHER
+                )
+            ),
+            options => options.alias("optionConnection")
         ),
         {
             variables: { departmentId }
@@ -33,8 +37,8 @@ export const EmployeeSelect: FC<{
     }, [onChange]);
 
     useEffect(() => {
-        if (!optional && value === undefined && data !== undefined && data.options.length > 0) {
-            onChange(data.options[0].id);
+        if (!optional && value === undefined && data !== undefined && data.optionConnection.edges.length > 0) {
+            onChange(data.optionConnection.edges[0].node.id);
         }
     }, [optional, value, data, onChange]);
 
@@ -47,8 +51,8 @@ export const EmployeeSelect: FC<{
                 <select value={value ?? ''} onChange={onSelectChange}>
                     { optional && <option value="">--Unspeified--</option>}
                     {
-                        data.options.map(option => 
-                            <option key={option.id} value={option.id}>{option.firstName} {option.lastName}</option>
+                        data.optionConnection.edges.map(edge => 
+                            <option key={edge.node.id} value={edge.node.id}>{edge.node.firstName} {edge.node.lastName}</option>
                         )
                     }
                 </select>

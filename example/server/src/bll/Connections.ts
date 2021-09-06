@@ -58,10 +58,10 @@ interface CreateConnectionArgs<TConnection, TEdge, TNode> {
     createEdge(node: TNode, cursor: string): TEdge;
     createConnection(totalCount: number, edges: TEdge[], pageInfo: PageInfo): TConnection;
     
-    readonly first?: number;
-    readonly after?: string;
-    readonly last?: number;
-    readonly before?: string;
+    readonly first?: number | null;
+    readonly after?: string | null;
+    readonly last?: number | null;
+    readonly before?: string | null;
 }
 
 function indexToCursor(index: number): string {

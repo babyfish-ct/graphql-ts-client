@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { AbstractFetcher, DirectiveArgs, FetchableField, FetchableType, Fetcher, FragmentWrapper } from './Fetcher';
+import { AbstractFetcher, DirectiveArgs, FetchableField, FetchableType, Fetcher, InvisibleFragment } from './Fetcher';
 import { createFieldOptions, FieldOptionsValue } from './FieldOptions';
 import { ParameterRef } from './Parameter';
 
@@ -39,7 +39,6 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object, object>
         child?: AbstractFetcher<string, object, object>,
         optionsValue?: FieldOptionsValue,
         directive?: string,
-        directiveInvisible?: boolean,
         directiveArgs?: DirectiveArgs
     ): AbstractFetcher<string, object, object> {
         return new FetcherTarget(
@@ -50,7 +49,6 @@ class FetcherTarget<E extends string> extends AbstractFetcher<E, object, object>
             child,
             optionsValue,
             directive,
-            directiveInvisible,
             directiveArgs
         );
     }
@@ -83,7 +81,7 @@ function proxyHandler(
                             methodProxyHandler(target, handler, rest)
                         );
                     }
-                } else if (p === "on" || p === "directive" || p === "invisibleDirective" || fetchableType.fields.get(p)?.isFunction === true) {
+                } else if (p === "on" || p === "directive" || fetchableType.fields.get(p)?.isFunction === true) {
                     return new Proxy(
                         dummyTargetMethod,
                         methodProxyHandler(target, handler, p)
@@ -112,8 +110,8 @@ function methodProxyHandler(
         apply: (_1: Function, _2: any, argArray: any[]): any => {
             if (field === "on") {
                 const child = argArray[0];
-                const childFetcher = child instanceof FragmentWrapper ? child.fetcher : child as Fetcher<string, object, object>;
-                const fragmentName = argArray[1] as string | undefined ?? (child instanceof FragmentWrapper ? child.name : undefined);
+                const childFetcher = child instanceof InvisibleFragment ? child.fetcher : child as Fetcher<string, object, object>;
+                const fragmentName = argArray[1] as string | undefined ?? (child instanceof InvisibleFragment ? child.name : undefined);
                 let parentFetcher = targetFetcher;
                 if (field === "on" && targetFetcher.fetchableType.entityName !== childFetcher.fetchableType.entityName) {
                     const addField = Reflect.get(targetFetcher, "addField") as ADD_FILED;
@@ -129,15 +127,7 @@ function methodProxyHandler(
                 const directiveArgs = argArray[1] as DirectiveArgs;
                 const addDirective = Reflect.get(targetFetcher, "addDirective") as ADD_DIRECTIVE;
                 return new Proxy(
-                    addDirective.call(targetFetcher, directive, false, directiveArgs),
-                    handler
-                );
-            } else if (field === "invisibleDirective") {
-                const directive = argArray[0] as string;
-                const directiveArgs = argArray[1] as DirectiveArgs;
-                const addDirective = Reflect.get(targetFetcher, "addDirective") as ADD_DIRECTIVE;
-                return new Proxy(
-                    addDirective.call(targetFetcher, directive, true, directiveArgs),
+                    addDirective.call(targetFetcher, directive, directiveArgs),
                     handler
                 );
             }
@@ -191,7 +181,6 @@ type ADD_EMBBEDDABLE = (
 
 type ADD_DIRECTIVE = (
     directive: string,
-    directiveInvisible: boolean,
     directiveArgs?: DirectiveArgs
 ) => AbstractFetcher<string, object, object>;
 

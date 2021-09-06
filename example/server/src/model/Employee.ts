@@ -5,8 +5,7 @@
  */
 
 import 'reflect-metadata';
-import { Arg, Field, Float, Int, ObjectType } from 'type-graphql';
-import { createConnection } from '../bll/Connections';
+import { Field, Float, Int, ObjectType } from 'type-graphql';
 import { departmentTable } from '../dal/DepartmentRepostiory';
 import { employeeTable, TEmployee } from '../dal/EmployeeRepository';
 import { Department } from './Department';
@@ -46,26 +45,11 @@ export class Employee extends Node {
         return new Employee(employeeTable.findNonNullById(this.supervisorId)!);
     }
 
-    @Field(() => EmployeeConnection)
-    subordinates(
-        @Arg("first", () => Int, {nullable: true}) first?: number,
-        @Arg("after", () => String, {nullable: true}) after?: string,
-        @Arg("last", () => Int, {nullable: true}) last?: number,
-        @Arg("before", () => String, {nullable: true}) before?: string
-    ): EmployeeConnection {
-        const employees = employeeTable
+    @Field(() => [Employee])
+    subordinates(): Employee[] {
+        return employeeTable
             .findByProp("supervisorId", this.id)
             .map(row => new Employee(row));
-        return createConnection<EmployeeConnection, EmployeeEdge, Employee>({
-            totalCount: employees.length,
-            getNodes: (offset, count) => employees.slice(offset, offset + count),
-            createEdge: (node, cursor) => new EmployeeEdge(node, cursor),
-            createConnection: (totalCount, edges, pageInfo) => new EmployeeConnection(totalCount, edges, pageInfo),
-            first,
-            after,
-            last,
-            before
-        });
     }
 
     constructor(row: TEmployee) {

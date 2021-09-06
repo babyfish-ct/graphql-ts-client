@@ -20,7 +20,7 @@ export interface Fetcher<E extends string, T extends object, TVariables extends 
 
     readonly directiveMap: ReadonlyMap<string, DirectiveArgs>;
 
-    readonly invisibleDirectiveMap: ReadonlyMap<string, DirectiveArgs>;
+    findField(fieldName: string): FetcherField | undefined;
 
     toString(): string;
 
@@ -50,8 +50,6 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
 
     private _directiveMap: ReadonlyMap<string, DirectiveArgs>;
 
-    private _invisibleDirectiveMap: ReadonlyMap<string, DirectiveArgs>;
-
     private _result: Result; 
 
     constructor(
@@ -62,7 +60,6 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         private _child?: AbstractFetcher<string, object, object>,
         private _fieldOptionsValue?: FieldOptionsValue,
         private _directive?: string,
-        private _directiveInvisible?: boolean,
         private _directiveArgs?: DirectiveArgs
     ) {
         if (Array.isArray(ctx)) {
@@ -132,7 +129,6 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
 
     protected addDirective<F extends AbstractFetcher<string, object, object>>(
         directive: string,
-        directiveInvisible: boolean,
         directiveArgs?: DirectiveArgs
     ): F {
         return this.createFetcher(
@@ -142,7 +138,6 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
             undefined,
             undefined,
             directive,
-            directiveInvisible,
             directiveArgs
         ) as F;
     }
@@ -154,7 +149,6 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         child?: AbstractFetcher<string, object, object>,
         optionsValue?: FieldOptionsValue,
         directive?: string,
-        directiveInvisible?: boolean,
         directiveArgs?: object
     ): AbstractFetcher<string, object, object>;
 
@@ -204,25 +198,14 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
     }
 
     get directiveMap(): ReadonlyMap<string, DirectiveArgs> {
-        return this.getDirectiveMap(false);
-    }
-
-    get invisibleDirectiveMap(): ReadonlyMap<string, DirectiveArgs> {
-        return this.getDirectiveMap(true);
-    }
-
-    private getDirectiveMap(invisible: boolean): ReadonlyMap<string, DirectiveArgs> {
-        let map = invisible ? this._invisibleDirectiveMap : this._directiveMap;
+        let map = this._directiveMap;
         if (map === undefined) {
-            const maps = this.getDirectiveMap0();
-            this._directiveMap = maps[0];
-            this._invisibleDirectiveMap = maps[1];
-            map = invisible ? this._invisibleDirectiveMap : this._directiveMap;
+            this._directiveMap = map = this._getDirectiveMap();
         }
         return map;
     }
 
-    private getDirectiveMap0(): [ReadonlyMap<string, DirectiveArgs>, ReadonlyMap<string, DirectiveArgs>] {
+    private _getDirectiveMap(): ReadonlyMap<string, DirectiveArgs> {
         
         const map = new Map<string, DirectiveArgs>();
         for (let fetcher: AbstractFetcher<string, object, object> | undefined = this; 
@@ -230,35 +213,34 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
             fetcher = fetcher._prev
         ) {
             if (fetcher._directive !== undefined) {
-                if (!fetcher._directiveInvisible) {
-                    if (!map.has(fetcher._directive)) {
-                        map.set(fetcher._directive, fetcher._directiveArgs);
-                    }
+                if (!map.has(fetcher._directive)) {
+                    map.set(fetcher._directive, fetcher._directiveArgs);
                 }
             }
         }
-
-        const invisibleMap = new Map<string, DirectiveArgs>();
-        for (let fetcher: AbstractFetcher<string, object, object> | undefined = this; 
-            fetcher !== undefined; 
-            fetcher = fetcher._prev
-        ) {
-            if (fetcher._directive !== undefined) {
-                if (fetcher._directiveInvisible) {
-                    if (map[fetcher._directive] !== undefined) {
-                        throw new Error(`'${fetcher._directive}' is used as both directive and invisible directive`);
-                    }
-                    if (!invisibleMap.has(fetcher._directive)) {
-                        invisibleMap.set(fetcher._directive, fetcher._directiveArgs);
-                    }
-                }
-            }
-        }
-        return [map, invisibleMap];
+        return map;
     }
 
     get variableTypeMap(): ReadonlyMap<string, string> {
         return this.result.variableTypeMap;
+    }
+
+    findField(fieldName: string): FetcherField | undefined {
+        const field = this.fieldMap.get(fieldName);
+        if (field !== undefined) {
+            return field;
+        }
+        for (const [fieldName, field] of this.fieldMap) {
+            if (fieldName.startsWith("...") && field.childFetchers !== undefined) {
+                for (const fragmentFetcher of field.childFetchers) {
+                    const deeperField = fragmentFetcher.findField(fieldName);
+                    if (deeperField !== undefined) {
+                        return deeperField;
+                    }
+                }
+            }
+        }
+        return undefined;
     }
 
     toString(): string {
@@ -343,7 +325,7 @@ export interface FetcherField {
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
 
-export abstract class FragmentWrapper<TFragmentName extends string, E extends string, T extends object, TVariables extends object> {
+export abstract class InvisibleFragment<TFragmentName extends string, E extends string, T extends object, TVariables extends object> {
 
     protected constructor(readonly name: TFragmentName, readonly fetcher: Fetcher<E, T, TVariables>) {}
 }

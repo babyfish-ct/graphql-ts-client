@@ -6,7 +6,7 @@
 
 import { ChangeEvent, FC, memo, useCallback } from "react";
 import { Select, MenuItem, FormControl, InputLabel, CircularProgress } from "@material-ui/core";
-import { department$$, query$ } from "../__generated/fetchers";
+import { department$$, departmentConnection$, departmentEdge$, query$ } from "../__generated/fetchers";
 import { execute } from "../__generated/Async";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -15,8 +15,12 @@ import { ModelType } from "graphql-ts-client-api";
 const DEPARTMENT_LIST_FETCHER = 
     query$
     .findDepartmentsLikeName(
-        department$$,
-        options => options.alias("departments")
+        departmentConnection$.edges(
+            departmentEdge$.node(
+                department$$
+            )
+        ),
+        options => options.alias("connection")
     );
 
 export const DepartmentSelector: FC<{
@@ -68,8 +72,8 @@ export const DepartmentSelector: FC<{
                     <em>Unspecified</em>
                 </MenuItem>
                 {
-                    data?.departments?.map(department =>
-                        <MenuItem key={department.id} value={department.id}>{department.name}</MenuItem>
+                    data?.connection?.edges?.map(edge =>
+                        <MenuItem key={edge.node.id} value={edge.node.id}>{edge.node.name}</MenuItem>
                     )
                 }
             </Select>

@@ -28,8 +28,6 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
 
 	directive(name: string, args?: DirectiveArgs): DepartmentFetcher<T, TVariables>;
 
-	invisibleDirective(name: string, args?: DirectiveArgs): DepartmentFetcher<T, TVariables>;
-
 
 	readonly __typename: DepartmentFetcher<T & {__typename: ImplementationType<'Department'>}, TVariables>;
 

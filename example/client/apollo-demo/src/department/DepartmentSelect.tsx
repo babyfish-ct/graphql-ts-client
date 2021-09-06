@@ -2,7 +2,7 @@ import { ChangeEvent, FC, memo, useCallback, useEffect } from "react";
 import { ERROR_CSS } from "../common/CssClasses";
 import { Loading } from "../common/Loading";
 import { useTypedQuery } from "../__generated";
-import { department$, query$ } from "../__generated/fetchers";
+import { department$, departmentConnection$, departmentEdge$, query$ } from "../__generated/fetchers";
 
 const DEPARTMENT_OTPITON_FETCHER = 
     department$
@@ -17,8 +17,12 @@ export const DepartmentSelect: FC<{
 
     const { loading, error, data } = useTypedQuery(
         query$.findDepartmentsLikeName( 
-            DEPARTMENT_OTPITON_FETCHER,
-            options => options.alias("options")
+            departmentConnection$.edges(
+                departmentEdge$.node(
+                    DEPARTMENT_OTPITON_FETCHER
+                )
+            ),
+            options => options.alias("optionConnection")
         )
     );
 
@@ -28,8 +32,8 @@ export const DepartmentSelect: FC<{
     }, [onChange]);
 
     useEffect(() => {
-        if (!optional && value === undefined && data !== undefined && data.options.length > 0) {
-            onChange(data.options[0].id);
+        if (!optional && value === undefined && data !== undefined && data.optionConnection.edges.length > 0) {
+            onChange(data.optionConnection.edges[0].node.id);
         }
     }, [optional, value, data, onChange]);
 
@@ -42,8 +46,8 @@ export const DepartmentSelect: FC<{
                 <select value={value ?? ''} onChange={onSelectChange}>
                     { optional && <option value="">--Unspeified--</option>}
                     {
-                        data.options.map(option => 
-                            <option key={option.id} value={option.id}>{option.name}</option>
+                        data.optionConnection.edges.map(edge => 
+                            <option key={edge.node.id} value={edge.node.id}>{edge.node.name}</option>
                         )
                     }
                 </select>

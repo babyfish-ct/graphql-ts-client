@@ -15,8 +15,6 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 
 	directive(name: string, args?: DirectiveArgs): MutationFetcher<T, TVariables>;
 
-	invisibleDirective(name: string, args?: DirectiveArgs): MutationFetcher<T, TVariables>;
-
 
 	mergeDepartment<
 		X extends object, 
