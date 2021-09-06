@@ -22,7 +22,8 @@ Goto the root dir of your app, execute
 yarn add \
     react-relay @types/react-relay \
     relay-runtime @types/relay-runtime \
-    graphql-ts-client-api graphql-ts-client-relay
+    graphql-ts-client-api \
+    graphql-ts-client-relay
 
 yarn add graphql-ts-client-codegen --dev
 ``` 
