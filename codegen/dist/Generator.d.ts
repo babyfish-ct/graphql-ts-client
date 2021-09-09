@@ -33,4 +33,4 @@ export declare abstract class Generator {
     protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
 }
 export declare function createStreamAndLog(path: string): WriteStream;
-export declare function awaitStream(stream: WriteStream): Promise<any>;
+export declare function closeStream(stream: WriteStream): Promise<any>;

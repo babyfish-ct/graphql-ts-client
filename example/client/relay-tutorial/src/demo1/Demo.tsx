@@ -25,7 +25,7 @@ export const Demo: FC = memo(() => {
         );
     }, [loadQuery, variables]);
 
-    const onIncludeDepartentChagne = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const onIncludeDepartentChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const newVariables: QueryVariablesOf<typeof DEMO1_EMPLOYEE_LIST_QUERY> = {...variables, includeDepartment: e.target.checked};
         setVariables(newVariables);
         loadQuery(
@@ -55,7 +55,7 @@ export const Demo: FC = memo(() => {
                 </div>
                 <div>
                     <div className="label">Include department</div>
-                    <div><input type="checkbox" value={variables.includeDepartment} onChange={onIncludeDepartentChagne}/></div>
+                    <div><input type="checkbox" value={variables.includeDepartment} onChange={onIncludeDepartentChange}/></div>
                 </div>
             </div>
             <Suspense fallback={<div>Loading employee list...</div>}>

@@ -30,7 +30,7 @@ class RelayGenerator extends Generator_1.Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Relay.ts"));
             new RelayWriter_1.RelayWriter(schema, stream, this.config).write();
-            yield Generator_1.awaitStream(stream);
+            yield Generator_1.closeStream(stream);
         });
     }
     writeIndexCode(stream, schema) {
@@ -48,7 +48,7 @@ exports.RelayGenerator = RelayGenerator;
 const EXPORT_RELAY_TYPES_CODE = `export type {
     PreloadedQueryOf, 
     OperationOf, 
-    QueryResponseOf, 
+    OperationResponseOf, 
     QueryVariablesOf, 
     FragmentDataOf, 
     FragmentKeyOf, 

@@ -12,7 +12,7 @@ import { WriteStream } from "fs";
 import { GraphQLField, GraphQLSchema } from "graphql";
 import { join } from "path";
 import { associatedTypeOf } from "../Utils";
-import { awaitStream, createStreamAndLog, Generator } from "../Generator";
+import { closeStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 
 export class ApolloGenerator extends Generator {
@@ -31,7 +31,7 @@ export class ApolloGenerator extends Generator {
             join(this.config.targetDir, "Apollo.tsx")
         );
         stream.write(APOLLO_CODE);
-        await awaitStream(stream);
+        await closeStream(stream);
     }
 
     private async generateDependencyManager() {
@@ -39,7 +39,7 @@ export class ApolloGenerator extends Generator {
             join(this.config.targetDir, "DependencyManager.tsx")
         );
         stream.write(DEPENDENCY_MANAGER_CODE);
-        await awaitStream(stream);
+        await closeStream(stream);
     }
 
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {

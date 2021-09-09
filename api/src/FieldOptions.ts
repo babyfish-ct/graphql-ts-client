@@ -22,6 +22,8 @@ export interface FieldOptions<
     >;
 
     readonly value: FieldOptionsValue;
+
+    " $supressWarnings"(alias: TAlias, directives: TDirectives, directiveVariables: TDirectiveVaraibles): void;
 }
 
 class FieldOptionsImpl<
@@ -86,6 +88,10 @@ class FieldOptionsImpl<
             }
         }
         return { alias, directives };
+    }
+
+    " $supressWarnings"(alias: TAlias, directives: TDirectives, directiveVariables: TDirectiveVaraibles): void {
+        throw new Error('" $supressWarnings" is unsupported');
     }
 }
 

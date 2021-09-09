@@ -38,6 +38,9 @@ class FieldOptionsImpl {
         }
         return { alias, directives };
     }
+    " $supressWarnings"(alias, directives, directiveVariables) {
+        throw new Error('" $supressWarnings" is unsupported');
+    }
 }
 function createFieldOptions() {
     return new FieldOptionsImpl();

@@ -192,7 +192,7 @@ export abstract class Generator {
             join(this.config.targetDir, "CommonTypes.ts")
         );
         new CommonTypesWriter(schema, inheritanceInfo, stream, this.config).write();
-        await stream.end();
+        await closeStream(stream);
     }
 
     private async writeSimpleIndex(dir: string, types: GraphQLNamedType[]) {
@@ -242,7 +242,7 @@ export abstract class Generator {
     private async writeIndex(schema: GraphQLSchema) {
         const stream = createStreamAndLog(join(this.config.targetDir, "index.ts"));
         this.writeIndexCode(stream, schema);
-        await awaitStream(stream);
+        await closeStream(stream);
     }
 
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
@@ -256,7 +256,7 @@ export function createStreamAndLog(path: string): WriteStream {
     return createWriteStream(path);
 }
 
-export async function awaitStream(stream: WriteStream) {
+export async function closeStream(stream: WriteStream) {
     return await(promisify(stream.end).call(stream));
 }
 

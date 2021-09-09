@@ -9,7 +9,7 @@
  */
 
 import { GraphQLField, GraphQLSchema } from "graphql";
-import { awaitStream, createStreamAndLog, Generator } from "../Generator";
+import { closeStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { join } from "path";
 import { WriteStream } from "fs";
@@ -29,7 +29,7 @@ export class AsyncGenerator extends Generator {
             join(this.config.targetDir, "Async.ts")
         );
         stream.write(ASYNC_CODE);
-        await awaitStream(stream);
+        await closeStream(stream);
     }
 
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
