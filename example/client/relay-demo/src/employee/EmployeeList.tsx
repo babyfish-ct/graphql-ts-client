@@ -1,5 +1,5 @@
 import { css } from "@emotion/css";
-import { Space, Form, Input, Button, Spin, List } from "antd";
+import { Space, Form, Input, Button, Spin, List, Row, Col } from "antd";
 import produce from "immer";
 import { ChangeEvent, Suspense, useCallback } from "react";
 import { useState } from "react";
@@ -9,11 +9,13 @@ import { BusinessArgs } from "../common/BusinessArgs";
 import { DEFAULT_PAGE_SIZE } from "../common/Constants";
 import { environment, WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { FULL_WIDTH } from "../common/Styles";
+import { DepartmentSelect } from "../department/DepartmentSelect";
 import { createTypedFragment, createTypedQuery, FragmentKeyOf, loadTypedQuery, useTypedPaginationFragment, useTypedPreloadedQuery } from "../__generated";
 import { employee$, employeeConnection$, employeeEdge$, query$ } from "../__generated/fetchers";
 import { QueryArgs } from "../__generated/fetchers/QueryFetcher";
 import { EmployeeDialog } from "./EmployeeDialog";
 import { EmployeeRow, EMPLOYEE_ROW_FRAGEMENT } from "./EmployeeRow";
+import { EmployeeSelect } from "./EmployeeSelect";
 
 export const CONNECTION_KEY_ROOT_EMPLOYEE_LIST = "RootEmployee_list";
 
@@ -64,6 +66,18 @@ export const EmployeeList: FC = memo(() => {
         }));
     }, []);
 
+    const onDepartmentIdChange = useCallback(departmentId => {
+        setArgs(old => produce(old, draft => {
+            draft.departmentId = departmentId;
+        }));
+    }, []);
+
+    const onSupvervisorIdChagne = useCallback(supervisorId => {
+        setArgs(old => produce(old, draft => {
+            draft.supervisorId = supervisorId;
+        }));
+    }, []);
+
     const onRefreshClick = useCallback(() => {
         setArgs(old => produce(old, draft => {
             draft.refresh++;
@@ -81,15 +95,25 @@ export const EmployeeList: FC = memo(() => {
     return (
         <>
             <Space direction="vertical" className={FULL_WIDTH}>
-                <Form layout="inline" className={css({margin: "1rem"})}>
+                <Form labelCol={{span: 8}} wrapperCol={{span: 16}} className={css({margin: "1rem"})}>
                     <Form.Item label="Name">
-                        <Input name={args.name} onChange={onNameChange}/>
+                        <Input value={args.name} onChange={onNameChange}/>
+                    </Form.Item>
+                    <Form.Item label="Department">
+                        <DepartmentSelect optional value={args.departmentId} onChange={onDepartmentIdChange}/>
+                    </Form.Item>
+                    <Form.Item label="Supervisor">
+                        <EmployeeSelect optional value={args.supervisorId} onChange={onSupvervisorIdChagne}/>
                     </Form.Item>
                     <Form.Item>
-                        <Button onClick={onRefreshClick}>Refresh</Button>
-                    </Form.Item>
-                    <Form.Item>
-                        <Button onClick={onAddEmployeeClick}>Add Employee...</Button>
+                        <Row>
+                            <Col offset={8} span={16}>
+                                <Space>
+                                    <Button onClick={onRefreshClick}>Refresh</Button>
+                                    <Button onClick={onAddEmployeeClick}>Add Employee...</Button>
+                                </Space>
+                            </Col>
+                        </Row>
                     </Form.Item>
                 </Form>
                 <Suspense fallback={<Spin tip="Refetch employees..."/>}>

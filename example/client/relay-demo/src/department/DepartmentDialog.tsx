@@ -8,10 +8,11 @@ import { ConnectionHandler, RecordSourceSelectorProxy } from "relay-runtime";
 import UUIDClass from "uuidjs";
 import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { OperationResponseOf, useTypedMutation } from "../__generated";
-import { department$$, departmentEdge$, mutation$ } from "../__generated/fetchers";
+import { department$, department$$, departmentEdge$, employee$, mutation$ } from "../__generated/fetchers";
 import { DepartmentInput } from "../__generated/inputs";
 import { createTypedMutation, getConnection } from "../__generated/Relay";
 import { CONNECTION_KEY_ROOT_DEPARTMENT_LIST } from "./DepartmentList";
+import { CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS } from "./DepartmentSelect";
 
 export const DEPARTMENT_EDITING_INFO = department$$;
 
@@ -20,6 +21,11 @@ const DEPARTMENT_MERGE_MUTATION = createTypedMutation(
     mutation$
     .mergeDepartment(
         DEPARTMENT_EDITING_INFO
+        .on( // Use inline-fragment to add "employees" because DepartemntList requires it
+            department$.employees(
+                employee$.id.firstName.lastName
+            )
+        )
     ) 
     /*
      * The field 'mergeDepartment' has arguments(implicitly here), @appendNode cannot work with it. 
@@ -34,7 +40,7 @@ export const DepartemntDialog: FC<{
 
     const [form] = useForm<Partial<DepartmentInput>>();
 
-    const [mutate, mutating] = useTypedMutation(DEPARTMENT_MERGE_MUTATION);
+    const [merge, merging] = useTypedMutation(DEPARTMENT_MERGE_MUTATION);
     
     useEffect(() => {
         if (value === undefined) {
@@ -54,13 +60,13 @@ export const DepartemntDialog: FC<{
     const onOk = useCallback(async () => {
         let input: DepartmentInput;
         try {
-            input = (await form.validateFields()) as DepartmentInput;
+            input = await form.validateFields() as DepartmentInput;
         } catch (ex) {
             console.log("DepartmentDialog validation error");
             return;
         }
         
-        mutate({
+        merge({
             variables: { 
                 input,
             },
@@ -76,13 +82,14 @@ export const DepartemntDialog: FC<{
             optimisticResponse: {
                 mergeDepartment: {
                     id: input.id,
-                    name: input.name
+                    name: input.name,
+                    employees: []
                 }
             },
             optimisticUpdater: updater,
             updater
         });
-    }, [form, mutate, onClose, value, updater]);
+    }, [form, merge, onClose, value, updater]);
 
     const onCancel = useCallback(() => {
         onClose();
@@ -94,7 +101,7 @@ export const DepartemntDialog: FC<{
         title={`${value !== undefined ? 'Modify' : 'Create'} department`}
         onOk={onOk}
         onCancel={onCancel}
-        okButtonProps={{loading: mutating}}>
+        okButtonProps={{loading: merging}}>
             <Form form={form}>
                 <Form.Item name="id" hidden={true} preserve={true}/>
                 <Form.Item label="Name" name="name" rules={[{required: true, message: 'Name is required'}]}>
@@ -106,19 +113,23 @@ export const DepartemntDialog: FC<{
 });
 
 function sharedUpdater(store: RecordSourceSelectorProxy<OperationResponseOf<typeof DEPARTMENT_MERGE_MUTATION>>, createMode: boolean) {
-    const result = store.getRootField("mergeDepartment");
-    if (!result.getLinkedRecords("employes")) {
-        result.setLinkedRecords([], "employees");
-    }
     if (createMode) {
-        const connection = getConnection(store.getRoot(), { 
+        const newDpartmentRecord = store.getRootField("mergeDepartment");
+        const listConnection = getConnection(store.getRoot(), { 
             key: CONNECTION_KEY_ROOT_DEPARTMENT_LIST, 
             handler: WINDOW_PAGINATION_HANDLER 
         });
-        if (connection !== undefined) {
+        if (listConnection !== undefined) {
             ConnectionHandler.insertEdgeAfter(
-                connection,
-                ConnectionHandler.createEdge(store, connection, result, departmentEdge$.fetchableType.entityName)
+                listConnection,
+                ConnectionHandler.createEdge(store, listConnection, newDpartmentRecord, departmentEdge$.fetchableType.entityName)
+            );
+        }
+        const optionsConnection = getConnection(store.getRoot(), CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS);
+        if (optionsConnection !== undefined) {
+            ConnectionHandler.insertEdgeAfter(
+                optionsConnection,
+                ConnectionHandler.createEdge(store, optionsConnection, newDpartmentRecord, employee$.fetchableType.entityName)
             );
         }
     }

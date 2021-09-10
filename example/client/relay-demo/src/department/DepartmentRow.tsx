@@ -10,6 +10,7 @@ import { createTypedFragment, createTypedMutation, getConnectionID } from "../__
 import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { department$$, employee$, mutation$ } from "../__generated/fetchers";
 import { CONNECTION_KEY_ROOT_DEPARTMENT_LIST } from "./DepartmentList";
+import { CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS } from "./DepartmentSelect";
 
 export const DEPARTMENT_ROW_FRAGMENT = createTypedFragment(
     "DepartmentRowFragment",
@@ -30,7 +31,6 @@ const DEPARTMENT_DELETE_MUTATION = createTypedMutation(
         options => options.directive("deleteEdge", { "connections": ParameterRef.of("connections", "[ID!]!")})
     )
 );
-
 
 export const DepartmentRow: FC<{
     row: FragmentKeyOf<typeof DEPARTMENT_ROW_FRAGMENT>
@@ -62,6 +62,9 @@ export const DepartmentRow: FC<{
                             getConnectionID("client:root", {
                                 key: CONNECTION_KEY_ROOT_DEPARTMENT_LIST,
                                 handler: WINDOW_PAGINATION_HANDLER
+                            }),
+                            getConnectionID("client:root", {
+                                key: CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS
                             })
                         ]
                     },

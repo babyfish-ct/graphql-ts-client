@@ -6,6 +6,8 @@ import { NO_DATA } from "../common/Styles";
 import { createTypedQuery, loadTypedQuery, useTypedPreloadedQuery } from "../__generated";
 import { employee$, employeeConnection$, employeeEdge$, query$ } from "../__generated/fetchers";
 
+export const CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS = "RootEmployee_options";
+
 const EMPLOYEE_OPTIONS_QUERY = createTypedQuery(
     "EmployeeOptionsQuery",
     query$
@@ -18,7 +20,9 @@ const EMPLOYEE_OPTIONS_QUERY = createTypedQuery(
                 .lastName
             )
         ),
-        options => options.alias("options")
+        options => options
+        .alias("options") // Match "RootDepartment_options"
+        .directive("connection", { key: CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS})
     )
 );
 
@@ -38,7 +42,7 @@ export const EmployeeSelect: FC<{
 
     const onSelectChange = useCallback((v: string) => {
         if (onChange !== undefined) {
-            const selectedValue = v !== "" ? v : "";
+            const selectedValue = v !== "" ? v : undefined;
             if (value !== selectedValue) {
                 onChange(selectedValue);
             }

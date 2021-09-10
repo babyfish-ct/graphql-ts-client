@@ -223,18 +223,25 @@ class ResultContext {
         var _a, _b;
         const t = this.writer.text.bind(this.writer);
         for (const [fieldName, field] of fetcher.fieldMap) {
-            const alias = (_a = field.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;
-            if (alias !== undefined && alias !== "" && alias !== fieldName) {
-                t(`${alias}: `);
+            if (fieldName !== "...") { // Inline fragment
+                const alias = (_a = field.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;
+                if (alias !== undefined && alias !== "" && alias !== fieldName) {
+                    t(`${alias}: `);
+                }
+                t(fieldName);
+                if (field.argGraphQLTypes !== undefined) {
+                    this.acceptArgs(field.args, field.argGraphQLTypes);
+                }
+                this.acceptDirectives((_b = field.fieldOptionsValue) === null || _b === void 0 ? void 0 : _b.directives);
             }
-            t(fieldName);
-            if (field.argGraphQLTypes !== undefined) {
-                this.acceptArgs(field.args, field.argGraphQLTypes);
-            }
-            this.acceptDirectives((_b = field.fieldOptionsValue) === null || _b === void 0 ? void 0 : _b.directives);
             const childFetchers = field.childFetchers;
             if (childFetchers !== undefined && childFetchers.length !== 0) {
-                if (fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
+                if (fieldName === "...") {
+                    for (const childFetcher of childFetchers) {
+                        this.accept(childFetcher);
+                    }
+                }
+                else if (fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
                     const fragmentName = fieldName.substring("...".length).trim();
                     const oldFragment = this.namedFragmentMap.get(fragmentName);
                     for (const childFetcher of childFetchers) {

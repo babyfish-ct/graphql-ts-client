@@ -1,12 +1,17 @@
-import { Button, Col, Row, Space, Tag } from "antd";
+import { Button, Col, Row, Space, Tag, Modal } from "antd";
 import { FC } from "react";
 import { useCallback } from "react";
 import { useState } from "react";
 import { memo } from "react";
+import { ParameterRef } from "graphql-ts-client-api";
+import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { FULL_WIDTH, LABEL, NO_DATA } from "../common/Styles";
-import { createTypedFragment, FragmentKeyOf, useTypedFragment } from "../__generated";
-import { department$$, employee$, employee$$ } from "../__generated/fetchers";
+import { createTypedFragment, createTypedMutation, FragmentKeyOf, useTypedFragment, useTypedMutation } from "../__generated";
+import { department$$, employee$, employee$$, mutation$ } from "../__generated/fetchers";
 import { EmployeeDialog } from "./EmployeeDialog";
+import { CONNECTION_KEY_ROOT_EMPLOYEE_LIST } from "./EmployeeList";
+import { getConnectionID } from "../__generated/Relay";
+import { CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS } from "./EmployeeSelect";
 
 export const EMPLOYEE_ROW_FRAGEMENT = createTypedFragment(
     "EmployeeRowFragment",
@@ -28,17 +33,51 @@ export const EMPLOYEE_ROW_FRAGEMENT = createTypedFragment(
     )
 );
 
+const EMPLOYEE_DELETE_MUTATION = createTypedMutation(
+    "EmployeeDeleteMutation",
+    mutation$
+    .deleteEmployee(
+        options => options.directive("deleteEdge", { connections: ParameterRef.of("connections", "[ID!]!") })
+    )
+);
+
 export const EmployeeRow: FC<{
     row: FragmentKeyOf<typeof EMPLOYEE_ROW_FRAGEMENT>
 }> = memo(({row}) => {
 
     const data = useTypedFragment(EMPLOYEE_ROW_FRAGEMENT, row);
 
+    const [remove, removing] = useTypedMutation(EMPLOYEE_DELETE_MUTATION);
+
     const [dialog, setDialog] = useState(false);
 
     const onEditClick = useCallback(() => {
         setDialog(true);
     }, []);
+
+    const onDeleteClick = useCallback(() => {
+        Modal.confirm({
+            title: "Are your sure",
+            content: `Are you sure to delete the employee '${data.firstName} ${data.lastName}'`,
+            onOk: () => {
+                remove({
+                    variables: { 
+                        id: data.id,
+                        connections: [
+                            getConnectionID("client:root", {
+                                key: CONNECTION_KEY_ROOT_EMPLOYEE_LIST,
+                                handler: WINDOW_PAGINATION_HANDLER
+                            }),
+                            getConnectionID("client:root", CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS)
+                        ]
+                    },
+                    optimisticResponse: {
+                        deleteEmployee: data.id
+                    }
+                })
+            }
+        });
+    }, [data]);
 
     const onDialogClose = useCallback(() => {
         setDialog(false);
@@ -101,7 +140,7 @@ export const EmployeeRow: FC<{
                     <Col>
                         <Button.Group size="small">
                             <Button onClick={onEditClick}>Edit</Button>
-                            <Button>Delete</Button>
+                            <Button loading={removing} onClick={onDeleteClick}>Delete</Button>
                         </Button.Group>
                     </Col>
                 </Row>

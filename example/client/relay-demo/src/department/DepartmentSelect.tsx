@@ -6,6 +6,8 @@ import { NO_DATA } from "../common/Styles";
 import { createTypedQuery, loadTypedQuery, useTypedPreloadedQuery } from "../__generated";
 import { department$$, departmentConnection$, departmentEdge$, query$ } from "../__generated/fetchers";
 
+export const CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS = "RootDepartment_options";
+
 const DEPARTMENT_OPTIONS_QUERY = createTypedQuery(
     "DepartmentOptionsQuery",
     query$
@@ -15,7 +17,9 @@ const DEPARTMENT_OPTIONS_QUERY = createTypedQuery(
                 department$$
             )
         ),
-        options => options.alias("options")
+        options => options
+        .alias("options") // Match "RootDepartment_options"
+        .directive("connection", { key: CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS })
     )
 );
 
@@ -35,7 +39,7 @@ export const DepartmentSelect: FC<{
 
     const onSelectChange = useCallback((v: string) => {
         if (onChange !== undefined) {
-            const selectedValue = v !== "" ? v : "";
+            const selectedValue = v !== "" ? v : undefined;
             if (value !== selectedValue) {
                 onChange(selectedValue);
             }

@@ -83,7 +83,7 @@ export const DepartmentList: FC = memo(() => {
             <Space direction="vertical" className={FULL_WIDTH}>
                 <Form layout="inline" className={css({margin: "1rem"})}>
                     <Form.Item label="Name">
-                        <Input name={args.name} onChange={onNameChange}/>
+                        <Input value={args.name} onChange={onNameChange}/>
                     </Form.Item>
                     <Form.Item>
                         <Button onClick={onRefreshClick}>Refresh</Button>
