@@ -52,7 +52,13 @@ import {
     Disposable,
     Environment,
     FetchQueryFetchPolicy,
-    FragmentRefs
+    FragmentRefs,
+    ReadOnlyRecordProxy,
+    Variables,
+    RecordProxy,
+    DataID,
+    ConnectionHandler,
+    getRelayHandleKey
 } from "relay-runtime";
 import type { TypedOperation, TypedQuery, TypedMutation, TypedFragment } from 'graphql-ts-client-relay';
 import { RelayObservable } from "relay-runtime/lib/network/RelayObservable";
@@ -70,7 +76,7 @@ export { upcastTypes, downcastTypes } from './CommonTypes';
  *
  * PreloadedQueryOf
  * OperationOf
- * QueryResponseOf
+ * OperationResponseOf
  * QueryVariablesOf
  * FragmentDataOf
  * FragmentKeyOf
@@ -94,8 +100,8 @@ export type OperationOf<TTypedOperation> =
 	never
 ;
 
-export type QueryResponseOf<TTypedQuery> =
-    TTypedQuery extends TypedQuery<infer TResponse, any> ?
+export type OperationResponseOf<TTypedOperation> =
+    TTypedOperation extends TypedOperation<"Query" | "Mutation", infer TResponse, any> ?
     TResponse :
     never
 ;
@@ -175,6 +181,7 @@ TUnresolvedVariables extends object
 /*
  * - - - - - - - - - - - - - - - - - - - - 
  * loadTypedQuery
+ * fetchTypedQuery
  * useTypedQueryLoader
  * useTypedPreloadedQuery
  * useTypedLazyLoadQuery
@@ -335,6 +342,47 @@ export function useTypedPaginationFragment<TFragmentName extends string, TFetcha
             data: util.exceptNullValues(obj.data) as TData | undefined
         };
     }, [obj]);
+}
+
+/*
+ * - - - - - - - - - - - - - - - - - - - - 
+ * getConnection
+ * getConnectionID
+ * - - - - - - - - - - - - - - - - - - - - 
+ */
+export function getConnection(
+    record: ReadOnlyRecordProxy,
+    key: string | {
+        readonly key: string,
+        readonly handler?: string
+    },
+    filters?: Variables | null,
+): RecordProxy | undefined {
+    const connKey = typeof key === "string" ? key : key.key;
+    const connHandler = typeof key === "string" ? undefined : key.handler;
+    let connection: RecordProxy | null | undefined;
+    if (connHandler === undefined) {
+        connection = ConnectionHandler.getConnection(record, connKey, filters);
+    } else {
+        connection = record.getLinkedRecord(getRelayHandleKey(connHandler, connKey));
+    }
+    return connection !== null ? connection : undefined;
+}
+
+export function getConnectionID(
+    recordID: DataID,
+    key: string | {
+        readonly key: string,
+        readonly handler?: string
+    },
+    filters?: Variables | null,
+): DataID {
+    const connKey = typeof key === "string" ? key : key.key;
+    const connHandler = typeof key === "string" ? undefined : key.handler;
+    if (connHandler === undefined) {
+        return ConnectionHandler.getConnectionID(recordID, connKey, filters);
+    }
+    return \`\${recordID}:\${getRelayHandleKey(connHandler, connKey)}\`;
 }
 `;
 const STATIC_IDENT = "    ";

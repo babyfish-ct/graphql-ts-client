@@ -18,7 +18,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.awaitStream = exports.createStreamAndLog = exports.Generator = void 0;
+exports.closeStream = exports.createStreamAndLog = exports.Generator = void 0;
 const graphql_1 = require("graphql");
 const GeneratorConfig_1 = require("./GeneratorConfig");
 const fs_1 = require("fs");
@@ -168,7 +168,7 @@ class Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = createStreamAndLog(path_1.join(this.config.targetDir, "CommonTypes.ts"));
             new CommonTypesWriter_1.CommonTypesWriter(schema, inheritanceInfo, stream, this.config).write();
-            yield stream.end();
+            yield closeStream(stream);
         });
     }
     writeSimpleIndex(dir, types) {
@@ -221,7 +221,7 @@ class Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = createStreamAndLog(path_1.join(this.config.targetDir, "index.ts"));
             this.writeIndexCode(stream, schema);
-            yield awaitStream(stream);
+            yield closeStream(stream);
         });
     }
     writeIndexCode(stream, schema) {
@@ -237,12 +237,12 @@ function createStreamAndLog(path) {
     return fs_1.createWriteStream(path);
 }
 exports.createStreamAndLog = createStreamAndLog;
-function awaitStream(stream) {
+function closeStream(stream) {
     return __awaiter(this, void 0, void 0, function* () {
         return yield (util_1.promisify(stream.end).call(stream));
     });
 }
-exports.awaitStream = awaitStream;
+exports.closeStream = closeStream;
 const mkdirAsync = util_1.promisify(fs_1.mkdir);
 const rmdirAsync = util_1.promisify(fs_1.rmdir);
 const accessAsync = util_1.promisify(fs_1.access);

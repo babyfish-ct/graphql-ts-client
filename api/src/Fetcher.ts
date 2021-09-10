@@ -364,20 +364,25 @@ class ResultContext {
     accept(fetcher: Fetcher<string, object, object>) {
         
         const t = this.writer.text.bind(this.writer);
-
         for (const [fieldName, field] of fetcher.fieldMap) {
-            const alias = field.fieldOptionsValue?.alias;
-            if (alias !== undefined && alias !== "" && alias !== fieldName) {
-                t(`${alias}: `);
+            if (fieldName !== "...") { // Inline fragment
+                const alias = field.fieldOptionsValue?.alias;
+                if (alias !== undefined && alias !== "" && alias !== fieldName) {
+                    t(`${alias}: `);
+                }
+                t(fieldName);
+                if (field.argGraphQLTypes !== undefined) {
+                    this.acceptArgs(field.args, field.argGraphQLTypes);
+                }
+                this.acceptDirectives(field.fieldOptionsValue?.directives);
             }
-            t(fieldName);
-            if (field.argGraphQLTypes !== undefined) {
-                this.acceptArgs(field.args, field.argGraphQLTypes);
-            }
-            this.acceptDirectives(field.fieldOptionsValue?.directives);
             const childFetchers = field.childFetchers;
             if (childFetchers !== undefined && childFetchers.length !== 0) {
-                if (fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
+                if (fieldName === "...") {
+                    for (const childFetcher of childFetchers) {
+                        this.accept(childFetcher);
+                    }
+                } else if (fieldName.startsWith("...") && !fieldName.startsWith("... on ")) {
                     const fragmentName = fieldName.substring("...".length).trim();
                     const oldFragment = this.namedFragmentMap.get(fragmentName);
                     for (const childFetcher of childFetchers) {

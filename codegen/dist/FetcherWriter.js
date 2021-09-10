@@ -424,7 +424,7 @@ class FetcherWriter extends Writer_1.Writer {
             return;
         }
         const t = this.text.bind(this);
-        t(`\ninterface ${this.modelType.name}Args `);
+        t(`\nexport interface ${this.modelType.name}Args `);
         this.scope({ type: "BLOCK", multiLines: true }, () => {
             for (const fieldName in this.fieldMap) {
                 const field = this.fieldMap[fieldName];

@@ -2,7 +2,7 @@ import { WriteStream } from "fs";
 import { GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
 import { join } from "path";
 import { FetcherWriter } from "../FetcherWriter";
-import { awaitStream, createStreamAndLog, Generator } from "../Generator";
+import { closeStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { InheritanceInfo } from "../InheritanceInfo";
 import { RelayWriter } from "./RelayWriter";
@@ -37,7 +37,7 @@ export class RelayGenerator extends Generator {
             join(this.config.targetDir, "Relay.ts")
         );
         new RelayWriter(schema, stream, this.config).write();
-        await awaitStream(stream);
+        await closeStream(stream);
     }
 
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
@@ -50,7 +50,7 @@ export class RelayGenerator extends Generator {
 const EXPORT_RELAY_TYPES_CODE = `export type {
     PreloadedQueryOf, 
     OperationOf, 
-    QueryResponseOf, 
+    OperationResponseOf, 
     QueryVariablesOf, 
     FragmentDataOf, 
     FragmentKeyOf, 

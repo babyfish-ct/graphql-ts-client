@@ -8,6 +8,7 @@ export interface FieldOptions<TAlias extends string, TDirectives extends {
         readonly [key in XDirective]: XArgs;
     }, TDirectiveVaraibles & UnresolvedVariables<XArgs, Record<keyof XArgs, any>>>;
     readonly value: FieldOptionsValue;
+    " $supressWarnings"(alias: TAlias, directives: TDirectives, directiveVariables: TDirectiveVaraibles): void;
 }
 export interface FieldOptionsValue {
     readonly alias?: string;
