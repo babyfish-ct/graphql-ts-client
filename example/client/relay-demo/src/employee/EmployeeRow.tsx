@@ -12,6 +12,7 @@ import { EmployeeDialog } from "./EmployeeDialog";
 import { CONNECTION_KEY_ROOT_EMPLOYEE_LIST } from "./EmployeeList";
 import { getConnectionID } from "../__generated/Relay";
 import { CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS } from "./EmployeeSelect";
+import { Variables } from "relay-runtime";
 
 export const EMPLOYEE_ROW_FRAGEMENT = createTypedFragment(
     "EmployeeRowFragment",
@@ -42,8 +43,9 @@ const EMPLOYEE_DELETE_MUTATION = createTypedMutation(
 );
 
 export const EmployeeRow: FC<{
+    listFilter: Variables,
     row: FragmentKeyOf<typeof EMPLOYEE_ROW_FRAGEMENT>
-}> = memo(({row}) => {
+}> = memo(({listFilter, row}) => {
 
     const data = useTypedFragment(EMPLOYEE_ROW_FRAGEMENT, row);
 
@@ -64,10 +66,14 @@ export const EmployeeRow: FC<{
                     variables: { 
                         id: data.id,
                         connections: [
-                            getConnectionID("client:root", {
-                                key: CONNECTION_KEY_ROOT_EMPLOYEE_LIST,
-                                handler: WINDOW_PAGINATION_HANDLER
-                            }),
+                            getConnectionID(
+                                "client:root", 
+                                {
+                                    key: CONNECTION_KEY_ROOT_EMPLOYEE_LIST,
+                                    handler: WINDOW_PAGINATION_HANDLER
+                                },
+                                listFilter
+                            ),
                             getConnectionID("client:root", CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS)
                         ]
                     },
@@ -77,7 +83,7 @@ export const EmployeeRow: FC<{
                 })
             }
         });
-    }, [data]);
+    }, [data, remove, listFilter]);
 
     const onDialogClose = useCallback(() => {
         setDialog(false);
@@ -146,7 +152,7 @@ export const EmployeeRow: FC<{
                 </Row>
             </Space>
             {
-                dialog && <EmployeeDialog value={data} onClose={onDialogClose}/>
+                dialog && <EmployeeDialog listFilter={listFilter} value={data} onClose={onDialogClose}/>
             }
         </>
     );

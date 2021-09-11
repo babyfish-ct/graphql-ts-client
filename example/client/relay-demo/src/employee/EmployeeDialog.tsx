@@ -10,7 +10,7 @@ import UUIDClass from "uuidjs";
 import { DepartmentSelect } from "../department/DepartmentSelect";
 import { CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS, EmployeeSelect } from "./EmployeeSelect";
 import { createTypedMutation, OperationResponseOf, useTypedMutation } from "../__generated";
-import { ConnectionHandler, RecordSourceSelectorProxy } from "relay-runtime";
+import { ConnectionHandler, RecordSourceSelectorProxy, Variables } from "relay-runtime";
 import { getConnection } from "../__generated/Relay";
 import { CONNECTION_KEY_ROOT_EMPLOYEE_LIST } from "./EmployeeList";
 import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
@@ -42,9 +42,10 @@ const EMPLOYEE_MERGE_MUTATION = createTypedMutation(
 );
 
 export const EmployeeDialog: FC<{
+    listFilter: Variables,
     value?: ModelType<typeof EMPLOYEE_EDITING_INFO>,
     onClose: () => void
-}> = memo(({value, onClose}) => {
+}> = memo(({listFilter, value, onClose}) => {
 
     const [form] = useForm<Partial<EmployeeInput>>();
 
@@ -67,8 +68,8 @@ export const EmployeeDialog: FC<{
     }, [value, form]);
 
     const updater = useCallback((store: RecordSourceSelectorProxy<OperationResponseOf<typeof EMPLOYEE_MERGE_MUTATION>>) => {
-        sharedUpdater(store, value);
-    }, [value]);
+        sharedUpdater(store, listFilter, value);
+    }, [listFilter, value]);
 
     const onOk = useCallback(async () => {
         let input: EmployeeInput;
@@ -114,12 +115,12 @@ export const EmployeeDialog: FC<{
             <Form form={form} labelCol={{xs: 8}} wrapperCol={{xs: 16}}>
                 <Form.Item name="id" hidden={true}/>
                 <Form.Item name="firstName" label="First Name" rules={[{required: true, message: "Please input first name"}]}>
-                    <Input/>
+                    <Input  autoComplete="off"/>
                 </Form.Item>
                 <Form.Item name="lastName" label="Last Name" rules={[{required: true, message: "Please input last name"}]}>
-                    <Input/>
+                    <Input  autoComplete="off"/>
                 </Form.Item>
-                <Form.Item name="gender" label="Gender">
+                <Form.Item name="gender" label="Gender" rules={[{required: true, message: "Please choose gender"}]}>
                     <Select>
                         <Select.Option value="MALE">Male</Select.Option>
                         <Select.Option value="FEMALE">Female</Select.Option>
@@ -128,7 +129,7 @@ export const EmployeeDialog: FC<{
                 <Form.Item name="salary" label="Salary" rules={[{required: true, message: "Please input salary"}]}>
                     <InputNumber/>
                 </Form.Item>
-                <Form.Item name="departmentId" label="Department" rules={[{required: true, message: "Please choose a department"}]}>
+                <Form.Item name="departmentId" label="Department" rules={[{required: true, message: "Please choose department"}]}>
                     <DepartmentSelect/>
                 </Form.Item>
                 <Form.Item name="supervisorId" label="Supervisor">
@@ -141,15 +142,20 @@ export const EmployeeDialog: FC<{
 
 function sharedUpdater(
     store: RecordSourceSelectorProxy<OperationResponseOf<typeof EMPLOYEE_MERGE_MUTATION>>, 
-    oldEmployee?: ModelType<typeof EMPLOYEE_EDITING_INFO> 
+    listFilter: Variables,
+    oldEmployee?: ModelType<typeof EMPLOYEE_EDITING_INFO>
 ) {
     const newEmployeeRecord = store.getRootField("mergeEmployee");
     
     if (oldEmployee === undefined) { // Create new employee
-        const listConnection = getConnection(store.getRoot(), {
-            key: CONNECTION_KEY_ROOT_EMPLOYEE_LIST,
-            handler: WINDOW_PAGINATION_HANDLER
-        });
+        const listConnection = getConnection(
+            store.getRoot(), 
+            {
+                key: CONNECTION_KEY_ROOT_EMPLOYEE_LIST,
+                handler: WINDOW_PAGINATION_HANDLER
+            },
+            listFilter
+        );
         if (listConnection !== undefined) {
             ConnectionHandler.insertEdgeAfter(
                 listConnection,

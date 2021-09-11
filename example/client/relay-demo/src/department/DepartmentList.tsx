@@ -5,15 +5,13 @@ import { ChangeEvent, Suspense, useCallback } from "react";
 import { FC, memo } from "react";
 import { DEFAULT_PAGE_SIZE } from "../common/Constants";
 import { FULL_WIDTH } from "../common/Styles";
-import { createTypedFragment, createTypedQuery, FragmentKeyOf, loadTypedQuery, useTypedPaginationFragment, useTypedPreloadedQuery } from "../__generated";
-import { BusinessArgs } from "../common/BusinessArgs";
-import { query$, QueryArgs } from "../__generated/fetchers/QueryFetcher";
-import produce from "immer";
-import { useGetSet, useUpdateEffect } from "react-use";
+import { createTypedFragment, createTypedQuery, loadTypedQuery, PreloadedQueryOf, useTypedPaginationFragment, useTypedPreloadedQuery, useTypedQueryLoader, OperationVariablesOf } from "../__generated";
+import { query$ } from "../__generated/fetchers/QueryFetcher";
 import { DepartemntDialog } from "./DepartmentDialog";
 import { DepartmentRow, DEPARTMENT_ROW_FRAGMENT } from "./DepartmentRow";
 import { department$, departmentConnection$, departmentEdge$ } from "../__generated/fetchers";
 import { environment, WINDOW_PAGINATION_HANDLER } from "../common/Environment";
+import { BusinessArgs } from "../common/BusinessArgs";
 
 export const CONNECTION_KEY_ROOT_DEPARTMENT_LIST = "RootDepartment_list";
 
@@ -52,23 +50,19 @@ const DEPARRTMENT_LIST_INITIAL_QUERY_REFERENCE = loadTypedQuery(
 
 export const DepartmentList: FC = memo(() => {
 
-    const data = useTypedPreloadedQuery(DEPARTMENT_LIST_QUERY, DEPARRTMENT_LIST_INITIAL_QUERY_REFERENCE!);
+    const [queryReference, refetch] = useTypedQueryLoader(DEPARTMENT_LIST_QUERY, DEPARRTMENT_LIST_INITIAL_QUERY_REFERENCE);
 
-    const [args, setArgs] = useState<Args>({refresh: 0});
     const [dialog, setDialog] = useState(false);
-    
+
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        setArgs(old => produce(old, draft => {
-            draft.name = value !== "" ? value : undefined
-        }));
-    }, []);
+        const name = value !== "" ? value : undefined;
+        refetch({...queryReference!.variables, name}, {fetchPolicy: 'network-only'});
+    }, [refetch, queryReference]);
 
     const onRefreshClick = useCallback(() => {
-        setArgs(old => produce(old, draft => {
-            draft.refresh++;
-        }));
-    }, []);
+        refetch(queryReference!.variables, {fetchPolicy: 'network-only'});
+    }, [refetch, queryReference]);
 
     const onAddDepartmentClick = useCallback(() => {
         setDialog(true);
@@ -83,7 +77,7 @@ export const DepartmentList: FC = memo(() => {
             <Space direction="vertical" className={FULL_WIDTH}>
                 <Form layout="inline" className={css({margin: "1rem"})}>
                     <Form.Item label="Name">
-                        <Input value={args.name} onChange={onNameChange}/>
+                        <Input value={queryReference?.variables?.name} onChange={onNameChange}/>
                     </Form.Item>
                     <Form.Item>
                         <Button onClick={onRefreshClick}>Refresh</Button>
@@ -93,21 +87,22 @@ export const DepartmentList: FC = memo(() => {
                     </Form.Item>
                 </Form>
                 <Suspense fallback={<Spin tip="Refetch departments..."/>}>
-                    <DepartmentListImpl args={args} list={data}/>
+                    <DepartmentPagination queryReference={queryReference!}/>
                 </Suspense>
             </Space>
             {
                 dialog &&
-                <DepartemntDialog onClose={onDialogClose}/>
+                <DepartemntDialog listFilter={extractBusinessArgs(queryReference!)} onClose={onDialogClose}/>
             }
         </>
     );
 });
 
-const DepartmentListImpl:FC<{
-    args: Args,
-    list: FragmentKeyOf<typeof DEPARTMENT_LIST_FRAGMENT>
-}> = memo(({args, list}) => {
+const DepartmentPagination:FC<{
+    queryReference: PreloadedQueryOf<typeof DEPARTMENT_LIST_QUERY>
+}> = memo(({queryReference}) => {
+
+    const list = useTypedPreloadedQuery(DEPARTMENT_LIST_QUERY, queryReference);
 
     /* 
      * Relay temporarily does not support to display rows of current page. Please see 
@@ -117,15 +112,8 @@ const DepartmentListImpl:FC<{
      * So "useTypedRefetchableFragment" is used here, not "useTypedPaginationFragment"
      */
     const { 
-        data, refetch, loadNext, loadPrevious, hasNext, hasPrevious, isLoadingNext, isLoadingPrevious 
+        data, loadNext, loadPrevious, hasNext, hasPrevious, isLoadingNext, isLoadingPrevious 
     } = useTypedPaginationFragment(DEPARTMENT_LIST_FRAGMENT, list);
-
-    const [getRefresh, setRefresh] = useGetSet(0);
-
-    useUpdateEffect(() => {
-        refetch(args, {fetchPolicy: getRefresh() !== args.refresh ? 'network-only' : undefined});
-        setRefresh(args.refresh);
-    }, [refetch, args, getRefresh, setRefresh]);
 
     const onPreviousPageClick = useCallback(() => {
         loadPrevious(DEFAULT_PAGE_SIZE);
@@ -141,7 +129,7 @@ const DepartmentListImpl:FC<{
                 {
                     data.list.edges.map(edge => 
                     <List.Item key={edge.node.id}>
-                        <DepartmentRow row={edge.node}/>
+                        <DepartmentRow listFilter={extractBusinessArgs(queryReference)} row={edge.node}/>
                     </List.Item>
                     )
                 }
@@ -166,6 +154,10 @@ const DepartmentListImpl:FC<{
     );
 });
 
-interface Args extends BusinessArgs<QueryArgs["findDepartmentsLikeName"]> {
-    readonly refresh: number;
+function extractBusinessArgs(
+    queryReference: PreloadedQueryOf<typeof DEPARTMENT_LIST_QUERY>
+): BusinessArgs<OperationVariablesOf<typeof DEPARTMENT_LIST_QUERY>> {
+    return {
+        name: queryReference.variables.name
+    };
 }

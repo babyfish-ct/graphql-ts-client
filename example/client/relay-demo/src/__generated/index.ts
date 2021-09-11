@@ -2,7 +2,7 @@ export type {
     PreloadedQueryOf, 
     OperationOf, 
     OperationResponseOf, 
-    QueryVariablesOf, 
+    OperationVariablesOf, 
     FragmentDataOf, 
     FragmentKeyOf, 
     OperationType,

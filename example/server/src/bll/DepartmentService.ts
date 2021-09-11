@@ -66,7 +66,7 @@ export class DepartmentService {
 
     @Mutation(() => ID)
     async deleteDepartment(
-        @Arg("id", () => ID) id: string
+        @Arg("id", () => ID, {nullable: true}) id: string
     ): Promise<string | undefined> {
         
         /*

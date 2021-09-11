@@ -11,6 +11,7 @@ import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { department$$, employee$, mutation$ } from "../__generated/fetchers";
 import { CONNECTION_KEY_ROOT_DEPARTMENT_LIST } from "./DepartmentList";
 import { CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS } from "./DepartmentSelect";
+import { Variables } from "react-relay";
 
 export const DEPARTMENT_ROW_FRAGMENT = createTypedFragment(
     "DepartmentRowFragment",
@@ -33,8 +34,9 @@ const DEPARTMENT_DELETE_MUTATION = createTypedMutation(
 );
 
 export const DepartmentRow: FC<{
+    listFilter: Variables,
     row: FragmentKeyOf<typeof DEPARTMENT_ROW_FRAGMENT>
-}> = memo(({row}) => {
+}> = memo(({listFilter, row}) => {
 
     const data = useTypedFragment(DEPARTMENT_ROW_FRAGMENT, row);
 
@@ -59,13 +61,15 @@ export const DepartmentRow: FC<{
                     variables: {
                         id: data.id,
                         connections: [
-                            getConnectionID("client:root", {
-                                key: CONNECTION_KEY_ROOT_DEPARTMENT_LIST,
-                                handler: WINDOW_PAGINATION_HANDLER
-                            }),
-                            getConnectionID("client:root", {
-                                key: CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS
-                            })
+                            getConnectionID(
+                                "client:root", 
+                                {
+                                    key: CONNECTION_KEY_ROOT_DEPARTMENT_LIST,
+                                    handler: WINDOW_PAGINATION_HANDLER
+                                },
+                                listFilter
+                            ),
+                            getConnectionID("client:root", CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS)
                         ]
                     },
                     optimisticResponse: {
@@ -74,7 +78,7 @@ export const DepartmentRow: FC<{
                 });
             }
         });
-    }, [data, remove]);
+    }, [data, remove, listFilter]);
 
     return (
         <>
@@ -116,7 +120,7 @@ export const DepartmentRow: FC<{
             </Space>
             {
                 dialog &&
-                <DepartemntDialog value={data} onClose={onDialogClose}/>
+                <DepartemntDialog listFilter={listFilter} value={data} onClose={onDialogClose}/>
             }
         </>
     );
