@@ -1,18 +1,15 @@
 import { css } from "@emotion/css";
 import { Space, Form, Input, Button, Spin, List, Row, Col } from "antd";
-import produce from "immer";
 import { ChangeEvent, Suspense, useCallback } from "react";
 import { useState } from "react";
 import { FC, memo } from "react";
-import { useGetSet, useUpdateEffect } from "react-use";
 import { BusinessArgs } from "../common/BusinessArgs";
 import { DEFAULT_PAGE_SIZE } from "../common/Constants";
 import { environment, WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { FULL_WIDTH } from "../common/Styles";
 import { DepartmentSelect } from "../department/DepartmentSelect";
-import { createTypedFragment, createTypedQuery, FragmentKeyOf, loadTypedQuery, useTypedPaginationFragment, useTypedPreloadedQuery } from "../__generated";
+import { createTypedFragment, createTypedQuery, loadTypedQuery, PreloadedQueryOf, useTypedPaginationFragment, useTypedPreloadedQuery, useTypedQueryLoader, OperationVariablesOf } from "../__generated";
 import { employee$, employeeConnection$, employeeEdge$, query$ } from "../__generated/fetchers";
-import { QueryArgs } from "../__generated/fetchers/QueryFetcher";
 import { EmployeeDialog } from "./EmployeeDialog";
 import { EmployeeRow, EMPLOYEE_ROW_FRAGEMENT } from "./EmployeeRow";
 import { EmployeeSelect } from "./EmployeeSelect";
@@ -55,34 +52,26 @@ const EMPLOYEE_LIST_INITIAL_QUERY_REFERENCE = loadTypedQuery(
 
 export const EmployeeList: FC = memo(() => {
 
-    const list = useTypedPreloadedQuery(EMPLOYEE_LIST_QUERY, EMPLOYEE_LIST_INITIAL_QUERY_REFERENCE);
-    const [args, setArgs] = useState<Args>({refresh: 0});
+    const [queryReference, refetch] = useTypedQueryLoader(EMPLOYEE_LIST_QUERY, EMPLOYEE_LIST_INITIAL_QUERY_REFERENCE);
     const [dialog, setDialog] = useState(false);
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
-        setArgs(old => produce(old, draft => {
-            draft.name = value !== "" ? value : undefined;
-        }));
-    }, []);
+        const name = value !== "" ? value : undefined;
+        refetch({...queryReference!.variables, name}, {fetchPolicy: "network-only"});
+    }, [refetch, queryReference]);
 
     const onDepartmentIdChange = useCallback(departmentId => {
-        setArgs(old => produce(old, draft => {
-            draft.departmentId = departmentId;
-        }));
-    }, []);
+        refetch({...queryReference!.variables, departmentId}, {fetchPolicy: "network-only"});
+    }, [refetch, queryReference]);
 
     const onSupvervisorIdChagne = useCallback(supervisorId => {
-        setArgs(old => produce(old, draft => {
-            draft.supervisorId = supervisorId;
-        }));
-    }, []);
+        refetch({...queryReference!.variables, supervisorId}, {fetchPolicy: "network-only"});
+    }, [refetch, queryReference]);
 
     const onRefreshClick = useCallback(() => {
-        setArgs(old => produce(old, draft => {
-            draft.refresh++;
-        }))
-    }, []);
+        refetch(queryReference!.variables, {fetchPolicy: "network-only"});
+    }, [refetch, queryReference]);
 
     const onAddEmployeeClick = useCallback(() => {
         setDialog(true);
@@ -97,13 +86,13 @@ export const EmployeeList: FC = memo(() => {
             <Space direction="vertical" className={FULL_WIDTH}>
                 <Form labelCol={{span: 8}} wrapperCol={{span: 16}} className={css({margin: "1rem"})}>
                     <Form.Item label="Name">
-                        <Input value={args.name} onChange={onNameChange}/>
+                        <Input value={queryReference?.variables?.name} onChange={onNameChange}/>
                     </Form.Item>
                     <Form.Item label="Department">
-                        <DepartmentSelect optional value={args.departmentId} onChange={onDepartmentIdChange}/>
+                        <DepartmentSelect optional value={queryReference?.variables?.departmentId} onChange={onDepartmentIdChange}/>
                     </Form.Item>
                     <Form.Item label="Supervisor">
-                        <EmployeeSelect optional value={args.supervisorId} onChange={onSupvervisorIdChagne}/>
+                        <EmployeeSelect optional value={queryReference?.variables?.supervisorId} onChange={onSupvervisorIdChagne}/>
                     </Form.Item>
                     <Form.Item>
                         <Row>
@@ -117,31 +106,25 @@ export const EmployeeList: FC = memo(() => {
                     </Form.Item>
                 </Form>
                 <Suspense fallback={<Spin tip="Refetch employees..."/>}>
-                    <EmployeeListImpl args={args} list={list}/>
+                    <EmployeeListImpl queryReference={queryReference!}/>
                 </Suspense>
             </Space>
             {
-                dialog && <EmployeeDialog onClose={onDialogClose}/>
+                dialog && <EmployeeDialog listFilter={extractBusinessArgs(queryReference!)} onClose={onDialogClose}/>
             }
         </>
     );
 });
 
 const EmployeeListImpl: FC<{
-    args: Args,
-    list: FragmentKeyOf<typeof EMPLOYEE_LIST_FRAGMENT>
-}> = memo(({args, list}) => {
+    queryReference: PreloadedQueryOf<typeof EMPLOYEE_LIST_QUERY>
+}> = memo(({queryReference}) => {
+
+    const list = useTypedPreloadedQuery(EMPLOYEE_LIST_QUERY, queryReference);
 
     const { 
-        data, refetch, hasPrevious, hasNext, loadPrevious, loadNext, isLoadingPrevious, isLoadingNext 
+        data, hasPrevious, hasNext, loadPrevious, loadNext, isLoadingPrevious, isLoadingNext 
     } = useTypedPaginationFragment(EMPLOYEE_LIST_FRAGMENT, list);
-
-    const [getRefresh, setRefresh] = useGetSet(0);
-
-    useUpdateEffect(() => {
-        refetch(args, {fetchPolicy: getRefresh() !== args.refresh ? 'network-only' : undefined});
-        setRefresh(args.refresh);
-    }, [refetch, args, getRefresh, setRefresh]);
     
     const onPreviousPageClick = useCallback(() => {
         loadPrevious(DEFAULT_PAGE_SIZE);
@@ -157,7 +140,7 @@ const EmployeeListImpl: FC<{
                 {
                     data.list.edges.map(edge => 
                     <List.Item key={edge.node.id}>
-                        <EmployeeRow row={edge.node}/>
+                        <EmployeeRow listFilter={extractBusinessArgs(queryReference)} row={edge.node}/>
                     </List.Item>
                     )
                 }
@@ -182,6 +165,12 @@ const EmployeeListImpl: FC<{
     );
 });
 
-interface Args extends BusinessArgs<QueryArgs["findEmployees"]> {
-    readonly refresh: number;
+function extractBusinessArgs(
+    queryReference: PreloadedQueryOf<typeof EMPLOYEE_LIST_QUERY>
+): BusinessArgs<OperationVariablesOf<typeof EMPLOYEE_LIST_QUERY>> {
+    return {
+        name: queryReference.variables.name,
+        departmentId: queryReference.variables.departmentId,
+        supervisorId: queryReference.variables.supervisorId
+    }
 }

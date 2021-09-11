@@ -51,7 +51,7 @@ const EXPORT_RELAY_TYPES_CODE = `export type {
     PreloadedQueryOf, 
     OperationOf, 
     OperationResponseOf, 
-    QueryVariablesOf, 
+    OperationVariablesOf, 
     FragmentDataOf, 
     FragmentKeyOf, 
     OperationType,

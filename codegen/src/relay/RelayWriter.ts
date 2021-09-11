@@ -61,14 +61,15 @@ import {
     RecordProxy,
     DataID,
     ConnectionHandler,
-    getRelayHandleKey
+    getRelayHandleKey,
+    generateClientID
 } from "relay-runtime";
 import type { TypedOperation, TypedQuery, TypedMutation, TypedFragment } from 'graphql-ts-client-relay';
-import { RelayObservable } from "relay-runtime/lib/network/RelayObservable";
+import { TypedEnvironment } from  'graphql-ts-client-relay';
 import { useRefetchableFragmentHookType } from "react-relay/relay-hooks/useRefetchableFragment";
 import { usePaginationFragmentHookType } from 'react-relay/relay-hooks/usePaginationFragment';
-import { TypedEnvironment } from  'graphql-ts-client-relay';
-
+import { RelayObservable } from "relay-runtime/lib/network/RelayObservable";
+import { getStableStorageKey } from 'relay-runtime/lib/store/RelayStoreUtils';
 export type { ImplementationType } from './CommonTypes';
 export { upcastTypes, downcastTypes } from './CommonTypes';
 
@@ -80,7 +81,7 @@ export { upcastTypes, downcastTypes } from './CommonTypes';
  * PreloadedQueryOf
  * OperationOf
  * OperationResponseOf
- * QueryVariablesOf
+ * OperationVariablesOf
  * FragmentDataOf
  * FragmentKeyOf
  * 
@@ -109,8 +110,8 @@ export type OperationResponseOf<TTypedOperation> =
     never
 ;
 
-export type QueryVariablesOf<TTypedQuery> =
-    TTypedQuery extends TypedQuery<any, infer TVariables> ?
+export type OperationVariablesOf<TTypedOperation> =
+    TTypedOperation extends TypedOperation<"Query" | "Mutation", any, infer TVariables> ?
     TVariables :
     never
 ;
@@ -367,7 +368,7 @@ export function getConnection(
     if (connHandler === undefined) {
         connection = ConnectionHandler.getConnection(record, connKey, filters);
     } else {
-        connection = record.getLinkedRecord(getRelayHandleKey(connHandler, connKey));
+        connection = record.getLinkedRecord(getRelayHandleKey(connHandler, connKey), filters !== null ? filters : undefined);
     }
     return connection !== null ? connection : undefined;
 }
@@ -385,7 +386,8 @@ export function getConnectionID(
     if (connHandler === undefined) {
         return ConnectionHandler.getConnectionID(recordID, connKey, filters);
     }
-    return \`\${recordID}:\${getRelayHandleKey(connHandler, connKey)}\`;
+    const storageKey = getStableStorageKey(getRelayHandleKey(connHandler, connKey), filters ?? {});
+    return generateClientID(recordID, storageKey);
 }
 `;
 

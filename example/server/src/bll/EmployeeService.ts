@@ -97,7 +97,7 @@ export class EmployeeService {
 
     @Mutation(() => ID)
     async deleteEmployee(
-        @Arg("id", () => ID) id: string
+        @Arg("id", () => ID, {nullable: true}) id: string
     ): Promise<string | undefined> {
 
         /*

@@ -4,7 +4,7 @@ import { ModelType } from "graphql-ts-client-api";
 import { useEffect } from "react";
 import { useCallback } from "react";
 import { FC, memo } from "react";
-import { ConnectionHandler, RecordSourceSelectorProxy } from "relay-runtime";
+import { ConnectionHandler, RecordSourceSelectorProxy, Variables } from "relay-runtime";
 import UUIDClass from "uuidjs";
 import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { OperationResponseOf, useTypedMutation } from "../__generated";
@@ -34,9 +34,10 @@ const DEPARTMENT_MERGE_MUTATION = createTypedMutation(
 );
 
 export const DepartemntDialog: FC<{
+    listFilter: Variables,
     value?: ModelType<typeof DEPARTMENT_EDITING_INFO>,
     onClose: (value?: ModelType<typeof DEPARTMENT_EDITING_INFO>) => void
-}> = memo(({value, onClose}) => {
+}> = memo(({listFilter, value, onClose}) => {
 
     const [form] = useForm<Partial<DepartmentInput>>();
 
@@ -54,8 +55,8 @@ export const DepartemntDialog: FC<{
     }, [value, form]);
 
     const updater = useCallback((store: RecordSourceSelectorProxy<OperationResponseOf<typeof DEPARTMENT_MERGE_MUTATION>>) => {
-        sharedUpdater(store, value === undefined);
-    }, [value]);
+        sharedUpdater(store, listFilter, value);
+    }, [listFilter, value]);
 
     const onOk = useCallback(async () => {
         let input: DepartmentInput;
@@ -104,21 +105,29 @@ export const DepartemntDialog: FC<{
         okButtonProps={{loading: merging}}>
             <Form form={form}>
                 <Form.Item name="id" hidden={true} preserve={true}/>
-                <Form.Item label="Name" name="name" rules={[{required: true, message: 'Name is required'}]}>
-                    <Input/>
+                <Form.Item name="name" label="Name" rules={[{required: true, message: 'Name is required'}]}>
+                    <Input autoComplete="off"/>
                 </Form.Item>
             </Form>
         </Modal>
     );
 });
 
-function sharedUpdater(store: RecordSourceSelectorProxy<OperationResponseOf<typeof DEPARTMENT_MERGE_MUTATION>>, createMode: boolean) {
-    if (createMode) {
+function sharedUpdater(
+    store: RecordSourceSelectorProxy<OperationResponseOf<typeof DEPARTMENT_MERGE_MUTATION>>, 
+    listFilter: Variables,
+    oldDepartment?: ModelType<typeof DEPARTMENT_EDITING_INFO>
+) {
+    if (oldDepartment === undefined) {
         const newDpartmentRecord = store.getRootField("mergeDepartment");
-        const listConnection = getConnection(store.getRoot(), { 
-            key: CONNECTION_KEY_ROOT_DEPARTMENT_LIST, 
-            handler: WINDOW_PAGINATION_HANDLER 
-        });
+        const listConnection = getConnection(
+            store.getRoot(), 
+            { 
+                key: CONNECTION_KEY_ROOT_DEPARTMENT_LIST, 
+                handler: WINDOW_PAGINATION_HANDLER 
+            },
+            listFilter
+        );
         if (listConnection !== undefined) {
             ConnectionHandler.insertEdgeAfter(
                 listConnection,
