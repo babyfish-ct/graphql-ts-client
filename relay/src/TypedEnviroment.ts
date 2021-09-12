@@ -1,4 +1,4 @@
-import { ConcreteRequest, GraphQLTaggedNode, ReaderFragment } from "relay-runtime";
+import { ConcreteRequest, ReaderFragment } from "relay-runtime";
 import { Fetcher, InvisibleFragment, TextWriter, util } from "graphql-ts-client-api";
 import { Schema } from "relay-compiler";
 import { createSchema } from "./Schema";
