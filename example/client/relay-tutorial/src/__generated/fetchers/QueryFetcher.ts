@@ -189,7 +189,7 @@ export const query$: QueryFetcher<{}, {}> =
 	)
 ;
 
-interface QueryArgs {
+export interface QueryArgs {
 
 	readonly findDepartmentsLikeName: {
 		readonly before?: string, 

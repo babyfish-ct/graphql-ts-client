@@ -2,11 +2,11 @@ import { css } from "@emotion/css";
 import { ChangeEvent, FC, memo, Suspense, useCallback, useState } from "react";
 import { DEMO2_EMPLOYEE_LIST_QUERY } from "./EmployeeList";
 import { EmployeeList } from "../demo2/EmployeeList";
-import { QueryVariablesOf } from "../__generated";
+import { OperationVariablesOf } from "../__generated";
 
 export const Demo: FC = memo(() => {
 
-    const [variables, setVariables] = useState<QueryVariablesOf<typeof DEMO2_EMPLOYEE_LIST_QUERY>>({ includeDepartment: false});
+    const [variables, setVariables] = useState<OperationVariablesOf<typeof DEMO2_EMPLOYEE_LIST_QUERY>>({ includeDepartment: false});
 
     const onNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         setVariables(old => ({...old, name: e.target.value}));
