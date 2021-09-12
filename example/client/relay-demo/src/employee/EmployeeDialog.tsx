@@ -9,11 +9,13 @@ import { useEffect } from "react";
 import UUIDClass from "uuidjs";
 import { DepartmentSelect } from "../department/DepartmentSelect";
 import { CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS, EmployeeSelect } from "./EmployeeSelect";
-import { createTypedMutation, OperationResponseOf, useTypedMutation } from "../__generated";
+import { createTypedMutation, OperationResponseOf, useTypedMutation, getConnection } from "../__generated";
 import { ConnectionHandler, RecordSourceSelectorProxy, Variables } from "relay-runtime";
-import { getConnection } from "../__generated/Relay";
 import { CONNECTION_KEY_ROOT_EMPLOYEE_LIST } from "./EmployeeList";
 import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
+import { useState } from "react";
+import { ErrorWidget } from "../common/ErrorWidget";
+import { refreshFragment } from "../common/RefreshFragment";
 
 export const EMPLOYEE_EDITING_INFO = 
     employee$$
@@ -50,6 +52,7 @@ export const EmployeeDialog: FC<{
     const [form] = useForm<Partial<EmployeeInput>>();
 
     const [merge, merging] = useTypedMutation(EMPLOYEE_MERGE_MUTATION);
+    const [error, setError] = useState<Error>();
 
     useEffect(() => {
         if (value === undefined) {
@@ -79,6 +82,7 @@ export const EmployeeDialog: FC<{
             console.log("EmployeeDialog validation error");
             return;
         }
+        setError(undefined);
         merge({
             variables: { input },
             optimisticResponse: {
@@ -95,11 +99,15 @@ export const EmployeeDialog: FC<{
             },
             optimisticUpdater: updater,
             updater: updater,
-            onCompleted: () => {
+            onCompleted: response => {
+                complete(response, value);
                 onClose();
+            },
+            onError: error => {
+                setError(error);
             }
         });
-    }, [form, merge, onClose, updater]);
+    }, [form, merge, onClose, updater, value]);
 
     const onCancel = useCallback(() => {
         onClose();
@@ -136,6 +144,7 @@ export const EmployeeDialog: FC<{
                     <EmployeeSelect optional={true}/>
                 </Form.Item>
             </Form>
+            <ErrorWidget error={error}/>
         </Modal>
     );
 });
@@ -177,15 +186,15 @@ function sharedUpdater(
         if (oldDepartmentId !== undefined) {
             const employeeRecords = store.get(oldDepartmentId)?.getLinkedRecords("employees");
             if (employeeRecords) {
-                store.get(oldDepartmentId)!.setLinkedRecords(
-                    employeeRecords.filter(rec => rec.getDataID() !== oldDepartmentId), 
+                store.get(oldDepartmentId)?.setLinkedRecords(
+                    employeeRecords.filter(rec => rec.getDataID() !== oldEmployee?.id), 
                     "employees"
                 );
             }
         }
         const employeeRecords = store.get(newDepartmentId)?.getLinkedRecords("employees");
         if (employeeRecords) {
-            store.get(newDepartmentId)!.setLinkedRecords(
+            store.get(newDepartmentId)?.setLinkedRecords(
                 [...employeeRecords, newEmployeeRecord],
                 "employees"
             )
@@ -196,22 +205,39 @@ function sharedUpdater(
     const newSupervisorId = newEmployeeRecord.getLinkedRecord("supervisor")?.getDataID();
     if (oldSupervisorId !== newSupervisorId) {
         if (oldSupervisorId !== undefined) {
-            const suborinates = store.get(oldSupervisorId)?.getLinkedRecords("suborinates");
-            if (suborinates) {
-                store.get(oldSupervisorId)!.setLinkedRecords(
-                    suborinates.filter(rec => rec.getDataID() !== oldSupervisorId),
+            const subordinateRecords = store.get(oldSupervisorId)?.getLinkedRecords("subordinates");
+            if (subordinateRecords) {
+                store.get(oldSupervisorId)?.setLinkedRecords(
+                    subordinateRecords.filter(rec => rec.getDataID() !== oldEmployee?.id),
                     "subordinates"
                 )
             }
         }
         if (newSupervisorId !== undefined) {
-            const suborinates = store.get(newSupervisorId)?.getLinkedRecords("suborinates");
-            if (suborinates) {
-                store.get(newSupervisorId)!.setLinkedRecords(
-                    [...suborinates, newEmployeeRecord],
+            const subordinateRecords = store.get(newSupervisorId)?.getLinkedRecords("subordinates");
+            if (subordinateRecords) {
+                store.get(newSupervisorId)?.setLinkedRecords(
+                    [...subordinateRecords, newEmployeeRecord],
                     "subordinates"
                 )
             }
         }
+    }
+}
+
+function complete(
+    response: OperationResponseOf<typeof EMPLOYEE_MERGE_MUTATION>, 
+    oldEmployee?: ModelType<typeof EMPLOYEE_EDITING_INFO>
+) {
+    const newEmployee = response.mergeEmployee;
+    const oldDepartmentId = oldEmployee?.department?.id;
+    const newDepartmentId = newEmployee.department.id;
+    const oldSalary = oldEmployee?.salary;
+    const newSalary = newEmployee.salary;
+    if (oldDepartmentId !== newDepartmentId || oldSalary !== newSalary) {
+        if (oldDepartmentId !== undefined && oldDepartmentId !== newDepartmentId) {
+            refreshFragment(oldDepartmentId);
+        }
+        refreshFragment(newDepartmentId);
     }
 }

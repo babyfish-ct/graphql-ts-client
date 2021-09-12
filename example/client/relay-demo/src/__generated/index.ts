@@ -20,7 +20,9 @@ export {
     useTypedMutation,
     useTypedFragment,
     useTypedRefetchableFragment,
-    useTypedPaginationFragment
+    useTypedPaginationFragment,
+    getConnection,
+    getConnectionID
 } from './Relay';
 export type { ImplementationType } from './CommonTypes';
 export { upcastTypes, downcastTypes } from './CommonTypes';

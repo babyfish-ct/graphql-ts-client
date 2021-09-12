@@ -3,16 +3,17 @@ import { FC } from "react";
 import { useCallback } from "react";
 import { useState } from "react";
 import { memo } from "react";
-import { ParameterRef } from "graphql-ts-client-api";
+import { ModelType, ParameterRef } from "graphql-ts-client-api";
 import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { FULL_WIDTH, LABEL, NO_DATA } from "../common/Styles";
-import { createTypedFragment, createTypedMutation, FragmentKeyOf, useTypedFragment, useTypedMutation } from "../__generated";
+import { createTypedFragment, createTypedMutation, FragmentKeyOf, useTypedFragment, useTypedMutation, getConnectionID, OperationResponseOf } from "../__generated";
 import { department$$, employee$, employee$$, mutation$ } from "../__generated/fetchers";
 import { EmployeeDialog } from "./EmployeeDialog";
 import { CONNECTION_KEY_ROOT_EMPLOYEE_LIST } from "./EmployeeList";
-import { getConnectionID } from "../__generated/Relay";
 import { CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS } from "./EmployeeSelect";
-import { Variables } from "relay-runtime";
+import { RecordSourceSelectorProxy, Variables } from "relay-runtime";
+import { ErrorWidget } from "../common/ErrorWidget";
+import { refreshFragment } from "../common/RefreshFragment";
 
 export const EMPLOYEE_ROW_FRAGEMENT = createTypedFragment(
     "EmployeeRowFragment",
@@ -57,6 +58,10 @@ export const EmployeeRow: FC<{
         setDialog(true);
     }, []);
 
+    const updater = useCallback((store: RecordSourceSelectorProxy<OperationResponseOf<typeof EMPLOYEE_DELETE_MUTATION>>) => {
+        sharedUpdater(store, data);
+    }, [data]);
+
     const onDeleteClick = useCallback(() => {
         Modal.confirm({
             title: "Are your sure",
@@ -79,11 +84,24 @@ export const EmployeeRow: FC<{
                     },
                     optimisticResponse: {
                         deleteEmployee: data.id
+                    },
+                    updater,
+                    optimisticUpdater: updater,
+                    onCompleted: () => {
+                        if (data.salary !== 0) {
+                            refreshFragment(data.department.id);
+                        }
+                    },
+                    onError: error => {
+                        Modal.error({
+                            title: "Delete failed",
+                            content: <ErrorWidget error={error}/>
+                        })
                     }
                 })
             }
         });
-    }, [data, remove, listFilter]);
+    }, [data, remove, listFilter, updater]);
 
     const onDialogClose = useCallback(() => {
         setDialog(false);
@@ -157,3 +175,26 @@ export const EmployeeRow: FC<{
         </>
     );
 });
+
+function sharedUpdater(
+    store: RecordSourceSelectorProxy<OperationResponseOf<typeof EMPLOYEE_DELETE_MUTATION>>,
+    oldEmployee: ModelType<typeof EMPLOYEE_ROW_FRAGEMENT.fetcher>
+) {
+    const employeeRecords = store.get(oldEmployee.department.id)?.getLinkedRecords("employees");
+    if (employeeRecords) {
+        store.get(oldEmployee.department.id)?.setLinkedRecords(
+            employeeRecords.filter(rec => rec.getDataID() !== oldEmployee.id),
+            "employees"
+        )
+    }
+
+    if (oldEmployee.supervisor !== undefined) {
+        const subordinateRecords = store.get(oldEmployee.supervisor?.id)?.getLinkedRecords("subordinates");
+        if (subordinateRecords) {
+            store.get(oldEmployee.supervisor.id)?.setLinkedRecords(
+                subordinateRecords.filter(rec => rec.getDataID() !== oldEmployee.id),
+                "subordinates"
+            )
+        }
+    }
+}

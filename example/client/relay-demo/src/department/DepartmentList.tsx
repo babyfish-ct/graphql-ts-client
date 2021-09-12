@@ -25,6 +25,7 @@ const DEPARTMENT_LIST_FRAGMENT = createTypedFragment(
             departmentEdge$.node(
                 department$
                 .id
+                .name
                 .on(DEPARTMENT_ROW_FRAGMENT)
             )
         ),
@@ -129,7 +130,9 @@ const DepartmentPagination:FC<{
                 {
                     data.list.edges.map(edge => 
                     <List.Item key={edge.node.id}>
-                        <DepartmentRow listFilter={extractBusinessArgs(queryReference)} row={edge.node}/>
+                        <Suspense fallback={<Spin tip={`Refresh department '${edge.node.name}'...`}/>}>
+                            <DepartmentRow listFilter={extractBusinessArgs(queryReference)} row={edge.node}/>
+                        </Suspense>
                     </List.Item>
                     )
                 }

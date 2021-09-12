@@ -4,18 +4,20 @@ import { useCallback } from "react";
 import { useState } from "react";
 import { FC, memo } from "react";
 import { FULL_WIDTH, LABEL, NO_DATA } from "../common/Styles";
-import { FragmentKeyOf, useTypedFragment, useTypedMutation } from "../__generated";
+import { FragmentKeyOf, useTypedMutation, createTypedFragment, createTypedMutation, getConnectionID, useTypedRefetchableFragment } from "../__generated";
 import { DepartemntDialog } from "./DepartmentDialog";
-import { createTypedFragment, createTypedMutation, getConnectionID } from "../__generated/Relay";
 import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { department$$, employee$, mutation$ } from "../__generated/fetchers";
 import { CONNECTION_KEY_ROOT_DEPARTMENT_LIST } from "./DepartmentList";
 import { CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS } from "./DepartmentSelect";
 import { Variables } from "react-relay";
+import { useFragmentRefresher } from "../common/RefreshFragment";
+import { ErrorWidget } from "../common/ErrorWidget";
 
 export const DEPARTMENT_ROW_FRAGMENT = createTypedFragment(
     "DepartmentRowFragment",
     department$$
+    .directive("refetchable", { queryName: "DepatmentRefetchQuery" })
     .avgSalary
     .employees(
         employee$
@@ -38,7 +40,9 @@ export const DepartmentRow: FC<{
     row: FragmentKeyOf<typeof DEPARTMENT_ROW_FRAGMENT>
 }> = memo(({listFilter, row}) => {
 
-    const data = useTypedFragment(DEPARTMENT_ROW_FRAGMENT, row);
+    const [data, refetch] = useTypedRefetchableFragment(DEPARTMENT_ROW_FRAGMENT, row);
+
+    useFragmentRefresher(data.id, refetch);
 
     const [remove, removing] = useTypedMutation(DEPARTMENT_DELETE_MUTATION);
 
@@ -74,6 +78,12 @@ export const DepartmentRow: FC<{
                     },
                     optimisticResponse: {
                         deleteDepartment: data.id
+                    },
+                    onError: error => {
+                        Modal.error({
+                            title: "Delete failed",
+                            content: <ErrorWidget error={error}/>
+                        })
                     }
                 });
             }
