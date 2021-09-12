@@ -1,10 +1,6 @@
 {
   "name": "graphql-ts-client-api",
-<<<<<<< HEAD
-  "version": "3.0.0-beta.bug-fixed",
-=======
   "version": "3.0.0-gamma",
->>>>>>> 3.0.0
   "description": "Strongly type API for graphql client",
   "author": "ChenTao",
   "license": "MIT",
