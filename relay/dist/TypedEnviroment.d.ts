@@ -2,7 +2,7 @@ import { ConcreteRequest, ReaderFragment } from "relay-runtime";
 import { Fetcher } from "graphql-ts-client-api";
 export declare class TypedEnvironment {
     private schema;
-    private cachedNodeMap;
+    private registry;
     constructor(schema: string);
     query<TResponse extends object, TVariables extends object>(operationName: string, fetcher: Fetcher<"Query", TResponse, TVariables>): TypedQuery<TResponse, TVariables>;
     mutation<TResponse extends object, TVariables extends object>(operationName: string, fetcher: Fetcher<"Mutation", TResponse, TVariables>): TypedMutation<TResponse, TVariables>;

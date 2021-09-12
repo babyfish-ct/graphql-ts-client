@@ -80,9 +80,10 @@ export interface FetcherField {
     readonly plural: boolean;
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
-export declare abstract class InvisibleFragment<TFragmentName extends string, E extends string, T extends object, TVariables extends object> {
+export declare abstract class SpreadFragment<TFragmentName extends string, E extends string, T extends object, TVariables extends object> {
     readonly name: TFragmentName;
     readonly fetcher: Fetcher<E, T, TVariables>;
+    readonly " $__instanceOfSpreadFragment" = true;
     protected constructor(name: TFragmentName, fetcher: Fetcher<E, T, TVariables>);
 }
 export declare type DirectiveArgs = {
