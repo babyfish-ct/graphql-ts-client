@@ -130,9 +130,7 @@ const DepartmentPagination:FC<{
                 {
                     data.list.edges.map(edge => 
                     <List.Item key={edge.node.id}>
-                        <Suspense fallback={<Spin tip={`Refresh department '${edge.node.name}'...`}/>}>
-                            <DepartmentRow listFilter={extractBusinessArgs(queryReference)} row={edge.node}/>
-                        </Suspense>
+                        <DepartmentRow listFilter={extractBusinessArgs(queryReference)} row={edge.node}/>
                     </List.Item>
                     )
                 }

@@ -1,24 +1,23 @@
-import { Row, Col, Space, Tag, Button, Modal } from "antd";
+import { Row, Col, Space, Tag, Button, Modal, Spin } from "antd";
 import { ParameterRef } from "graphql-ts-client-api";
-import { useCallback } from "react";
+import { Suspense, useCallback } from "react";
 import { useState } from "react";
 import { FC, memo } from "react";
 import { FULL_WIDTH, LABEL, NO_DATA } from "../common/Styles";
-import { FragmentKeyOf, useTypedMutation, createTypedFragment, createTypedMutation, getConnectionID, useTypedRefetchableFragment } from "../__generated";
+import { FragmentKeyOf, useTypedMutation, createTypedFragment, createTypedMutation, getConnectionID, useTypedFragment } from "../__generated";
 import { DepartemntDialog } from "./DepartmentDialog";
 import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { department$$, employee$, mutation$ } from "../__generated/fetchers";
 import { CONNECTION_KEY_ROOT_DEPARTMENT_LIST } from "./DepartmentList";
 import { CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS } from "./DepartmentSelect";
 import { Variables } from "react-relay";
-import { useFragmentRefresher } from "../common/RefreshFragment";
 import { ErrorWidget } from "../common/ErrorWidget";
+import { AvgSalaryText, AVG_SALARY_FRAGMENT } from "./AvgSalaryText";
 
 export const DEPARTMENT_ROW_FRAGMENT = createTypedFragment(
     "DepartmentRowFragment",
     department$$
-    .directive("refetchable", { queryName: "DepatmentRefetchQuery" })
-    .avgSalary
+    .on(AVG_SALARY_FRAGMENT)
     .employees(
         employee$
         .id
@@ -40,9 +39,7 @@ export const DepartmentRow: FC<{
     row: FragmentKeyOf<typeof DEPARTMENT_ROW_FRAGMENT>
 }> = memo(({listFilter, row}) => {
 
-    const [data, refetch] = useTypedRefetchableFragment(DEPARTMENT_ROW_FRAGMENT, row);
-
-    useFragmentRefresher(data.id, refetch);
+    const data = useTypedFragment(DEPARTMENT_ROW_FRAGMENT, row);
 
     const [remove, removing] = useTypedMutation(DEPARTMENT_DELETE_MUTATION);
 
@@ -101,7 +98,11 @@ export const DepartmentRow: FC<{
                         </Row>
                         <Row>
                             <Col span={6} className={LABEL}>Average salary</Col>
-                            <Col span={18}>{data.avgSalary}</Col>
+                            <Col span={18}>
+                                <Suspense fallback={<Spin tip="Refetch newest computed value..."/>}>
+                                    <AvgSalaryText department={data}/>
+                                </Suspense>
+                            </Col>
                         </Row>
                         <Row>
                             <Col span={6} className={LABEL}>Employees</Col>

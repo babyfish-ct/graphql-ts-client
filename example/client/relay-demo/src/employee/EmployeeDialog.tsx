@@ -16,6 +16,7 @@ import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
 import { useState } from "react";
 import { ErrorWidget } from "../common/ErrorWidget";
 import { refreshFragment } from "../common/RefreshFragment";
+import { REASON_COMPUTED_AVG_SALARY } from "../common/RefreshFragmentReason";
 
 export const EMPLOYEE_EDITING_INFO = 
     employee$$
@@ -236,8 +237,8 @@ function complete(
     const newSalary = newEmployee.salary;
     if (oldDepartmentId !== newDepartmentId || oldSalary !== newSalary) {
         if (oldDepartmentId !== undefined && oldDepartmentId !== newDepartmentId) {
-            refreshFragment(oldDepartmentId);
+            refreshFragment(oldDepartmentId, REASON_COMPUTED_AVG_SALARY);
         }
-        refreshFragment(newDepartmentId);
+        refreshFragment(newDepartmentId, REASON_COMPUTED_AVG_SALARY);
     }
 }

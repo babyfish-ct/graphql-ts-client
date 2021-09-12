@@ -14,6 +14,7 @@ import { CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS } from "./EmployeeSelect";
 import { RecordSourceSelectorProxy, Variables } from "relay-runtime";
 import { ErrorWidget } from "../common/ErrorWidget";
 import { refreshFragment } from "../common/RefreshFragment";
+import { REASON_COMPUTED_AVG_SALARY } from "../common/RefreshFragmentReason";
 
 export const EMPLOYEE_ROW_FRAGEMENT = createTypedFragment(
     "EmployeeRowFragment",
@@ -89,7 +90,7 @@ export const EmployeeRow: FC<{
                     optimisticUpdater: updater,
                     onCompleted: () => {
                         if (data.salary !== 0) {
-                            refreshFragment(data.department.id);
+                            refreshFragment(data.department.id, REASON_COMPUTED_AVG_SALARY);
                         }
                     },
                     onError: error => {
