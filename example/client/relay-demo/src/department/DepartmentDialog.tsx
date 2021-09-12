@@ -7,10 +7,9 @@ import { FC, memo } from "react";
 import { ConnectionHandler, RecordSourceSelectorProxy, Variables } from "relay-runtime";
 import UUIDClass from "uuidjs";
 import { WINDOW_PAGINATION_HANDLER } from "../common/Environment";
-import { OperationResponseOf, useTypedMutation } from "../__generated";
+import { OperationResponseOf, useTypedMutation, createTypedMutation, getConnection } from "../__generated";
 import { department$, department$$, departmentEdge$, employee$, mutation$ } from "../__generated/fetchers";
 import { DepartmentInput } from "../__generated/inputs";
-import { createTypedMutation, getConnection } from "../__generated/Relay";
 import { CONNECTION_KEY_ROOT_DEPARTMENT_LIST } from "./DepartmentList";
 import { CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS } from "./DepartmentSelect";
 

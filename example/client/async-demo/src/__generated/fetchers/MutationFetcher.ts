@@ -191,7 +191,7 @@ export const mutation$: MutationFetcher<{}, {}> =
 					isFunction: true, 
 					isPlural: false, 
 					name: "deleteDepartment", 
-					argGraphQLTypeMap: {id: 'ID!'}
+					argGraphQLTypeMap: {id: 'ID'}
 				}, 
 				{
 					isFunction: true, 
@@ -203,7 +203,7 @@ export const mutation$: MutationFetcher<{}, {}> =
 					isFunction: true, 
 					isPlural: false, 
 					name: "deleteEmployee", 
-					argGraphQLTypeMap: {id: 'ID!'}
+					argGraphQLTypeMap: {id: 'ID'}
 				}
 			]
 		), 
@@ -211,14 +211,14 @@ export const mutation$: MutationFetcher<{}, {}> =
 	)
 ;
 
-interface MutationArgs {
+export interface MutationArgs {
 
 	readonly mergeDepartment: {
 		readonly input: DepartmentInput
 	}, 
 
 	readonly deleteDepartment: {
-		readonly id: string
+		readonly id?: string
 	}, 
 
 	readonly mergeEmployee: {
@@ -226,6 +226,6 @@ interface MutationArgs {
 	}, 
 
 	readonly deleteEmployee: {
-		readonly id: string
+		readonly id?: string
 	}
 }

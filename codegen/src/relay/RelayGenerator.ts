@@ -71,6 +71,8 @@ const EXPORT_RELAY_CODE = `export {
     useTypedMutation,
     useTypedFragment,
     useTypedRefetchableFragment,
-    useTypedPaginationFragment
+    useTypedPaginationFragment,
+    getConnection,
+    getConnectionID
 } from './Relay';
 `;

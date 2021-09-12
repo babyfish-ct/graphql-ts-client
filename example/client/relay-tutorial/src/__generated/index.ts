@@ -1,8 +1,8 @@
 export type {
     PreloadedQueryOf, 
     OperationOf, 
-    QueryResponseOf, 
-    QueryVariablesOf, 
+    OperationResponseOf, 
+    OperationVariablesOf, 
     FragmentDataOf, 
     FragmentKeyOf, 
     OperationType,
@@ -20,7 +20,9 @@ export {
     useTypedMutation,
     useTypedFragment,
     useTypedRefetchableFragment,
-    useTypedPaginationFragment
+    useTypedPaginationFragment,
+    getConnection,
+    getConnectionID
 } from './Relay';
 export type { ImplementationType } from './CommonTypes';
 export { upcastTypes, downcastTypes } from './CommonTypes';

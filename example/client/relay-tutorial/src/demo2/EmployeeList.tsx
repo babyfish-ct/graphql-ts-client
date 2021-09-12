@@ -1,7 +1,7 @@
 import { css } from "@emotion/css";
 import { ParameterRef } from "graphql-ts-client-api";
 import { FC, memo } from "react";
-import { QueryVariablesOf, createTypedQuery, useTypedLazyLoadQuery } from "../__generated";
+import { OperationVariablesOf, createTypedQuery, useTypedLazyLoadQuery } from "../__generated";
 import { department$$, employee$, employeeConnection$, employeeEdge$, query$ } from "../__generated/fetchers";
 
 export const DEMO2_EMPLOYEE_LIST_QUERY =
@@ -27,7 +27,7 @@ export const DEMO2_EMPLOYEE_LIST_QUERY =
     );
 
 export const EmployeeList: FC<{
-    variables: QueryVariablesOf<typeof DEMO2_EMPLOYEE_LIST_QUERY>
+    variables: OperationVariablesOf<typeof DEMO2_EMPLOYEE_LIST_QUERY>
 }> = memo(({variables}) => {
 
     const data = useTypedLazyLoadQuery(DEMO2_EMPLOYEE_LIST_QUERY, variables);

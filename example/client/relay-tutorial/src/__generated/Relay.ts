@@ -24,14 +24,21 @@ import {
     Disposable,
     Environment,
     FetchQueryFetchPolicy,
-    FragmentRefs
+    FragmentRefs,
+    ReadOnlyRecordProxy,
+    Variables,
+    RecordProxy,
+    DataID,
+    ConnectionHandler,
+    getRelayHandleKey,
+    generateClientID
 } from "relay-runtime";
 import type { TypedOperation, TypedQuery, TypedMutation, TypedFragment } from 'graphql-ts-client-relay';
-import { RelayObservable } from "relay-runtime/lib/network/RelayObservable";
+import { TypedEnvironment } from  'graphql-ts-client-relay';
 import { useRefetchableFragmentHookType } from "react-relay/relay-hooks/useRefetchableFragment";
 import { usePaginationFragmentHookType } from 'react-relay/relay-hooks/usePaginationFragment';
-import { TypedEnvironment } from  'graphql-ts-client-relay';
-
+import { RelayObservable } from "relay-runtime/lib/network/RelayObservable";
+import { getStableStorageKey } from 'relay-runtime/lib/store/RelayStoreUtils';
 export type { ImplementationType } from './CommonTypes';
 export { upcastTypes, downcastTypes } from './CommonTypes';
 
@@ -42,8 +49,8 @@ export { upcastTypes, downcastTypes } from './CommonTypes';
  *
  * PreloadedQueryOf
  * OperationOf
- * QueryResponseOf
- * QueryVariablesOf
+ * OperationResponseOf
+ * OperationVariablesOf
  * FragmentDataOf
  * FragmentKeyOf
  * 
@@ -66,14 +73,14 @@ export type OperationOf<TTypedOperation> =
 	never
 ;
 
-export type QueryResponseOf<TTypedQuery> =
-    TTypedQuery extends TypedQuery<infer TResponse, any> ?
+export type OperationResponseOf<TTypedOperation> =
+    TTypedOperation extends TypedOperation<"Query" | "Mutation", infer TResponse, any> ?
     TResponse :
     never
 ;
 
-export type QueryVariablesOf<TTypedQuery> =
-    TTypedQuery extends TypedQuery<any, infer TVariables> ?
+export type OperationVariablesOf<TTypedOperation> =
+    TTypedOperation extends TypedOperation<"Query" | "Mutation", any, infer TVariables> ?
     TVariables :
     never
 ;
@@ -147,6 +154,7 @@ TUnresolvedVariables extends object
 /*
  * - - - - - - - - - - - - - - - - - - - - 
  * loadTypedQuery
+ * fetchTypedQuery
  * useTypedQueryLoader
  * useTypedPreloadedQuery
  * useTypedLazyLoadQuery
@@ -309,6 +317,48 @@ export function useTypedPaginationFragment<TFragmentName extends string, TFetcha
     }, [obj]);
 }
 
+/*
+ * - - - - - - - - - - - - - - - - - - - - 
+ * getConnection
+ * getConnectionID
+ * - - - - - - - - - - - - - - - - - - - - 
+ */
+export function getConnection(
+    record: ReadOnlyRecordProxy,
+    key: string | {
+        readonly key: string,
+        readonly handler?: string
+    },
+    filters?: Variables | null,
+): RecordProxy | undefined {
+    const connKey = typeof key === "string" ? key : key.key;
+    const connHandler = typeof key === "string" ? undefined : key.handler;
+    let connection: RecordProxy | null | undefined;
+    if (connHandler === undefined) {
+        connection = ConnectionHandler.getConnection(record, connKey, filters);
+    } else {
+        connection = record.getLinkedRecord(getRelayHandleKey(connHandler, connKey), filters !== null ? filters : undefined);
+    }
+    return connection !== null ? connection : undefined;
+}
+
+export function getConnectionID(
+    recordID: DataID,
+    key: string | {
+        readonly key: string,
+        readonly handler?: string
+    },
+    filters?: Variables | null,
+): DataID {
+    const connKey = typeof key === "string" ? key : key.key;
+    const connHandler = typeof key === "string" ? undefined : key.handler;
+    if (connHandler === undefined) {
+        return ConnectionHandler.getConnectionID(recordID, connKey, filters);
+    }
+    const storageKey = getStableStorageKey(getRelayHandleKey(connHandler, connKey), filters ?? {});
+    return generateClientID(recordID, storageKey);
+}
+
 const typedEnvironment = new TypedEnvironment(`type Query {
   findDepartmentsLikeName(before: String, last: Int, after: String, first: Int, name: String): DepartmentConnection!
   findEmployees(before: String, last: Int, after: String, first: Int, mockedErrorProbability: Int, supervisorId: String, departmentId: String, name: String): EmployeeConnection!
@@ -373,9 +423,9 @@ type EmployeeEdge {
 
 type Mutation {
   mergeDepartment(input: DepartmentInput!): Department!
-  deleteDepartment(id: ID!): ID!
+  deleteDepartment(id: ID): ID!
   mergeEmployee(input: EmployeeInput!): Employee!
-  deleteEmployee(id: ID!): ID!
+  deleteEmployee(id: ID): ID!
 }
 
 input DepartmentInput {
