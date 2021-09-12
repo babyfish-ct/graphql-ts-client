@@ -17,7 +17,7 @@ export function useFragmentRefresher(id: DataID, reason: string | undefined, ref
         return () => {
             (window as any).removeEventListener(EVENT_KEY_REFRESH_FRAGMENT, handler);
         }
-    }, [id, refetch]);
+    }, [id, reason, refetch]);
 }
 
 const EVENT_KEY_REFRESH_FRAGMENT = "refreshFragment";
