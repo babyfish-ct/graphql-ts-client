@@ -6,7 +6,6 @@ import { Col, Row, Spin } from 'antd';
 import { css} from '@emotion/css';
 import { DepartmentList } from './department/DepartmentList';
 import { EmployeeList } from "./employee/EmployeeList";
-import { addSourceChangeListener } from "./Hotload";
 
 function App() {
     return (
@@ -30,7 +29,3 @@ function App() {
 }
 
 export default App;
-
-addSourceChangeListener(() => {
-    console.log("Changed------------------------------");
-});
