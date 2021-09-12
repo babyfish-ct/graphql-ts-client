@@ -4,6 +4,8 @@
  */
 export class ParameterRef<TName extends string> {
 
+    readonly " $__instanceOfParameterRef" = true;
+
     private constructor(readonly name: TName, readonly graphqlTypeName?: string) {
         if (name.startsWith("$")) {
             throw new Error("parameter name cannot start with '$'");

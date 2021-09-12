@@ -325,7 +325,9 @@ export interface FetcherField {
     readonly childFetchers?: ReadonlyArray<AbstractFetcher<string, object, object>>;
 }
 
-export abstract class InvisibleFragment<TFragmentName extends string, E extends string, T extends object, TVariables extends object> {
+export abstract class SpreadFragment<TFragmentName extends string, E extends string, T extends object, TVariables extends object> {
+
+    readonly " $__instanceOfSpreadFragment" = true;
 
     protected constructor(readonly name: TFragmentName, readonly fetcher: Fetcher<E, T, TVariables>) {}
 }
@@ -446,16 +448,23 @@ class ResultContext {
                     if (argGraphQLTypeMap !== undefined) {
                         argGraphQLTypeName = argGraphQLTypeMap.get(argName);
                         if (argGraphQLTypeName !== undefined) {
-                            if (arg instanceof ParameterRef) {
-                                if (arg.graphqlTypeName !== undefined && arg.graphqlTypeName !== argGraphQLTypeName) {
-                                    throw new Error(`Argument '${arg.name}' has conflict type, the type of paremter '${argName}' is '${argGraphQLTypeName}' but the graphqlTypeName of ParameterRef is '${arg.graphqlTypeName}'`);
+                            if (arg[" $__instanceOfParameterRef"]) {
+                                const parameterRef = arg as ParameterRef<string>;
+                                if (parameterRef.graphqlTypeName !== undefined && parameterRef.graphqlTypeName !== argGraphQLTypeName) {
+                                    throw new Error(
+                                        `Argument '${parameterRef.name}' has conflict type, the type of paremter '${argName}' is '${argGraphQLTypeName}' ` +
+                                        `but the graphqlTypeName of ParameterRef is '${parameterRef.graphqlTypeName}'`
+                                    );
                                 }
-                                const registeredType = this.variableTypeMap.get(arg.name);
+                                const registeredType = this.variableTypeMap.get(parameterRef.name);
                                 if (registeredType !== undefined && registeredType !== argGraphQLTypeName) {
-                                    throw new Error(`Argument '${arg.name}' has conflict type, it's typed has been specified twice, one as '${registeredType}' and one as '${argGraphQLTypeName}'`);
+                                    throw new Error(
+                                        `Argument '${parameterRef.name}' has conflict type, it's typed has been specified twice, ` +
+                                        `one as '${registeredType}' and one as '${argGraphQLTypeName}'`
+                                    );
                                 }
-                                this.variableTypeMap.set(arg.name, argGraphQLTypeName);
-                                t(`${argName}: $${arg.name}`);
+                                this.variableTypeMap.set(parameterRef.name, argGraphQLTypeName);
+                                t(`${argName}: $${parameterRef.name}`);
                             } else {
                                 t(`${argName}: `);
                                 this.acceptLiteral(arg);
@@ -464,12 +473,13 @@ class ResultContext {
                             throw new Error(`Unknown argument '${argName}'`);
                         }
                     } else {
-                        if (arg instanceof ParameterRef) {
-                            if (arg.graphqlTypeName === undefined) {
-                                throw new Error(`The graphqlTypeName of directive argument '${arg.name}' is not specifed`);
+                        if (arg[" $__instanceOfParameterRef"]) {
+                            const parameterRef = arg as ParameterRef<string>;
+                            if (parameterRef.graphqlTypeName === undefined) {
+                                throw new Error(`The graphqlTypeName of directive argument '${parameterRef.name}' is not specifed`);
                             }
-                            this.variableTypeMap.set(arg.name, arg.graphqlTypeName);
-                            t(`${argName}: $${arg.name}`);
+                            this.variableTypeMap.set(parameterRef.name, parameterRef.graphqlTypeName);
+                            t(`${argName}: $${parameterRef.name}`);
                         } else {
                             t(`${argName}: `);
                             this.acceptLiteral(arg);
@@ -537,7 +547,7 @@ function isMultLineJSON(obj: any): boolean {
     let size = 0;
     if (Array.isArray(obj)) {
         for (const value of obj) {
-            if (typeof value === 'object' && !(value instanceof ParameterRef)) {
+            if (typeof value === 'object' && !value[" $__instanceOfParameterRef"]) {
                 return true;
             }
             if (++size > 2) {
@@ -547,7 +557,7 @@ function isMultLineJSON(obj: any): boolean {
     } else if (typeof obj === 'object') {
         for (const key in obj) {
             const value = obj[key];
-            if (typeof value === 'object' && !(value instanceof ParameterRef)) {
+            if (typeof value === 'object' && !value[" $__instanceOfParameterRef"]) {
                 return true;
             }
             if (++size > 2) {

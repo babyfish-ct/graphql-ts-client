@@ -5,6 +5,7 @@
 export declare class ParameterRef<TName extends string> {
     readonly name: TName;
     readonly graphqlTypeName?: string | undefined;
+    readonly " $__instanceOfParameterRef" = true;
     private constructor();
     static of<TName extends string>(name: TName, graphqlTypeName?: string): ParameterRef<TName>;
 }

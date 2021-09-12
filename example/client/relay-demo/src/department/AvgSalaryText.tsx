@@ -21,6 +21,6 @@ export const AvgSalaryText: FC<{
     useFragmentRefresher(data.id, REASON_COMPUTED_AVG_SALARY, refetch);
 
     return (
-        <span>{data.avgSalary}</span>
+        <span>{data.avgSalary}+</span>
     );
 });

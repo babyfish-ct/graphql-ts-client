@@ -9,10 +9,10 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.util = exports.createFetchableType = exports.createFetcher = exports.DependencyManager = exports.TextWriter = exports.ParameterRef = exports.StringValue = exports.InvisibleFragment = exports.AbstractFetcher = void 0;
+exports.util = exports.createFetchableType = exports.createFetcher = exports.DependencyManager = exports.TextWriter = exports.ParameterRef = exports.StringValue = exports.SpreadFragment = exports.AbstractFetcher = void 0;
 var Fetcher_1 = require("./Fetcher");
 Object.defineProperty(exports, "AbstractFetcher", { enumerable: true, get: function () { return Fetcher_1.AbstractFetcher; } });
-Object.defineProperty(exports, "InvisibleFragment", { enumerable: true, get: function () { return Fetcher_1.InvisibleFragment; } });
+Object.defineProperty(exports, "SpreadFragment", { enumerable: true, get: function () { return Fetcher_1.SpreadFragment; } });
 Object.defineProperty(exports, "StringValue", { enumerable: true, get: function () { return Fetcher_1.StringValue; } });
 var Parameter_1 = require("./Parameter");
 Object.defineProperty(exports, "ParameterRef", { enumerable: true, get: function () { return Parameter_1.ParameterRef; } });

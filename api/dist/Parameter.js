@@ -9,6 +9,7 @@ class ParameterRef {
     constructor(name, graphqlTypeName) {
         this.name = name;
         this.graphqlTypeName = graphqlTypeName;
+        this[" $__instanceOfParameterRef"] = true;
         if (name.startsWith("$")) {
             throw new Error("parameter name cannot start with '$'");
         }

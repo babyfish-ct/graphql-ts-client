@@ -1,5 +1,5 @@
-import { ConcreteRequest, ReaderFragment } from "relay-runtime";
-import { Fetcher, InvisibleFragment, TextWriter, util } from "graphql-ts-client-api";
+import { ConcreteRequest, GraphQLTaggedNode, ReaderFragment } from "relay-runtime";
+import { Fetcher, SpreadFragment, TextWriter, util } from "graphql-ts-client-api";
 import { Schema } from "relay-compiler";
 import { createSchema } from "./Schema";
 import { parseTaggedNode } from "./TaggedNode";
@@ -8,7 +8,7 @@ export class TypedEnvironment {
 
     private schema: Schema;
 
-    private cachedNodeMap = new Map<string, any>();
+    private registry =new Registry();
 
     constructor(schema: string) {
         this.schema = createSchema(schema);
@@ -36,9 +36,8 @@ export class TypedEnvironment {
         name: string, 
         fetcher: Fetcher<TOperationType, TResponse, TVariables>
     ): TypedOperation<TOperationType, TResponse, TVariables> {
-        if (this.cachedNodeMap.has(name)) {
-            handleConflictError(name);
-        }
+
+        this.registry.validate(name);
 
         const writer = new TextWriter();
         writer.text(`${fetcher.fetchableType.entityName.toLowerCase()} ${name}`);
@@ -59,7 +58,7 @@ export class TypedEnvironment {
             fetcher,
             taggedNode
         };
-        this.cachedNodeMap.set(name, typedOperation);
+        this.registry.register(taggedNode, name);
         return typedOperation;
     }
 
@@ -77,9 +76,9 @@ export class TypedEnvironment {
         TData, 
         TUnresolvedVariables
     > {
-        if (this.cachedNodeMap.has(name)) {
-            handleConflictError(name);
-        }
+        
+        const refetchQueryName = (fetcher.directiveMap.get("refetchable") || {})["queryName"] as string | undefined;
+        this.registry.validate(name, refetchQueryName);
 
         const taggedNode = parseTaggedNode(
             this.schema, 
@@ -91,7 +90,7 @@ export class TypedEnvironment {
             fetcher,
             taggedNode
         );
-        this.cachedNodeMap.set(name, typedFragment);
+        this.registry.register(taggedNode, name, refetchQueryName);
         return typedFragment;
     }
 }
@@ -127,7 +126,7 @@ class TypedFragmentImpl<
     TFetchable extends string, 
     TData extends object, 
     TUnresolvedVariables extends object
-> extends InvisibleFragment<
+> extends SpreadFragment<
     TFragmentName, 
     TFetchable, 
     TData, 
@@ -148,16 +147,71 @@ class TypedFragmentImpl<
     }
 }
 
-function handleConflictError(name: string) {
-    const message = 
-        `Conflict TypeNode name '${name}'\n` +
-        `1. Each TypedNode must be declared as constant under global scope\n` +
-        `2. Each TypedNode needs to specify a unique name\n`;
-    if (process.env.NODE_ENV === 'development') {
-        console.warn(
-            message + 
-            `3. If the above two points have been guaranteed but this problem is caused by hot deployment of webpack, please ignore this message`)
-    } else {
-        throw new Error(message);
+class Registry {
+
+    private nodeMap = new Map<string, GraphQLTaggedNode>();
+
+    // Key: reftech query name, value: fragmentName
+    private refetchQueryFragmentMap = new Map<string, string>();
+
+    private version: number = 0;
+
+    validate(nodeName: string, refetchQueryName?: string) {
+        this.refreshIfNecessary();
+        if (this.nodeMap.has(nodeName)) {
+            throw new Error(
+                `Conflict root type node '${nodeName}'\n` +
+                `1. Each TypedNode must be declared as constant under global scope\n` +
+                `2. Each TypedNode needs to specify a unique name\n`
+            );
+        }
+        if (refetchQueryName !== undefined) {
+            if (this.nodeMap.has(refetchQueryName)) {
+                throw new Error(
+                    `The refetchable fragment '${nodeName}' is specified with @refetchable({queryName: "${refetchQueryName}"}), ` +
+                    `but there is another root node named '${refetchQueryName}'\n`
+                );
+            }
+            if (this.refetchQueryFragmentMap.has(refetchQueryName)) {
+                throw new Error(
+                    `The refetchable fragment '${nodeName}' is specified with @refetchable({queryName: "${refetchQueryName}"}), ` +
+                    `but the other refetchable fragment ${this.refetchQueryFragmentMap.get(refetchQueryName)} uses the same refetch query name\n`
+                );
+            }
+        }
     }
+
+    register(taggedNode: GraphQLTaggedNode, nodeName: string, refetchQueryName?: string) {
+        this.nodeMap.set(nodeName, taggedNode);
+        if (refetchQueryName !== undefined) {
+            this.refetchQueryFragmentMap.set(refetchQueryName, nodeName);
+        }
+    }
+
+    private refreshIfNecessary() {
+        if (this.version !== sourceCodeVersion) {
+            console.log("The app is re-compiled, re-compile GraphQLTaggedNodes too");
+            this.nodeMap = new Map<string, GraphQLTaggedNode>();
+            this.refetchQueryFragmentMap = new Map<string, string>();
+            this.version = sourceCodeVersion;
+        }
+    }
+}
+
+let sourceCodeVersion = 0;
+
+const win = window as any;
+if (typeof win.webpackHotUpdate === "function") {
+    const oldUpdate = win.webpackHotUpdate;
+    win.webpackHotUpdate = (...args: any[]) => {
+        sourceCodeVersion++;
+        oldUpdate.apply(this, args);
+    };
+    console.info("webpack-dev-server mode, listen hot deployment events");
+} else {
+    console.info(
+        "Not webpack-dev-server mode, if the react-app is started by webpack-dev-server, ignore this message; " +
+        "otherwise, the newest webpack-dev-server is changed so that this framework cannot work with it again, " +
+        "please commit issue to let this framework can work with the newest webpack-dev-server"
+    );
 }

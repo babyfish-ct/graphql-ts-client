@@ -68,11 +68,11 @@ function proxyHandler(fetchableType) {
 function methodProxyHandler(targetFetcher, handler, field) {
     return {
         apply: (_1, _2, argArray) => {
-            var _a, _b;
+            var _a;
             if (field === "on") {
                 const child = argArray[0];
-                const childFetcher = child instanceof Fetcher_1.InvisibleFragment ? child.fetcher : child;
-                const fragmentName = (_a = argArray[1]) !== null && _a !== void 0 ? _a : (child instanceof Fetcher_1.InvisibleFragment ? child.name : undefined);
+                const childFetcher = child[" $__instanceOfSpreadFragment"] ? child.fetcher : child;
+                const fragmentName = child[" $__instanceOfSpreadFragment"] ? child.name : argArray[1];
                 let parentFetcher = targetFetcher;
                 if (field === "on" && targetFetcher.fetchableType.entityName !== childFetcher.fetchableType.entityName) {
                     const addField = Reflect.get(targetFetcher, "addField");
@@ -102,7 +102,7 @@ function methodProxyHandler(targetFetcher, handler, field) {
                 }
             }
             if (args === undefined) {
-                const argGraphQLTypeMap = (_b = targetFetcher.fetchableType.declaredFields.get(field)) === null || _b === void 0 ? void 0 : _b.argGraphQLTypeMap;
+                const argGraphQLTypeMap = (_a = targetFetcher.fetchableType.declaredFields.get(field)) === null || _a === void 0 ? void 0 : _a.argGraphQLTypeMap;
                 if (argGraphQLTypeMap !== undefined && argGraphQLTypeMap.size !== 0) {
                     args = {};
                     for (const [name,] of argGraphQLTypeMap) {

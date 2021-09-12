@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { AbstractFetcher, DirectiveArgs, FetchableField, FetchableType, Fetcher, InvisibleFragment } from './Fetcher';
+import { AbstractFetcher, DirectiveArgs, FetchableField, FetchableType, Fetcher, SpreadFragment } from './Fetcher';
 import { createFieldOptions, FieldOptionsValue } from './FieldOptions';
 import { ParameterRef } from './Parameter';
 
@@ -110,8 +110,8 @@ function methodProxyHandler(
         apply: (_1: Function, _2: any, argArray: any[]): any => {
             if (field === "on") {
                 const child = argArray[0];
-                const childFetcher = child instanceof InvisibleFragment ? child.fetcher : child as Fetcher<string, object, object>;
-                const fragmentName = argArray[1] as string | undefined ?? (child instanceof InvisibleFragment ? child.name : undefined);
+                const childFetcher = child[" $__instanceOfSpreadFragment"] ? (child as SpreadFragment<string, string, object, object>).fetcher : child as Fetcher<string, object, object>;
+                const fragmentName = child[" $__instanceOfSpreadFragment"] ? (child as SpreadFragment<string, string, object, object>).name : argArray[1] as string | undefined;
                 let parentFetcher = targetFetcher;
                 if (field === "on" && targetFetcher.fetchableType.entityName !== childFetcher.fetchableType.entityName) {
                     const addField = Reflect.get(targetFetcher, "addField") as ADD_FILED;
