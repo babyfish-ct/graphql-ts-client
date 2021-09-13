@@ -35,7 +35,7 @@ const DEPARTMENT_MERGE_MUTATION = createTypedMutation(
 export const DepartemntDialog: FC<{
     listFilter: Variables,
     value?: ModelType<typeof DEPARTMENT_EDITING_INFO>,
-    onClose: (value?: ModelType<typeof DEPARTMENT_EDITING_INFO>) => void
+    onClose: () => void
 }> = memo(({listFilter, value, onClose}) => {
 
     const [form] = useForm<Partial<DepartmentInput>>();
@@ -71,7 +71,7 @@ export const DepartemntDialog: FC<{
                 input,
             },
             onCompleted: response => {
-                onClose(response.mergeDepartment)
+                onClose();
             },
             onError: () => {
                 Modal.error({
