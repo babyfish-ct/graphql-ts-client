@@ -105,13 +105,6 @@ const DepartmentPagination:FC<{
 
     const list = useTypedPreloadedQuery(DEPARTMENT_LIST_QUERY, queryReference);
 
-    /* 
-     * Relay temporarily does not support to display rows of current page. Please see 
-     * "Relay is still working on a solution" at "Custom Connection State -> Rendering One Page of Items at a Time" in 
-     * https://relay.dev/docs/guided-tour/list-data/advanced-pagination/
-     * 
-     * So "useTypedRefetchableFragment" is used here, not "useTypedPaginationFragment"
-     */
     const { 
         data, loadNext, loadPrevious, hasNext, hasPrevious, isLoadingNext, isLoadingPrevious 
     } = useTypedPaginationFragment(DEPARTMENT_LIST_FRAGMENT, list);
