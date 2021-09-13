@@ -23,26 +23,19 @@ export abstract class Generator {
 
     private excludedTypeNames: Set<string>;
 
-    private excludedOperationNames: Set<string>;
-
     constructor(protected config: GeneratorConfig) {
         validateConfig(config);
         this.excludedTypeNames = new Set<string>(config.excludedTypes ?? []);
-        this.excludedOperationNames = new Set<string>(config.excludedOperations ?? []);
     }
 
     async generate() {
         
         const schema = await this.loadSchema();
         validateConfigAndSchema(this.config, schema);
-        if (this.config.recreateTargetDir) {
-            await this.rmdirIfNecessary();
-        }
+        await this.rmdirIfNecessary();
         await this.mkdirIfNecessary();
 
         const inheritanceInfo = new InheritanceInfo(schema);
-        const queryType = schema.getQueryType();
-        const mutationType = schema.getMutationType();
         const fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType> = [];
         const inputTypes: GraphQLInputObjectType[] = [];
         const enumTypes: GraphQLEnumType[] = [];

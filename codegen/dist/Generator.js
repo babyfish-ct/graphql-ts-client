@@ -31,23 +31,18 @@ const CommonTypesWriter_1 = require("./CommonTypesWriter");
 const InheritanceInfo_1 = require("./InheritanceInfo");
 class Generator {
     constructor(config) {
-        var _a, _b;
+        var _a;
         this.config = config;
         GeneratorConfig_1.validateConfig(config);
         this.excludedTypeNames = new Set((_a = config.excludedTypes) !== null && _a !== void 0 ? _a : []);
-        this.excludedOperationNames = new Set((_b = config.excludedOperations) !== null && _b !== void 0 ? _b : []);
     }
     generate() {
         return __awaiter(this, void 0, void 0, function* () {
             const schema = yield this.loadSchema();
             GeneratorConfig_1.validateConfigAndSchema(this.config, schema);
-            if (this.config.recreateTargetDir) {
-                yield this.rmdirIfNecessary();
-            }
+            yield this.rmdirIfNecessary();
             yield this.mkdirIfNecessary();
             const inheritanceInfo = new InheritanceInfo_1.InheritanceInfo(schema);
-            const queryType = schema.getQueryType();
-            const mutationType = schema.getMutationType();
             const fetcherTypes = [];
             const inputTypes = [];
             const enumTypes = [];

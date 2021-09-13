@@ -40,11 +40,6 @@ config) {
                     throw new Error('"confg.targetDir" cannot be empty string');
                 }
                 break;
-            case 'recreateTargetDir':
-                if (value !== undefined && typeof value !== 'boolean') {
-                    throw new Error('"confg.recreateTargetDir" must be undefined or boolean');
-                }
-                break;
             case 'indent':
                 if (value !== undefined) {
                     if (typeof value !== 'string') {
@@ -87,18 +82,6 @@ config) {
                     }
                 }
                 break;
-            case 'excludedOperations':
-                if (value !== undefined) {
-                    if (!Array.isArray(value)) {
-                        throw new Error('"confg.excludedOperations" must be undefined or array');
-                    }
-                    for (let i = 0; i < value.length; i++) {
-                        if (typeof (value[i]) !== 'string') {
-                            throw new Error(`"confg.excludedOperations[${i}]" must be string`);
-                        }
-                    }
-                }
-                break;
             case 'scalarTypeMap':
                 if (value !== undefined) {
                     if (typeof value !== 'object') {
@@ -120,6 +103,10 @@ config) {
                     throw new Error('"confg.defaultFetcherExcludeMap" must be undefined or object');
                 }
                 break;
+            case 'recreateTargetDir':
+            case 'excludedOperations':
+                console.warn(`"confg.${key}" is deprecated`);
+                break;
             default:
                 throw new Error(`unsupported configuration property: ${key}`);
         }
@@ -138,7 +125,6 @@ config) {
 }
 exports.validateConfig = validateConfig;
 function validateConfigAndSchema(config, schema) {
-    var _a, _b, _c, _d;
     const typeMap = schema.getTypeMap();
     for (const typeName in typeMap) {
         const type = typeMap[typeName];
@@ -160,33 +146,6 @@ function validateConfigAndSchema(config, schema) {
             if (type === undefined) {
                 throw new Error(`config.excludedTypes[${i}] has an illlegal value '${excludedTypes[i]}' ` +
                     "that is not a valid graphql type name");
-            }
-        }
-    }
-    const excludedOperations = config.excludedOperations;
-    if (excludedOperations !== undefined) {
-        const queryFields = (_b = (_a = schema.getQueryType()) === null || _a === void 0 ? void 0 : _a.getFields()) !== null && _b !== void 0 ? _b : {};
-        const mutationFields = (_d = (_c = schema.getMutationType()) === null || _c === void 0 ? void 0 : _c.getFields()) !== null && _d !== void 0 ? _d : {};
-        for (let i = 0; i < excludedOperations.length; i++) {
-            const operation = excludedOperations[i];
-            let matched = false;
-            for (const name in queryFields) {
-                if (operation === name) {
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) {
-                for (const name in mutationFields) {
-                    if (operation === name) {
-                        matched = true;
-                        break;
-                    }
-                }
-                if (!matched) {
-                    throw new Error(`config.excludedTypes[${i}] has an illegal value '${excludedTypes !== undefined ? excludedTypes[i] : undefined}' ` +
-                        "that is not a valid field name graphql query/mutation");
-                }
             }
         }
     }

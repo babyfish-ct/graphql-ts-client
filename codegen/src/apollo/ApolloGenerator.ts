@@ -9,9 +9,8 @@
  */
 
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLSchema } from "graphql";
+import { GraphQLSchema } from "graphql";
 import { join } from "path";
-import { associatedTypeOf } from "../Utils";
 import { closeStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 

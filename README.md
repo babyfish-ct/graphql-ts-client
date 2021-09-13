@@ -13,13 +13,8 @@ A new Graphql client for TypeScript
 ## 2. [Step-by-step guide with apollo](get-start-apollo.md)
 ## 3. [Step-by-step guide with relay](get-start-relay.md)
 
-# MoreLinks
-
-1. [Run the example](example/README.md)
-2. [Code generator configuration](codegen-properties.md)
-3. [Get inferred type explicitly](model-type.md)
-4. [Polymorphism query & Fragment since 2.0.0](2.0.0.md)
-5. [@apollo/client integration since 2.1.4](/example/client/apollo-demo/README.md)
+# Document
+[English Doucument](doc/README.md) | [中文文档](doc/README_zh_CN.md)
 
 # Notes
 

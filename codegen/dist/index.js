@@ -10,9 +10,9 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RelayGenerator = exports.ApolloGenerator = exports.AsyncGenerator = exports.Generator = exports.loadLocalSchema = exports.loadRemoteSchema = void 0;
-var RemoteSchemaLoader_1 = require("./RemoteSchemaLoader");
-Object.defineProperty(exports, "loadRemoteSchema", { enumerable: true, get: function () { return RemoteSchemaLoader_1.loadRemoteSchema; } });
-Object.defineProperty(exports, "loadLocalSchema", { enumerable: true, get: function () { return RemoteSchemaLoader_1.loadLocalSchema; } });
+var SchemaLoader_1 = require("./SchemaLoader");
+Object.defineProperty(exports, "loadRemoteSchema", { enumerable: true, get: function () { return SchemaLoader_1.loadRemoteSchema; } });
+Object.defineProperty(exports, "loadLocalSchema", { enumerable: true, get: function () { return SchemaLoader_1.loadLocalSchema; } });
 var Generator_1 = require("./Generator");
 Object.defineProperty(exports, "Generator", { enumerable: true, get: function () { return Generator_1.Generator; } });
 var AsyncGenerator_1 = require("./async/AsyncGenerator");

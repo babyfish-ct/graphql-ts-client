@@ -13,13 +13,11 @@ import { GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema } from "graphql"
 export interface GeneratorConfig {
     readonly schemaLoader: () => Promise<GraphQLSchema>,
     readonly targetDir: string;
-    readonly recreateTargetDir?: boolean;
     readonly indent?: string;
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
     readonly excludedTypes?: string[];
-    readonly excludedOperations?: string[];
     readonly scalarTypeMap: {[key: string]: 'string' | 'number' | 'boolean'};
     readonly defaultFetcherExcludeMap?: {[key: string]: string[]}
 }
@@ -51,11 +49,6 @@ export function validateConfig(
                 }
                 if (value === "") {
                     throw new Error('"confg.targetDir" cannot be empty string');
-                }
-                break;
-            case 'recreateTargetDir':
-                if (value !== undefined && typeof value !== 'boolean') {
-                    throw new Error('"confg.recreateTargetDir" must be undefined or boolean');
                 }
                 break;
             case 'indent':
@@ -100,18 +93,6 @@ export function validateConfig(
                     }
                 }
                 break;
-            case 'excludedOperations':
-                if (value !== undefined) {
-                    if (!Array.isArray(value)) {
-                        throw new Error('"confg.excludedOperations" must be undefined or array');
-                    }
-                    for (let i = 0; i < value.length; i++) {
-                        if (typeof(value[i]) !== 'string') {
-                            throw new Error(`"confg.excludedOperations[${i}]" must be string`);
-                        }
-                    }
-                }
-                break;
             case 'scalarTypeMap':
                 if (value !== undefined) {
                     if (typeof value !== 'object') {
@@ -132,6 +113,10 @@ export function validateConfig(
                 if (value !== undefined && typeof value !== 'object') {
                     throw new Error('"confg.defaultFetcherExcludeMap" must be undefined or object');
                 }
+                break;
+            case 'recreateTargetDir':
+            case 'excludedOperations':    
+                console.warn(`"confg.${key}" is deprecated`);
                 break;
             default:
                 throw new Error(`unsupported configuration property: ${key}`);
@@ -182,35 +167,7 @@ export function validateConfigAndSchema(
             }
         }
     }
-    const excludedOperations = config.excludedOperations;
-    if (excludedOperations !== undefined) {
-        const queryFields = schema.getQueryType()?.getFields() ?? {};
-        const mutationFields = schema.getMutationType()?.getFields() ?? {};
-        for (let i = 0; i < excludedOperations.length; i++) {
-            const operation = excludedOperations[i];
-            let matched = false;
-            for (const name in queryFields) {
-                if (operation === name) {
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) {
-                for (const name in mutationFields) {
-                    if (operation === name) {
-                        matched = true;
-                        break;
-                    }
-                }
-                if (!matched) {
-                    throw new Error(
-                        `config.excludedTypes[${i}] has an illegal value '${excludedTypes !== undefined ? excludedTypes[i] : undefined}' ` +
-                        "that is not a valid field name graphql query/mutation"
-                    );
-                }
-            }
-        }
-    }
+    
     const excludeMap = config.defaultFetcherExcludeMap;
     if (excludeMap !== undefined) {
         for (const typeName in excludeMap) {
