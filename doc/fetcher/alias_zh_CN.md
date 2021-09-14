@@ -33,35 +33,35 @@ test();
 最终，实际发送的GraphQL请求如下
 ```
 query (
-	$before: String, 
-	$last: Int, 
-	$after: String, 
-	$first: Int, 
-	$mockedErrorProbability: Int, 
-	$supervisorId: String, 
-	$departmentId: String, 
-	$name: String
+    $before: String, 
+    $last: Int, 
+    $after: String, 
+    $first: Int, 
+    $mockedErrorProbability: Int, 
+    $supervisorId: String, 
+    $departmentId: String, 
+    $name: String
 ) {
-	result: findEmployees(
-		before: $before, 
-		last: $last, 
-		after: $after, 
-		first: $first, 
-		mockedErrorProbability: $mockedErrorProbability, 
-		supervisorId: $supervisorId, 
-		departmentId: $departmentId, 
-		name: $name
-	) {
-		edges {
-			node {
-				id
-				firstName
-				lastName
-				gender
-				salary
-			}
-		}
-	}
+    result: findEmployees(
+        before: $before, 
+        last: $last, 
+        after: $after, 
+        first: $first, 
+        mockedErrorProbability: $mockedErrorProbability, 
+        supervisorId: $supervisorId, 
+        departmentId: $departmentId, 
+        name: $name
+    ) {
+        edges {
+            node {
+                id
+                firstName
+                lastName
+                gender
+                salary
+            }
+        }
+    }
 }
 ```
 

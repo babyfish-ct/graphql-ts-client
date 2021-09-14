@@ -32,12 +32,12 @@ const QUERY = query$.findEmployees(
 export const employee$: EmployeeFetcher<{}, {}> = createFetcher(...);
 
 export const employee$$ = 
-	employee$
-		.id
-		.firstName
-		.lastName
-		.gender
-		.salary
+    employee$
+        .id
+        .firstName
+        .lastName
+        .gender
+        .salary
 ;
 
 ```
@@ -72,35 +72,35 @@ test();
 最终，运行时发出的GraphQL请求为
 ```
 query (
-	$before: String, 
-	$last: Int, 
-	$after: String, 
-	$first: Int, 
-	$mockedErrorProbability: Int, 
-	$supervisorId: String, 
-	$departmentId: String, 
-	$name: String
+    $before: String, 
+    $last: Int, 
+    $after: String, 
+    $first: Int, 
+    $mockedErrorProbability: Int, 
+    $supervisorId: String, 
+    $departmentId: String, 
+    $name: String
 ) {
-	findEmployees(
-		before: $before, 
-		last: $last, 
-		after: $after, 
-		first: $first, 
-		mockedErrorProbability: $mockedErrorProbability, 
-		supervisorId: $supervisorId, 
-		departmentId: $departmentId, 
-		name: $name
-	) {
-		edges {
-			node {
-				id
-				firstName
-				lastName
-				gender
-				salary
-			}
-		}
-	}
+    findEmployees(
+        before: $before, 
+        last: $last, 
+        after: $after, 
+        first: $first, 
+        mockedErrorProbability: $mockedErrorProbability, 
+        supervisorId: $supervisorId, 
+        departmentId: $departmentId, 
+        name: $name
+    ) {
+        edges {
+            node {
+                id
+                firstName
+                lastName
+                gender
+                salary
+            }
+        }
+    }
 }
 ```
 
@@ -132,34 +132,34 @@ test();
 最终，运行时发出的GraphQL请求为
 ```
 query (
-	$before: String, 
-	$last: Int, 
-	$after: String, 
-	$first: Int, 
-	$mockedErrorProbability: Int, 
-	$supervisorId: String, 
-	$departmentId: String, 
-	$name: String
+    $before: String, 
+    $last: Int, 
+    $after: String, 
+    $first: Int, 
+    $mockedErrorProbability: Int, 
+    $supervisorId: String, 
+    $departmentId: String, 
+    $name: String
 ) {
-	findEmployees(
-		before: $before, 
-		last: $last, 
-		after: $after, 
-		first: $first, 
-		mockedErrorProbability: $mockedErrorProbability, 
-		supervisorId: $supervisorId, 
-		departmentId: $departmentId, 
-		name: $name
-	) {
-		edges {
-			node {
-				id
-				firstName
-				lastName
-				salary
-			}
-		}
-	}
+    findEmployees(
+        before: $before, 
+        last: $last, 
+        after: $after, 
+        first: $first, 
+        mockedErrorProbability: $mockedErrorProbability, 
+        supervisorId: $supervisorId, 
+        departmentId: $departmentId, 
+        name: $name
+    ) {
+        edges {
+            node {
+                id
+                firstName
+                lastName
+                salary
+            }
+        }
+    }
 }
 ```
 
