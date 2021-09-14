@@ -247,7 +247,7 @@ export const department$$ =
 
 ____________________
 
-[回到文档首页](./)
+[回到文档首页](./README_zh_CN.md)
 
 
 
