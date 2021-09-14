@@ -6,7 +6,7 @@
 
 到目前为止，框架提供三种代码生成器
 
-正对GraphQL Schema中定义的ObjectType, InterfaceType, UnionType, EnumType和InputType，三种代码生成器生成的代码几乎完全一样。区别在于和服务端HTTP通信相关的代码生成结果是不一样的。
+针对GraphQL Schema中定义的ObjectType, InterfaceType, UnionType, EnumType和InputType，三种代码生成器生成的代码几乎完全一样。区别在于和服务端HTTP通信相关的代码生成结果是不一样的。
 
 使用任何代码生成器，都需以"--dev"模式要导入此包
 ```
@@ -15,7 +15,7 @@ yarn add graphql-ts-client-codegen --dev
 
 ### 1. AsyncGenerator
 
-仅生成最简单的一个名为excute的async函数，接受参数并返回服务端的执行结果。没有任何额外的功能，比如react-hook风格的API和本地缓存管理。使用方法如下(在项目自定义命令的script文件中使用，非web项目源码文件)
+仅生成最简单的一个名为execute的async函数，接受参数并返回服务端的执行结果。没有任何额外的功能，比如react-hook风格的API和本地缓存管理。使用方法如下(在项目自定义命令的script文件中使用，非web项目源码文件)
 ```js
 const { AsyncGenerator, loadRemoteSchema } = require("graphql-ts-client-codegen");
 const path = require("path");
@@ -29,7 +29,7 @@ const generator = new AsyncGenerator({
 
 generator.generate();
 ```
-可以通过构造函数参数传入丰富的配置，后续章节会详细介绍该配置。
+可以通过构造函数参数传入配置，后续章节会详细介绍该配置。
 
 为了让生成的代码可以通过编译，需要导入包
 ```
@@ -52,9 +52,18 @@ const generator = new ApolloGenerator({
 
 generator.generate();
 ```
-可以通过构造函数参数传入丰富的配置，后续章节会详细介绍该配置。
+可以通过构造函数参数传入配置，后续章节会详细介绍该配置。
 
-最终在生成的代码中，会出现新的react hook用于包装@apollo/client原生的API
+为了让生成的代码可以通过编译，需要导入包
+
+```
+yarn add \
+    graphql \
+    @apollo/client \
+    graphql-ts-client-api
+```
+
+最终在生成的代码中，@apollo/client API被这些新API包装
 
 |src/__generated中生成的强类型API|@apollo/client的原生API|
 |----------|-------------|
@@ -79,9 +88,19 @@ const generator = new RelayGenerator({
 generator.generate();
 ```
 
-可以通过构造函数参数传入丰富的配置，后续章节会详细介绍该配置。
+可以通过构造函数参数传入配置，后续章节会详细介绍该配置。
 
-最终在生成的代码中，会出现新的react hook用于包装relay的原生的API
+为了让生成的代码可以通过编译，需要导入包
+
+```
+yarn add \
+    react-relay @types/react-relay \
+    relay-runtime @types/relay-runtime \
+    graphql-ts-client-api \
+    graphql-ts-client-relay
+```
+
+最终在生成的代码中，relay API被这些新API包装
 
 |src/__generated中生成的强类型API|relay的原生API|
 |----------|-------------|
@@ -94,6 +113,8 @@ generator.generate();
 |useTypedFragment|useFragment|
 |useTypedRefetchableFragment|useRefetchableFragment|
 |useTypedPaginationFragment|usePaginationFragment|
+|getConnection|ConnectionHandler.getConnection|
+|getConnectionID|ConnectionHandler.getConnectionID|
 
 
 
@@ -103,15 +124,15 @@ generator.generate();
 
 |属性|类型|是否必须|默认值|
 |--------|----|--------|-------------|
-|schemaLoader|()=>Promise&lt;GraphQLSchema&gt;|true||
-|targetDir|string|true||
-|indent|string|false|"\t"|
-|objectEditable|boolean|false|false|
-|arrayEditable|boolean|false|false|
-|fetcherSuffix|string|false|"Fetcher"|
-|excludedTypes|string[]|false||
-|scalarTypeMap|{[key:string:] "string" \| "number" \| "boolean"}|false||
-|defaultFetcherExcludeMap|{[key:string]: string[]}|false||
+|schemaLoader|()=>Promise&lt;GraphQLSchema&gt;|是||
+|targetDir|string|是||
+|indent|string|否|"\t"|
+|objectEditable|boolean|否|false|
+|arrayEditable|boolean|否|false|
+|fetcherSuffix|string|否|"Fetcher"|
+|excludedTypes|string[]|否||
+|scalarTypeMap|{[key:string:] "string" \| "number" \| "boolean"}|否||
+|defaultFetcherExcludeMap|{[key:string]: string[]}|否||
 
 ### schemaLoader
 一个返回Promise<GraphQLSchema>类型的异步函数，用于获取GraphQL schema信息，用于生成代码。
@@ -128,13 +149,12 @@ export function loadLocalSchema(
     sdl: string
 ): GraphQLSchema;
 ```
-loadRemoteSchema需要指定服务端地址；
-loadLocalSchema需要指定schema defination文本。
+loadRemoteSchema需要指定服务端地址；loadLocalSchema需要指定schema defination文本。
 
 如果这两个默认实现都无法帮助你实现schemaLoader，你可以用任意自定的方法实现。
 
 ## targetDir
-指定一个目录，所有自动生成的代码将会存储在旗下
+指定一个目录，所有自动生成的代码将会存储在其下
 
 例如
 ```
@@ -178,7 +198,7 @@ readonly items: readonly Item[];
  
 ### scalarTypeMap
 
-Code generator can handle some scalar types by itself, but scalar type name can be defined as any text by server-side, not all the scalar types can be handled automatically, eg:
+代码生成器可以自己处理一些标量类型，但是标量类型名称可以被服务器端定义为任何文本，并不是所有的标量类型都可以自动处理，例如：
 
 ```
 {
@@ -190,13 +210,13 @@ Code generator can handle some scalar types by itself, but scalar type name can 
 	}
 }
 ```
-Code generator will consider "Int8", "Int16", "Int32" and "Int64" to be "number" according to this configuration.
+代码生成器将根据此配置将“Int8”、“Int16”、“Int32”和“Int64”视为“数字”。
 
-You can also use the configuration to override the default behavior of code generator. If the scalar type that can be automatically handled by code generator is configured here, the user configuration has higher priority.
+您还可以使用配置来覆盖代码生成器的默认行为。 如果此处配置了代码生成器可以自动处理的标量类型，则用户配置的优先级更高。
 
 ### defaultFetcherExcludeMap
 
-对于GraphQL Schema中的大部分ObjectType而言, 代码生成器都是生成两个内置的fetcher实例. 例如, [example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts](../example/client/src/ascync-demo/__generated/fetchers/DepartmentFetcher.ts) 文件定义连个两个实例:
+对于GraphQL Schema中的大部分ObjectType而言, 代码生成器都是生成两个内置的fetcher实例. 例如, [example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts](../example/client/src/ascync-demo/__generated/fetchers/DepartmentFetcher.ts) 文件定义两个两个实例:
 ```
 export const department$: DepartmentFetcher<{}> = 
 	createFetcher(...);
@@ -227,7 +247,7 @@ export const department$$ =
 
 ____________________
 
-[Back to home](../)
+[回到文档首页](./)
 
 
 
