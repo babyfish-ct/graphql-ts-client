@@ -4,7 +4,8 @@
 
 ## 1. 默认参数传播
 
-query$的findEmployees是有参数的，如果在fetcher表达式中不显式指定参数，那么所有参数都会传播到execute函数
+query$的findEmployees是有参数的，如果在fetcher表达式中不显式指定参数，那么所有参数都会进一步想外传播，最终传播到execute函数
+
 ```ts
 import { execute } from "./__generated";
 import { query$, employeeConnection$, employeeEdge$, employee$$ } from "./__generated/fetchers";
@@ -24,7 +25,9 @@ async function test() {
     const response = await execute(
         QUERY, 
         {
-            // 这里可以指定所有参数(first, after, last, before, name, name, departmentId, supervsiorId, mockedErrorProbability)
+            // 这里可以指定所有参数：first, after, last, before, name, name, 
+            //departmentId, supervsiorId, mockedErrorProbability)。
+            //
             // 由于这些参数都是可选的，为了简洁，这里仅示范指定三个参数
             variables: {
                 first: 100,
@@ -39,7 +42,7 @@ async function test() {
 test();
 
 ``` 
-运行时，实际发送的查询为
+最终，运行时发出的GraphQL请求为
 ```
 query (
     $before: String, 
@@ -79,10 +82,13 @@ query (
 ```
 
 ## 2. 参数覆盖
-在fetcher表达式中，你可以
+
+可以在fetcher表达式中覆盖参数，有两种覆盖方法
 1. 使用常量指定参数
-2. 使用ParameterRef做参数转发
+2. 使用ParameterRef做参数转发，这里的ParameterRef是一个定义在graphql-ts-client-api中的类
+
 例如
+
 ```ts
 import { ParameterRef } from "graphql-ts-client-api";
 import { execute } from "./__generated";
@@ -91,10 +97,11 @@ import { query$, employeeConnection$, employeeEdge$, employee$$ } from "./__gene
 const QUERY = query$.findEmployees(
     
     {
-        first: 100, // first被指指定常量100
-        name: ParameterRef.of("namePattern") // name被指定为新的参数namePattern
-        // 注意，其余所有参数都会被隐式地指定为常量undefined
-    }
+        first: 100, // first被常量100覆盖
+        name: ParameterRef.of("namePattern") // 旧参数name被新参数namePattern覆盖
+
+        // 注意，其余6个参数都会被隐式地覆盖为常量undefined
+    },
 
     employeeConnection$.edges(
         employeeEdge$.node(
@@ -120,7 +127,7 @@ async function test() {
 test();
 
 ```
-对这种情况而言，运行时实际发送的查询为
+对这种情况而言，最终运行时发出的GraphQL请求为
 ```
 query ($namePattern: String) {
     findEmployees(first: 100, name: $namePattern) {

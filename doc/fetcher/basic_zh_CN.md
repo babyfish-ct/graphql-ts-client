@@ -32,12 +32,12 @@ test();
 ```
 
 上面的代码有两种行为
-1. 基于属性的简单字段，针对无参数且非关联的字段，比如：".id", ".firstName", ".lastName"
-2. 基于函数的复杂字段，针对有参数字段或关联字段，比如：".findEmployees()", ".edges()", ".node()"
+1. 属性访问，针对无参数且非关联的字段，比如：".id", ".firstName", ".lastName"
+2. 函数调用，针对有参数字段或关联字段，比如：".findEmployees()", ".edges()", ".node()"
 
 无论是那种情况，这些属性和函数都会创建新的Fetcher对象，而不会修改当前Fetcher对象。所以，Fetcher是只读对象，任何Fetcher都可以用全局常量纪录并复用。
 
-最终，在运行时，这段代码发送给服务的发送的实际请求为
+最终，运行时发出的GraphQL请求为
 ```
 query (
     $before: String, 
@@ -71,7 +71,9 @@ query (
 ```
 
 ## 2. ModelType
-这里，查询返回的数据类型是更具查询阐述自动推导的类型。事实上，你可以使用ModelType得到自动推导的类型
+
+上面的例子中，查询返回的数据类型是根据查询阐述自动推导的类型。事实上，你可以使用ModelType显式地得到自动推导的类型，例如
+
 ```ts
 import { execute } from "./__generated";
 import { query$, employeeConnection$, employeeEdge$, employee$ } from "./__generated/fetchers";

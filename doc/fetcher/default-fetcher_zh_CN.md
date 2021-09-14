@@ -4,7 +4,7 @@
 
 ## 1. 默认Fetcher基本用法
 
-在实际项目中，对象的字段可能非常多，使用一个一个地书写会特别枯燥，例如
+在实际项目中，对象的字段可能非常多，一个一个地书写会特别枯燥，例如
 ```ts
 import { execute } from "./__generated";
 import { query$, employeeConnection$, employeeEdge$, employee$ } from "./__generated/fetchers";
@@ -23,11 +23,11 @@ const QUERY = query$.findEmployees(
 );
 ```
 
-这里，Employee类有5个字段：id、firstName、lastName、gender、salary，我们写了5行代码。但是，如果有50个字段呢？难道我们写50行代码？
+这里，Employee类有5个字段：id、firstName、lastName、gender和salary，所以我们写了5行代码。但是，如果有50个字段呢？难道我们写50行代码？
 
-上文中用到过的一些诸如query$、employeeConnection$、employeeEdge$、employee$常量，这些以"$"结尾的全局常量叫做Empty Fetcher，它们不包含任何字段，但是它们可以用于创建其它Fetcher。
+上文中用到过的一些诸如query$、employeeConnection$、employeeEdge$、employee$常量，这些以"$"结尾的全局常量叫做Empty Fetcher，它们不包含任何字段，它们的职责是创建其它Fetcher。
 
-代码生成器还会生成一些以"$$"结尾的全局常量，叫做默认Fetcher，它们包含了所有的简单字段，即既无参数也非关联的字段。在[example/client/async-deom/src/__generated/fetchers/EmployeeFetcher.ts]中，你会发现如下代码
+代码生成器还会生成一些以"$$"结尾的全局常量，它们叫做默认Fetcher。默认Fetcher包含了所有的简单字段，即，既无参数也非关联的字段。在[example/client/async-deom/src/__generated/fetchers/EmployeeFetcher.ts](example/client/async-deom/src/__generated/fetchers/EmployeeFetcher.ts)中，你会发现如下代码
 ```
 export const employee$: EmployeeFetcher<{}, {}> = createFetcher(...);
 
@@ -43,7 +43,13 @@ export const employee$$ =
 ```
 不难发现，和employee$不同，employee$$已经包含了所有简单字段。
 
-默认Fetcher可以让我们的代码大幅简化，在字段很多的实际项目中尤其明显
+*注意*
+
+*1. 代码生成器不会为Query和Mutation这两个特殊类型生成默认Fetcher*
+
+*2. 有时候，一些字段虽然没有参数且不是关联，但是有一定的计算开销，这往往是业务计算字段（例如，本框架附带demo中Department类型中的avgSalary）。显然，让默认Fetcher包含这些字段不是好主意，可以通过配置让代码生成器忽略这些字段，具体请参见[代码生成器](../generator_zh_CN.md)*
+
+默认Fetcher可以让我们的代码大幅简化，在对象字段很多的实际项目中尤其明显
 ```ts
 import { execute } from "./__generated";
 import { query$, employeeConnection$, employeeEdge$, employee$$ } from "./__generated/fetchers";
@@ -63,7 +69,7 @@ async function test() {
 test();
 
 ```
-运行时发出的请求为
+最终，运行时发出的GraphQL请求为
 ```
 query (
 	$before: String, 
@@ -99,7 +105,8 @@ query (
 ```
 
 ## 2. 负字段
-默认Fetcher包含了所有的简单字段，我可能不需要这么多，我们需要默认Fetcher中大部分简单字段，但是要排初少量的不需要的字段。这是可以使用负属性，从默认Fetcher中去掉不需要的简单属性。负字段以"~"符号开头
+
+默认Fetcher包含了所有的简单字段，但有的时候，我们可能不需要这么多，我们需要默认Fetcher中大部分简单字段，但是要排除掉少量的字段。这时可以使用负字段从默认Fetcher中去掉一些不需要的字段。负字段以"~"符号开头
 
 此例子中，我们查询默认Fetcher中除gender外的所有字段
 
@@ -122,7 +129,7 @@ async function test() {
 test();
 
 ```
-运行时发出的请求为
+最终，运行时发出的GraphQL请求为
 ```
 query (
 	$before: String, 
