@@ -1,6 +1,6 @@
 # 指令
 
-*为了简化讨论，本文档不讨论配合使用@apollo/client或relay的用法，以独立使用这种最简单的用法讲解。文中所有的fetcher取自[example/client/async-demo/src/__generated/fetchers](../example/client/async-demo/src/__generated/fetchers)，也会用到[example/client/async-demo/src/__generated/Async.ts](../example/client/async-demo/src/__generated/Async.ts)中的execute函数*
+*为了简化讨论，除relay专用的章节外，本文档不讨论配合使用@apollo/client或relay的用法，以独立使用这种最简单的用法讲解。文中所有的fetcher取自[example/client/async-demo/src/__generated/fetchers](../../example/client/async-demo/src/__generated/fetchers)，也会用到[example/client/async-demo/src/__generated/Async.ts](../../example/client/async-demo/src/__generated/Async.ts)中的execute函数*
 
 指令分为两个级别，字段级和碎片级
 
