@@ -1,4 +1,4 @@
-# Fetcher
+# 核心概念: Fetcher
 
 Fetcher是本框架的核心概念。对于GraphQL中的每一个ObjectType，都会生成一个Fetcher，包含Query和Muation
 

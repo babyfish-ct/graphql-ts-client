@@ -381,7 +381,7 @@ export const Demo: FC = memo(() => {
 
 ----------------------
 
-[回到首页](../) | [< 上一篇：核心概念: Fetcher](../fetcher_zh_CN.md) | [下一篇: 和relay一起使用>](relay_zh_CN.md)
+[回到首页](../) | [< 上一篇：核心概念: Fetcher](./fetcher/README_zh_CN.md) | [下一篇: 和relay一起使用>](relay_zh_CN.md)
 
 
 
