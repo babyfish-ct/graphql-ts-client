@@ -1,6 +1,6 @@
 # 碎片和多态查询
 
-*为了简化本问题，除relay专用的SpreadFragment章节外，本文档不讨论配合使用@apollo/client或relay的用法，以独立使用这种最简单的用法讲解。文中所有的fetcher取自[example/client/async-demo/src/__generated/fetchers](example/client/async-demo/src/__generated/fetchers)，也会用到[example/client/async-demo/src/__generated/Async.ts](example/client/async-demo/src/__generated/Async.ts)中的execute函数*
+*为了简化讨论，除relay专用的SpreadFragment章节外，本文档不讨论配合使用@apollo/client或relay的用法，以独立使用这种最简单的用法讲解。文中所有的fetcher取自[example/client/async-demo/src/__generated/fetchers](../example/client/async-demo/src/__generated/fetchers)，也会用到[example/client/async-demo/src/__generated/Async.ts](../example/client/async-demo/src/__generated/Async.ts)中的execute函数*
 
 碎片是GraphQL规范中定义的一种强大的能力，本框架支持三种碎片
 

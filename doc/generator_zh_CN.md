@@ -225,7 +225,7 @@ readonly items: readonly Item[];
 
 ### defaultFetcherExcludeMap
 
-对于GraphQL Schema中的大部分ObjectType而言, 代码生成器都是生成两个内置的fetcher实例. 例如, [example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts](../example/client/src/ascync-demo/__generated/fetchers/DepartmentFetcher.ts) 文件定义两个两个实例:
+对于GraphQL Schema中的大部分ObjectType而言, 代码生成器都是生成两个内置的fetcher实例. 例如, [example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts](../example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts) 文件定义两个两个实例:
 ```
 export const department$: DepartmentFetcher<{}> = 
 	createFetcher(...);
