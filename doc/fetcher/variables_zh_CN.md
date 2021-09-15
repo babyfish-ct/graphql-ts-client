@@ -115,8 +115,10 @@ async function test() {
         QUERY, 
         {
             variables: {
-                namePattern: "o"
+
                 // 1. 旧参数name被覆盖为新参数namePattern，此处只能指定namePattern；如果指定name，将得到编译报错
+                namePattern: "o"
+                
                 // 2. 其余参数均被常量覆盖，如果指定，将得到编译报错
             }
         }

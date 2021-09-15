@@ -2,7 +2,7 @@
 
 *为了简化讨论，本文档不讨论配合使用@apollo/client或relay的用法，以独立使用这种最简单的用法讲解。文中所有的fetcher取自[example/client/async-demo/src/__generated/fetchers](../../example/client/async-demo/src/__generated/fetchers)，也会用到[example/client/async-demo/src/__generated/Async.ts](../../example/client/async-demo/src/__generated/Async.ts)中的execute函数*
 
-## 1. 默认Fetcher基本用法
+## 1. 基本用法
 
 在实际项目中，对象的字段可能非常多，一个一个地书写会特别枯燥，例如
 ```ts
@@ -27,7 +27,7 @@ const QUERY = query$.findEmployees(
 
 上文中用到过的一些诸如query$、employeeConnection$、employeeEdge$、employee$常量，这些以"$"结尾的全局常量叫做Empty Fetcher，它们不包含任何字段，它们的职责是创建其它Fetcher。
 
-代码生成器还会生成一些以"$$"结尾的全局常量，它们叫做默认Fetcher。默认Fetcher包含了所有的简单字段，即，既无参数也非关联的字段。在[example/client/async-demo/src/__generated/fetchers/EmployeeFetcher.ts](../../example/client/async-demo/src/__generated/fetchers/EmployeeFetcher.ts)中，你会发现如下代码
+代码生成器还会生成另外一些以"$$"结尾的全局常量，它们叫做默认Fetcher。默认Fetcher包含了所有的简单字段，即，既无参数也非关联的字段。在[example/client/async-demo/src/__generated/fetchers/EmployeeFetcher.ts](../../example/client/async-demo/src/__generated/fetchers/EmployeeFetcher.ts)中，你会发现如下代码
 ```ts
 export const employee$: EmployeeFetcher<{}, {}> = createFetcher(...);
 
@@ -61,6 +61,7 @@ const QUERY = query$.findEmployees(
         )
     )
 );
+
 async function test() {
     const response = await execute(QUERY);
     console.log(JSON.stringify(response));
@@ -121,6 +122,7 @@ const QUERY = query$.findEmployees(
         )
     )
 );
+
 async function test() {
     const response = await execute(QUERY);
     console.log(JSON.stringify(response));

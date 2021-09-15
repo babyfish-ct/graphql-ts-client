@@ -1,4 +1,4 @@
-A new Graphql client for TypeScript
+A new GraphQL client for TypeScript
 
 1. Supports GraphQL queries with strongly typed code.
 2. **Automatically infers the type of the returned data according to the strongly typed query request**, This is the essential difference between this framework and other similar frameworks, and it is also the reason why I created it.

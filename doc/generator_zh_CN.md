@@ -5,6 +5,9 @@
 ## 生成器种类
 
 到目前为止，框架提供三种代码生成器
+1. AsyncGenerator
+2. ApolloGenerator
+3. RelayGenerator
 
 针对GraphQL Schema中定义的ObjectType, InterfaceType, UnionType, EnumType和InputType，三种代码生成器生成的代码几乎完全一样。区别在于和服务端HTTP通信相关的代码生成结果是不一样的。
 
@@ -127,7 +130,7 @@ yarn add \
 
 
 
-## 配置属性
+## 4. 配置属性
 
 如上文说，无论使用哪种Generator，其构造函数都需要一个配置对象。此配置对象属性如下
 
@@ -144,9 +147,9 @@ yarn add \
 |defaultFetcherExcludeMap|{[key:string]: string[]}|否||
 
 ### schemaLoader
-一个返回Promise<GraphQLSchema>类型的异步函数，用于获取GraphQL schema信息，用于生成代码。
+一个没有参数且返回Promise&lt;GraphQLSchema&gt;类型的异步函数，用于获取GraphQL schema信息，用于生成代码。
 
-graphql-ts-client-codegen保中提供了两个辅助函数，loadRemoteSchema和loadLocalSchema
+为了更简单地实现这个函数，graphql-ts-client-codegen保中提供了两个辅助函数，loadRemoteSchema和loadLocalSchema
 ```ts
 
 export async function loadRemoteSchema(
@@ -158,9 +161,10 @@ export function loadLocalSchema(
     sdl: string
 ): GraphQLSchema;
 ```
+
 loadRemoteSchema需要指定服务端地址；loadLocalSchema需要指定schema defination文本。
 
-如果这两个默认实现都无法帮助你实现schemaLoader，你可以用任意自定的方法实现。
+如果这两个辅助方法都无法帮助你实现schemaLoader，你可以用任意自定义的方法实现。
 
 ## targetDir
 指定一个目录，所有自动生成的代码将会存储在其下
@@ -171,7 +175,7 @@ loadRemoteSchema需要指定服务端地址；loadLocalSchema需要指定schema 
 |
 +----+-scripts
 |    |
-|    \------codegen.js // 这是你使用graphql-ts-client-codegen的node js文件
+|    \------GraphQLCodeGenerator.js // 这是你使用graphql-ts-client-codegen的node js文件
 |
 \----+-src
      |
@@ -225,7 +229,7 @@ readonly items: readonly Item[];
 
 ### defaultFetcherExcludeMap
 
-对于GraphQL Schema中的大部分ObjectType而言, 代码生成器都是生成两个内置的fetcher实例. 例如, [example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts](../example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts) 文件定义两个两个实例:
+对于GraphQL Schema中的大部分ObjectType而言, 代码生成器都是生成两个内置的fetcher实例. 例如, [example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts](../example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts) 文件定义两个实例:
 ```
 export const department$: DepartmentFetcher<{}> = 
 	createFetcher(...);
@@ -236,9 +240,9 @@ export const department$$ =
 		.name
 	;
 ```
-第一个Fetcher叫做空Fetcher, 其余所有Fetcher都基于它构建.
+第一个叫做空Fetcher, 其余所有Fetcher都基于它构建.
 
-第二个Fetcher叫做默认Fetcher, 它保护所有无参数且非关联的字段. 及有参数的字段和关联字段会被排除在外. 这个配置允许你排除更多的字段(如果所有字段都被排除了，默认Fetcher本身就不被生成了), 该属性例子如下:
+第二个叫做默认Fetcher, 它包含所有无参数且非关联的字段. 即，有参数的字段和关联字段会被排除在外. 这个配置允许你排除更多的字段(如果所有字段都被排除了，默认Fetcher本身就不被生成了), 该属性例子如下:
 
 ```
 {
@@ -250,7 +254,12 @@ export const department$$ =
 	
 ```
 
-在框架的所有内置例子项目中，Department.avgSalary属性都被排除。虽然它既没有参数也不是关联字段，但是作为一个计算字段，它的开销并不低，为了性能考虑，它从默认Fetcher中被排除
+在框架的所有内置例子项目中，Department.avgSalary属性都被排除。虽然它既没有参数也不是关联字段，但是作为一个计算字段，它的开销并不低，为了性能考虑，它从默认Fetcher中被排除，就像这样
+```
+defaultFetcherExcludeMap: {
+    "Department": ["avgSalary"]
+}
+```
 
 此配置会被GraphQL schema验证, 无需担拼写错误，如果出现拼写错误，将会导致报错.
 

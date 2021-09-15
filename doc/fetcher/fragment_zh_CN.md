@@ -29,7 +29,7 @@ const QUERY = query$.findEmployees(
     employeeConnection$.edges(
         employeeEdge$.node(
             employee$$
-            .on(ASSOCIATION_FRAGMENT) // 内联碎片
+            .on(ASSOCIATION_FRAGMENT) // 没有指定名称，就是内联碎片
         )
     )
 );
@@ -116,7 +116,7 @@ const QUERY = query$.findEmployees(
     employeeConnection$.edges(
         employeeEdge$.node(
             employee$$
-            .on(ASSOCIATION_FRAGMENT, "MyFragment") // 将碎片名称指定为MyFragment
+            .on(ASSOCIATION_FRAGMENT, "MyFragment") // 指定了名称，就是普通碎片
         )
     )
 );
@@ -252,8 +252,10 @@ export const EmployeeList: FC = memo(() => {
         <>
             {
                 data.findEmployees.edges.map(edge => 
+
                     // [: 3] 这里，只能访问edge.node的id字段，
                     // 如果尝试访问其他在SpreadFragment定义的字段，将会导致编译错误
+
                     <EmployeeItem key={edge.node.id} item={edge.node}/>
                 )
             }
@@ -270,8 +272,6 @@ export const EmployeeList: FC = memo(() => {
 4. 只有在EmployeeItem.tsx中，使用诸如useTypedFragment这样的专用API，才能从整体查询结果中提取出被隐藏的碎片相关的那部分数据。
 
 ## 4. 多态查询
-
-我们在前文中讨论了使用Fetcher的on函数支持碎片。在那些例子中，当前Fetcher所查询的数据类型和碎片Fetcher所查询的数据类型是一样的。
 
 而在GraphQL Schema中，有两种方式支持继承关系
 1. 利用Interace Type实现继承
@@ -296,9 +296,9 @@ type SubType2 {
     ...
 }
 ```
-无论GraphQLSchema使用那种继承关系，本框架都支持多态查询，作为参数的碎片Fetcher，其所查询的类型允许是当前Fetcher所查询类型的派生类。
+无论GraphQLSchema使用那种继承关系，本框架都支持多态查询。
 
-以本框架的所附带的demo为例，Department和Employee都是从node派生，Query也支持一个名称为node的查询
+以本框架的所附带的demo为例，Department和Employee都是从Node派生，Query也支持一个名为node且返回Node类型的查询字段
 
 ```
 interface Node {
@@ -325,7 +325,9 @@ type Query {
 }
 ```
 
-我们既可以基于这样的代码来实现多态查询
+我们在前文中讨论了使用Fetcher的on函数支持碎片。在那些例子中，当前Fetcher所查询的数据类型和碎片Fetcher所查询的数据类型是一样的。事实上，作为参数的碎片Fetcher，其所查询的类型允许是当前Fetcher所查询类型的派生类。
+
+所以我们可以这样实现多态查询
 
 ```ts
 const QUERY = query$.node(
