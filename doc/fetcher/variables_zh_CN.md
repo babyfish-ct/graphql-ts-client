@@ -4,7 +4,7 @@
 
 ## 1. 默认参数传播
 
-query$的findEmployees是有参数的，如果在fetcher表达式中不显式指定参数，那么所有参数都会进一步想外传播，最终传播到execute函数
+query$的findEmployees是有参数的，如果在fetcher表达式中不显式指定参数，那么所有参数都会进一步像外传播，最终传播到execute函数
 
 ```ts
 import { execute } from "./__generated";

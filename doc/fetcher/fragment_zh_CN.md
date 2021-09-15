@@ -271,7 +271,7 @@ export const EmployeeList: FC = memo(() => {
 
 ## 4. 多态查询
 
-我们在前文中讨论了使用Fetcher的on函数支持碎片。在那些例子中，当前Fetcher所查询的数据类型和碎片Fetcher所查询的数据类型的数据类型是一样的。
+我们在前文中讨论了使用Fetcher的on函数支持碎片。在那些例子中，当前Fetcher所查询的数据类型和碎片Fetcher所查询的数据类型是一样的。
 
 而在GraphQL Schema中，有两种方式支持继承关系
 1. 利用Interace Type实现继承
