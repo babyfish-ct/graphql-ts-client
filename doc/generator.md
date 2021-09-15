@@ -226,7 +226,7 @@ You can also use the configuration to override the default behavior of code gene
 
 ## defaultFetcherExcludeMap
 
-For most ObjectTypes in GraphQL Schema, the code generator generates two built-in fetcher instances. For example, [example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts](../example/client/src/async-demo/__generated/fetchers/DepartmentFetcher.ts) defines two instances:
+For most ObjectTypes in GraphQL Schema, the code generator generates two built-in fetcher instances. For example, [example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts](../example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts) defines two instances:
 ```
 export const department$: DepartmentFetcher<{}> = 
 	createFetcher('employees');
