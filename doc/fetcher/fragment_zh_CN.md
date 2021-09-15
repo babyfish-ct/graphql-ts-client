@@ -202,16 +202,16 @@ import { FC, memo } from "react";
 import { createTypedFragment, FragmentKeyOf, useTypedFragment } from "../__generated";
 import { employee$$ } from "../__generated/fetchers";
 
-export const EMPLOYEE_ITEM_FRAGMENT = createTypedFragment(
+export const EMPLOYEE_ITEM_FRAGMENT = createTypedFragment( // [:1]
     "EmployeeItemFragment",
     employee$$
-); // [:1]
+); 
 
 export const EmployeeItem: FC<{
     item: FragmentKeyOf<typeof EMPLOYEE_ITEM_FRAGMENT>
 }> = memo(({item}) => {
 
-    const data = useTypedFragment(EMPLOYEE_ITEM_FRAGMENT, item); // [:3]
+    const data = useTypedFragment(EMPLOYEE_ITEM_FRAGMENT, item); // [:4]
 
     return (
         <div>
@@ -252,7 +252,7 @@ export const EmployeeList: FC = memo(() => {
         <>
             {
                 data.findEmployees.edges.map(edge => 
-                    // [: 2] 这里，只能访问edge.node的id字段，
+                    // [: 3] 这里，只能访问edge.node的id字段，
                     // 如果尝试访问其他在SpreadFragment定义的字段，将会导致编译错误
                     <EmployeeItem key={edge.node.id} item={edge.node}/>
                 )
