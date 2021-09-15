@@ -16,7 +16,6 @@ import { InheritanceInfo } from "./InheritanceInfo";
 export declare abstract class Generator {
     protected config: GeneratorConfig;
     private excludedTypeNames;
-    private excludedOperationNames;
     constructor(config: GeneratorConfig);
     generate(): Promise<void>;
     protected createFetcheWriter(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, inheritanceInfo: InheritanceInfo, stream: WriteStream, config: GeneratorConfig): FetcherWriter;

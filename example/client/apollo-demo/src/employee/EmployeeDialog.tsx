@@ -7,11 +7,10 @@ import { Dialog } from "../common/Dialog";
 import { ErrorText } from "../common/ErrorText";
 import { Loading } from "../common/Loading";
 import { DepartmentSelect } from "../department/DepartmentSelect";
-import { useTypedMutation } from "../__generated";
+import { useTypedMutation, useDependencyManager } from "../__generated";
 import { department$, employee$, employee$$, mutation$ } from "../__generated/fetchers";
 import { EmployeeInput } from "../__generated/inputs";
 import { EmployeeSelect } from "./EmployeeSelect";
-import { useDependencyManager } from "../__generated/DependencyManager";
 
 export const EMPLOYEE_FORM_FETCHER =
     employee$$

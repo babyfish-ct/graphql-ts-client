@@ -147,7 +147,7 @@ export class FetcherWriter extends Writer {
         t(this.modelType.name);
         t("', T, TVariables> ");
 
-        this.scope({type: "BLOCK", multiLines: true}, () => {
+        this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
             this.writeFragment();
             this.writeDirective();
             this.writeTypeName();

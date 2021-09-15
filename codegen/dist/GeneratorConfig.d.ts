@@ -11,13 +11,11 @@ import { GraphQLSchema } from "graphql";
 export interface GeneratorConfig {
     readonly schemaLoader: () => Promise<GraphQLSchema>;
     readonly targetDir: string;
-    readonly recreateTargetDir?: boolean;
     readonly indent?: string;
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
     readonly excludedTypes?: string[];
-    readonly excludedOperations?: string[];
     readonly scalarTypeMap: {
         [key: string]: 'string' | 'number' | 'boolean';
     };

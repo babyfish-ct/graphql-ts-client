@@ -4,9 +4,8 @@ import { ModelType } from "graphql-ts-client-api";
 import { Dialog } from "../common/Dialog";
 import { ErrorText } from "../common/ErrorText";
 import { Loading } from "../common/Loading";
-import { useDependencyManager } from "../__generated/DependencyManager";
 import { employee$, mutation$ } from "../__generated/fetchers";
-import { useTypedMutation } from "../__generated";
+import { useTypedMutation, useDependencyManager } from "../__generated";
 
 export const DELETED_EMPLOYEE_FETCHER =
     employee$

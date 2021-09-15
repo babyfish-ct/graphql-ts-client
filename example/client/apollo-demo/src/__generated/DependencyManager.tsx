@@ -2,8 +2,8 @@ import { createContext, FC, memo, PropsWithChildren, useMemo, useContext } from 
 import { DependencyManager } from "graphql-ts-client-api";
 
 export const DependencyManagerProvider: FC<
-    PropsWithChildren<DependencyManagerProviderConfig>
-> = memo(({children, defaultRegisterDependencies}) => {
+    PropsWithChildren<{readonly defaultRegisterDependencies?: boolean}>
+> = memo(({children, defaultRegisterDependencies = true}) => {
     const arr = useMemo<[DependencyManager, DependencyManagerProviderConfig]>(() => {
         return [
             new DependencyManager(),

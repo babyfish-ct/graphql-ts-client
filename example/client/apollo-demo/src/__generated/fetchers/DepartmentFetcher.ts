@@ -118,6 +118,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
 
 	readonly "~avgSalary": DepartmentFetcher<Omit<T, 'avgSalary'>, TVariables>;
 }
+
 export const department$: DepartmentFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(

@@ -6,7 +6,7 @@
 
 import { executeGraphQL } from './Environment';
 import { EmployeeList } from './views/EmployeeList';
-import { setGraphQLExecutor } from './__generated/Async';
+import { setGraphQLExecutor } from './__generated';
 
 /*
  * Install environment

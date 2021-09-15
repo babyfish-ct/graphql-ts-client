@@ -33,7 +33,7 @@ class ApolloGenerator extends Generator_1.Generator {
     }
     generateApollo() {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Apollo.tsx"));
+            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Apollo.ts"));
             stream.write(APOLLO_CODE);
             yield Generator_1.closeStream(stream);
         });
@@ -50,8 +50,8 @@ class ApolloGenerator extends Generator_1.Generator {
             writeIndexCode: { get: () => super.writeIndexCode }
         });
         return __awaiter(this, void 0, void 0, function* () {
-            stream.write("export { useTypedQuery, useTypedLazyQuery, useTypedMutation } from './Apollo';");
-            stream.write("export { DependencyManagerProvider } from './DependencyManager';\n");
+            stream.write("export { useTypedQuery, useTypedLazyQuery, useTypedMutation } from './Apollo';\n");
+            stream.write("export { DependencyManagerProvider, useDependencyManager } from './DependencyManager';\n");
             yield _super.writeIndexCode.call(this, stream, schema);
         });
     }
@@ -211,8 +211,8 @@ const DEPENDENCY_MANAGER_CODE = `import { createContext, FC, memo, PropsWithChil
 import { DependencyManager } from "graphql-ts-client-api";
 
 export const DependencyManagerProvider: FC<
-    PropsWithChildren<DependencyManagerProviderConfig>
-> = memo(({children, defaultRegisterDependencies}) => {
+    PropsWithChildren<{readonly defaultRegisterDependencies?: boolean}>
+> = memo(({children, defaultRegisterDependencies = true}) => {
     const arr = useMemo<[DependencyManager, DependencyManagerProviderConfig]>(() => {
         return [
             new DependencyManager(),

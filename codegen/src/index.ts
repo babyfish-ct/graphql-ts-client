@@ -9,7 +9,7 @@
  */
 
 export type {GeneratorConfig } from './GeneratorConfig';
-export { loadRemoteSchema, loadLocalSchema } from './RemoteSchemaLoader';
+export { loadRemoteSchema, loadLocalSchema } from './SchemaLoader';
 export { Generator } from './Generator';
 export { AsyncGenerator}  from './async/AsyncGenerator';
 export { ApolloGenerator } from './apollo/ApolloGenerator';
