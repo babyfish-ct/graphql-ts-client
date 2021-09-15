@@ -3,11 +3,13 @@
 ## 1. 准备工作
 
 1. 建立项目
+
 ```
 yarn create react-app <YourAppName> --template typescript
 
 ```
 2. 进入项目目录，引入依赖项
+
 ```
 yarn add \
     graphql \
@@ -18,7 +20,8 @@ yarn add graphql-ts-client-codegen --dev
 ```
 
 3. 准备代码生成node脚本
-进入项目目录，新建scriptes子目录，在其下建立一个js文件，文件名随意，这里假设为GraphQLCodeGenerator.js。文件内容如下
+
+进入项目目录，新建scripts子目录，在其下建立一个js文件，文件名随意，这里假设为GraphQLCodeGenerator.js。文件内容如下
 
 ```js
 const {ApolloGenerator, loadRemoteSchema} = require("graphql-ts-client-codegen");
@@ -35,11 +38,13 @@ const generator = new ApolloGenerator({
 generator.generate();
 ```
 4. 配置codegen命令
+
 修改项目的package.json，找到scripts属性所对应的JSON对象，添加如"codegen"子属性
 ```
 "codegen": "node scripts/GraphQLCodeGenerator.js"
 ```
 5. 生成客户端代码
+
 在确保服务端开启的情况下，执行如下命令，生产客户端命令
 ```
 yarn codegen
@@ -58,7 +63,7 @@ yarn codegen
 |useTypedLazyQuery|useLazyQuery|
 |useTypedMutation|useMuation|
 
-@apollo的Hook API参数接受graphql的DocumentNode，而这里生成的Hook API接受本框架的Fetcher对象。例如
+新API和@apollo/client的API用法一致，但是有一个区别：@apollo/client的API的参数接受graphql中定义的DocumentNode；而新API的参数接受Fetcher。例如
 
 ```ts
 import { FC, memo } from "react";
@@ -139,15 +144,15 @@ query query_38ff4e765cd0dc01544cc9708c6dc7e7(
 { first: 100 }
 ```
 
-值得注意的是，这个请求的operationName是"query_38ff4e765cd0dc01544cc9708c6dc7e7"，其中"38ff4e765cd0dc01544cc9708c6dc7e7"是fetcher队形信息的MD5编码
+值得注意的是，这个请求的operationName是"query_38ff4e765cd0dc01544cc9708c6dc7e7"，其中"38ff4e765cd0dc01544cc9708c6dc7e7"是fetcher对象信息的MD5编码
 
 在@apollo/client中，查询操作的operationName很重要，useMutation可以通过一个叫"refetchQueries"的参数指定一些operationName, 这些operationName所对应的查询将会在mutation完成后自动刷新。
 
-在本框架中，为了简化@apollo/client的查询刷新，提供了依赖管理器（后文即将阐述）。依赖管理器可以让mutation完整后的查询刷新工作自动化，无需开发人员分心。在这种情况下，operationName不会被开发人员在代码中引用，所以是否具备可读性不再重要，只要保证唯一性即可，故采用md5编码自动生成operationName。
+在本框架中，为了简化@apollo/client的查询刷新，提供了依赖管理器（后文即将阐述）。依赖管理器可以让mutation完成后的查询刷新工作自动化，无需开发人员分心。在这种情况下，operationName不会被开发人员在代码中引用，所以是否具备可读性不再重要，只要保证唯一性即可，故采用md5编码自动生成operationName。
 
 如果开发人需要使用@apollo/client经典的方法来处理mutation后的查询，operationName需要在用户代码中引用。这时，可以明确指定operationName，如下
 
-```
+```ts
 const { data, loading, error } = useTypedQuery(
     query$.findEmployees(
         employeeConnection$.edges(
@@ -179,13 +184,14 @@ const { data, loading, error } = useTypedQuery(
 *注意：如果使用依赖管理器，无需为查询指定operationName；否则，和经典的@apollo/client应用一样，所有需要自动刷新的查询都需要人为指定operationName并保证唯一性*
 
 依赖管理器是维护了一系列全局状态
-1. 当包含查询的react组件被mount时，查询的fetcher所覆盖的对象依赖图将会被注册
-2. 当包含查询的react组件被mount时，查询的fetcher所覆盖的对象依赖图将会被注销
+1. 当包含查询的react组件被mount时，查询及其fetcher所覆盖的对象依赖图将会被注册
+2. 当包含查询的react组件被unmount时，查询及其fetcher所覆盖的对象依赖图将会被注销
+
 所以，依赖管理器明白整个应用内任何一个活跃查询的对象依赖图
 
-在执行mutaion之前，客户端持有旧对象；在执行mutation操作后，服务端会返回新对象。依赖管理器会递归比较新旧对象，试图发现根对象或关联引用有没有新建或删除行为，如果有，所有fetcher覆盖范围与之有交集的查询都被判定为需要刷新。
+在执行mutaion之前，客户端持有旧对象；在执行mutation操作后，服务端会返回新对象。依赖管理器会递归比较新旧对象，试图发现根对象或关联引用有没有新建或删除行为，如果有，所有对象依赖范围范围与之有交集的查询都被判定为需要刷新。
 
-依赖管理器仅关注根对象和关联引用的新建和删除操作，不关心对象内部数据变化，因为对象内部的数据变化已经被给Apollo Cache处理妥善。
+依赖管理器仅关注根对象和关联引用的新建和删除操作，不关心对象内部数据变化，因为对象内部非关联数据的变化能够被Apollo Cache妥善处理。
 
 ### 3.1. 植入依赖管理器
 
@@ -202,7 +208,7 @@ import { DependencyManagerProvider } from './__generated';
 ```
 defaultRegisterDependencies是一个boolean属性, 其默认值为true。这里为了更清晰地示范，显式地指定它
 
-#### 3.2. 注册查询到依赖管理
+### 3.2. 注册查询到依赖管理
 ```ts
 const { loading, error, data } = useTypedQuery(
     query$.findDepartmentsLikeName(
@@ -216,9 +222,9 @@ const { loading, error, data } = useTypedQuery(
     { registerDependencies: true }
 );
 ```
-相对于@apollo/client的Hook API，options参数多了一个可选的registerDependencies属性。此属性为true表示当前react组件被mount的时把此查询及其fetcher所覆盖的对象依赖图注册到依赖管理器中，被unmount时注销。
+相对于@apollo/client的Hook API，options参数多了一个可选的registerDependencies属性。此属性为true表示需要当前react组件被mount时把此查询及其fetcher所覆盖的对象依赖图注册到依赖管理器中，知道react组件被unmount时再注销。
 
-事实上，如果<DependencyManagerProvider/>的defaultRegisterDependencies为true，这里是不要给定registerDependencies属性，如
+事实上，如果<DependencyManagerProvider/>的defaultRegisterDependencies为true，这里可以不给定registerDependencies属性，如
 ```ts
 const { loading, error, data } = useTypedQuery(
     query$.findDepartmentsLikeName(
@@ -231,19 +237,20 @@ const { loading, error, data } = useTypedQuery(
     )
 );
 ```
-这个查询的fetcher覆盖了两类对象,Department和Employee, 以下四种情况中任何一种发生时，该查询都会自动刷新
+
+这个查询的fetcher覆盖了两类对象,Department和Employee, 以下任何一种情况发生时，该查询都会自动刷新
 
 1. Department作为根对象被插入到数据库
 2. Employee作为根对象插入到数据库
 3. Department作为根对象从数据库中被删除
 4. Employee作为根对象从数据库中被删除
-5. 数据中，已存在的Employee对象指向Department的外键被修改（外键被修改 = 从旧的Departemnt对象的的employees集合中删除 + 在新的Department对象的employees集合中插入。所以关系变更本质上也是插入和删除操作）
+5. 数据库中，已存在的Employee对象指向Department的外键被修改（外键被修改 = 从旧的Departemnt对象的的employees集合中删除 + 在新的Department对象的employees集合中插入。所以关系变更本质上也是插入和删除操作）
 
-对于非关联字段的修改，依赖管理器不会关注。因为，Apollo Cache已经可以妥善处理这种情况。
+再次说明，对于非关联字段的修改，依赖管理器不会关注。因为，Apollo Cache已经可以妥善处理这种情况。
 
 ### 3.3 在变更操作中刷新查询
 
-```ts
+```tsx
 
 import { ModelType } from "graphql-ts-client-api";
 import { FC, memo, useCallback, useState } from "react";
@@ -326,13 +333,13 @@ function toInput(oldEmployee?: ModelType<typeof EMPLOYEE_MERGE_INFO>): EmployeeI
 
 ## 4. 业务计算依赖
 
-上文讨论过，依赖管理器仅关注更对象或关联引用的插入和删除，不会关注对非关联字段的修改，因为Apollo Cache已经可以妥善处理这种情况。
+上文讨论过，依赖管理器仅关注根对象或关联引用的插入和删除，不会关注对非关联字段的修改，因为Apollo Cache已经可以妥善处理这种情况。
 
 但是，有时非关联字段的变更也会影响查询结果。本框架所附带的demo中，Department具备一个avgSalary属性，该属性是一个业务计算字段，计算其下所有员工的平均薪资。因此，任何Employee对象的salary字段被修改都会引起其Department父对象的avgSalary的变化。
 
 你可以如下处理这种业务计算
 
-```
+```tsx
 import { FC, memo } from "react";
 import { useTypedQuery } from "./__generated";
 import { query$, departmentConnection$, departmentEdge$, department$$, employee$ } from "./__generated/fetchers";

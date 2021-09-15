@@ -28,7 +28,7 @@ const QUERY = query$.findEmployees(
 上文中用到过的一些诸如query$、employeeConnection$、employeeEdge$、employee$常量，这些以"$"结尾的全局常量叫做Empty Fetcher，它们不包含任何字段，它们的职责是创建其它Fetcher。
 
 代码生成器还会生成一些以"$$"结尾的全局常量，它们叫做默认Fetcher。默认Fetcher包含了所有的简单字段，即，既无参数也非关联的字段。在[example/client/async-deom/src/__generated/fetchers/EmployeeFetcher.ts](example/client/async-deom/src/__generated/fetchers/EmployeeFetcher.ts)中，你会发现如下代码
-```
+```ts
 export const employee$: EmployeeFetcher<{}, {}> = createFetcher(...);
 
 export const employee$$ = 

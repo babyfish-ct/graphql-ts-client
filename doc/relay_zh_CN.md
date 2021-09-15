@@ -5,11 +5,13 @@
 ## 1. 准备工作
 
 1. 建立项目
+
 ```
 yarn create react-app <YourAppName> --template typescript
 
 ```
 2. 进入项目目录，引入依赖项
+
 ```
 yarn add \
     react-relay @types/react-relay \
@@ -21,7 +23,8 @@ yarn add graphql-ts-client-codegen --dev
 ```
 
 3. 准备代码生成node脚本
-进入项目目录，新建scriptes子目录，在其下建立一个js文件，文件名随意，这里假设为GraphQLCodeGenerator.js。文件内容如下
+
+进入项目目录，新建scripts子目录，在其下建立一个js文件，文件名随意，这里假设为GraphQLCodeGenerator.js。文件内容如下
 
 ```js
 const {RelayGenerator, loadRemoteSchema} = require("graphql-ts-client-codegen");
@@ -38,11 +41,13 @@ const generator = new RelayGenerator({
 generator.generate();
 ```
 4. 配置codegen命令
+
 修改项目的package.json，找到scripts属性所对应的JSON对象，添加如"codegen"子属性
 ```
 "codegen": "node scripts/GraphQLCodeGenerator.js"
 ```
 5. 生成客户端代码
+
 在确保服务端开启的情况下，执行如下命令，生产客户端命令
 ```
 yarn codegen
@@ -53,7 +58,7 @@ yarn codegen
 
 由于relay本身具有特殊性，本框架的Fetcher不能直接使用，而是要包装成TypedQuery、TypedMutation和TypedFragment后再使用。
 
-在[src/__generated/Relay.ts](../example/client/relay-demo/src/__generated/Relay.ts)中，有3个函数用于根据Fetcher创建出包装对象。
+在[src/__generated/Relay.ts](../example/client/relay-demo/src/__generated/Relay.ts)中，有3个函数用于根据Fetcher创建包装对象。
 
 1. createTypedQuery
 2. createTypedMutation
@@ -63,7 +68,15 @@ yarn codegen
 
 ```ts
 import { createTypedQuery, createTypedMutation, createTypedFragment } from './__generated';
-import { query$, mutation$, employeeConnection$, employeeEdge$, employee$$, employee$, department$ } from './__generated/fetchers';
+import { 
+    query$, 
+    mutation$, 
+    employeeConnection$, 
+    employeeEdge$, 
+    employee$$, 
+    employee$, 
+    department$ 
+} from './__generated/fetchers';
 
 export const EMPLOYEE_ASSOCIATION_FRAGEMNT = createTypedFragment(
     "EmployeeAssocaitionFragment",
@@ -131,4 +144,4 @@ export const EMPLOYEE_MERGE_MUTATION = createTypedMutation(
 
 ----------------------
 
-[回到首页](../) | [< 上一篇：和@apollo/client一起使用](../apollo_zh_CN.md)
+[回到首页](../) | [< 上一篇：和@apollo/client一起使用](./apollo_zh_CN.md)

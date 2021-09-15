@@ -14,7 +14,7 @@
 
 内联碎片并非真正的碎片，它仅仅是一个看起来像碎片的语法糖。
 
-```
+```ts
 import { execute } from "./__generated";
 import { query$, employeeConnection$, employeeEdge$, employee$, employee$$, department$$ } from "./__generated/fetchers";
 
@@ -101,7 +101,7 @@ query (
 
 普通碎片就是GraphQL规范中定义的碎片。
 
-```
+```ts
 import { execute } from "./__generated";
 import { query$, employeeConnection$, employeeEdge$, employee$, employee$$, department$$ } from "./__generated/fetchers";
 
@@ -327,7 +327,7 @@ type Query {
 
 我们既可以基于这样的代码来实现多态查询
 
-```
+```ts
 const QUERY = query$.node(
     node$
     .id

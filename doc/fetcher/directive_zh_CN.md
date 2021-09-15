@@ -5,7 +5,7 @@
 指令分为两个级别，字段级和碎片级
 
 ## 1. 字段级指令
-```
+```ts
 import type { ParameterRef } from "graphql-ts-client-api";
 import { execute } from "./__generated";
 import { query$, employeeConnection$, employeeEdge$, employee$$ } from "./__generated/fetchers";
@@ -108,7 +108,7 @@ query (
 ## 2.碎片级指令
 
 碎片级指令一般开发少见，多用于和relay配合适合的模式中。比如，创建一个支持refetch的relay framgent.
-```
+```ts
 import { createTypedFragment } from "./__generated";
 import { employee$, employee$$ } from "./__generated/fetchers";
 export const EMPLOYEE_ASSOCIATION_INFO_FRAGEMNT = createTypedFragment(
