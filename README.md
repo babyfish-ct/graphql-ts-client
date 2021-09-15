@@ -14,7 +14,7 @@ A new GraphQL client for TypeScript
 3. [Step-by-step guide with relay](get-start-relay.md)
 
 # Document
-[English Doucument](doc/README.md) | [中文文档](doc/README_zh_CN.md)
+[English Document](doc/README.md) | [中文文档](doc/README_zh_CN.md)
 
 # Notes
 
