@@ -2,9 +2,7 @@
 
 Unlike the standard relay usage, there is no need to use babel-plugin-relay and relay-compiler. The purpose is to avoid executing the "yarn relay" command again and again.
 
-## 1. 准备工作
-
-1. Start
+## 1. Start
 
 Create project
 
@@ -121,7 +119,7 @@ export const EMPLOYEE_MERGE_MUTATION = createTypedMutation(
 1. The wrapper objects created by these functions must be saved with global constants for reuse by other code.
 2. Each wrapper object needs at least one name (such as "EmployeeAssocaitionFragment", "EmployeeAssocaitionFragmentRefetchQuery", "EmployeeListQuery" and "EmployeeMergeMutation" here). Please ensure that these names are unique. If there is a name conflict, it will cause a runtime exception.
 
-这些全局对象可供生成的的其他relay API使用，代码生成器会生成这些API用以取代relay的API
+These global objects can be used by other generated relay APIs, and the code generator will generate new API functions to replace the relay API functions
 
 |Strongly typed API generated in src/__generated|relay API|
 |----------|-------------|

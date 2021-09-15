@@ -12,7 +12,7 @@ import { query$, employeeConnection$, employeeEdge$, employee$$ } from "./__gene
 
 const QUERY = query$.findEmployees(
     
-    // 这里并没有指定参数，所有参数都将传播给execute函数
+    // No parameters are specified here, all parameters will be propagated to the execute function
 
     employeeConnection$.edges(
         employeeEdge$.node(

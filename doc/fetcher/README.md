@@ -13,7 +13,7 @@ In order to simplify the documentation, except for a few chapters, fetcher relat
 
 1. [Basic Usage](./basic.md)
 2. [Default Fetcher](./default-fetcher.md)
-3. [Parameter](./variables.md)
+3. [Variables](./variables.md)
 4. [Fragment and Polymorphic Query](./fragment.md)
 5. [Alias](./alias.md)
 6. [Directive](./directive.md)
