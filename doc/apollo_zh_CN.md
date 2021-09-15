@@ -224,7 +224,7 @@ const { loading, error, data } = useTypedQuery(
 ```
 相对于@apollo/client的Hook API，options参数多了一个可选的registerDependencies属性。此属性为true表示需要当前react组件被mount时把此查询及其fetcher所覆盖的对象依赖图注册到依赖管理器中，知道react组件被unmount时再注销。
 
-事实上，如果<DependencyManagerProvider/>的defaultRegisterDependencies为true，这里可以不给定registerDependencies属性，如
+事实上，如果&lt;DependencyManagerProvider/&gt;的defaultRegisterDependencies为true，这里可以不给定registerDependencies属性，如
 ```ts
 const { loading, error, data } = useTypedQuery(
     query$.findDepartmentsLikeName(
