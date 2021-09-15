@@ -8,17 +8,20 @@
 ```ts
 import type { ParameterRef } from "graphql-ts-client-api";
 import { execute } from "./__generated";
-import { query$, employeeConnection$, employeeEdge$, employee$$ } from "./__generated/fetchers";
+import { query$, employeeConnection$, employeeEdge$, employee$$, department$$ } from "./__generated/fetchers";
 
 const QUERY = query$.findEmployees(
     employeeConnection$.edges(
         employeeEdge$.node(
             employee$$
+            .department(
+                department$$,
+                options => options.directive("include", {
+                    if: ParameterRef.of("includeDepartment", "Boolean!")
+                })
+            )
         )
-    ),
-    options => options.directive("include", {
-           if: ParameterRef.of("includeDepartment", "Boolean!")
-    })
+    )
 );
 
 async function test() {
@@ -61,14 +64,18 @@ query (
         departmentId: $departmentId, 
         name: $name
     ) {
-        edges
-        @include(if: $includeDepartment) {
+        edges {
             node {
                 id
                 firstName
                 lastName
                 gender
                 salary
+                department 
+                @include(if: $includeDepartment) {
+                    id
+                    name 
+                }
             }
         }
     }
