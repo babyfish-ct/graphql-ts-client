@@ -167,7 +167,7 @@ export function createTypedFragment<
     TFragmentName extends string, 
     TFetchable extends string, 
     TData extends object, 
-TUnresolvedVariables extends object
+    TUnresolvedVariables extends object
 >(
     name: TFragmentName,
     fetcher: Fetcher<TFetchable, TData, TUnresolvedVariables>

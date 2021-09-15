@@ -19,4 +19,4 @@ Fetcher是本框架的核心概念。对于GraphQL中的每一个ObjectType，�
 6. [指令](./directive_zh_CN.md)
 
 ----------------------
-[返回上级](../README_zh_CN.md)
+[返回上级](../README_zh_CN.md) | [<上一篇: 代码生成器](../generator_zh_CN.md) | [下一篇: 和@apollo/client一起使用>](../apollo_zh_CN.md)
