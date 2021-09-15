@@ -118,6 +118,7 @@ export interface PageInfoFetcher<T extends object, TVariables extends object> ex
 
 	readonly "~endCursor": PageInfoFetcher<Omit<T, 'endCursor'>, TVariables>;
 }
+
 export const pageInfo$: PageInfoFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(

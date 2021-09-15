@@ -5,10 +5,9 @@ import { ModelType } from "graphql-ts-client-api";
 import { ERROR_CSS, FORM_CSS } from "../common/CssClasses";
 import { Dialog } from "../common/Dialog";
 import { Loading } from "../common/Loading";
-import { useTypedMutation } from "../__generated";
+import { useTypedMutation, useDependencyManager } from "../__generated";
 import { department$$, mutation$ } from "../__generated/fetchers";
 import { DepartmentInput } from "../__generated/inputs";
-import { useDependencyManager } from "../__generated/DependencyManager";
 
 export const DEPARTMENT_FORM_FETCHER =
     department$$;

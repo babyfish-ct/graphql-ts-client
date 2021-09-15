@@ -5,8 +5,7 @@ import { Dialog } from "../common/Dialog";
 import { ErrorText } from "../common/ErrorText";
 import { Loading } from "../common/Loading";
 import { department$, mutation$ } from "../__generated/fetchers";
-import { useDependencyManager } from "../__generated/DependencyManager";
-import { useTypedMutation } from "../__generated";
+import { useTypedMutation, useDependencyManager } from "../__generated";
 
 const DELETED_DEPARTMENT_FETCHER =
     department$

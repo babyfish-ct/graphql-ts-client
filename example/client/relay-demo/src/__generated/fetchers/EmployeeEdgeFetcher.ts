@@ -85,6 +85,7 @@ export interface EmployeeEdgeFetcher<T extends object, TVariables extends object
 
 	readonly "~cursor": EmployeeEdgeFetcher<Omit<T, 'cursor'>, TVariables>;
 }
+
 export const employeeEdge$: EmployeeEdgeFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(

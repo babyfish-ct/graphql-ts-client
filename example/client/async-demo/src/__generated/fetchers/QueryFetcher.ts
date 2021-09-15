@@ -132,6 +132,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
 		TVariables & XVariables & UnresolvedVariables<XArgs, QueryArgs['node']> & XDirectiveVariables
 	>;
 }
+
 export const query$: QueryFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(

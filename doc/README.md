@@ -7,4 +7,4 @@
 
 ---------
 
-[Back to home page](../)
+[Back to home page](https://github.com/babyfish-ct/graphql-ts-client)

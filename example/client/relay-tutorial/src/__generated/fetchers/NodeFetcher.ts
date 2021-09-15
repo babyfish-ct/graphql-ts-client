@@ -64,6 +64,7 @@ export interface NodeFetcher<T extends object, TVariables extends object> extend
 
 	readonly "~id": NodeFetcher<Omit<T, 'id'>, TVariables>;
 }
+
 export const node$: NodeFetcher<{}, {}> = 
 	createFetcher(
 		createFetchableType(

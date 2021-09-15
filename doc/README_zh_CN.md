@@ -6,4 +6,4 @@
 4. [和Relay一起使用](relay_zh_CN.md)
 
 -------
-[回到项目首页](../)
+[回到项目首页](https://github.com/babyfish-ct/graphql-ts-client)
