@@ -39,7 +39,7 @@ generator.generate();
 ```
 4. 配置codegen命令
 
-修改项目的package.json，找到scripts属性所对应的JSON对象，添加如"codegen"子属性
+修改项目的package.json，找到scripts属性所对应的JSON对象，添加名为"codegen"的子属性
 ```
 "codegen": "node scripts/GraphQLCodeGenerator.js"
 ```
@@ -177,7 +177,7 @@ const { data, loading, error } = useTypedQuery(
 2. 即使你明确指定了operationName，依赖管理器仍然可以管理该查询。
 
 
-## 依赖管理器
+## 3. 依赖管理器
 
 依赖管理器用于降低useMutation中refetchQueries的指定难度，它是可选的，你可以选择使用或者不使用
 
@@ -195,7 +195,7 @@ const { data, loading, error } = useTypedQuery(
 
 ### 3.1. 植入依赖管理器
 
-在生成的代码的文件[src/__generated/DependencyManagerProvider.tsx](../example/client/apollo-demo/src/__generated/DependencyManager.tsx)中，有一个react组件<DependencyManagerProvider/>, 需要在App.tsx中引入它
+在生成的代码的文件[src/__generated/DependencyManagerProvider.tsx](../example/client/apollo-demo/src/__generated/DependencyManager.tsx)中，有一个react组件&lt;DependencyManagerProvider/&gt;, 需要在App.tsx中引入它
 
 ```tsx
 import { DependencyManagerProvider } from './__generated';
@@ -237,6 +237,7 @@ const { loading, error, data } = useTypedQuery(
     )
 );
 ```
+如你所见，看起来似乎没有什么变化。
 
 这个查询的fetcher覆盖了两类对象,Department和Employee, 以下任何一种情况发生时，该查询都会自动刷新
 
@@ -248,7 +249,7 @@ const { loading, error, data } = useTypedQuery(
 
 再次说明，对于非关联字段的修改，依赖管理器不会关注。因为，Apollo Cache已经可以妥善处理这种情况。
 
-### 3.3 在变更操作中刷新查询
+### 3.3 在变更操作后刷新查询
 
 ```tsx
 
@@ -317,7 +318,7 @@ export const Editor: FC<{
 
 function toInput(oldEmployee?: ModelType<typeof EMPLOYEE_MERGE_INFO>): EmployeeInput {
     伪代码
-    如果oldEmployee为undefined(新建模式)：构建初始input
+    如果oldEmployee为undefined(新建)：构建初始input
     否则（编辑），将oldEmployee转换为input
 }
 
@@ -325,7 +326,7 @@ function toInput(oldEmployee?: ModelType<typeof EMPLOYEE_MERGE_INFO>): EmployeeI
 
 代码中有4处注释标记，各自的解释如下
 
-1. 对于这个修改操作而言，服务端要执行的修改逻辑包含所有非关联字段和两个外键，其实，这就是服务端数据库中Employee的表结构。
+1. 对于这个变更操作而言，服务端要执行的修改逻辑包含所有非关联字段和两个外键，其实，这就是服务端数据库中Employee的表结构。
 2. oldEmployee参数可选，不指定表示新建，指定则表示编辑
 3. 对于异常而言，有可能是网络通信异常。对这种情况，服务端是否执行成功其实是未知的。实际项目中，应该分辨异常的种类来判断是是否需要刷新；这里，为了简化文档，采用简单粗暴的方式，不分青红皂白，强行刷新所有和fetcher查询范围有交集的查询
 4. 如果mutation执行成功，对比新旧对象再决定哪些查询应该刷新
@@ -351,13 +352,13 @@ export const Demo: FC = memo(() => {
             departmentConnection$.edges(
                 departmentEdge$.node(
                     department$$
-                    .avgSalary
+                    .avgSalary // [:1]
                 )
             )
         ),
         {
             registerDependencies: {
-                fieldDependencies: [ employee$.salary ] // 业务计算依赖
+                fieldDependencies: [ employee$.salary ] // [:2]
             }
         }
     )
@@ -379,7 +380,11 @@ export const Demo: FC = memo(() => {
     );
 });
 ```
-如果Employee对象的salary字段被修改，那么该查询会自动刷新
+
+上面的代码中有两处注释标记，各自的解释如下
+
+1. 查询业务计算字段
+2. 指定业务计算依赖项，如果Employee对象的salary字段被修改，那么该查询会自动刷新
 
 ## 5. 配套demo
 
@@ -388,11 +393,4 @@ export const Demo: FC = memo(() => {
 
 ----------------------
 
-[回到首页](../) | [< 上一篇：核心概念: Fetcher](./fetcher/README_zh_CN.md) | [下一篇: 和relay一起使用>](relay_zh_CN.md)
-
-
-
-
-
-
-
+[回到文档首页](./README_zh_CN.md) | [< 上一篇：核心概念: Fetcher](./fetcher/README_zh_CN.md) | [下一篇: 和relay一起使用>](relay_zh_CN.md)

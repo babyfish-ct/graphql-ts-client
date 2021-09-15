@@ -157,4 +157,4 @@ And the attached variables are
 ```
 
 ----------------------
-[Back to parent](./README.md) | [< Previous: Default Fetcher](./default-fetcher.md) ｜ [Next: Fragment and polymorphic query >](./fragment_zh_CN.md)
+[Back to parent](./README.md) | [< Previous: Default Fetcher](./default-fetcher.md) ｜ [Next: Fragment and polymorphic query >](./fragment.md)

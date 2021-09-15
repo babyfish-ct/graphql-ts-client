@@ -42,7 +42,7 @@ generator.generate();
 ```
 4. 配置codegen命令
 
-修改项目的package.json，找到scripts属性所对应的JSON对象，添加如"codegen"子属性
+修改项目的package.json，找到scripts属性所对应的JSON对象，添加名为"codegen"的子属性
 ```
 "codegen": "node scripts/GraphQLCodeGenerator.js"
 ```
@@ -144,4 +144,4 @@ export const EMPLOYEE_MERGE_MUTATION = createTypedMutation(
 
 ----------------------
 
-[回到首页](../) | [< 上一篇：和@apollo/client一起使用](./apollo_zh_CN.md)
+[回到文档首页](./README_zh_CN.md) | [< 上一篇：和@apollo/client一起使用](./apollo_zh_CN.md)

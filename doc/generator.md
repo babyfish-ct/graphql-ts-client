@@ -112,7 +112,7 @@ yarn add \
 
 Finally, in the generated code, new API functions are generated to wrap the functions of relay API.
 
-|src/__generated中生成的强类型API|relay的原生API|
+|Strongly typed API generated in src/__generated|relay API|
 |----------|-------------|
 |loadTypedQuery|loadQuery|
 |fetchTypedQuery|fetchQuery|
@@ -226,7 +226,7 @@ You can also use the configuration to override the default behavior of code gene
 
 ## defaultFetcherExcludeMap
 
-For most ObjectTypes in GraphQL Schema, the code generator generates two built-in fetcher instances. For example, [example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts](../example/client/src/ascync-demo/__generated/fetchers/DepartmentFetcher.ts) defines two instances:
+For most ObjectTypes in GraphQL Schema, the code generator generates two built-in fetcher instances. For example, [example/client/async-demo/src/__generated/fetchers/DepartmentFetcher.ts](../example/client/src/async-demo/__generated/fetchers/DepartmentFetcher.ts) defines two instances:
 ```
 export const department$: DepartmentFetcher<{}> = 
 	createFetcher('employees');
@@ -263,4 +263,4 @@ This configuration will be validated by the GraphQL schema, all the spelling err
 ____________________
 
 
-[BackToDocumentHome](./README.md) | [Next: Core idea: Fetcher>](./fetcher/README.md)
+[Back to document home](./README.md) | [Next: Core idea: Fetcher>](./fetcher/README.md)
