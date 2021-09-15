@@ -67,7 +67,7 @@ query (
 
 因为Query的findEmployees并非简单字段，因为它有参数且是关联字段。所以代码生成器在QueryFetcher中为其生成了findEmployees()函数而非属性，lambda表达式“options => options.alias("result")”作为此函数最后一个参数，完成了别名设置。
 
-但是，一些既无参数也非关联的简单字段，代码生成器生成的是属性，而非函数，该怎么办呢？事实上，对这些简单字段而言，代码生成器不仅生成属性，也会生成一个函数，函数名以“+”结尾，以[example/client/async-demo/src/__generated/fetchers/EmployeeFetcher.ts](example/client/async-demo/src/__generated/fetchers/EmployeeFetcher.ts)中的firstName属性为例
+但是，一些既无参数也非关联的简单字段，代码生成器生成的是属性，而非函数，该怎么办呢？事实上，对这些简单字段而言，代码生成器不仅生成属性，也会生成一个函数，函数名以“+”结尾，以[example/client/async-demo/src/__generated/fetchers/EmployeeFetcher.ts](../../example/client/async-demo/src/__generated/fetchers/EmployeeFetcher.ts)中的firstName属性为例
 
 ```ts
     readonly firstName: EmployeeFetcher<T & {readonly "firstName": string}, TVariables>;
