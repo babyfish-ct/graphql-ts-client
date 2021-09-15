@@ -114,7 +114,7 @@ query (
 
 ## 2.碎片级指令
 
-碎片级指令一般开发少见，多用于和relay配合适合的模式中。比如，创建一个支持refetch的relay framgent.
+碎片级指令一般开发少见，多用于和relay配合使用的模式中。比如，创建一个支持refetch的relay framgent.
 ```ts
 import { createTypedFragment } from "./__generated";
 import { employee$, employee$$ } from "./__generated/fetchers";
