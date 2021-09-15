@@ -9,9 +9,9 @@ A new Graphql client for TypeScript
 
 # Get started
 
-## 1. [Step-by-step guide with nothing](get-start-async.md)
-## 2. [Step-by-step guide with apollo](get-start-apollo.md)
-## 3. [Step-by-step guide with relay](get-start-relay.md)
+1. [Step-by-step guide with nothing](get-start-async.md)
+2. [Step-by-step guide with apollo](get-start-apollo.md)
+3. [Step-by-step guide with relay](get-start-relay.md)
 
 # Document
 [English Doucument](doc/README.md) | [中文文档](doc/README_zh_CN.md)
