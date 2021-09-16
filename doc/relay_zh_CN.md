@@ -137,10 +137,43 @@ export const EMPLOYEE_MERGE_MUTATION = createTypedMutation(
 
 ## 3. 配套demo
 
-由于relay的特殊性，本框架附提供了两个demo
+由于relay的复杂性，为relay提供了两个demo
 
-1. 针对所有查询功能的tutorial示范[example/client/relay-tutorial](../example/client/relay-tutorial)
-2. 完整的功能演示[example/client/relay-demo](../example/client/relay-demo)
+### 3.1. relay-tutorial
+
+针对查询功能的tutorial示范[example/client/relay-tutorial](../example/client/relay-tutorial)
+1. 启动服务端
+```
+cd example/server
+yarn install
+yarn start
+```
+
+2. 启动客户端
+```
+cd example/client/relay-tutorial
+yarn install
+yarn start
+```
+访问http://localhost:3000
+
+### 3.2. relay-demo
+
+完整的功能演示[example/client/relay-demo](../example/client/relay-demo)
+1. 启动服务端
+```
+cd example/server
+yarn install
+yarn start
+```
+
+2. 启动客户端
+```
+cd example/client/relay-demo
+yarn install
+yarn start
+```
+访问http://localhost:3000
 
 ----------------------
 

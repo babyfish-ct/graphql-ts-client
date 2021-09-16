@@ -390,6 +390,20 @@ export const Demo: FC = memo(() => {
 
 完整的功能演示[example/client/apollo-demo](../example/client/apollo-demo)
 
+1. 启动服务端
+```
+cd example/server
+yarn install
+yarn start
+```
+
+2. 启动客户端
+```
+cd example/client/apollo-demo
+yarn install
+yarn start
+```
+访问http://localhost:3000
 
 ----------------------
 

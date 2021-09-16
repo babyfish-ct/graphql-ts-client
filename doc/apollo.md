@@ -392,6 +392,20 @@ There are two comment marks in the above code, and their explanations are as fol
 
 Complete functional demonstration[example/client/apollo-demo](../example/client/apollo-demo)
 
+1. Start server
+```
+cd example/server
+yarn install
+yarn start
+```
+
+2. Start client
+```
+cd example/client/apollo-demo
+yarn install
+yarn start
+```
+Access http://localhost:3000
 
 ----------------------
 

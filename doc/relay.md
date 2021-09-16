@@ -137,10 +137,45 @@ The usage of the new API and the relay API are the same, but there is one differ
 
 ## 3. Supporting demo
 
-Due to the particularity of the relay, two demos are provided with this framework
+Due to the complexity of the relay, two demos are provided for relay.
 
-1. Tutorial demonstration for all query functions [example/client/relay-tutorial](../example/client/relay-tutorial)
-2. Complete functional demonstration [example/client/relay-demo](../example/client/relay-demo)
+### 3.1. relay-tutorial
+
+Tutorial demonstration for query functions [example/client/relay-tutorial](../example/client/relay-tutorial)
+
+1. Start server
+```
+cd example/server
+yarn install
+yarn start
+```
+
+2. Start client
+```
+cd example/client/relay-tutorial
+yarn install
+yarn start
+```
+Access http://localhost:3000
+
+### 3.2. relay-demo
+
+Complete functional demonstration [example/client/relay-demo](../example/client/relay-demo)
+
+1. Start server
+```
+cd example/server
+yarn install
+yarn start
+```
+
+2. Start client
+```
+cd example/client/relay-demo
+yarn install
+yarn start
+```
+Access http://localhost:3000
 
 ----------------------
 

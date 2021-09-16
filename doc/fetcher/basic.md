@@ -90,7 +90,7 @@ const QUERY = query$.findEmployees(
 );
 
 function printResponse(
-    response: ModelType<typeof QUERY> // ModelType显式获取自动推导的类型
+    response: ModelType<typeof QUERY> // Use ModelType to explicitly get the inferred type
 ) {
     for (const edge of response.findEmployees.edges) {
         const employee = edge.node;

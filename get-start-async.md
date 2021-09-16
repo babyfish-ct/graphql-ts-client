@@ -5,6 +5,7 @@
 
 Download this project, goto [example/server](example/server), execute
 ```
+yarn install
 yarn start
 ```
 
