@@ -96,7 +96,7 @@ export const EMPLOYEE_LIST_QUERY = createTypedQuery(
         employeeConnection$.edges(
             employeeEdge$.node(
                 employee$$
-                .on(DEMO3_EMPLOYEE_ADVANCED_INFO_FRAGEMNT)
+                .on(EMPLOYEE_ASSOCIATION_FRAGEMNT)
             )
         )
     )
