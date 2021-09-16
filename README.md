@@ -13,8 +13,8 @@ A new GraphQL client for TypeScript
 2. [Step-by-step guide with apollo](get-start-apollo.md)
 3. [Step-by-step guide with relay](get-start-relay.md)
 
-# Document
-[English Document](doc/README.md) | [中文文档](doc/README_zh_CN.md)
+# Documentation
+[English Documentation](doc/README.md) | [中文文档](doc/README_zh_CN.md)
 
 # Notes
 
