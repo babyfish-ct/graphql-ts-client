@@ -409,7 +409,7 @@ Access http://localhost:3000
 
 ----------------------
 
-Back to document home](./README.md) | [< Previous：Core idea: Fetcher](./fetcher/README.md) | [Next: Use with relay>](relay.md)
+[Back to document home](./README.md) | [< Previous：Core idea: Fetcher](./fetcher/README.md) | [Next: Use with relay>](relay.md)
 
 
 
