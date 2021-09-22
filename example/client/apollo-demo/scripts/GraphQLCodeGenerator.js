@@ -5,7 +5,6 @@ const generator = new ApolloGenerator({
       return loadRemoteSchema("http://localhost:8080/graphql");
     },
     targetDir: path.join(__dirname, "../src/__generated"),
-    recreateTargetDir: true,
 
     /*
      * Daprtment.avgSalary is an expensive calculation property,
