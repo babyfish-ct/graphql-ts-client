@@ -86,13 +86,13 @@ class DependencyManager {
             return;
         }
         if (oldObject === undefined || newObject === undefined) {
-            (_a = this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)) === null || _a === void 0 ? void 0 : _a.copyTo(output);
+            (_a = this.rootTypeResourceMap.get(fetcher.fetchableType.name)) === null || _a === void 0 ? void 0 : _a.copyTo(output);
         }
         else if (!isOperationFetcher(fetcher)) {
             const oldId = this._idGetter(oldObject);
             const newId = this._idGetter(newObject);
             if (oldId !== newId) {
-                (_b = this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)) === null || _b === void 0 ? void 0 : _b.copyTo(output);
+                (_b = this.rootTypeResourceMap.get(fetcher.fetchableType.name)) === null || _b === void 0 ? void 0 : _b.copyTo(output);
             }
         }
         for (const [fieldName, field] of fetcher.fieldMap) {
@@ -167,7 +167,7 @@ class DependencyManager {
     }
     collectAllResources(fetcher, output) {
         var _a, _b, _c, _d;
-        (_a = this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)) === null || _a === void 0 ? void 0 : _a.copyTo(output);
+        (_a = this.rootTypeResourceMap.get(fetcher.fetchableType.name)) === null || _a === void 0 ? void 0 : _a.copyTo(output);
         for (const [fieldName, field] of fetcher.fieldMap) {
             if (!fieldName.startsWith("...")) { // Not fragment
                 const declaringTypes = getDeclaringTypeNames(fieldName, fetcher);
@@ -212,7 +212,7 @@ class Resources {
     }
 }
 function isOperationFetcher(fetcher) {
-    const fetcherName = fetcher.fetchableType.entityName;
+    const fetcherName = fetcher.fetchableType.name;
     return fetcherName === "Query" || fetcherName === 'Mutation';
 }
 function getDeclaringTypeNames(fieldName, fetcher) {
@@ -224,7 +224,7 @@ function getDeclaringTypeNames(fieldName, fetcher) {
 }
 function collectDeclaringTypeNames(fieldName, fetchableType, output) {
     if (fetchableType.declaredFields.has(fieldName)) {
-        output.add(fetchableType.entityName);
+        output.add(fetchableType.name);
     }
     else {
         for (const superType of fetchableType.superTypes) {

@@ -135,8 +135,14 @@ export const pageInfo$: PageInfoFetcher<{}, {}> =
 	createFetcher(
 		createFetchableType(
 			"PageInfo", 
+			"OBJECT", 
 			[], 
-			["hasNextPage", "hasPreviousPage", "startCursor", "endCursor"]
+			[
+				"hasNextPage", 
+				"hasPreviousPage", 
+				"startCursor", 
+				"endCursor"
+			]
 		), 
 		undefined
 	)

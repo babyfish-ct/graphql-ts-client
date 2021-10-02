@@ -9,5 +9,4 @@
  */
 import { GraphQLInterfaceType, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
 export declare function associatedTypeOf(type: GraphQLType): GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType | undefined;
-export declare function isPluralType(type: GraphQLType): any;
 export declare function instancePrefix(name: string): string;

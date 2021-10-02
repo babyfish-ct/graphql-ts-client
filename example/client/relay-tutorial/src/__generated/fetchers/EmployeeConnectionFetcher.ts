@@ -111,17 +111,16 @@ export const employeeConnection$: EmployeeConnectionFetcher<{}, {}> =
 	createFetcher(
 		createFetchableType(
 			"EmployeeConnection", 
+			"CONNECTION", 
 			[], 
 			[
 				"totalCount", 
 				{
-					isFunction: true, 
-					isPlural: true, 
+					category: "LIST", 
 					name: "edges"
 				}, 
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "REFERENCE", 
 					name: "pageInfo"
 				}
 			]

@@ -14,12 +14,14 @@ const graphql_1 = require("graphql");
 const Utils_1 = require("./Utils");
 const Writer_1 = require("./Writer");
 class FetcherWriter extends Writer_1.Writer {
-    constructor(relay, modelType, inheritanceInfo, stream, config) {
+    constructor(relay, modelType, inheritanceInfo, connectionTypes, edgeTypes, stream, config) {
         var _a;
         super(stream, config);
         this.relay = relay;
         this.modelType = modelType;
         this.inheritanceInfo = inheritanceInfo;
+        this.connectionTypes = connectionTypes;
+        this.edgeTypes = edgeTypes;
         this.fetcherTypeName = generatedFetcherTypeName(modelType, config);
         if (modelType instanceof graphql_1.GraphQLUnionType) {
             const map = {};
@@ -43,8 +45,8 @@ class FetcherWriter extends Writer_1.Writer {
         else {
             this.fieldMap = modelType.getFields();
         }
-        const methodFields = new Map();
-        const pluralFields = new Map();
+        const fieldArgsMap = new Map();
+        const fieldCategoryMap = new Map();
         const defaultFetcherProps = [];
         this.hasArgs = false;
         for (const fieldName in this.fieldMap) {
@@ -59,19 +61,40 @@ class FetcherWriter extends Writer_1.Writer {
                 }
                 defaultFetcherProps.push(fieldName);
             }
-            if (Utils_1.isPluralType(field.type)) {
-                pluralFields.set(field.name, field);
+            if (field.args.length !== 0) {
+                fieldArgsMap.set(fieldName, field.args);
             }
-            if (field.args.length !== 0 || associatedType !== undefined) {
-                methodFields.set(field.name, field);
+            const fieldCoreType = field.type instanceof graphql_1.GraphQLNonNull ?
+                field.type.ofType :
+                field.type;
+            if (fieldCoreType instanceof graphql_1.GraphQLObjectType && this.connectionTypes.has(fieldCoreType)) {
+                fieldCategoryMap.set(fieldName, "CONNECTION");
+            }
+            else if (fieldCoreType instanceof graphql_1.GraphQLList) {
+                const elementType = fieldCoreType.ofType instanceof graphql_1.GraphQLNonNull ?
+                    fieldCoreType.ofType.ofType :
+                    fieldCoreType.ofType;
+                if (elementType instanceof graphql_1.GraphQLObjectType ||
+                    elementType instanceof graphql_1.GraphQLInterfaceType ||
+                    elementType instanceof graphql_1.GraphQLUnionType) {
+                    fieldCategoryMap.set(fieldName, "LIST");
+                }
+            }
+            else if (fieldCoreType instanceof graphql_1.GraphQLObjectType ||
+                fieldCoreType instanceof graphql_1.GraphQLInterfaceType ||
+                fieldCoreType instanceof graphql_1.GraphQLUnionType) {
+                fieldCategoryMap.set(fieldName, "REFERENCE");
+            }
+            else if (fieldName === "id") {
+                fieldCategoryMap.set(fieldName, "ID");
             }
             if (field.args.length !== 0) {
                 this.hasArgs = true;
             }
         }
         this.defaultFetcherProps = defaultFetcherProps;
-        this.pluralFields = pluralFields;
-        this.methodFields = methodFields;
+        this.fieldArgsMap = fieldArgsMap;
+        this.fieldCategoryMap = fieldCategoryMap;
         let prefix = Utils_1.instancePrefix(this.modelType.name);
         this.emptyFetcherName = `${prefix}$`;
         this.defaultFetcherName = defaultFetcherProps.length !== 0 ? `${prefix}$$` : undefined;
@@ -346,6 +369,21 @@ class FetcherWriter extends Writer_1.Writer {
                 this.scope({ type: "PARAMETERS", multiLines: true }, () => {
                     t(`"${this.modelType.name}"`);
                     this.separator(", ");
+                    if (this.modelType instanceof graphql_1.GraphQLObjectType) {
+                        if (this.connectionTypes.has(this.modelType)) {
+                            t('"CONNECTION"');
+                        }
+                        else if (this.edgeTypes.has(this.modelType)) {
+                            t('"EDGE"');
+                        }
+                        else {
+                            t('"OBJECT"');
+                        }
+                    }
+                    else {
+                        t('"OBJECT"');
+                    }
+                    this.separator(", ");
                     this.scope({ type: "ARRAY" }, () => {
                         const upcastTypes = this.inheritanceInfo.upcastTypeMap.get(this.modelType);
                         if (upcastTypes !== undefined) {
@@ -356,26 +394,24 @@ class FetcherWriter extends Writer_1.Writer {
                         }
                     });
                     this.separator(", ");
-                    this.scope({ type: "ARRAY", multiLines: this.methodFields.size !== 0 }, () => {
+                    this.scope({ type: "ARRAY", multiLines: true }, () => {
                         for (const declaredFieldName of this.declaredFieldNames()) {
                             this.separator(", ");
-                            const pluralField = this.pluralFields.get(declaredFieldName);
-                            const methodField = this.methodFields.get(declaredFieldName);
-                            if (pluralField === undefined && methodField === undefined) {
+                            const args = this.fieldArgsMap.get(declaredFieldName);
+                            const category = this.fieldCategoryMap.get(declaredFieldName);
+                            if (args === undefined && (category === undefined || category === "SCALAR")) {
                                 t(`"${declaredFieldName}"`);
                             }
                             else {
                                 this.scope({ type: "BLOCK", multiLines: true }, () => {
-                                    t(`isFunction: ${methodField !== undefined}`);
-                                    this.separator(", ");
-                                    t(`isPlural: ${pluralField !== undefined}`);
+                                    t(`category: "${category !== null && category !== void 0 ? category : 'SCALAR'}"`);
                                     this.separator(", ");
                                     t(`name: "${declaredFieldName}"`);
-                                    if (methodField !== undefined && methodField.args.length !== 0) {
+                                    if (args !== undefined) {
                                         this.separator(", ");
                                         t("argGraphQLTypeMap: ");
-                                        this.scope({ type: "BLOCK", multiLines: methodField.args.length > 1 }, () => {
-                                            for (const arg of methodField.args) {
+                                        this.scope({ type: "BLOCK", multiLines: args.length > 1 }, () => {
+                                            for (const arg of args) {
                                                 this.separator(", ");
                                                 t(arg.name);
                                                 t(": '");

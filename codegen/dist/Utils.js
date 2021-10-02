@@ -9,7 +9,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.instancePrefix = exports.isPluralType = exports.associatedTypeOf = void 0;
+exports.instancePrefix = exports.associatedTypeOf = void 0;
 const graphql_1 = require("graphql");
 function associatedTypeOf(type) {
     if (type instanceof graphql_1.GraphQLNonNull) {
@@ -24,13 +24,6 @@ function associatedTypeOf(type) {
     return undefined;
 }
 exports.associatedTypeOf = associatedTypeOf;
-function isPluralType(type) {
-    if (type instanceof graphql_1.GraphQLNonNull) {
-        return isPluralType(type.ofType);
-    }
-    return type instanceof graphql_1.GraphQLList;
-}
-exports.isPluralType = isPluralType;
 function instancePrefix(name) {
     return name.substring(0, 1).toLowerCase() + name.substring(1);
 }

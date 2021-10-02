@@ -9,8 +9,9 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createFetchableType = exports.createFetcher = void 0;
+exports.createFetcher = void 0;
 const Fetcher_1 = require("./Fetcher");
+const Fetchable_1 = require("./Fetchable");
 const FieldOptions_1 = require("./FieldOptions");
 const Parameter_1 = require("./Parameter");
 /*
@@ -74,7 +75,7 @@ function methodProxyHandler(targetFetcher, handler, field) {
                 const childFetcher = child[" $__instanceOfSpreadFragment"] ? child.fetcher : child;
                 const fragmentName = child[" $__instanceOfSpreadFragment"] ? child.name : argArray[1];
                 let parentFetcher = targetFetcher;
-                if (field === "on" && targetFetcher.fetchableType.entityName !== childFetcher.fetchableType.entityName) {
+                if (field === "on" && targetFetcher.fetchableType.name !== childFetcher.fetchableType.name) {
                     const addField = Reflect.get(targetFetcher, "addField");
                     parentFetcher = addField.call(targetFetcher, "__typename");
                 }
@@ -116,64 +117,4 @@ function methodProxyHandler(targetFetcher, handler, field) {
     };
 }
 function dummyTargetMethod() { }
-function createFetchableType(entityName, superTypes, declaredFields) {
-    const declaredFieldMap = new Map();
-    for (const declaredField of declaredFields) {
-        if (typeof declaredField === 'string') {
-            declaredFieldMap.set(declaredField, {
-                name: declaredField,
-                isFunction: false,
-                isPlural: false,
-                argGraphQLTypeMap: new Map()
-            });
-        }
-        else {
-            const argGraphQLTypeMap = new Map();
-            if (declaredField.argGraphQLTypeMap !== undefined) {
-                for (const argName in declaredField.argGraphQLTypeMap) {
-                    const argGraphQLType = declaredField.argGraphQLTypeMap[argName];
-                    argGraphQLTypeMap.set(argName, argGraphQLType);
-                }
-            }
-            declaredFieldMap.set(declaredField.name, {
-                name: declaredField.name,
-                isFunction: declaredField.isFunction,
-                isPlural: declaredField.isPlural,
-                argGraphQLTypeMap
-            });
-        }
-    }
-    return new FetchableTypeImpl(entityName, superTypes, declaredFieldMap);
-}
-exports.createFetchableType = createFetchableType;
-class FetchableTypeImpl {
-    constructor(entityName, superTypes, declaredFields) {
-        this.entityName = entityName;
-        this.superTypes = superTypes;
-        this.declaredFields = declaredFields;
-    }
-    get fields() {
-        let fds = this._fields;
-        if (fds === undefined) {
-            if (this.superTypes.length === 0) {
-                fds = this.declaredFields;
-            }
-            else {
-                const map = new Map();
-                collectFields(this, map);
-                fds = map;
-            }
-            this._fields = fds;
-        }
-        return fds;
-    }
-}
-function collectFields(fetchableType, output) {
-    for (const [name, field] of fetchableType.declaredFields) {
-        output.set(name, field);
-    }
-    for (const superType of fetchableType.superTypes) {
-        collectFields(superType, output);
-    }
-}
-const FETCHER_TARGET = new FetcherTarget([createFetchableType("Any", [], []), undefined], false, "");
+const FETCHER_TARGET = new FetcherTarget([Fetchable_1.createFetchableType("Any", "OBJECT", [], []), undefined], false, "");

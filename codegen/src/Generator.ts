@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { GraphQLEnumType, GraphQLField, GraphQLFieldMap, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLSchema, GraphQLType, GraphQLUnionType, validate } from "graphql";
+import { GraphQLEnumType, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString, GraphQLType, GraphQLUnionType } from "graphql";
 import { GeneratorConfig, validateConfig, validateConfigAndSchema } from "./GeneratorConfig";
 import { mkdir, rmdir, access, createWriteStream, WriteStream } from "fs";
 import { promisify } from "util";
@@ -37,16 +37,22 @@ export abstract class Generator {
 
         const inheritanceInfo = new InheritanceInfo(schema);
         const fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType> = [];
+        const connectionTypes = new Set<GraphQLObjectType>();
+        const edgeTypes = new Set<GraphQLObjectType>();
         const inputTypes: GraphQLInputObjectType[] = [];
         const enumTypes: GraphQLEnumType[] = [];
         const typeMap = schema.getTypeMap();
         for (const typeName in typeMap) {
             if (!typeName.startsWith("__") && !this.excludedTypeNames.has(typeName)) {
                 const type = typeMap[typeName]!;
-                if (type instanceof GraphQLObjectType || 
-                    type instanceof GraphQLInterfaceType ||
-                    type instanceof GraphQLUnionType
-                ) {
+                if (type instanceof GraphQLObjectType) {
+                    fetcherTypes.push(type);
+                    const pair = connectionTypePair(type);
+                    if (pair !== undefined) {
+                        connectionTypes.add(pair[0]);
+                        edgeTypes.add(pair[1])
+                    }
+                } else if (type instanceof GraphQLInterfaceType || type instanceof GraphQLUnionType) {
                     fetcherTypes.push(type);
                 } else if (type instanceof GraphQLInputObjectType) {
                     inputTypes.push(type);
@@ -58,7 +64,7 @@ export abstract class Generator {
         const promises: Promise<any>[] = [];
         if (fetcherTypes.length !== 0) {
             await this.mkdirIfNecessary("fetchers");
-            promises.push(this.generateFetcherTypes(fetcherTypes, inheritanceInfo));
+            promises.push(this.generateFetcherTypes(fetcherTypes, inheritanceInfo, connectionTypes, edgeTypes));
         }
         if (inputTypes.length !== 0) {
             await this.mkdirIfNecessary("inputs");
@@ -81,6 +87,8 @@ export abstract class Generator {
     protected createFetcheWriter(
         modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
         inheritanceInfo: InheritanceInfo,
+        connectionTypes: Set<GraphQLObjectType>,
+        edgeTypes: Set<GraphQLObjectType>,
         stream: WriteStream,
         config: GeneratorConfig
     ): FetcherWriter {
@@ -88,6 +96,8 @@ export abstract class Generator {
             false,
             modelType,
             inheritanceInfo,
+            connectionTypes,
+            edgeTypes,
             stream,
             config
         );
@@ -106,7 +116,9 @@ export abstract class Generator {
 
     private async generateFetcherTypes(
         fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType>,
-        inheritanceInfo: InheritanceInfo
+        inheritanceInfo: InheritanceInfo,
+        connectionTypes: Set<GraphQLObjectType>,
+        edgeTypes: Set<GraphQLObjectType>
     ) {
         const dir = join(this.config.targetDir, "fetchers");
         const emptyFetcherNameMap = new Map<GraphQLType, string>();
@@ -116,13 +128,20 @@ export abstract class Generator {
                 const stream = createStreamAndLog(
                     join(dir, `${generatedFetcherTypeName(type, this.config)}.ts`)
                 );
-                const writer = this.createFetcheWriter(type, inheritanceInfo, stream, this.config);
+                const writer = this.createFetcheWriter(
+                    type, 
+                    inheritanceInfo, 
+                    connectionTypes, 
+                    edgeTypes,
+                    stream, 
+                    this.config
+                );
                 emptyFetcherNameMap.set(type, writer.emptyFetcherName);
                 if (writer.defaultFetcherName !== undefined) {
                     defaultFetcherNameMap.set(type, writer.defaultFetcherName);
                 }
                 writer.write();
-                await stream.end();
+                await closeStream(stream);
             });
         
         await Promise.all([
@@ -251,6 +270,66 @@ export function createStreamAndLog(path: string): WriteStream {
 
 export async function closeStream(stream: WriteStream) {
     return await(promisify(stream.end).call(stream));
+}
+
+function connectionTypePair(type: GraphQLType): [GraphQLObjectType, GraphQLObjectType] | undefined {
+    if (type instanceof GraphQLObjectType) {
+        const edges = type.getFields()["edges"];
+        if (edges !== undefined) {
+            const listType = 
+                edges.type instanceof GraphQLNonNull ?
+                edges.type.ofType : 
+                edges.type;
+            if (listType instanceof GraphQLList) {
+                const edgeType = 
+                    listType.ofType instanceof GraphQLNonNull ?
+                    listType.ofType.ofType :
+                    listType.ofType;
+                if (edgeType instanceof GraphQLObjectType) {
+                    const node = edgeType.getFields()["node"];
+                    if (node !== undefined) {
+                        if (!(edges.type instanceof GraphQLNonNull)) {
+                            throw new Error(
+                                `The type "${type.name}" is connection, its field "edges" must be not-null list`
+                            );
+                        }
+                        if (!(listType.ofType instanceof GraphQLNonNull)) {
+                            throw new Error(
+                                `The type "${type.name}" is connection, element of  its field "edges" must be not-null`
+                            );
+                        }
+                        if (!(node.type instanceof GraphQLNonNull)) {
+                            throw new Error(
+                                `The type "${edgeType}" is edge, its field "node" must be non-null`
+                            );
+                        } else if (!(node.type.ofType instanceof GraphQLObjectType)) {
+                            throw new Error(
+                                `The type "${edgeType}" is edge, its field "node" must reference other object type`
+                            );
+                        }
+                        const cursor = edgeType.getFields()["cursor"];
+                        if (cursor === undefined) {
+                            throw new Error(
+                                `The type "${edgeType}" is edge, it must defined a field named "cursor"`
+                            );
+                        } else {
+                            const cursorType = 
+                                cursor.type instanceof GraphQLNonNull ?
+                                cursor.type.ofType :
+                                cursor.type;
+                            if (cursorType !== GraphQLString) {
+                                throw new Error(
+                                    `The type "${edgeType}" is edge, its field "cursor" must be string`
+                                );
+                            }
+                        }
+                        return [type, edgeType];
+                    }
+                }
+            }
+        }
+    }
+    return undefined;
 }
 
 const mkdirAsync = promisify(mkdir);

@@ -192,29 +192,26 @@ export const mutation$: MutationFetcher<{}, {}> =
 	createFetcher(
 		createFetchableType(
 			"Mutation", 
+			"OBJECT", 
 			[], 
 			[
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "REFERENCE", 
 					name: "mergeDepartment", 
 					argGraphQLTypeMap: {input: 'DepartmentInput!'}
 				}, 
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "SCALAR", 
 					name: "deleteDepartment", 
 					argGraphQLTypeMap: {id: 'ID'}
 				}, 
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "REFERENCE", 
 					name: "mergeEmployee", 
 					argGraphQLTypeMap: {input: 'EmployeeInput!'}
 				}, 
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "SCALAR", 
 					name: "deleteEmployee", 
 					argGraphQLTypeMap: {id: 'ID'}
 				}

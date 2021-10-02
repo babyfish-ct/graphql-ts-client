@@ -8,7 +8,8 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { FetchableType, Fetcher } from "./Fetcher";
+import { Fetcher } from "./Fetcher";
+import { FetchableType } from "./Fetchable";
 
 export class DependencyManager {
 
@@ -111,12 +112,12 @@ export class DependencyManager {
         }
         
         if (oldObject === undefined || newObject === undefined) {
-            this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)?.copyTo(output);
+            this.rootTypeResourceMap.get(fetcher.fetchableType.name)?.copyTo(output);
         } else if (!isOperationFetcher(fetcher)) {
             const oldId = this._idGetter(oldObject);
             const newId = this._idGetter(newObject);
             if (oldId !== newId) {
-                this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)?.copyTo(output);
+                this.rootTypeResourceMap.get(fetcher.fetchableType.name)?.copyTo(output);
             }
         }
 
@@ -193,7 +194,7 @@ export class DependencyManager {
     }
 
     private collectAllResources(fetcher: Fetcher<string, object, object>, output: Set<string>) {
-        this.rootTypeResourceMap.get(fetcher.fetchableType.entityName)?.copyTo(output);
+        this.rootTypeResourceMap.get(fetcher.fetchableType.name)?.copyTo(output);
         for (const [fieldName, field] of fetcher.fieldMap) {
             if (!fieldName.startsWith("...")) { // Not fragment
                 const declaringTypes = getDeclaringTypeNames(fieldName, fetcher);
@@ -239,7 +240,7 @@ class Resources {
 }
 
 function isOperationFetcher(fetcher: Fetcher<string, object, object>): boolean {
-    const fetcherName = fetcher.fetchableType.entityName;
+    const fetcherName = fetcher.fetchableType.name;
     return fetcherName === "Query" || fetcherName === 'Mutation';
 }
 
@@ -253,7 +254,7 @@ function getDeclaringTypeNames(fieldName: string, fetcher: Fetcher<string, objec
 
 function collectDeclaringTypeNames(fieldName: string, fetchableType: FetchableType<string>, output: Set<string>) {
     if (fetchableType.declaredFields.has(fieldName)) {
-        output.add(fetchableType.entityName);
+        output.add(fetchableType.name);
     } else {
         for (const superType of fetchableType.superTypes) {
             collectDeclaringTypeNames(fieldName, superType, output);

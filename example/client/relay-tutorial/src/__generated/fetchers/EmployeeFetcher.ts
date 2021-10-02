@@ -217,6 +217,7 @@ export const employee$: EmployeeFetcher<{}, {}> =
 	createFetcher(
 		createFetchableType(
 			"Employee", 
+			"OBJECT", 
 			[node$.fetchableType], 
 			[
 				"firstName", 
@@ -224,18 +225,15 @@ export const employee$: EmployeeFetcher<{}, {}> =
 				"gender", 
 				"salary", 
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "REFERENCE", 
 					name: "department"
 				}, 
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "REFERENCE", 
 					name: "supervisor"
 				}, 
 				{
-					isFunction: true, 
-					isPlural: true, 
+					category: "LIST", 
 					name: "subordinates"
 				}
 			]

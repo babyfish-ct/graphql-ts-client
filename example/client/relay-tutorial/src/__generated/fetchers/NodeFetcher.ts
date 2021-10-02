@@ -69,8 +69,14 @@ export const node$: NodeFetcher<{}, {}> =
 	createFetcher(
 		createFetchableType(
 			"Node", 
+			"OBJECT", 
 			[], 
-			["id"]
+			[
+				{
+					category: "ID", 
+					name: "id"
+				}
+			]
 		), 
 		undefined
 	)

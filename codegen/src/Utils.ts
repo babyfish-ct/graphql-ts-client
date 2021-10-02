@@ -23,13 +23,6 @@ export function associatedTypeOf(type: GraphQLType): GraphQLObjectType | GraphQL
     return undefined;
 }
 
-export function isPluralType(type: GraphQLType) {
-    if (type instanceof GraphQLNonNull) {
-        return isPluralType(type.ofType);
-    }
-    return type instanceof GraphQLList;
-}
-
 export function instancePrefix(name: string): string {
     return name.substring(0, 1).toLowerCase() + name.substring(1);
 }

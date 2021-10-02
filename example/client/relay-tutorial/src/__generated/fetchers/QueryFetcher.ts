@@ -149,11 +149,11 @@ export const query$: QueryFetcher<{}, {}> =
 	createFetcher(
 		createFetchableType(
 			"Query", 
+			"OBJECT", 
 			[], 
 			[
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "CONNECTION", 
 					name: "findDepartmentsLikeName", 
 					argGraphQLTypeMap: {
 						before: 'String', 
@@ -164,8 +164,7 @@ export const query$: QueryFetcher<{}, {}> =
 					}
 				}, 
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "CONNECTION", 
 					name: "findEmployees", 
 					argGraphQLTypeMap: {
 						before: 'String', 
@@ -179,8 +178,7 @@ export const query$: QueryFetcher<{}, {}> =
 					}
 				}, 
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "REFERENCE", 
 					name: "node", 
 					argGraphQLTypeMap: {id: 'ID!'}
 				}

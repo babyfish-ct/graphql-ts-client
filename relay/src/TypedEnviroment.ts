@@ -40,7 +40,7 @@ export class TypedEnvironment {
         this.registry.validate(name);
 
         const writer = new TextWriter();
-        writer.text(`${fetcher.fetchableType.entityName.toLowerCase()} ${name}`);
+        writer.text(`${fetcher.fetchableType.name.toLowerCase()} ${name}`);
         if (fetcher.variableTypeMap.size !== 0) {
             writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
                 util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
@@ -83,7 +83,7 @@ export class TypedEnvironment {
         const taggedNode = parseTaggedNode(
             this.schema, 
             name, 
-            `fragment ${name} on ${fetcher.fetchableType.entityName} ${fetcher.toString()}\n${fetcher.toFragmentString()}`
+            `fragment ${name} on ${fetcher.fetchableType.name} ${fetcher.toString()}\n${fetcher.toFragmentString()}`
         ) as ReaderFragment;
         const typedFragment = new TypedFragmentImpl<TFragmentName, TFetchable, TData, TUnresolvedVariables>(
             name,

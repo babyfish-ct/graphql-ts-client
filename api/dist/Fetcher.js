@@ -53,11 +53,11 @@ class AbstractFetcher {
             }
             fieldName = `... ${fragmentName}`;
         }
-        else if (child._fetchableType.entityName === this._fetchableType.entityName || child._unionItemTypes !== undefined) {
+        else if (child._fetchableType.name === this._fetchableType.name || child._unionItemTypes !== undefined) {
             fieldName = '...';
         }
         else {
-            fieldName = `... on ${child._fetchableType.entityName}`;
+            fieldName = `... on ${child._fetchableType.name}`;
         }
         return this.createFetcher(false, fieldName, undefined, child);
     }
@@ -178,7 +178,7 @@ class AbstractFetcher {
             ctx = new ResultContext(fragmentWriter, ctx);
             for (const [fragmentName, fragment] of fragmentMap) {
                 if (renderedFragmentNames.add(fragmentName)) {
-                    fragmentWriter.text(`fragment ${fragmentName} on ${fragment.fetchableType.entityName} `);
+                    fragmentWriter.text(`fragment ${fragmentName} on ${fragment.fetchableType.name} `);
                     ctx.acceptDirectives(fragment.directiveMap);
                     fragmentWriter.scope({ type: "BLOCK", multiLines: true, suffix: '\n' }, () => {
                         ctx.accept(fragment);

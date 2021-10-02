@@ -9,11 +9,12 @@
  */
 
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLUnionType } from "graphql";
-import { associatedTypeOf, instancePrefix, isPluralType } from "./Utils";
+import { GraphQLArgument, GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLUnionType } from "graphql";
+import { associatedTypeOf, instancePrefix } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { InheritanceInfo } from "./InheritanceInfo";
 import { ImportingBehavior, Writer } from "./Writer";
+import { type } from "os";
 
 export class FetcherWriter extends Writer {
 
@@ -27,9 +28,9 @@ export class FetcherWriter extends Writer {
 
     readonly fieldMap: GraphQLFieldMap<any, any>;
 
-    private methodFields: Map<string, GraphQLField<unknown, unknown>>;
+    private fieldArgsMap: Map<string, GraphQLArgument[]>;
 
-    private pluralFields: Map<string, GraphQLField<unknown, unknown>>;
+    private fieldCategoryMap: Map<string, string>;
 
     private hasArgs: boolean;
 
@@ -37,6 +38,8 @@ export class FetcherWriter extends Writer {
         private relay: boolean,
         private readonly modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
         private inheritanceInfo: InheritanceInfo,
+        private connectionTypes: Set<GraphQLObjectType>,
+        private edgeTypes: Set<GraphQLObjectType>,
         stream: WriteStream,
         config: GeneratorConfig
     ) {
@@ -65,8 +68,8 @@ export class FetcherWriter extends Writer {
             this.fieldMap = modelType.getFields();
         }
       
-        const methodFields = new Map<string, GraphQLField<unknown, unknown>>();
-        const pluralFields = new Map<string, GraphQLField<unknown, unknown>>();
+        const fieldArgsMap = new Map<string, GraphQLArgument[]>();
+        const fieldCategoryMap = new Map<string, string>();
         const defaultFetcherProps: string[] = [];
         this.hasArgs = false;
         for (const fieldName in this.fieldMap) {
@@ -81,19 +84,45 @@ export class FetcherWriter extends Writer {
                 }
                 defaultFetcherProps.push(fieldName);
             }
-            if (isPluralType(field.type)) {
-                pluralFields.set(field.name, field);
+
+            if (field.args.length !== 0) {
+                fieldArgsMap.set(fieldName, field.args);
             }
-            if (field.args.length !== 0 || associatedType !== undefined) {
-                methodFields.set(field.name, field);
+
+            const fieldCoreType = 
+                field.type instanceof GraphQLNonNull ?
+                field.type.ofType :
+                field.type;
+            if (fieldCoreType instanceof GraphQLObjectType && this.connectionTypes.has(fieldCoreType)) {
+                fieldCategoryMap.set(fieldName, "CONNECTION");
+            } else if (fieldCoreType instanceof GraphQLList) {
+                const elementType = 
+                    fieldCoreType.ofType instanceof GraphQLNonNull ?
+                    fieldCoreType.ofType.ofType :
+                    fieldCoreType.ofType;
+                if (elementType instanceof GraphQLObjectType ||
+                    elementType instanceof GraphQLInterfaceType ||
+                    elementType instanceof GraphQLUnionType
+                ) {
+                    fieldCategoryMap.set(fieldName, "LIST");
+                }
+            } else if (fieldCoreType instanceof GraphQLObjectType ||
+                fieldCoreType instanceof GraphQLInterfaceType ||
+                fieldCoreType instanceof GraphQLUnionType
+            ) {
+                fieldCategoryMap.set(fieldName, "REFERENCE");
+            } else if (fieldName === "id") {
+                fieldCategoryMap.set(fieldName, "ID");
             }
+
             if (field.args.length !== 0) {
                 this.hasArgs = true;
             }
         }
+
         this.defaultFetcherProps = defaultFetcherProps;
-        this.pluralFields = pluralFields;
-        this.methodFields = methodFields;
+        this.fieldArgsMap = fieldArgsMap;
+        this.fieldCategoryMap = fieldCategoryMap;
         let prefix = instancePrefix(this.modelType.name);
         this.emptyFetcherName = `${prefix}$`;
         this.defaultFetcherName = defaultFetcherProps.length !== 0 ? `${prefix}$$` : undefined;
@@ -406,6 +435,18 @@ export class FetcherWriter extends Writer {
                 this.scope({type: "PARAMETERS", multiLines: true}, () => {
                     t(`"${this.modelType.name}"`);
                     this.separator(", ");
+                    if (this.modelType instanceof GraphQLObjectType) {
+                        if (this.connectionTypes.has(this.modelType)) {
+                            t('"CONNECTION"');
+                        } else if (this.edgeTypes.has(this.modelType)) {
+                            t('"EDGE"');
+                        } else {
+                            t('"OBJECT"');
+                        }
+                    } else {
+                        t('"OBJECT"');
+                    }
+                    this.separator(", ");
                     this.scope({type: "ARRAY"}, () => {
                         const upcastTypes = this.inheritanceInfo.upcastTypeMap.get(this.modelType);
                         if (upcastTypes !== undefined) {
@@ -416,25 +457,23 @@ export class FetcherWriter extends Writer {
                         }
                     });
                     this.separator(", ");
-                    this.scope({type: "ARRAY", multiLines: this.methodFields.size !== 0 }, () => {
+                    this.scope({type: "ARRAY", multiLines: true }, () => {
                         for (const declaredFieldName of this.declaredFieldNames()) {
                             this.separator(", ");
-                            const pluralField = this.pluralFields.get(declaredFieldName);
-                            const methodField = this.methodFields.get(declaredFieldName);
-                            if (pluralField === undefined && methodField === undefined) {
+                            const args = this.fieldArgsMap.get(declaredFieldName);
+                            const category = this.fieldCategoryMap.get(declaredFieldName);
+                            if (args === undefined && (category === undefined || category === "SCALAR")) {
                                 t(`"${declaredFieldName}"`);
                             } else {
                                 this.scope({type: "BLOCK", multiLines: true}, () => {
-                                    t(`isFunction: ${methodField !== undefined}`);
-                                    this.separator(", ");
-                                    t(`isPlural: ${pluralField !== undefined}`);
+                                    t(`category: "${category ?? 'SCALAR'}"`);
                                     this.separator(", ");
                                     t(`name: "${declaredFieldName}"`);
-                                    if (methodField !== undefined && methodField.args.length !== 0) {
+                                    if (args !== undefined) {
                                         this.separator(", ");
                                         t("argGraphQLTypeMap: ");
-                                        this.scope({type: "BLOCK", multiLines: methodField.args.length > 1}, () => {
-                                            for (const arg of methodField.args) {
+                                        this.scope({type: "BLOCK", multiLines: args.length > 1}, () => {
+                                            for (const arg of args) {
                                                 this.separator(", ");
                                                 t(arg.name);
                                                 t(": '");

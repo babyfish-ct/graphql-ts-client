@@ -7,13 +7,6 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
-import { FetchableType, Fetcher } from './Fetcher';
+import { Fetcher } from './Fetcher';
+import { FetchableType } from './Fetchable';
 export declare function createFetcher<E extends string, F extends Fetcher<E, object, object>>(fetchableType: FetchableType<E>, unionEntityTypes: string[] | undefined): F;
-export declare function createFetchableType<E extends string>(entityName: E, superTypes: readonly FetchableType<string>[], declaredFields: ReadonlyArray<string | {
-    readonly isFunction: boolean;
-    readonly isPlural: boolean;
-    readonly name: string;
-    readonly argGraphQLTypeMap?: {
-        readonly [key: string]: string;
-    };
-}>): FetchableType<E>;

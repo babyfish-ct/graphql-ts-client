@@ -7,6 +7,7 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
+import { FetchableType } from "./Fetchable";
 import { FieldOptionsValue } from "./FieldOptions";
 import { ParameterRef } from "./Parameter";
 export interface Fetcher<E extends string, T extends object, TVariables extends object> {
@@ -60,18 +61,6 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     private get result();
     private createResult;
     " $supressWarnings"(_: T, _2: TVariables): never;
-}
-export interface FetchableType<E extends string> {
-    readonly entityName: E;
-    readonly superTypes: readonly FetchableType<string>[];
-    readonly declaredFields: ReadonlyMap<string, FetchableField>;
-    readonly fields: ReadonlyMap<string, FetchableField>;
-}
-export interface FetchableField {
-    readonly name: string;
-    readonly isPlural: boolean;
-    readonly isFunction: boolean;
-    readonly argGraphQLTypeMap: ReadonlyMap<string, string>;
 }
 export interface FetcherField {
     readonly argGraphQLTypes?: ReadonlyMap<string, string>;

@@ -90,11 +90,11 @@ export const departmentEdge$: DepartmentEdgeFetcher<{}, {}> =
 	createFetcher(
 		createFetchableType(
 			"DepartmentEdge", 
+			"EDGE", 
 			[], 
 			[
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "REFERENCE", 
 					name: "node"
 				}, 
 				"cursor"

@@ -18,7 +18,7 @@ class TypedEnvironment {
     operation(name, fetcher) {
         this.registry.validate(name);
         const writer = new graphql_ts_client_api_1.TextWriter();
-        writer.text(`${fetcher.fetchableType.entityName.toLowerCase()} ${name}`);
+        writer.text(`${fetcher.fetchableType.name.toLowerCase()} ${name}`);
         if (fetcher.variableTypeMap.size !== 0) {
             writer.scope({ type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " " }, () => {
                 graphql_ts_client_api_1.util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
@@ -41,7 +41,7 @@ class TypedEnvironment {
     fragment(name, fetcher) {
         const refetchQueryName = (fetcher.directiveMap.get("refetchable") || {})["queryName"];
         this.registry.validate(name, refetchQueryName);
-        const taggedNode = TaggedNode_1.parseTaggedNode(this.schema, name, `fragment ${name} on ${fetcher.fetchableType.entityName} ${fetcher.toString()}\n${fetcher.toFragmentString()}`);
+        const taggedNode = TaggedNode_1.parseTaggedNode(this.schema, name, `fragment ${name} on ${fetcher.fetchableType.name} ${fetcher.toString()}\n${fetcher.toFragmentString()}`);
         const typedFragment = new TypedFragmentImpl(name, fetcher, taggedNode);
         this.registry.register(taggedNode, name, refetchQueryName);
         return typedFragment;

@@ -8,6 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
+import { FetchableType } from "./Fetchable";
 import { FieldOptionsValue } from "./FieldOptions";
 import { ParameterRef } from "./Parameter";
 import { TextWriter } from "./TextWriter";
@@ -114,10 +115,10 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
                 throw new Error("fragmentName cannot start with 'on '");
             }
             fieldName = `... ${fragmentName}`;
-        } else if (child._fetchableType.entityName === this._fetchableType.entityName || child._unionItemTypes !== undefined) {
+        } else if (child._fetchableType.name === this._fetchableType.name || child._unionItemTypes !== undefined) {
             fieldName = '...';
         } else {
-            fieldName = `... on ${child._fetchableType.entityName}`;
+            fieldName = `... on ${child._fetchableType.name}`;
         }
         return this.createFetcher(
             false,
@@ -282,7 +283,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
             ctx = new ResultContext(fragmentWriter, ctx);
             for (const [fragmentName, fragment] of fragmentMap) {
                 if (renderedFragmentNames.add(fragmentName)) {
-                    fragmentWriter.text(`fragment ${fragmentName} on ${fragment.fetchableType.entityName} `);
+                    fragmentWriter.text(`fragment ${fragmentName} on ${fragment.fetchableType.name} `);
                     ctx.acceptDirectives(fragment.directiveMap);
                     fragmentWriter.scope({type: "BLOCK", multiLines: true, suffix: '\n'}, () => {
                         ctx.accept(fragment);     
@@ -301,20 +302,6 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
     " $supressWarnings"(_: T, _2: TVariables): never {
         throw new Error("' $supressWarnings' is not supported");
     }
-}
-
-export interface FetchableType<E extends string> {
-    readonly entityName: E;
-    readonly superTypes: readonly FetchableType<string>[];
-    readonly declaredFields: ReadonlyMap<string, FetchableField>;
-    readonly fields: ReadonlyMap<string, FetchableField>;
-}
-
-export interface FetchableField {
-    readonly name: string;
-    readonly isPlural: boolean;
-    readonly isFunction: boolean;
-    readonly argGraphQLTypeMap: ReadonlyMap<string, string>;
 }
 
 export interface FetcherField {

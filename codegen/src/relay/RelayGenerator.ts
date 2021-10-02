@@ -16,6 +16,8 @@ export class RelayGenerator extends Generator {
     protected createFetcheWriter(
         modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
         inheritanceInfo: InheritanceInfo,
+        connectionTypes: Set<GraphQLObjectType>,
+        edgeTypes: Set<GraphQLObjectType>,
         stream: WriteStream,
         config: GeneratorConfig
     ): FetcherWriter {
@@ -23,6 +25,8 @@ export class RelayGenerator extends Generator {
             true,
             modelType,
             inheritanceInfo,
+            connectionTypes,
+            edgeTypes,
             stream,
             config
         );

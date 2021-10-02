@@ -90,11 +90,11 @@ export const employeeEdge$: EmployeeEdgeFetcher<{}, {}> =
 	createFetcher(
 		createFetchableType(
 			"EmployeeEdge", 
+			"EDGE", 
 			[], 
 			[
 				{
-					isFunction: true, 
-					isPlural: false, 
+					category: "REFERENCE", 
 					name: "node"
 				}, 
 				"cursor"

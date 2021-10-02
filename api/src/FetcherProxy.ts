@@ -8,7 +8,8 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { AbstractFetcher, DirectiveArgs, FetchableField, FetchableType, Fetcher, SpreadFragment } from './Fetcher';
+import { AbstractFetcher, DirectiveArgs, Fetcher, SpreadFragment } from './Fetcher';
+import { FetchableType, createFetchableType } from './Fetchable';
 import { createFieldOptions, FieldOptionsValue } from './FieldOptions';
 import { ParameterRef } from './Parameter';
 
@@ -113,7 +114,7 @@ function methodProxyHandler(
                 const childFetcher = child[" $__instanceOfSpreadFragment"] ? (child as SpreadFragment<string, string, object, object>).fetcher : child as Fetcher<string, object, object>;
                 const fragmentName = child[" $__instanceOfSpreadFragment"] ? (child as SpreadFragment<string, string, object, object>).name : argArray[1] as string | undefined;
                 let parentFetcher = targetFetcher;
-                if (field === "on" && targetFetcher.fetchableType.entityName !== childFetcher.fetchableType.entityName) {
+                if (field === "on" && targetFetcher.fetchableType.name !== childFetcher.fetchableType.name) {
                     const addField = Reflect.get(targetFetcher, "addField") as ADD_FILED;
                     parentFetcher = addField.call(targetFetcher, "__typename");
                 }
@@ -186,81 +187,8 @@ type ADD_DIRECTIVE = (
 
 function dummyTargetMethod() {}
 
-export function createFetchableType<E extends string>(
-    entityName: E,
-    superTypes: readonly FetchableType<string>[],
-    declaredFields: ReadonlyArray<string | { 
-        readonly isFunction: boolean,
-        readonly isPlural: boolean,
-        readonly name: string,
-        readonly argGraphQLTypeMap?: { readonly [key: string]: string }
-    }>
-): FetchableType<E> {
-    const declaredFieldMap = new Map<string, FetchableField>();
-    for (const declaredField of declaredFields) {
-        if (typeof declaredField === 'string') {
-            declaredFieldMap.set(declaredField, {
-                name: declaredField,
-                isFunction: false,
-                isPlural: false,
-                argGraphQLTypeMap: new Map<string, string>()
-            });
-        } else {
-            const argGraphQLTypeMap = new Map<string, string>();
-            if (declaredField.argGraphQLTypeMap !== undefined) {
-                for (const argName in  declaredField.argGraphQLTypeMap) {
-                    const argGraphQLType = declaredField.argGraphQLTypeMap[argName];
-                    argGraphQLTypeMap.set(argName, argGraphQLType);
-                }
-            }
-            declaredFieldMap.set(declaredField.name, {
-                name: declaredField.name,
-                isFunction: declaredField.isFunction,
-                isPlural: declaredField.isPlural,
-                argGraphQLTypeMap
-            });
-        }
-    }
-    return new FetchableTypeImpl<E>(entityName, superTypes, declaredFieldMap);
-}
-
-class FetchableTypeImpl<E extends string> implements FetchableType<E> {
-
-    private _fields?: ReadonlyMap<string, FetchableField>;
-
-    constructor(
-        readonly entityName: E,
-        readonly superTypes: readonly FetchableType<string>[],
-        readonly declaredFields: ReadonlyMap<string, FetchableField>
-    ) {}
-
-    get fields(): ReadonlyMap<string, FetchableField> {
-        let fds = this._fields;
-        if (fds === undefined) {
-            if (this.superTypes.length === 0) {
-                fds = this.declaredFields;
-            } else {
-                const map = new Map<string, FetchableField>();
-                collectFields(this, map);
-                fds = map;
-            }
-            this._fields = fds;
-        }
-        return fds;
-    }
-}
-
-function collectFields(fetchableType: FetchableType<string>, output: Map<string, FetchableField>) {
-    for (const [name, field] of fetchableType.declaredFields) {
-        output.set(name, field);
-    }
-    for (const superType of fetchableType.superTypes) {
-        collectFields(superType, output);
-    }
-}
-
 const FETCHER_TARGET = new FetcherTarget(
-    [createFetchableType("Any", [], []), undefined], 
+    [createFetchableType("Any", "OBJECT", [], []), undefined], 
     false, 
     ""
 );

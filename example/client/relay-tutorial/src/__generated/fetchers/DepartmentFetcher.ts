@@ -135,12 +135,12 @@ export const department$: DepartmentFetcher<{}, {}> =
 	createFetcher(
 		createFetchableType(
 			"Department", 
+			"OBJECT", 
 			[node$.fetchableType], 
 			[
 				"name", 
 				{
-					isFunction: true, 
-					isPlural: true, 
+					category: "LIST", 
 					name: "employees"
 				}, 
 				"avgSalary"
