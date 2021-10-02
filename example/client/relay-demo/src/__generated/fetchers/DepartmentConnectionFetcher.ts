@@ -1,5 +1,5 @@
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ConnectionFetcher, EdgeFetcher, ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 import { FragmentRefs } from 'relay-runtime';
 import { TypedFragment } from 'graphql-ts-client-relay';
@@ -11,10 +11,10 @@ import { TypedFragment } from 'graphql-ts-client-relay';
  * 
  * So any instance of this interface is reuseable.
  */
-export interface DepartmentConnectionFetcher<T extends object, TVariables extends object> extends Fetcher<'DepartmentConnection', T, TVariables> {
+export interface DepartmentConnectionFetcher<T extends object, TVariables extends object> extends ConnectionFetcher<'DepartmentConnection', T, TVariables> {
 
     on<XName extends ImplementationType<'DepartmentConnection'>, X extends object, XVariables extends object>(
-        child: Fetcher<XName, X, XVariables>, 
+        child: ConnectionFetcher<XName, X, XVariables>, 
         fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
     ): DepartmentConnectionFetcher<
         XName extends 'DepartmentConnection' ?
@@ -72,7 +72,7 @@ export interface DepartmentConnectionFetcher<T extends object, TVariables extend
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: Fetcher<'DepartmentEdge', X, XVariables>, 
+        child: EdgeFetcher<'DepartmentEdge', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"edges", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
@@ -93,7 +93,7 @@ export interface DepartmentConnectionFetcher<T extends object, TVariables extend
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: Fetcher<'PageInfo', X, XVariables>, 
+        child: ObjectFetcher<'PageInfo', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"pageInfo", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>

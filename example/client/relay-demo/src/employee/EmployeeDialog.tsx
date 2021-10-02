@@ -169,14 +169,14 @@ function sharedUpdater(
         if (listConnection !== undefined) {
             ConnectionHandler.insertEdgeAfter(
                 listConnection,
-                ConnectionHandler.createEdge(store, listConnection, newEmployeeRecord, employee$.fetchableType.entityName)
+                ConnectionHandler.createEdge(store, listConnection, newEmployeeRecord, employee$.fetchableType.name)
             );
         }
         const optionsConnection = getConnection(store.getRoot(), CONNECTION_KEY_ROOT_EMPLOYEE_OPTIONS);
         if (optionsConnection !== undefined) {
             ConnectionHandler.insertEdgeAfter(
                 optionsConnection,
-                ConnectionHandler.createEdge(store, optionsConnection, newEmployeeRecord, employee$.fetchableType.entityName)
+                ConnectionHandler.createEdge(store, optionsConnection, newEmployeeRecord, employee$.fetchableType.name)
             );
         }
     }

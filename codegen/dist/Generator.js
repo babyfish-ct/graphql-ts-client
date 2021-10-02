@@ -118,7 +118,8 @@ class Generator {
             const defaultFetcherNameMap = new Map();
             const promises = fetcherTypes
                 .map((type) => __awaiter(this, void 0, void 0, function* () {
-                const stream = createStreamAndLog(path_1.join(dir, `${FetcherWriter_1.generatedFetcherTypeName(type, this.config)}.ts`));
+                var _a, _b;
+                const stream = createStreamAndLog(path_1.join(dir, `${type.name}${(_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.fetcherSuffix) !== null && _b !== void 0 ? _b : "Fetcher"}.ts`));
                 const writer = this.createFetcheWriter(type, inheritanceInfo, connectionTypes, edgeTypes, stream, this.config);
                 emptyFetcherNameMap.set(type, writer.emptyFetcherName);
                 if (writer.defaultFetcherName !== undefined) {
@@ -130,9 +131,10 @@ class Generator {
             yield Promise.all([
                 ...promises,
                 (() => __awaiter(this, void 0, void 0, function* () {
+                    var _c, _d;
                     const stream = createStreamAndLog(path_1.join(dir, "index.ts"));
                     for (const type of fetcherTypes) {
-                        const fetcherTypeName = FetcherWriter_1.generatedFetcherTypeName(type, this.config);
+                        const fetcherTypeName = `${type.name}${(_d = (_c = this.config) === null || _c === void 0 ? void 0 : _c.fetcherSuffix) !== null && _d !== void 0 ? _d : "Fetcher"}`;
                         stream.write(`export type {${fetcherTypeName}} from './${fetcherTypeName}';\n`);
                         const defaultFetcherName = defaultFetcherNameMap.get(type);
                         stream.write(`export {${emptyFetcherNameMap.get(type)}${defaultFetcherName !== undefined ?

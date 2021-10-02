@@ -1,5 +1,5 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ObjectFetcher, ConnectionFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import { FragmentRefs } from 'relay-runtime';
 import { TypedFragment } from 'graphql-ts-client-relay';
 
@@ -10,7 +10,7 @@ import { TypedFragment } from 'graphql-ts-client-relay';
  * 
  * So any instance of this interface is reuseable.
  */
-export interface QueryFetcher<T extends object, TVariables extends object> extends Fetcher<'Query', T, TVariables> {
+export interface QueryFetcher<T extends object, TVariables extends object> extends ObjectFetcher<'Query', T, TVariables> {
 
     on<XFragmentName extends string, XData extends object, XVariables extends object>(
         child: TypedFragment<XFragmentName, "Query", XData, XVariables>
@@ -33,7 +33,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: Fetcher<'DepartmentConnection', X, XVariables>, 
+        child: ConnectionFetcher<'DepartmentConnection', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"findDepartmentsLikeName", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
@@ -55,7 +55,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        child: Fetcher<'DepartmentConnection', X, XVariables>, 
+        child: ConnectionFetcher<'DepartmentConnection', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"findDepartmentsLikeName", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
@@ -76,7 +76,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: Fetcher<'EmployeeConnection', X, XVariables>, 
+        child: ConnectionFetcher<'EmployeeConnection', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"findEmployees", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
@@ -98,7 +98,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        child: Fetcher<'EmployeeConnection', X, XVariables>, 
+        child: ConnectionFetcher<'EmployeeConnection', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"findEmployees", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
@@ -118,7 +118,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XAlias extends string = "node", 
         XDirectiveVariables extends object = {}
     >(
-        child: Fetcher<'Node', X, XVariables>, 
+        child: ObjectFetcher<'Node', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"node", {}, {}>
         ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
@@ -135,7 +135,7 @@ export interface QueryFetcher<T extends object, TVariables extends object> exten
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        child: Fetcher<'Node', X, XVariables>, 
+        child: ObjectFetcher<'Node', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"node", {}, {}>
         ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>

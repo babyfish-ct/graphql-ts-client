@@ -39,6 +39,18 @@ export type ModelType<F> =
     M : 
     never;
 
+export interface ObjectFetcher<E extends string, T extends object, TVariables extends object> extends Fetcher<E, T, TVariables> {
+    readonly " $category": "OBJECT";
+}
+
+export interface ConnectionFetcher<E extends string, T extends object, TVariables extends object> extends Fetcher<E, T, TVariables> {
+    readonly " $category": "CONNECTION";
+}
+
+export interface EdgeFetcher<E extends string, T extends object, TVariables extends object> extends Fetcher<E, T, TVariables> {
+    readonly " $category": "EDGE";
+}
+
 export abstract class AbstractFetcher<E extends string, T extends object, TVariables extends object> implements Fetcher<E, T, TVariables> {
 
     private _fetchableType: FetchableType<E>;

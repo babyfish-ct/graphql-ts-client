@@ -130,14 +130,14 @@ function sharedUpdater(
         if (listConnection !== undefined) {
             ConnectionHandler.insertEdgeAfter(
                 listConnection,
-                ConnectionHandler.createEdge(store, listConnection, newDpartmentRecord, departmentEdge$.fetchableType.entityName)
+                ConnectionHandler.createEdge(store, listConnection, newDpartmentRecord, departmentEdge$.fetchableType.name)
             );
         }
         const optionsConnection = getConnection(store.getRoot(), CONNECTION_KEY_ROOT_DEPARTMENT_OPTIONS);
         if (optionsConnection !== undefined) {
             ConnectionHandler.insertEdgeAfter(
                 optionsConnection,
-                ConnectionHandler.createEdge(store, optionsConnection, newDpartmentRecord, employee$.fetchableType.entityName)
+                ConnectionHandler.createEdge(store, optionsConnection, newDpartmentRecord, employee$.fetchableType.name)
             );
         }
     }

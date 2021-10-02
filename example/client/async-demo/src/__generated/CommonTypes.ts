@@ -29,8 +29,8 @@
  *     ;
  */
 export type ImplementationType<T> = 
-	T extends 'Node' ? 'Node' | ImplementationType<'Department'> | ImplementationType<'Employee'> :
-	T
+    T extends 'Node' ? 'Node' | ImplementationType<'Department'> | ImplementationType<'Employee'> :
+    T
 ;
 /**
  * 
@@ -96,25 +96,25 @@ export type ImplementationType<T> =
  */
 
 export function upcastTypes(typeName: string): string[] {
-	const typeNames: string[] = [];
-	upcastTypes0(typeName, typeNames);
-	return typeNames;
+    const typeNames: string[] = [];
+    upcastTypes0(typeName, typeNames);
+    return typeNames;
 }
 
 function upcastTypes0(typeName: string, output: string[]) {
-	switch (typeName){
-		case 'Department':
-			output.push('Department');
-			upcastTypes0('Node', output);
-			break;
-		case 'Employee':
-			output.push('Employee');
-			upcastTypes0('Node', output);
-			break;
-		default:
-			output.push(typeName);
-			break;
-	}
+    switch (typeName){
+        case 'Department':
+            output.push('Department');
+            upcastTypes0('Node', output);
+            break;
+        case 'Employee':
+            output.push('Employee');
+            upcastTypes0('Node', output);
+            break;
+        default:
+            output.push(typeName);
+            break;
+    }
 }
 
 /**
@@ -177,22 +177,22 @@ function upcastTypes0(typeName: string, output: string[]) {
  */
 
 export function downcastTypes(typeName: string): string[] {
-	const typeNames: string[] = [];
-	downcastTypes0(typeName, typeNames);
-	return typeNames;
+    const typeNames: string[] = [];
+    downcastTypes0(typeName, typeNames);
+    return typeNames;
 }
 
 function downcastTypes0(typeName: string, output: string[]) {
-	switch (typeName){
-		case 'Node':
-			output.push('Node');
-			downcastTypes0('Department', output);
-			downcastTypes0('Employee', output);
-			break;
-		default:
-			output.push(typeName);
-			break;
-	}
+    switch (typeName){
+        case 'Node':
+            output.push('Node');
+            downcastTypes0('Department', output);
+            downcastTypes0('Employee', output);
+            break;
+        default:
+            output.push(typeName);
+            break;
+    }
 }
 
 export type WithTypeName<T, TypeName extends string> =

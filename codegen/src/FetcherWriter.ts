@@ -9,7 +9,7 @@
  */
 
 import { WriteStream } from "fs";
-import { GraphQLArgument, GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLUnionType } from "graphql";
+import { GraphQLArgument, GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
 import { associatedTypeOf, instancePrefix } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { InheritanceInfo } from "./InheritanceInfo";
@@ -43,7 +43,8 @@ export class FetcherWriter extends Writer {
         config: GeneratorConfig
     ) {
         super(stream, config);
-        this.fetcherTypeName = generatedFetcherTypeName(modelType, config);
+
+        this.fetcherTypeName = `${this.modelType.name}${config.fetcherSuffix ?? "Fetcher"}`;
 
         if (modelType instanceof GraphQLUnionType) {
             const map: { [key: string]: GraphQLField<any, any> } = {};
@@ -134,7 +135,17 @@ export class FetcherWriter extends Writer {
         } else {
             this.importStatement("import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';");
         }
-        this.importStatement("import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';");
+
+        const importedFetcherTypeNames = new Set<string>();
+        importedFetcherTypeNames.add(this.superFetcherTypeName(this.modelType));
+        for (const fieldName in this.fieldMap) {
+            const field = this.fieldMap[fieldName];
+            const associatedType = associatedTypeOf(field.type);
+            if (associatedType !== undefined) {
+                importedFetcherTypeNames.add(this.superFetcherTypeName(associatedType));
+            }
+        }
+        this.importStatement(`import { ${Array.from(importedFetcherTypeNames).join(", ")}, createFetcher, createFetchableType } from 'graphql-ts-client-api';`);
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
         }
@@ -171,7 +182,9 @@ export class FetcherWriter extends Writer {
         t(COMMENT);
         t("export interface ");
         t(this.fetcherTypeName);
-        t("<T extends object, TVariables extends object> extends Fetcher<'");
+        t("<T extends object, TVariables extends object> extends ");
+        t(this.superFetcherTypeName(this.modelType));
+        t("<'");
         t(this.modelType.name);
         t("', T, TVariables> ");
 
@@ -200,7 +213,7 @@ export class FetcherWriter extends Writer {
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object, XVariables extends object>`);
             this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
-                t("child: Fetcher<XName, X, XVariables>");
+                t(`child: ${this.superFetcherTypeName(this.modelType)}<XName, X, XVariables>`);
                 if (!(this.modelType instanceof GraphQLUnionType)) {
                     this.separator(", ");
                     t("fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment");
@@ -344,7 +357,8 @@ export class FetcherWriter extends Writer {
                 if (associatedType !== undefined) {
                     this.separator(", ");
                     t("child: ");
-                    t("Fetcher<'");
+                    t(this.superFetcherTypeName(associatedType));
+                    t("<'");
                     t(associatedType.name);
                     t("', X, XVariables>");
                 }
@@ -425,7 +439,7 @@ export class FetcherWriter extends Writer {
         t("\nexport const ");
         t(this.emptyFetcherName);
         t(": ");
-        t(generatedFetcherTypeName(this.modelType, this.config))
+        t(this.fetcherTypeName)
         t("<{}, {}> = ")
         this.scope({type: "BLANK", multiLines: true, suffix: ";\n"}, () => {
             t("createFetcher")
@@ -573,14 +587,18 @@ export class FetcherWriter extends Writer {
             }
         }
     }
-}
 
-export function generatedFetcherTypeName(
-    fetcherType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
-    config: GeneratorConfig
-): string {
-    const suffix = config.fetcherSuffix ?? "Fetcher";
-    return `${fetcherType.name}${suffix}`;
+    private superFetcherTypeName(graphQLType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType): string {
+        if (graphQLType instanceof GraphQLObjectType) {
+            if (this.connectionTypes.has(graphQLType)) {
+                return "ConnectionFetcher";
+            }
+            if (this.edgeTypes.has(graphQLType)) {
+                return "EdgeFetcher";
+            }
+        }
+        return "ObjectFetcher";
+    }
 }
 
 const COMMENT = `/*

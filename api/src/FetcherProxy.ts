@@ -64,6 +64,9 @@ function proxyHandler(
             if (p === "fetchableType") {
                 return fetchableType;
             }
+            if (p === " $category") {
+                return fetchableType.category;
+            }
             if (typeof p === 'string') {
                 if (p.startsWith("~")) {
                     const rest = p.substring(1);

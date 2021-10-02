@@ -42,5 +42,5 @@ export declare class FetcherWriter extends Writer {
     private writeArgsInterface;
     private declaredFieldNames;
     private removeSuperFieldNames;
+    private superFetcherTypeName;
 }
-export declare function generatedFetcherTypeName(fetcherType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, config: GeneratorConfig): string;

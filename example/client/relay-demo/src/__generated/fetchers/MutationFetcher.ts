@@ -1,5 +1,5 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import { FragmentRefs } from 'relay-runtime';
 import { TypedFragment } from 'graphql-ts-client-relay';
 import {DepartmentInput} from '../inputs';
@@ -12,7 +12,7 @@ import {EmployeeInput} from '../inputs';
  * 
  * So any instance of this interface is reuseable.
  */
-export interface MutationFetcher<T extends object, TVariables extends object> extends Fetcher<'Mutation', T, TVariables> {
+export interface MutationFetcher<T extends object, TVariables extends object> extends ObjectFetcher<'Mutation', T, TVariables> {
 
     on<XFragmentName extends string, XData extends object, XVariables extends object>(
         child: TypedFragment<XFragmentName, "Mutation", XData, XVariables>
@@ -35,7 +35,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: Fetcher<'Department', X, XVariables>, 
+        child: ObjectFetcher<'Department', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"mergeDepartment", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
@@ -57,7 +57,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        child: Fetcher<'Department', X, XVariables>, 
+        child: ObjectFetcher<'Department', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"mergeDepartment", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
@@ -115,7 +115,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: Fetcher<'Employee', X, XVariables>, 
+        child: ObjectFetcher<'Employee', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"mergeEmployee", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
@@ -137,7 +137,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        child: Fetcher<'Employee', X, XVariables>, 
+        child: ObjectFetcher<'Employee', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"mergeEmployee", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>

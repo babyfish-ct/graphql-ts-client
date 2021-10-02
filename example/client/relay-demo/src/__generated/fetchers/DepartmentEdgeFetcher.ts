@@ -1,5 +1,5 @@
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { EdgeFetcher, ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 import { FragmentRefs } from 'relay-runtime';
 import { TypedFragment } from 'graphql-ts-client-relay';
@@ -11,10 +11,10 @@ import { TypedFragment } from 'graphql-ts-client-relay';
  * 
  * So any instance of this interface is reuseable.
  */
-export interface DepartmentEdgeFetcher<T extends object, TVariables extends object> extends Fetcher<'DepartmentEdge', T, TVariables> {
+export interface DepartmentEdgeFetcher<T extends object, TVariables extends object> extends EdgeFetcher<'DepartmentEdge', T, TVariables> {
 
     on<XName extends ImplementationType<'DepartmentEdge'>, X extends object, XVariables extends object>(
-        child: Fetcher<XName, X, XVariables>, 
+        child: EdgeFetcher<XName, X, XVariables>, 
         fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
     ): DepartmentEdgeFetcher<
         XName extends 'DepartmentEdge' ?
@@ -50,7 +50,7 @@ export interface DepartmentEdgeFetcher<T extends object, TVariables extends obje
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        child: Fetcher<'Department', X, XVariables>, 
+        child: ObjectFetcher<'Department', X, XVariables>, 
         optionsConfigurer?: (
             options: FieldOptions<"node", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>

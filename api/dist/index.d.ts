@@ -7,7 +7,7 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
-export type { Fetcher, ModelType, FetcherField, DirectiveArgs } from './Fetcher';
+export type { Fetcher, ConnectionFetcher, EdgeFetcher, ObjectFetcher, ModelType, FetcherField, DirectiveArgs } from './Fetcher';
 export type { FetchableField, FetchableType, FetchableTypeCategory, FetchableFieldCategory } from './Fetchable';
 export { createFetchableType } from "./Fetchable";
 export { AbstractFetcher, SpreadFragment, StringValue } from './Fetcher';

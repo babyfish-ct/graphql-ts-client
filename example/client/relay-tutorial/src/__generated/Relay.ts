@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Fetcher, util } from "graphql-ts-client-api";
 import { 
-	loadQuery, 
+    loadQuery, 
     useQueryLoader, 
     usePreloadedQuery,
     useLazyLoadQuery, 

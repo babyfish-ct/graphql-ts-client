@@ -21,7 +21,7 @@ export async function execute<TData extends object, TVariables extends object>(
     }
 
     const writer = new TextWriter();
-    writer.text(`${fetcher.fetchableType.entityName.toLowerCase()} ${options?.operationName ?? ''}`);
+    writer.text(`${fetcher.fetchableType.name.toLowerCase()} ${options?.operationName ?? ''}`);
     if (fetcher.variableTypeMap.size !== 0) {
         writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
             util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {

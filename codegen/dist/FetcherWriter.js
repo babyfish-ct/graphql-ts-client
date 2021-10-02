@@ -9,20 +9,20 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generatedFetcherTypeName = exports.FetcherWriter = void 0;
+exports.FetcherWriter = void 0;
 const graphql_1 = require("graphql");
 const Utils_1 = require("./Utils");
 const Writer_1 = require("./Writer");
 class FetcherWriter extends Writer_1.Writer {
     constructor(relay, modelType, inheritanceInfo, connectionTypes, edgeTypes, stream, config) {
-        var _a;
+        var _a, _b;
         super(stream, config);
         this.relay = relay;
         this.modelType = modelType;
         this.inheritanceInfo = inheritanceInfo;
         this.connectionTypes = connectionTypes;
         this.edgeTypes = edgeTypes;
-        this.fetcherTypeName = generatedFetcherTypeName(modelType, config);
+        this.fetcherTypeName = `${this.modelType.name}${(_a = config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher"}`;
         if (modelType instanceof graphql_1.GraphQLUnionType) {
             const map = {};
             const itemCount = modelType.getTypes().length;
@@ -30,7 +30,7 @@ class FetcherWriter extends Writer_1.Writer {
                 const fieldCountMap = new Map();
                 for (const type of modelType.getTypes()) {
                     for (const fieldName in type.getFields()) {
-                        fieldCountMap.set(fieldName, ((_a = fieldCountMap.get(fieldName)) !== null && _a !== void 0 ? _a : 0) + 1);
+                        fieldCountMap.set(fieldName, ((_b = fieldCountMap.get(fieldName)) !== null && _b !== void 0 ? _b : 0) + 1);
                     }
                 }
                 const firstTypeFieldMap = modelType.getTypes()[0].getFields();
@@ -107,7 +107,16 @@ class FetcherWriter extends Writer_1.Writer {
         else {
             this.importStatement("import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';");
         }
-        this.importStatement("import { Fetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';");
+        const importedFetcherTypeNames = new Set();
+        importedFetcherTypeNames.add(this.superFetcherTypeName(this.modelType));
+        for (const fieldName in this.fieldMap) {
+            const field = this.fieldMap[fieldName];
+            const associatedType = Utils_1.associatedTypeOf(field.type);
+            if (associatedType !== undefined) {
+                importedFetcherTypeNames.add(this.superFetcherTypeName(associatedType));
+            }
+        }
+        this.importStatement(`import { ${Array.from(importedFetcherTypeNames).join(", ")}, createFetcher, createFetchableType } from 'graphql-ts-client-api';`);
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
         }
@@ -140,7 +149,9 @@ class FetcherWriter extends Writer_1.Writer {
         t(COMMENT);
         t("export interface ");
         t(this.fetcherTypeName);
-        t("<T extends object, TVariables extends object> extends Fetcher<'");
+        t("<T extends object, TVariables extends object> extends ");
+        t(this.superFetcherTypeName(this.modelType));
+        t("<'");
         t(this.modelType.name);
         t("', T, TVariables> ");
         this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
@@ -162,7 +173,7 @@ class FetcherWriter extends Writer_1.Writer {
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object, XVariables extends object>`);
             this.scope({ type: "PARAMETERS", multiLines: !(this.modelType instanceof graphql_1.GraphQLUnionType) }, () => {
-                t("child: Fetcher<XName, X, XVariables>");
+                t(`child: ${this.superFetcherTypeName(this.modelType)}<XName, X, XVariables>`);
                 if (!(this.modelType instanceof graphql_1.GraphQLUnionType)) {
                     this.separator(", ");
                     t("fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment");
@@ -283,7 +294,8 @@ class FetcherWriter extends Writer_1.Writer {
                 if (associatedType !== undefined) {
                     this.separator(", ");
                     t("child: ");
-                    t("Fetcher<'");
+                    t(this.superFetcherTypeName(associatedType));
+                    t("<'");
                     t(associatedType.name);
                     t("', X, XVariables>");
                 }
@@ -360,7 +372,7 @@ class FetcherWriter extends Writer_1.Writer {
         t("\nexport const ");
         t(this.emptyFetcherName);
         t(": ");
-        t(generatedFetcherTypeName(this.modelType, this.config));
+        t(this.fetcherTypeName);
         t("<{}, {}> = ");
         this.scope({ type: "BLANK", multiLines: true, suffix: ";\n" }, () => {
             t("createFetcher");
@@ -507,14 +519,19 @@ class FetcherWriter extends Writer_1.Writer {
             }
         }
     }
+    superFetcherTypeName(graphQLType) {
+        if (graphQLType instanceof graphql_1.GraphQLObjectType) {
+            if (this.connectionTypes.has(graphQLType)) {
+                return "ConnectionFetcher";
+            }
+            if (this.edgeTypes.has(graphQLType)) {
+                return "EdgeFetcher";
+            }
+        }
+        return "ObjectFetcher";
+    }
 }
 exports.FetcherWriter = FetcherWriter;
-function generatedFetcherTypeName(fetcherType, config) {
-    var _a;
-    const suffix = (_a = config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher";
-    return `${fetcherType.name}${suffix}`;
-}
-exports.generatedFetcherTypeName = generatedFetcherTypeName;
 const COMMENT = `/*
  * Any instance of this interface is immutable,
  * all the properties and functions can only be used to create new instances,

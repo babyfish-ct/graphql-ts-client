@@ -13,7 +13,7 @@ import { GeneratorConfig, validateConfig, validateConfigAndSchema } from "./Gene
 import { mkdir, rmdir, access, createWriteStream, WriteStream } from "fs";
 import { promisify } from "util";
 import { join } from "path";
-import { FetcherWriter, generatedFetcherTypeName } from "./FetcherWriter";
+import { FetcherWriter } from "./FetcherWriter";
 import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
 import { CommonTypesWriter } from "./CommonTypesWriter";
@@ -132,7 +132,7 @@ export abstract class Generator {
         const promises = fetcherTypes
             .map(async type => {
                 const stream = createStreamAndLog(
-                    join(dir, `${generatedFetcherTypeName(type, this.config)}.ts`)
+                    join(dir, `${type.name}${this.config?.fetcherSuffix ?? "Fetcher"}.ts`)
                 );
                 const writer = this.createFetcheWriter(
                     type, 
@@ -155,7 +155,7 @@ export abstract class Generator {
             (async() => {
                 const stream = createStreamAndLog(join(dir, "index.ts"));
                 for (const type of fetcherTypes) {
-                    const fetcherTypeName = generatedFetcherTypeName(type, this.config);
+                    const fetcherTypeName = `${type.name}${this.config?.fetcherSuffix ?? "Fetcher"}`;
                     stream.write(
                         `export type {${fetcherTypeName}} from './${fetcherTypeName}';\n`
                     );
