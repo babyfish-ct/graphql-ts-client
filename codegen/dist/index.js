@@ -9,7 +9,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RelayGenerator = exports.ApolloGenerator = exports.AsyncGenerator = exports.Generator = exports.loadLocalSchema = exports.loadRemoteSchema = void 0;
+exports.GraphStateGenerator = exports.RelayGenerator = exports.ApolloGenerator = exports.AsyncGenerator = exports.Generator = exports.loadLocalSchema = exports.loadRemoteSchema = void 0;
 var SchemaLoader_1 = require("./SchemaLoader");
 Object.defineProperty(exports, "loadRemoteSchema", { enumerable: true, get: function () { return SchemaLoader_1.loadRemoteSchema; } });
 Object.defineProperty(exports, "loadLocalSchema", { enumerable: true, get: function () { return SchemaLoader_1.loadLocalSchema; } });
@@ -21,3 +21,5 @@ var ApolloGenerator_1 = require("./apollo/ApolloGenerator");
 Object.defineProperty(exports, "ApolloGenerator", { enumerable: true, get: function () { return ApolloGenerator_1.ApolloGenerator; } });
 var RelayGenerator_1 = require("./relay/RelayGenerator");
 Object.defineProperty(exports, "RelayGenerator", { enumerable: true, get: function () { return RelayGenerator_1.RelayGenerator; } });
+var GraphStateGenderator_1 = require("./state/GraphStateGenderator");
+Object.defineProperty(exports, "GraphStateGenerator", { enumerable: true, get: function () { return GraphStateGenderator_1.GraphStateGenerator; } });

@@ -13,70 +13,76 @@ import { TypedFragment } from 'graphql-ts-client-relay';
  */
 export interface NodeFetcher<T extends object, TVariables extends object> extends Fetcher<'Node', T, TVariables> {
 
-	on<XName extends ImplementationType<'Node'>, X extends object, XVariables extends object>(
-		child: Fetcher<XName, X, XVariables>, 
-		fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
-	): NodeFetcher<
-		XName extends 'Node' ?
-		T & X :
-		WithTypeName<T, ImplementationType<'Node'>> & (
-			WithTypeName<X, ImplementationType<XName>> | 
-			{__typename: Exclude<ImplementationType<'Node'>, ImplementationType<XName>>}
-		), 
-		TVariables & XVariables
-	>;
+    on<XName extends ImplementationType<'Node'>, X extends object, XVariables extends object>(
+        child: Fetcher<XName, X, XVariables>, 
+        fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
+    ): NodeFetcher<
+        XName extends 'Node' ?
+        T & X :
+        WithTypeName<T, ImplementationType<'Node'>> & (
+            WithTypeName<X, ImplementationType<XName>> | 
+            {__typename: Exclude<ImplementationType<'Node'>, ImplementationType<XName>>}
+        ), 
+        TVariables & XVariables
+    >;
 
-	on<XFragmentName extends string, XData extends object, XVariables extends object>(
-		child: TypedFragment<XFragmentName, "Node", XData, XVariables>
-	): NodeFetcher<
-		T & {
-			readonly " $data": XData, 
-			readonly " $fragmentRefs": FragmentRefs<XFragmentName>
-		}, 
-		TVariables & XVariables
-	>;
-
-
-	directive(name: string, args?: DirectiveArgs): NodeFetcher<T, TVariables>;
+    on<XFragmentName extends string, XData extends object, XVariables extends object>(
+        child: TypedFragment<XFragmentName, "Node", XData, XVariables>
+    ): NodeFetcher<
+        T & {
+            readonly " $data": XData, 
+            readonly " $fragmentRefs": FragmentRefs<XFragmentName>
+        }, 
+        TVariables & XVariables
+    >;
 
 
-	readonly __typename: NodeFetcher<T & {__typename: ImplementationType<'Node'>}, TVariables>;
+    directive(name: string, args?: DirectiveArgs): NodeFetcher<T, TVariables>;
 
 
-	readonly id: NodeFetcher<T & {readonly "id": string}, TVariables>;
+    readonly __typename: NodeFetcher<T & {__typename: ImplementationType<'Node'>}, TVariables>;
 
-	"id+"<
-		XAlias extends string = "id", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
-		XDirectiveVariables extends object = {}
-	>(
-		optionsConfigurer?: (
-			options: FieldOptions<"id", {}, {}>
-		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-	): NodeFetcher<
-		T & (
-			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-				{readonly [key in XAlias]?: string} : 
-				{readonly [key in XAlias]: string}
-		), 
-		TVariables & XDirectiveVariables
-	>;
 
-	readonly "~id": NodeFetcher<Omit<T, 'id'>, TVariables>;
+    readonly id: NodeFetcher<T & {readonly "id": string}, TVariables>;
+
+    "id+"<
+        XAlias extends string = "id", 
+        XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+        XDirectiveVariables extends object = {}
+    >(
+        optionsConfigurer?: (
+            options: FieldOptions<"id", {}, {}>
+        ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
+    ): NodeFetcher<
+        T & (
+            XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+                {readonly [key in XAlias]?: string} : 
+                {readonly [key in XAlias]: string}
+        ), 
+        TVariables & XDirectiveVariables
+    >;
+
+    readonly "~id": NodeFetcher<Omit<T, 'id'>, TVariables>;
 }
 
 export const node$: NodeFetcher<{}, {}> = 
-	createFetcher(
-		createFetchableType(
-			"Node", 
-			[], 
-			["id"]
-		), 
-		undefined
-	)
+    createFetcher(
+        createFetchableType(
+            "Node", 
+            "OBJECT", 
+            [], 
+            [
+                {
+                    category: "ID", 
+                    name: "id"
+                }
+            ]
+        ), 
+        undefined
+    )
 ;
 
 export const node$$ = 
-	node$
-		.id
+    node$
+        .id
 ;

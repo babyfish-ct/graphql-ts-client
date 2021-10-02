@@ -11,6 +11,7 @@
 import { WriteStream } from "fs";
 import { GraphQLSchema } from "graphql";
 import { join } from "path";
+import { FetcherContext } from "../FetcherContext";
 import { closeStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 
@@ -20,7 +21,10 @@ export class ApolloGenerator extends Generator {
         super(config);
     }
 
-    protected async generateServices(_: GraphQLSchema, promises: Promise<void>[]) {
+    protected async generateServices(
+        _: FetcherContext,
+        promises: Promise<void>[]
+    ) {
         promises.push(this.generateApollo());
         promises.push(this.generateDependencyManager());
     }

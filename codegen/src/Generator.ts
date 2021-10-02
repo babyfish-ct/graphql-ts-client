@@ -18,6 +18,7 @@ import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
 import { CommonTypesWriter } from "./CommonTypesWriter";
 import { InheritanceInfo } from "./InheritanceInfo";
+import { FetcherContext } from "./FetcherContext";
 
 export abstract class Generator {
 
@@ -77,7 +78,12 @@ export abstract class Generator {
 
         promises.push(this.generateCommonTypes(schema, inheritanceInfo));
 
-        this.generateServices(schema, promises);
+        this.generateServices({
+            schema,
+            fetcherTypes,
+            connectionTypes,
+            edgeTypes
+        }, promises);
 
         promises.push(this.writeIndex(schema));
 
@@ -249,7 +255,10 @@ export abstract class Generator {
         }
     }
 
-    protected abstract generateServices(schema: GraphQLSchema, promises: Promise<void>[]): Promise<void>;
+    protected abstract generateServices(
+        ctx: FetcherContext,
+        promises: Promise<void>[]
+    ): Promise<void>;
 
     private async writeIndex(schema: GraphQLSchema) {
         const stream = createStreamAndLog(join(this.config.targetDir, "index.ts"));

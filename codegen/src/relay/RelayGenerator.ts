@@ -1,6 +1,7 @@
 import { WriteStream } from "fs";
 import { GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
 import { join } from "path";
+import { FetcherContext } from "../FetcherContext";
 import { FetcherWriter } from "../FetcherWriter";
 import { closeStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
@@ -32,8 +33,11 @@ export class RelayGenerator extends Generator {
         );
     }
 
-    protected async generateServices(schema: GraphQLSchema, promises: Promise<void>[]) {
-        promises.push(this.generateRelayCode(schema));
+    protected async generateServices(
+        ctx: FetcherContext,
+        promises: Promise<void>[]
+    ) {
+        promises.push(this.generateRelayCode(ctx.schema));
     }
 
     async generateRelayCode(schema: GraphQLSchema) {

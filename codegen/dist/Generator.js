@@ -85,7 +85,12 @@ class Generator {
                 promises.push(this.generateEnumTypes(enumTypes));
             }
             promises.push(this.generateCommonTypes(schema, inheritanceInfo));
-            this.generateServices(schema, promises);
+            this.generateServices({
+                schema,
+                fetcherTypes,
+                connectionTypes,
+                edgeTypes
+            }, promises);
             promises.push(this.writeIndex(schema));
             yield Promise.all(promises);
         });

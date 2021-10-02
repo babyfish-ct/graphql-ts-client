@@ -13,6 +13,7 @@ import { GeneratorConfig } from "./GeneratorConfig";
 import { WriteStream } from "fs";
 import { FetcherWriter } from "./FetcherWriter";
 import { InheritanceInfo } from "./InheritanceInfo";
+import { FetcherContext } from "./FetcherContext";
 export declare abstract class Generator {
     protected config: GeneratorConfig;
     private excludedTypeNames;
@@ -27,7 +28,7 @@ export declare abstract class Generator {
     private writeSimpleIndex;
     private rmdirIfNecessary;
     protected mkdirIfNecessary(subDir?: string): Promise<void>;
-    protected abstract generateServices(schema: GraphQLSchema, promises: Promise<void>[]): Promise<void>;
+    protected abstract generateServices(ctx: FetcherContext, promises: Promise<void>[]): Promise<void>;
     private writeIndex;
     protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
 }

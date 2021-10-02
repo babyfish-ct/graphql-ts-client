@@ -21,9 +21,9 @@ class RelayGenerator extends Generator_1.Generator {
     createFetcheWriter(modelType, inheritanceInfo, connectionTypes, edgeTypes, stream, config) {
         return new FetcherWriter_1.FetcherWriter(true, modelType, inheritanceInfo, connectionTypes, edgeTypes, stream, config);
     }
-    generateServices(schema, promises) {
+    generateServices(ctx, promises) {
         return __awaiter(this, void 0, void 0, function* () {
-            promises.push(this.generateRelayCode(schema));
+            promises.push(this.generateRelayCode(ctx.schema));
         });
     }
     generateRelayCode(schema) {

@@ -13,98 +13,98 @@ import { TypedFragment } from 'graphql-ts-client-relay';
  */
 export interface DepartmentEdgeFetcher<T extends object, TVariables extends object> extends Fetcher<'DepartmentEdge', T, TVariables> {
 
-	on<XName extends ImplementationType<'DepartmentEdge'>, X extends object, XVariables extends object>(
-		child: Fetcher<XName, X, XVariables>, 
-		fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
-	): DepartmentEdgeFetcher<
-		XName extends 'DepartmentEdge' ?
-		T & X :
-		WithTypeName<T, ImplementationType<'DepartmentEdge'>> & (
-			WithTypeName<X, ImplementationType<XName>> | 
-			{__typename: Exclude<ImplementationType<'DepartmentEdge'>, ImplementationType<XName>>}
-		), 
-		TVariables & XVariables
-	>;
+    on<XName extends ImplementationType<'DepartmentEdge'>, X extends object, XVariables extends object>(
+        child: Fetcher<XName, X, XVariables>, 
+        fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
+    ): DepartmentEdgeFetcher<
+        XName extends 'DepartmentEdge' ?
+        T & X :
+        WithTypeName<T, ImplementationType<'DepartmentEdge'>> & (
+            WithTypeName<X, ImplementationType<XName>> | 
+            {__typename: Exclude<ImplementationType<'DepartmentEdge'>, ImplementationType<XName>>}
+        ), 
+        TVariables & XVariables
+    >;
 
-	on<XFragmentName extends string, XData extends object, XVariables extends object>(
-		child: TypedFragment<XFragmentName, "DepartmentEdge", XData, XVariables>
-	): DepartmentEdgeFetcher<
-		T & {
-			readonly " $data": XData, 
-			readonly " $fragmentRefs": FragmentRefs<XFragmentName>
-		}, 
-		TVariables & XVariables
-	>;
-
-
-	directive(name: string, args?: DirectiveArgs): DepartmentEdgeFetcher<T, TVariables>;
+    on<XFragmentName extends string, XData extends object, XVariables extends object>(
+        child: TypedFragment<XFragmentName, "DepartmentEdge", XData, XVariables>
+    ): DepartmentEdgeFetcher<
+        T & {
+            readonly " $data": XData, 
+            readonly " $fragmentRefs": FragmentRefs<XFragmentName>
+        }, 
+        TVariables & XVariables
+    >;
 
 
-	readonly __typename: DepartmentEdgeFetcher<T & {__typename: ImplementationType<'DepartmentEdge'>}, TVariables>;
+    directive(name: string, args?: DirectiveArgs): DepartmentEdgeFetcher<T, TVariables>;
 
 
-	node<
-		X extends object, 
-		XVariables extends object, 
-		XAlias extends string = "node", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
-		XDirectiveVariables extends object = {}
-	>(
-		child: Fetcher<'Department', X, XVariables>, 
-		optionsConfigurer?: (
-			options: FieldOptions<"node", {}, {}>
-		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-	): DepartmentEdgeFetcher<
-		T & (
-			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-				{readonly [key in XAlias]?: X} : 
-				{readonly [key in XAlias]: X}
-		), 
-		TVariables & XVariables & XDirectiveVariables
-	>;
+    readonly __typename: DepartmentEdgeFetcher<T & {__typename: ImplementationType<'DepartmentEdge'>}, TVariables>;
 
 
-	readonly cursor: DepartmentEdgeFetcher<T & {readonly "cursor": string}, TVariables>;
+    node<
+        X extends object, 
+        XVariables extends object, 
+        XAlias extends string = "node", 
+        XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+        XDirectiveVariables extends object = {}
+    >(
+        child: Fetcher<'Department', X, XVariables>, 
+        optionsConfigurer?: (
+            options: FieldOptions<"node", {}, {}>
+        ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
+    ): DepartmentEdgeFetcher<
+        T & (
+            XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+                {readonly [key in XAlias]?: X} : 
+                {readonly [key in XAlias]: X}
+        ), 
+        TVariables & XVariables & XDirectiveVariables
+    >;
 
-	"cursor+"<
-		XAlias extends string = "cursor", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
-		XDirectiveVariables extends object = {}
-	>(
-		optionsConfigurer?: (
-			options: FieldOptions<"cursor", {}, {}>
-		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-	): DepartmentEdgeFetcher<
-		T & (
-			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-				{readonly [key in XAlias]?: string} : 
-				{readonly [key in XAlias]: string}
-		), 
-		TVariables & XDirectiveVariables
-	>;
 
-	readonly "~cursor": DepartmentEdgeFetcher<Omit<T, 'cursor'>, TVariables>;
+    readonly cursor: DepartmentEdgeFetcher<T & {readonly "cursor": string}, TVariables>;
+
+    "cursor+"<
+        XAlias extends string = "cursor", 
+        XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+        XDirectiveVariables extends object = {}
+    >(
+        optionsConfigurer?: (
+            options: FieldOptions<"cursor", {}, {}>
+        ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
+    ): DepartmentEdgeFetcher<
+        T & (
+            XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+                {readonly [key in XAlias]?: string} : 
+                {readonly [key in XAlias]: string}
+        ), 
+        TVariables & XDirectiveVariables
+    >;
+
+    readonly "~cursor": DepartmentEdgeFetcher<Omit<T, 'cursor'>, TVariables>;
 }
 
 export const departmentEdge$: DepartmentEdgeFetcher<{}, {}> = 
-	createFetcher(
-		createFetchableType(
-			"DepartmentEdge", 
-			[], 
-			[
-				{
-					isFunction: true, 
-					isPlural: false, 
-					name: "node"
-				}, 
-				"cursor"
-			]
-		), 
-		undefined
-	)
+    createFetcher(
+        createFetchableType(
+            "DepartmentEdge", 
+            "EDGE", 
+            [], 
+            [
+                {
+                    category: "REFERENCE", 
+                    name: "node"
+                }, 
+                "cursor"
+            ]
+        ), 
+        undefined
+    )
 ;
 
 export const departmentEdge$$ = 
-	departmentEdge$
-		.cursor
+    departmentEdge$
+        .cursor
 ;

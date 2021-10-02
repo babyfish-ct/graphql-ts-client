@@ -21,7 +21,7 @@ class Writer {
         this.importStatements = new Set();
         this.importedTypes = new Set();
         this.imported = false;
-        this.indent = (_a = this.config.indent) !== null && _a !== void 0 ? _a : "\t";
+        this.indent = (_a = this.config.indent) !== null && _a !== void 0 ? _a : "    ";
     }
     write() {
         this.prepareImportings();

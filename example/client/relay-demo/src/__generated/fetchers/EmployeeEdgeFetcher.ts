@@ -13,98 +13,98 @@ import { TypedFragment } from 'graphql-ts-client-relay';
  */
 export interface EmployeeEdgeFetcher<T extends object, TVariables extends object> extends Fetcher<'EmployeeEdge', T, TVariables> {
 
-	on<XName extends ImplementationType<'EmployeeEdge'>, X extends object, XVariables extends object>(
-		child: Fetcher<XName, X, XVariables>, 
-		fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
-	): EmployeeEdgeFetcher<
-		XName extends 'EmployeeEdge' ?
-		T & X :
-		WithTypeName<T, ImplementationType<'EmployeeEdge'>> & (
-			WithTypeName<X, ImplementationType<XName>> | 
-			{__typename: Exclude<ImplementationType<'EmployeeEdge'>, ImplementationType<XName>>}
-		), 
-		TVariables & XVariables
-	>;
+    on<XName extends ImplementationType<'EmployeeEdge'>, X extends object, XVariables extends object>(
+        child: Fetcher<XName, X, XVariables>, 
+        fragmentName?: string // undefined: inline fragment; otherwise, otherwise, real fragment
+    ): EmployeeEdgeFetcher<
+        XName extends 'EmployeeEdge' ?
+        T & X :
+        WithTypeName<T, ImplementationType<'EmployeeEdge'>> & (
+            WithTypeName<X, ImplementationType<XName>> | 
+            {__typename: Exclude<ImplementationType<'EmployeeEdge'>, ImplementationType<XName>>}
+        ), 
+        TVariables & XVariables
+    >;
 
-	on<XFragmentName extends string, XData extends object, XVariables extends object>(
-		child: TypedFragment<XFragmentName, "EmployeeEdge", XData, XVariables>
-	): EmployeeEdgeFetcher<
-		T & {
-			readonly " $data": XData, 
-			readonly " $fragmentRefs": FragmentRefs<XFragmentName>
-		}, 
-		TVariables & XVariables
-	>;
-
-
-	directive(name: string, args?: DirectiveArgs): EmployeeEdgeFetcher<T, TVariables>;
+    on<XFragmentName extends string, XData extends object, XVariables extends object>(
+        child: TypedFragment<XFragmentName, "EmployeeEdge", XData, XVariables>
+    ): EmployeeEdgeFetcher<
+        T & {
+            readonly " $data": XData, 
+            readonly " $fragmentRefs": FragmentRefs<XFragmentName>
+        }, 
+        TVariables & XVariables
+    >;
 
 
-	readonly __typename: EmployeeEdgeFetcher<T & {__typename: ImplementationType<'EmployeeEdge'>}, TVariables>;
+    directive(name: string, args?: DirectiveArgs): EmployeeEdgeFetcher<T, TVariables>;
 
 
-	node<
-		X extends object, 
-		XVariables extends object, 
-		XAlias extends string = "node", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
-		XDirectiveVariables extends object = {}
-	>(
-		child: Fetcher<'Employee', X, XVariables>, 
-		optionsConfigurer?: (
-			options: FieldOptions<"node", {}, {}>
-		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-	): EmployeeEdgeFetcher<
-		T & (
-			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-				{readonly [key in XAlias]?: X} : 
-				{readonly [key in XAlias]: X}
-		), 
-		TVariables & XVariables & XDirectiveVariables
-	>;
+    readonly __typename: EmployeeEdgeFetcher<T & {__typename: ImplementationType<'EmployeeEdge'>}, TVariables>;
 
 
-	readonly cursor: EmployeeEdgeFetcher<T & {readonly "cursor": string}, TVariables>;
+    node<
+        X extends object, 
+        XVariables extends object, 
+        XAlias extends string = "node", 
+        XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+        XDirectiveVariables extends object = {}
+    >(
+        child: Fetcher<'Employee', X, XVariables>, 
+        optionsConfigurer?: (
+            options: FieldOptions<"node", {}, {}>
+        ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
+    ): EmployeeEdgeFetcher<
+        T & (
+            XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+                {readonly [key in XAlias]?: X} : 
+                {readonly [key in XAlias]: X}
+        ), 
+        TVariables & XVariables & XDirectiveVariables
+    >;
 
-	"cursor+"<
-		XAlias extends string = "cursor", 
-		XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
-		XDirectiveVariables extends object = {}
-	>(
-		optionsConfigurer?: (
-			options: FieldOptions<"cursor", {}, {}>
-		) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
-	): EmployeeEdgeFetcher<
-		T & (
-			XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-				{readonly [key in XAlias]?: string} : 
-				{readonly [key in XAlias]: string}
-		), 
-		TVariables & XDirectiveVariables
-	>;
 
-	readonly "~cursor": EmployeeEdgeFetcher<Omit<T, 'cursor'>, TVariables>;
+    readonly cursor: EmployeeEdgeFetcher<T & {readonly "cursor": string}, TVariables>;
+
+    "cursor+"<
+        XAlias extends string = "cursor", 
+        XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
+        XDirectiveVariables extends object = {}
+    >(
+        optionsConfigurer?: (
+            options: FieldOptions<"cursor", {}, {}>
+        ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
+    ): EmployeeEdgeFetcher<
+        T & (
+            XDirectives extends { readonly include: any } | { readonly skip: any } ? 
+                {readonly [key in XAlias]?: string} : 
+                {readonly [key in XAlias]: string}
+        ), 
+        TVariables & XDirectiveVariables
+    >;
+
+    readonly "~cursor": EmployeeEdgeFetcher<Omit<T, 'cursor'>, TVariables>;
 }
 
 export const employeeEdge$: EmployeeEdgeFetcher<{}, {}> = 
-	createFetcher(
-		createFetchableType(
-			"EmployeeEdge", 
-			[], 
-			[
-				{
-					isFunction: true, 
-					isPlural: false, 
-					name: "node"
-				}, 
-				"cursor"
-			]
-		), 
-		undefined
-	)
+    createFetcher(
+        createFetchableType(
+            "EmployeeEdge", 
+            "EDGE", 
+            [], 
+            [
+                {
+                    category: "REFERENCE", 
+                    name: "node"
+                }, 
+                "cursor"
+            ]
+        ), 
+        undefined
+    )
 ;
 
 export const employeeEdge$$ = 
-	employeeEdge$
-		.cursor
+    employeeEdge$
+        .cursor
 ;

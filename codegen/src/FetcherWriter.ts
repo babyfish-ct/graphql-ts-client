@@ -14,7 +14,6 @@ import { associatedTypeOf, instancePrefix } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { InheritanceInfo } from "./InheritanceInfo";
 import { ImportingBehavior, Writer } from "./Writer";
-import { type } from "os";
 
 export class FetcherWriter extends Writer {
 

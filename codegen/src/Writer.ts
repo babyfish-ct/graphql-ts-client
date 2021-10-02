@@ -30,7 +30,7 @@ export abstract class Writer {
         private stream: WriteStream,
         protected config: GeneratorConfig,
     ) {
-        this.indent = this.config.indent ?? "\t";
+        this.indent = this.config.indent ?? "    ";
     }
 
     write() {

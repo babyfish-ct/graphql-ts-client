@@ -9,14 +9,13 @@
  */
 /// <reference types="node" />
 import { WriteStream } from "fs";
-import { GraphQLSchema } from "graphql";
 import { FetcherContext } from "../FetcherContext";
-import { Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
-export declare class ApolloGenerator extends Generator {
-    constructor(config: GeneratorConfig);
-    protected generateServices(_: FetcherContext, promises: Promise<void>[]): Promise<void>;
-    private generateApollo;
-    private generateDependencyManager;
-    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
+import { Writer } from "../Writer";
+export declare class TypedConfigurationWriter extends Writer {
+    private ctx;
+    constructor(ctx: FetcherContext, stream: WriteStream, config: GeneratorConfig);
+    protected isUnderGlobalDir(): boolean;
+    protected prepareImportings(): void;
+    protected writeCode(): void;
 }

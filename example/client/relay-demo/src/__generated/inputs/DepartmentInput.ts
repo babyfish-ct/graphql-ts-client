@@ -3,6 +3,6 @@
  * do not satisfy the constraint 'SerializableParam' of recoil
  */
 export type DepartmentInput = {
-	readonly id: string;
-	readonly name: string;
+    readonly id: string;
+    readonly name: string;
 }

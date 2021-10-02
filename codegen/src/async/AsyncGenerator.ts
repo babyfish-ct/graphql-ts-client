@@ -8,11 +8,12 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { GraphQLField, GraphQLSchema } from "graphql";
+import { GraphQLSchema } from "graphql";
 import { closeStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { join } from "path";
 import { WriteStream } from "fs";
+import { FetcherContext } from "../FetcherContext";
 
 export class AsyncGenerator extends Generator {
 
@@ -20,7 +21,10 @@ export class AsyncGenerator extends Generator {
         super(config);
     }
 
-    protected async generateServices(_: GraphQLSchema, promises: Promise<void>[]) {
+    protected async generateServices(
+        _: FetcherContext,
+        promises: Promise<void>[]
+    ) {
         promises.push(this.generateAsync());
     }
 

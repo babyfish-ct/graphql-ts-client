@@ -19,6 +19,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadLocalSchema = exports.loadRemoteSchema = void 0;
+const promises_1 = require("fs/promises");
 const utilities_1 = require("graphql/utilities");
 const utilities_2 = require("graphql/utilities");
 const node_fetch_1 = require("node-fetch");
@@ -38,7 +39,10 @@ function loadRemoteSchema(endpoint, headers) {
     });
 }
 exports.loadRemoteSchema = loadRemoteSchema;
-function loadLocalSchema(sdl) {
-    return utilities_1.buildSchema(sdl);
+function loadLocalSchema(location) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const sdl = yield promises_1.readFile(location, { encoding: "utf8" });
+        return utilities_1.buildSchema(sdl);
+    });
 }
 exports.loadLocalSchema = loadLocalSchema;

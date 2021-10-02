@@ -8,10 +8,12 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
+import { readFile } from 'fs/promises';
 import { GraphQLSchema } from 'graphql';
 import { buildSchema, getIntrospectionQuery } from 'graphql/utilities';
 import { buildClientSchema } from 'graphql/utilities';
 import fetch from 'node-fetch';
+import { join } from 'path';
 
 export async function loadRemoteSchema(
     endpoint: string,
@@ -35,8 +37,9 @@ export async function loadRemoteSchema(
     return buildClientSchema(data);
 }
 
-export function loadLocalSchema(
-    sdl: string
-): GraphQLSchema {
+export async function loadLocalSchema(
+    location: string
+): Promise<GraphQLSchema> {
+    const sdl = await readFile(location, { encoding: "utf8"});
     return buildSchema(sdl);
 }
