@@ -21,5 +21,5 @@ var ApolloGenerator_1 = require("./apollo/ApolloGenerator");
 Object.defineProperty(exports, "ApolloGenerator", { enumerable: true, get: function () { return ApolloGenerator_1.ApolloGenerator; } });
 var RelayGenerator_1 = require("./relay/RelayGenerator");
 Object.defineProperty(exports, "RelayGenerator", { enumerable: true, get: function () { return RelayGenerator_1.RelayGenerator; } });
-var GraphStateGenderator_1 = require("./state/GraphStateGenderator");
-Object.defineProperty(exports, "GraphStateGenerator", { enumerable: true, get: function () { return GraphStateGenderator_1.GraphStateGenerator; } });
+var GraphStateGenerator_1 = require("./state/GraphStateGenerator");
+Object.defineProperty(exports, "GraphStateGenerator", { enumerable: true, get: function () { return GraphStateGenerator_1.GraphStateGenerator; } });

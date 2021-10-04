@@ -14,14 +14,12 @@ const graphql_1 = require("graphql");
 const Utils_1 = require("./Utils");
 const Writer_1 = require("./Writer");
 class FetcherWriter extends Writer_1.Writer {
-    constructor(relay, modelType, inheritanceInfo, connectionTypes, edgeTypes, stream, config) {
+    constructor(relay, modelType, ctx, stream, config) {
         var _a, _b;
         super(stream, config);
         this.relay = relay;
         this.modelType = modelType;
-        this.inheritanceInfo = inheritanceInfo;
-        this.connectionTypes = connectionTypes;
-        this.edgeTypes = edgeTypes;
+        this.ctx = ctx;
         this.fetcherTypeName = `${this.modelType.name}${(_a = config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher"}`;
         if (modelType instanceof graphql_1.GraphQLUnionType) {
             const map = {};
@@ -67,7 +65,7 @@ class FetcherWriter extends Writer_1.Writer {
             const fieldCoreType = field.type instanceof graphql_1.GraphQLNonNull ?
                 field.type.ofType :
                 field.type;
-            if (fieldCoreType instanceof graphql_1.GraphQLObjectType && this.connectionTypes.has(fieldCoreType)) {
+            if (this.ctx.connectionTypes.has(fieldCoreType)) {
                 fieldCategoryMap.set(fieldName, "CONNECTION");
             }
             else if (fieldCoreType instanceof graphql_1.GraphQLList) {
@@ -128,7 +126,7 @@ class FetcherWriter extends Writer_1.Writer {
             const field = this.fieldMap[fieldName];
             this.importFieldTypes(field);
         }
-        const upcastTypes = this.inheritanceInfo.upcastTypeMap.get(this.modelType);
+        const upcastTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
         if (upcastTypes !== undefined) {
             for (const upcastType of upcastTypes) {
                 this.importStatement(`import { ${Utils_1.instancePrefix(upcastType.name)}$ } from './${upcastType.name}${(_a = this.config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher"}';`);
@@ -381,23 +379,18 @@ class FetcherWriter extends Writer_1.Writer {
                 this.scope({ type: "PARAMETERS", multiLines: true }, () => {
                     t(`"${this.modelType.name}"`);
                     this.separator(", ");
-                    if (this.modelType instanceof graphql_1.GraphQLObjectType) {
-                        if (this.connectionTypes.has(this.modelType)) {
-                            t('"CONNECTION"');
-                        }
-                        else if (this.edgeTypes.has(this.modelType)) {
-                            t('"EDGE"');
-                        }
-                        else {
-                            t('"OBJECT"');
-                        }
+                    if (this.ctx.connectionTypes.has(this.modelType)) {
+                        t('"CONNECTION"');
+                    }
+                    else if (this.ctx.edgeTypes.has(this.modelType)) {
+                        t('"EDGE"');
                     }
                     else {
                         t('"OBJECT"');
                     }
                     this.separator(", ");
                     this.scope({ type: "ARRAY" }, () => {
-                        const upcastTypes = this.inheritanceInfo.upcastTypeMap.get(this.modelType);
+                        const upcastTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
                         if (upcastTypes !== undefined) {
                             for (const upcastType of upcastTypes) {
                                 this.separator(", ");
@@ -502,7 +495,7 @@ class FetcherWriter extends Writer_1.Writer {
             for (const fieldName in fieldMap) {
                 fields.add(fieldMap[fieldName].name);
             }
-            this.removeSuperFieldNames(fields, this.inheritanceInfo.upcastTypeMap.get(this.modelType));
+            this.removeSuperFieldNames(fields, this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType));
         }
         return fields;
     }
@@ -515,18 +508,16 @@ class FetcherWriter extends Writer_1.Writer {
                         fields.delete(superFieldName);
                     }
                 }
-                this.removeSuperFieldNames(fields, this.inheritanceInfo.upcastTypeMap.get(superType));
+                this.removeSuperFieldNames(fields, this.ctx.inheritanceInfo.upcastTypeMap.get(superType));
             }
         }
     }
     superFetcherTypeName(graphQLType) {
-        if (graphQLType instanceof graphql_1.GraphQLObjectType) {
-            if (this.connectionTypes.has(graphQLType)) {
-                return "ConnectionFetcher";
-            }
-            if (this.edgeTypes.has(graphQLType)) {
-                return "EdgeFetcher";
-            }
+        if (this.ctx.connectionTypes.has(graphQLType)) {
+            return "ConnectionFetcher";
+        }
+        if (this.ctx.edgeTypes.has(graphQLType)) {
+            return "EdgeFetcher";
         }
         return "ObjectFetcher";
     }

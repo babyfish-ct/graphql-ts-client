@@ -14,6 +14,7 @@ import { associatedTypeOf, instancePrefix } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { InheritanceInfo } from "./InheritanceInfo";
 import { ImportingBehavior, Writer } from "./Writer";
+import { FetcherContext } from "./FetcherContext";
 
 export class FetcherWriter extends Writer {
 
@@ -35,10 +36,8 @@ export class FetcherWriter extends Writer {
 
     constructor(
         private relay: boolean,
-        private readonly modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
-        private inheritanceInfo: InheritanceInfo,
-        private connectionTypes: Set<GraphQLObjectType>,
-        private edgeTypes: Set<GraphQLObjectType>,
+        private modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
+        private ctx: FetcherContext,
         stream: WriteStream,
         config: GeneratorConfig
     ) {
@@ -93,7 +92,7 @@ export class FetcherWriter extends Writer {
                 field.type instanceof GraphQLNonNull ?
                 field.type.ofType :
                 field.type;
-            if (fieldCoreType instanceof GraphQLObjectType && this.connectionTypes.has(fieldCoreType)) {
+            if (this.ctx.connectionTypes.has(fieldCoreType)) {
                 fieldCategoryMap.set(fieldName, "CONNECTION");
             } else if (fieldCoreType instanceof GraphQLList) {
                 const elementType = 
@@ -158,7 +157,7 @@ export class FetcherWriter extends Writer {
             this.importFieldTypes(field);
         }
 
-        const upcastTypes = this.inheritanceInfo.upcastTypeMap.get(this.modelType);
+        const upcastTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
         if (upcastTypes !== undefined) {
             for (const upcastType of upcastTypes) {
                 this.importStatement(`import { ${instancePrefix(upcastType.name)}$ } from './${upcastType.name}${this.config.fetcherSuffix ?? "Fetcher"}';`);
@@ -448,20 +447,16 @@ export class FetcherWriter extends Writer {
                 this.scope({type: "PARAMETERS", multiLines: true}, () => {
                     t(`"${this.modelType.name}"`);
                     this.separator(", ");
-                    if (this.modelType instanceof GraphQLObjectType) {
-                        if (this.connectionTypes.has(this.modelType)) {
-                            t('"CONNECTION"');
-                        } else if (this.edgeTypes.has(this.modelType)) {
-                            t('"EDGE"');
-                        } else {
-                            t('"OBJECT"');
-                        }
+                    if (this.ctx.connectionTypes.has(this.modelType)) {
+                        t('"CONNECTION"');
+                    } else if (this.ctx.edgeTypes.has(this.modelType)) {
+                        t('"EDGE"');
                     } else {
                         t('"OBJECT"');
                     }
                     this.separator(", ");
                     this.scope({type: "ARRAY"}, () => {
-                        const upcastTypes = this.inheritanceInfo.upcastTypeMap.get(this.modelType);
+                        const upcastTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
                         if (upcastTypes !== undefined) {
                             for (const upcastType of upcastTypes) {
                                 this.separator(", ");
@@ -569,7 +564,7 @@ export class FetcherWriter extends Writer {
             for (const fieldName in fieldMap) {
                 fields.add(fieldMap[fieldName]!.name);
             }
-            this.removeSuperFieldNames(fields, this.inheritanceInfo.upcastTypeMap.get(this.modelType));
+            this.removeSuperFieldNames(fields, this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType));
         }
         return fields;
     }
@@ -583,19 +578,17 @@ export class FetcherWriter extends Writer {
                         fields.delete(superFieldName);
                     }
                 }
-                this.removeSuperFieldNames(fields, this.inheritanceInfo.upcastTypeMap.get(superType));
+                this.removeSuperFieldNames(fields, this.ctx.inheritanceInfo.upcastTypeMap.get(superType));
             }
         }
     }
 
     private superFetcherTypeName(graphQLType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType): string {
-        if (graphQLType instanceof GraphQLObjectType) {
-            if (this.connectionTypes.has(graphQLType)) {
-                return "ConnectionFetcher";
-            }
-            if (this.edgeTypes.has(graphQLType)) {
-                return "EdgeFetcher";
-            }
+        if (this.ctx.connectionTypes.has(graphQLType)) {
+            return "ConnectionFetcher";
+        }
+        if (this.ctx.edgeTypes.has(graphQLType)) {
+            return "EdgeFetcher";
         }
         return "ObjectFetcher";
     }

@@ -12,14 +12,12 @@ import { GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionTyp
 import { GeneratorConfig } from "./GeneratorConfig";
 import { WriteStream } from "fs";
 import { FetcherWriter } from "./FetcherWriter";
-import { InheritanceInfo } from "./InheritanceInfo";
 import { FetcherContext } from "./FetcherContext";
 export declare abstract class Generator {
     protected config: GeneratorConfig;
-    private excludedTypeNames;
     constructor(config: GeneratorConfig);
     generate(): Promise<void>;
-    protected createFetcheWriter(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, inheritanceInfo: InheritanceInfo, connectionTypes: Set<GraphQLObjectType>, edgeTypes: Set<GraphQLObjectType>, stream: WriteStream, config: GeneratorConfig): FetcherWriter;
+    protected createFetcheWriter(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, ctx: FetcherContext, stream: WriteStream, config: GeneratorConfig): FetcherWriter;
     private loadSchema;
     private generateFetcherTypes;
     private generateInputTypes;

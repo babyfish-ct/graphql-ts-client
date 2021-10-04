@@ -15,9 +15,11 @@ export interface GeneratorConfig {
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
-    readonly excludedTypes?: string[];
     readonly scalarTypeMap: {
         [key: string]: 'string' | 'number' | 'boolean';
+    };
+    readonly idFieldMap?: {
+        [key: string]: string;
     };
     readonly defaultFetcherExcludeMap?: {
         [key: string]: string[];

@@ -9,7 +9,7 @@
  */
 
 import { WriteStream } from "fs";
-import { GraphQLObjectType } from "graphql";
+import { GraphQLUnionType } from "graphql";
 import { FetcherContext } from "../FetcherContext";
 import { GeneratorConfig } from "../GeneratorConfig";
 import { instancePrefix } from "../Utils";
@@ -33,6 +33,9 @@ export class TypedConfigurationWriter extends Writer {
         this.importStatement(`import { newConfiguration } from 'graph-state';`);
         for (const fetfherType of this.ctx.fetcherTypes) {
             this.importStatement(`import { ${instancePrefix(fetfherType.name)}$ } from './fetchers';`);
+            if (!this.ctx.connectionTypes.has(fetfherType) && !this.ctx.edgeTypes.has(fetfherType)) {
+                this.importStatement(`import { ${fetfherType.name}ChangeEvent } from './triggers';`);
+            }
         }
     }
 
@@ -43,15 +46,35 @@ export class TypedConfigurationWriter extends Writer {
             t("return newConfiguration()");
             this.scope({type: "BLANK", multiLines: true, suffix: ";\n"}, () => {
                 for (const fetcherType of this.ctx.fetcherTypes) {
-                    if (fetcherType instanceof GraphQLObjectType && this.ctx.connectionTypes.has(fetcherType)) {
-                        t(`.addConnectionFetcher(${instancePrefix(fetcherType.name)}$)`);
-                    } else if (fetcherType instanceof GraphQLObjectType && this.ctx.edgeTypes.has(fetcherType)) {
-                        t(`.addEdgeFetcher(${instancePrefix(fetcherType.name)}$)`);
-                    } else {
-                        t(`.addObjectFetcher(${instancePrefix(fetcherType.name)}$)`);
-                    }
+                    t(`.addObjectFetcher(${instancePrefix(fetcherType.name)}$)`);
                 }
             });
+        });
+        this.writeSchema();
+    }
+
+    private writeSchema() {
+        const t = this.text.bind(this);
+        t("export interface Schema ");
+        this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
+            for (const fetcherType of this.ctx.fetcherTypes) {
+                if (fetcherType.name === "Mutation" || 
+                fetcherType instanceof GraphQLUnionType ||
+                this.ctx.connectionTypes.has(fetcherType) ||
+                this.ctx.edgeTypes.has(fetcherType)) {
+                    continue;
+                }
+                t(`readonly "${fetcherType.name}": `);
+                this.scope({type: "BLOCK", multiLines: true, suffix: ";\n"}, () => {
+                    const idField = this.ctx.idFieldMap.get(fetcherType);
+                    if (idField !== undefined) {
+                        t(`readonly " $id": `);
+                        this.typeRef(idField.type);
+                        t(";\n");
+                    }
+                    t(`readonly " $event": ${fetcherType.name}ChangeEvent`);
+                })
+            }
         });
     }
 }

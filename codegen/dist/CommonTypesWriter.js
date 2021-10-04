@@ -16,7 +16,6 @@ const Writer_1 = require("./Writer");
 class CommonTypesWriter extends Writer_1.Writer {
     constructor(schema, inheritanceInfo, stream, config) {
         super(stream, config);
-        this.schema = schema;
         this.inheritanceInfo = inheritanceInfo;
         const info = new InheritanceInfo_1.InheritanceInfo(schema);
     }

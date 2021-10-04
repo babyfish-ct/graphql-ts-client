@@ -17,7 +17,7 @@ import { Writer } from "./Writer";
 export class CommonTypesWriter extends Writer {
 
     constructor(
-        private schema: GraphQLSchema,
+        schema: GraphQLSchema,
         private inheritanceInfo: InheritanceInfo,
         stream: WriteStream, 
         config: GeneratorConfig

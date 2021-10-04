@@ -15,8 +15,9 @@ import { Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
 export declare class GraphStateGenerator extends Generator {
     constructor(config: GeneratorConfig);
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
     protected generateServices(ctx: FetcherContext, promises: Promise<void>[]): Promise<void>;
     private generateTypedConfiguration;
     private generateTriggerEvents;
-    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
+    private generateTriggerIndex;
 }

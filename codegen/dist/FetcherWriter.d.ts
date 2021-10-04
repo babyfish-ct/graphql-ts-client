@@ -11,14 +11,12 @@
 import { WriteStream } from "fs";
 import { GraphQLFieldMap, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLUnionType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
-import { InheritanceInfo } from "./InheritanceInfo";
 import { ImportingBehavior, Writer } from "./Writer";
+import { FetcherContext } from "./FetcherContext";
 export declare class FetcherWriter extends Writer {
     private relay;
-    private readonly modelType;
-    private inheritanceInfo;
-    private connectionTypes;
-    private edgeTypes;
+    private modelType;
+    private ctx;
     private readonly fetcherTypeName;
     private readonly defaultFetcherProps;
     readonly emptyFetcherName: string;
@@ -27,7 +25,7 @@ export declare class FetcherWriter extends Writer {
     private fieldArgsMap;
     private fieldCategoryMap;
     private hasArgs;
-    constructor(relay: boolean, modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, inheritanceInfo: InheritanceInfo, connectionTypes: Set<GraphQLObjectType>, edgeTypes: Set<GraphQLObjectType>, stream: WriteStream, config: GeneratorConfig);
+    constructor(relay: boolean, modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, ctx: FetcherContext, stream: WriteStream, config: GeneratorConfig);
     protected prepareImportings(): void;
     protected importingBehavior(type: GraphQLNamedType): ImportingBehavior;
     protected writeCode(): void;

@@ -18,8 +18,8 @@ class RelayGenerator extends Generator_1.Generator {
     constructor(config) {
         super(config);
     }
-    createFetcheWriter(modelType, inheritanceInfo, connectionTypes, edgeTypes, stream, config) {
-        return new FetcherWriter_1.FetcherWriter(true, modelType, inheritanceInfo, connectionTypes, edgeTypes, stream, config);
+    createFetcheWriter(modelType, ctx, stream, config) {
+        return new FetcherWriter_1.FetcherWriter(true, modelType, ctx, stream, config);
     }
     generateServices(ctx, promises) {
         return __awaiter(this, void 0, void 0, function* () {

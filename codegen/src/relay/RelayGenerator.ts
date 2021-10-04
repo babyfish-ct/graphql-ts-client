@@ -5,7 +5,6 @@ import { FetcherContext } from "../FetcherContext";
 import { FetcherWriter } from "../FetcherWriter";
 import { closeStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
-import { InheritanceInfo } from "../InheritanceInfo";
 import { RelayWriter } from "./RelayWriter";
 
 export class RelayGenerator extends Generator {
@@ -16,18 +15,14 @@ export class RelayGenerator extends Generator {
 
     protected createFetcheWriter(
         modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
-        inheritanceInfo: InheritanceInfo,
-        connectionTypes: Set<GraphQLObjectType>,
-        edgeTypes: Set<GraphQLObjectType>,
+        ctx: FetcherContext,
         stream: WriteStream,
         config: GeneratorConfig
     ): FetcherWriter {
         return new FetcherWriter(
             true,
             modelType,
-            inheritanceInfo,
-            connectionTypes,
-            edgeTypes,
+            ctx,
             stream,
             config
         );

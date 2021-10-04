@@ -18,4 +18,5 @@ export declare class TypedConfigurationWriter extends Writer {
     protected isUnderGlobalDir(): boolean;
     protected prepareImportings(): void;
     protected writeCode(): void;
+    private writeSchema;
 }

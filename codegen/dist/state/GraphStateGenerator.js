@@ -28,10 +28,21 @@ class GraphStateGenerator extends Generator_1.Generator {
     constructor(config) {
         super(config);
     }
+    writeIndexCode(stream, schema) {
+        const _super = Object.create(null, {
+            writeIndexCode: { get: () => super.writeIndexCode }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            stream.write(`export type { newTypedConfiguration } from "./TypedConfiguration";\n`);
+            yield _super.writeIndexCode.call(this, stream, schema);
+        });
+    }
     generateServices(ctx, promises) {
         return __awaiter(this, void 0, void 0, function* () {
             promises.push(this.generateTypedConfiguration(ctx));
+            yield this.mkdirIfNecessary("triggers");
             promises.push(this.generateTriggerEvents(ctx));
+            promises.push(this.generateTriggerIndex(ctx));
         });
     }
     generateTypedConfiguration(ctx) {
@@ -43,31 +54,39 @@ class GraphStateGenerator extends Generator_1.Generator {
     }
     generateTriggerEvents(ctx) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.mkdirIfNecessary("triggers");
             for (const fetcherType of ctx.fetcherTypes) {
                 if (fetcherType.name === "Mutation") {
                     continue;
                 }
-                if (fetcherType instanceof graphql_1.GraphQLObjectType) {
-                    if (ctx.connectionTypes.has(fetcherType) || ctx.edgeTypes.has(fetcherType)) {
-                        continue;
-                    }
+                if (ctx.connectionTypes.has(fetcherType) || ctx.edgeTypes.has(fetcherType)) {
+                    continue;
                 }
                 if (fetcherType instanceof graphql_1.GraphQLObjectType || fetcherType instanceof graphql_1.GraphQLInterfaceType) {
-                    const stream = Generator_1.createStreamAndLog(`triggers/${fetcherType.name}Event.ts`);
-                    new TriggerEventWriter_1.TriggerEventWiter(fetcherType, fetcherType.name === "Query" ? undefined : "id", stream, this.config).write();
+                    let idField = undefined;
+                    if (fetcherType.name !== "Query") {
+                        idField = ctx.idFieldMap.get(fetcherType);
+                        if (idField === undefined) {
+                            throw new Error(`There is no id field in the type "${fetcherType.name}"`);
+                        }
+                    }
+                    const dir = path_1.join(this.config.targetDir, "triggers");
+                    const stream = Generator_1.createStreamAndLog(path_1.join(dir, `${fetcherType.name}Event.ts`));
+                    new TriggerEventWriter_1.TriggerEventWiter(fetcherType, idField, stream, this.config).write();
                     yield Generator_1.closeStream(stream);
                 }
             }
         });
     }
-    writeIndexCode(stream, schema) {
-        const _super = Object.create(null, {
-            writeIndexCode: { get: () => super.writeIndexCode }
-        });
+    generateTriggerIndex(ctx) {
         return __awaiter(this, void 0, void 0, function* () {
-            stream.write(`export type { newTypedConfiguration } from "./TypedConfiguration";\n`);
-            yield _super.writeIndexCode.call(this, stream, schema);
+            const stream = Generator_1.createStreamAndLog(path_1.join(path_1.join(this.config.targetDir, "triggers"), "index.ts"));
+            for (const fetcherType of ctx.fetcherTypes) {
+                if (fetcherType.name === "Mutation" || ctx.connectionTypes.has(fetcherType) || ctx.edgeTypes.has(fetcherType)) {
+                    continue;
+                }
+                stream.write(`export { ${fetcherType.name}ChangeEvent } from './${fetcherType.name}Event';\n`);
+            }
+            yield Generator_1.closeStream(stream);
         });
     }
 }

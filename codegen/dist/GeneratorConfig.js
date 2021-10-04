@@ -11,6 +11,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateConfigAndSchema = exports.validateConfig = void 0;
 const graphql_1 = require("graphql");
+const Utils_1 = require("./Utils");
 function validateConfig(
 /*
  * Generator can be invoked by user by javascript, not TypeScript.
@@ -98,6 +99,11 @@ config) {
                     }
                 }
                 break;
+            case 'idFieldMap':
+                if (value !== undefined && typeof value !== 'object') {
+                    throw new Error('"confg.idFieldMap" must be undefined or object');
+                }
+                break;
             case 'defaultFetcherExcludeMap':
                 if (value !== undefined && typeof value !== 'object') {
                     throw new Error('"confg.defaultFetcherExcludeMap" must be undefined or object');
@@ -105,6 +111,7 @@ config) {
                 break;
             case 'recreateTargetDir':
             case 'excludedOperations':
+            case 'excludedTypes':
                 console.warn(`"confg.${key}" is deprecated`);
                 break;
             default:
@@ -139,13 +146,23 @@ function validateConfigAndSchema(config, schema) {
             }
         }
     }
-    const excludedTypes = config.excludedTypes;
-    if (excludedTypes !== undefined) {
-        for (let i = 0; i < excludedTypes.length; i++) {
-            const type = typeMap[excludedTypes[i]];
-            if (type === undefined) {
-                throw new Error(`config.excludedTypes[${i}] has an illlegal value '${excludedTypes[i]}' ` +
-                    "that is not a valid graphql type name");
+    const idFieldMap = config.idFieldMap;
+    if (idFieldMap !== undefined) {
+        for (const typeName in idFieldMap) {
+            const type = typeMap[typeName];
+            if (!(type instanceof graphql_1.GraphQLObjectType) && !(type instanceof graphql_1.GraphQLInterfaceType)) {
+                throw new Error(`config.idFieldMap contains an illegal key '${typeName}', ` +
+                    "that is neither a graphql object type nor graphql interface type");
+            }
+            const fieldMap = type.getFields();
+            const idField = fieldMap[idFieldMap[typeName]];
+            if (idField === undefined) {
+                throw new Error(`config.idFieldMap['${typeName}'] is illegal, ` +
+                    `there is not field named '${idFieldMap[typeName]}' in the type '${typeName}'`);
+            }
+            if (Utils_1.associatedTypeOf(idField.type) !== undefined) {
+                throw new Error(`config.idFieldMap['${typeName}'] is illegal, ` +
+                    `the field '${idFieldMap[typeName]}' of the type '${typeName}' is not scalar`);
             }
         }
     }
