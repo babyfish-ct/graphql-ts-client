@@ -45,7 +45,7 @@ export class GraphStateGenerator extends Generator {
 
     private async generateTriggerEvents(ctx: FetcherContext) {
         for (const fetcherType of ctx.fetcherTypes) {
-            if (fetcherType.name === "Mutation") {
+            if (fetcherType.name === "Query" || fetcherType.name === "Mutation") {
                 continue;
             }
             if (ctx.connectionTypes.has(fetcherType) || ctx.edgeTypes.has(fetcherType)) {

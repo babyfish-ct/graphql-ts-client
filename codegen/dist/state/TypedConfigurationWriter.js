@@ -23,10 +23,13 @@ class TypedConfigurationWriter extends Writer_1.Writer {
     }
     prepareImportings() {
         this.importStatement(`import { newConfiguration } from 'graph-state';`);
-        for (const fetfherType of this.ctx.fetcherTypes) {
-            this.importStatement(`import { ${Utils_1.instancePrefix(fetfherType.name)}$ } from './fetchers';`);
-            if (!this.ctx.connectionTypes.has(fetfherType) && !this.ctx.edgeTypes.has(fetfherType)) {
-                this.importStatement(`import { ${fetfherType.name}ChangeEvent } from './triggers';`);
+        for (const fetcherType of this.ctx.fetcherTypes) {
+            this.importStatement(`import { ${Utils_1.instancePrefix(fetcherType.name)}$ } from './fetchers';`);
+            if (fetcherType.name !== "Query" &&
+                fetcherType.name !== "Mutation" &&
+                !this.ctx.connectionTypes.has(fetcherType) &&
+                !this.ctx.edgeTypes.has(fetcherType)) {
+                this.importStatement(`import { ${fetcherType.name}ChangeEvent } from './triggers';`);
             }
         }
     }
@@ -48,7 +51,8 @@ class TypedConfigurationWriter extends Writer_1.Writer {
         t("export interface Schema ");
         this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
             for (const fetcherType of this.ctx.fetcherTypes) {
-                if (fetcherType.name === "Mutation" ||
+                if (fetcherType.name === "Query" ||
+                    fetcherType.name === "Mutation" ||
                     fetcherType instanceof graphql_1.GraphQLUnionType ||
                     this.ctx.connectionTypes.has(fetcherType) ||
                     this.ctx.edgeTypes.has(fetcherType)) {

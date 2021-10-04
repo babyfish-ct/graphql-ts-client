@@ -31,10 +31,13 @@ export class TypedConfigurationWriter extends Writer {
 
     protected prepareImportings() {
         this.importStatement(`import { newConfiguration } from 'graph-state';`);
-        for (const fetfherType of this.ctx.fetcherTypes) {
-            this.importStatement(`import { ${instancePrefix(fetfherType.name)}$ } from './fetchers';`);
-            if (!this.ctx.connectionTypes.has(fetfherType) && !this.ctx.edgeTypes.has(fetfherType)) {
-                this.importStatement(`import { ${fetfherType.name}ChangeEvent } from './triggers';`);
+        for (const fetcherType of this.ctx.fetcherTypes) {
+            this.importStatement(`import { ${instancePrefix(fetcherType.name)}$ } from './fetchers';`);
+            if (fetcherType.name !== "Query" && 
+            fetcherType.name !== "Mutation" &&
+            !this.ctx.connectionTypes.has(fetcherType) && 
+            !this.ctx.edgeTypes.has(fetcherType)) {
+                this.importStatement(`import { ${fetcherType.name}ChangeEvent } from './triggers';`);
             }
         }
     }
@@ -55,10 +58,11 @@ export class TypedConfigurationWriter extends Writer {
 
     private writeSchema() {
         const t = this.text.bind(this);
-        t("export interface Schema ");
+        t("export type Schema = ");
         this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
             for (const fetcherType of this.ctx.fetcherTypes) {
-                if (fetcherType.name === "Mutation" || 
+                if (fetcherType.name === "Query" ||
+                fetcherType.name === "Mutation" || 
                 fetcherType instanceof GraphQLUnionType ||
                 this.ctx.connectionTypes.has(fetcherType) ||
                 this.ctx.edgeTypes.has(fetcherType)) {
