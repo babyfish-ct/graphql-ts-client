@@ -43,7 +43,7 @@ class Generator {
             yield this.mkdirIfNecessary();
             const inheritanceInfo = new InheritanceInfo_1.InheritanceInfo(schema);
             const fetcherTypes = [];
-            const connectionTypes = new Set();
+            const connectionTypes = new Map();
             const edgeTypes = new Set();
             const inputTypes = [];
             const enumTypes = [];
@@ -52,10 +52,13 @@ class Generator {
                 if (!typeName.startsWith("__")) {
                     const type = typeMap[typeName];
                     if (type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType) {
-                        const pair = connectionTypePair(type);
-                        if (pair !== undefined) {
-                            connectionTypes.add(pair[0]);
-                            edgeTypes.add(pair[1]);
+                        const tuple = connectionTypeTuple(type);
+                        if (tuple !== undefined) {
+                            connectionTypes.set(tuple[0], {
+                                edgeType: tuple[1],
+                                nodeType: tuple[2]
+                            });
+                            edgeTypes.add(tuple[1]);
                         }
                     }
                     if (type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType || type instanceof graphql_1.GraphQLUnionType) {
@@ -267,7 +270,7 @@ function closeStream(stream) {
     });
 }
 exports.closeStream = closeStream;
-function connectionTypePair(type) {
+function connectionTypeTuple(type) {
     const edges = type.getFields()["edges"];
     if (edges !== undefined) {
         const listType = edges.type instanceof graphql_1.GraphQLNonNull ?
@@ -289,8 +292,8 @@ function connectionTypePair(type) {
                     if (!(node.type instanceof graphql_1.GraphQLNonNull)) {
                         throw new Error(`The type "${edgeType}" is edge, its field "node" must be non-null`);
                     }
-                    else if (!(node.type.ofType instanceof graphql_1.GraphQLObjectType)) {
-                        throw new Error(`The type "${edgeType}" is edge, its field "node" must reference other object type`);
+                    else if (!(node.type.ofType instanceof graphql_1.GraphQLObjectType) && !(node.type.ofType instanceof graphql_1.GraphQLInterfaceType) && !(node.type.ofType instanceof graphql_1.GraphQLUnionType)) {
+                        throw new Error(`The type "${edgeType}" is edge, its field "node" must be object, interface or union`);
                     }
                     const cursor = edgeType.getFields()["cursor"];
                     if (cursor === undefined) {
@@ -304,7 +307,7 @@ function connectionTypePair(type) {
                             throw new Error(`The type "${edgeType}" is edge, its field "cursor" must be string`);
                         }
                     }
-                    return [type, edgeType];
+                    return [type, edgeType, node.type.ofType];
                 }
             }
         }

@@ -117,11 +117,13 @@ export const departmentConnection$: DepartmentConnectionFetcher<{}, {}> =
                 "totalCount", 
                 {
                     category: "LIST", 
-                    name: "edges"
+                    name: "edges", 
+                    targetTypeName: "DepartmentEdge"
                 }, 
                 {
                     category: "REFERENCE", 
-                    name: "pageInfo"
+                    name: "pageInfo", 
+                    targetTypeName: "PageInfo"
                 }
             ]
         ), 

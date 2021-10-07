@@ -10,6 +10,9 @@ export interface FetchableField {
     readonly name: string;
     readonly category: FetchableFieldCategory;
     readonly argGraphQLTypeMap: ReadonlyMap<string, string>;
+    readonly targetTypeName?: string;
+    readonly connectionTypeName?: string;
+    readonly edgeTypeName?: string;
     readonly isPlural: boolean;
     readonly isAssociation: boolean;
     readonly isFunction: boolean;
@@ -26,7 +29,10 @@ export function createFetchableType<E extends string>(
     declaredFields: ReadonlyArray<string | { 
         readonly name: string,
         readonly category: FetchableFieldCategory,
-        readonly argGraphQLTypeMap?: { readonly [key: string]: string }
+        readonly argGraphQLTypeMap?: { readonly [key: string]: string },
+        readonly targetTypeName?: string,
+        readonly connectionTypeName?: string,
+        readonly edgeTypeName?: string
     }>
 ): FetchableType<E> {
     const declaredFieldMap = new Map<string, FetchableField>();
@@ -48,7 +54,10 @@ export function createFetchableType<E extends string>(
             declaredFieldMap.set(declaredField.name, new FetchableFieldImpl(
                 declaredField.name,
                 declaredField.category,
-                argGraphQLTypeMap
+                argGraphQLTypeMap,
+                declaredField.targetTypeName,
+                declaredField.connectionTypeName,
+                declaredField.edgeTypeName
             ));
         }
     }
@@ -136,7 +145,10 @@ class FetchableFieldImpl implements FetchableField {
     constructor(
         readonly name: string,
         readonly category: FetchableFieldCategory,
-        readonly argGraphQLTypeMap: ReadonlyMap<string, string>
+        readonly argGraphQLTypeMap: ReadonlyMap<string, string>,
+        readonly targetTypeName?: string,
+        readonly connectionTypeName?: string,
+        readonly edgeTypeName?: string
     ) {}
 
     get isPlural(): boolean {

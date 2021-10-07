@@ -425,6 +425,22 @@ class FetcherWriter extends Writer_1.Writer {
                                             }
                                         });
                                     }
+                                    const field = this.fieldMap[declaredFieldName];
+                                    const associationType = Utils_1.associatedTypeOf(field.type);
+                                    if (associationType !== undefined) {
+                                        this.separator(", ");
+                                        const connection = this.ctx.connectionTypes.get(associationType);
+                                        if (connection !== undefined) {
+                                            t(`connectionTypeName: "${associationType.name}"`);
+                                            this.separator(", ");
+                                            t(`edgeTypeName: "${connection.edgeType.name}"`);
+                                            this.separator(", ");
+                                            t(`targetTypeName: "${connection.nodeType.name}"`);
+                                        }
+                                        else {
+                                            t(`targetTypeName: "${associationType.name}"`);
+                                        }
+                                    }
                                 });
                             }
                         }

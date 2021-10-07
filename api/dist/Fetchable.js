@@ -15,7 +15,7 @@ function createFetchableType(name, category, superTypes, declaredFields) {
                     argGraphQLTypeMap.set(argName, argGraphQLType);
                 }
             }
-            declaredFieldMap.set(declaredField.name, new FetchableFieldImpl(declaredField.name, declaredField.category, argGraphQLTypeMap));
+            declaredFieldMap.set(declaredField.name, new FetchableFieldImpl(declaredField.name, declaredField.category, argGraphQLTypeMap, declaredField.targetTypeName, declaredField.connectionTypeName, declaredField.edgeTypeName));
         }
     }
     return new FetchableTypeImpl(name, category, superTypes, declaredFieldMap);
@@ -80,10 +80,13 @@ class FetchableTypeImpl {
     }
 }
 class FetchableFieldImpl {
-    constructor(name, category, argGraphQLTypeMap) {
+    constructor(name, category, argGraphQLTypeMap, targetTypeName, connectionTypeName, edgeTypeName) {
         this.name = name;
         this.category = category;
         this.argGraphQLTypeMap = argGraphQLTypeMap;
+        this.targetTypeName = targetTypeName;
+        this.connectionTypeName = connectionTypeName;
+        this.edgeTypeName = edgeTypeName;
     }
     get isPlural() {
         return this.category === "LIST" || this.category === "CONNECTION";

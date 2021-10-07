@@ -141,7 +141,8 @@ export const department$: DepartmentFetcher<{}, {}> =
                 "name", 
                 {
                     category: "LIST", 
-                    name: "employees"
+                    name: "employees", 
+                    targetTypeName: "Employee"
                 }, 
                 "avgSalary"
             ]

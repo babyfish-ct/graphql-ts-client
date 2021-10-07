@@ -226,15 +226,18 @@ export const employee$: EmployeeFetcher<{}, {}> =
                 "salary", 
                 {
                     category: "REFERENCE", 
-                    name: "department"
+                    name: "department", 
+                    targetTypeName: "Department"
                 }, 
                 {
                     category: "REFERENCE", 
-                    name: "supervisor"
+                    name: "supervisor", 
+                    targetTypeName: "Employee"
                 }, 
                 {
                     category: "LIST", 
-                    name: "subordinates"
+                    name: "subordinates", 
+                    targetTypeName: "Employee"
                 }
             ]
         ), 

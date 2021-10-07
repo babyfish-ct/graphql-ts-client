@@ -18,7 +18,7 @@ import { EnumWriter } from "./EnumWriter";
 import { InputWriter } from "./InputWriter";
 import { CommonTypesWriter } from "./CommonTypesWriter";
 import { InheritanceInfo } from "./InheritanceInfo";
-import { FetcherContext } from "./FetcherContext";
+import { Connection, FetcherContext } from "./FetcherContext";
 
 export abstract class Generator {
 
@@ -35,7 +35,7 @@ export abstract class Generator {
 
         const inheritanceInfo = new InheritanceInfo(schema);
         const fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType> = [];
-        const connectionTypes = new Set<GraphQLType>();
+        const connectionTypes = new Map<GraphQLType, Connection>();
         const edgeTypes = new Set<GraphQLType>();
         const inputTypes: GraphQLInputObjectType[] = [];
         const enumTypes: GraphQLEnumType[] = [];
@@ -44,10 +44,13 @@ export abstract class Generator {
             if (!typeName.startsWith("__")) {
                 const type = typeMap[typeName]!;
                 if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType) {
-                    const pair = connectionTypePair(type);
-                    if (pair !== undefined) {
-                        connectionTypes.add(pair[0]);
-                        edgeTypes.add(pair[1])
+                    const tuple = connectionTypeTuple(type);
+                    if (tuple !== undefined) {
+                        connectionTypes.set(tuple[0], {
+                            edgeType: tuple[1],
+                            nodeType: tuple[2]
+                        });
+                        edgeTypes.add(tuple[1]);
                     }
                 }
                 if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType || type instanceof GraphQLUnionType) {
@@ -286,11 +289,12 @@ export async function closeStream(stream: WriteStream) {
     return await(promisify(stream.end).call(stream));
 }
 
-function connectionTypePair(
+function connectionTypeTuple(
     type: GraphQLObjectType | GraphQLInterfaceType
 ): [
     GraphQLObjectType | GraphQLInterfaceType, 
-    GraphQLObjectType | GraphQLInterfaceType
+    GraphQLObjectType | GraphQLInterfaceType,
+    GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType
 ] | undefined {
     const edges = type.getFields()["edges"];
     if (edges !== undefined) {
@@ -320,9 +324,9 @@ function connectionTypePair(
                         throw new Error(
                             `The type "${edgeType}" is edge, its field "node" must be non-null`
                         );
-                    } else if (!(node.type.ofType instanceof GraphQLObjectType)) {
+                    } else if (!(node.type.ofType instanceof GraphQLObjectType) && !(node.type.ofType instanceof GraphQLInterfaceType) && !(node.type.ofType instanceof GraphQLUnionType)) {
                         throw new Error(
-                            `The type "${edgeType}" is edge, its field "node" must reference other object type`
+                            `The type "${edgeType}" is edge, its field "node" must be object, interface or union`
                         );
                     }
                     const cursor = edgeType.getFields()["cursor"];
@@ -341,7 +345,7 @@ function connectionTypePair(
                             );
                         }
                     }
-                    return [type, edgeType];
+                    return [type, edgeType, node.type.ofType];
                 }
             }
         }

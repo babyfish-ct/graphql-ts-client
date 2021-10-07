@@ -117,11 +117,13 @@ export const employeeConnection$: EmployeeConnectionFetcher<{}, {}> =
                 "totalCount", 
                 {
                     category: "LIST", 
-                    name: "edges"
+                    name: "edges", 
+                    targetTypeName: "EmployeeEdge"
                 }, 
                 {
                     category: "REFERENCE", 
-                    name: "pageInfo"
+                    name: "pageInfo", 
+                    targetTypeName: "PageInfo"
                 }
             ]
         ), 

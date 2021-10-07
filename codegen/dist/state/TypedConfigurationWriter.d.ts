@@ -19,4 +19,5 @@ export declare class TypedConfigurationWriter extends Writer {
     protected prepareImportings(): void;
     protected writeCode(): void;
     private writeSchema;
+    private associationTypeMap;
 }

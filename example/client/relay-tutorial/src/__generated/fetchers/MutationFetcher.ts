@@ -198,7 +198,8 @@ export const mutation$: MutationFetcher<{}, {}> =
                 {
                     category: "REFERENCE", 
                     name: "mergeDepartment", 
-                    argGraphQLTypeMap: {input: 'DepartmentInput!'}
+                    argGraphQLTypeMap: {input: 'DepartmentInput!'}, 
+                    targetTypeName: "Department"
                 }, 
                 {
                     category: "SCALAR", 
@@ -208,7 +209,8 @@ export const mutation$: MutationFetcher<{}, {}> =
                 {
                     category: "REFERENCE", 
                     name: "mergeEmployee", 
-                    argGraphQLTypeMap: {input: 'EmployeeInput!'}
+                    argGraphQLTypeMap: {input: 'EmployeeInput!'}, 
+                    targetTypeName: "Employee"
                 }, 
                 {
                     category: "SCALAR", 

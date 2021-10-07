@@ -9,6 +9,9 @@ export interface FetchableField {
     readonly name: string;
     readonly category: FetchableFieldCategory;
     readonly argGraphQLTypeMap: ReadonlyMap<string, string>;
+    readonly targetTypeName?: string;
+    readonly connectionTypeName?: string;
+    readonly edgeTypeName?: string;
     readonly isPlural: boolean;
     readonly isAssociation: boolean;
     readonly isFunction: boolean;
@@ -21,4 +24,7 @@ export declare function createFetchableType<E extends string>(name: E, category:
     readonly argGraphQLTypeMap?: {
         readonly [key: string]: string;
     };
+    readonly targetTypeName?: string;
+    readonly connectionTypeName?: string;
+    readonly edgeTypeName?: string;
 }>): FetchableType<E>;
