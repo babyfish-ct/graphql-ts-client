@@ -71,7 +71,6 @@ class TriggerEventWiter extends Writer_1.Writer {
     }
     writeEventFieldNames() {
         const t = this.text.bind(this);
-        const fieldMap = this.modelType.getFields();
         t(`\nexport type ${this.modelType}ChangeEventFields = `);
         this.scope({ type: "BLANK", multiLines: true, suffix: ";\n" }, () => {
             for (const fieldName of this.simpleFieldNames) {

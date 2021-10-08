@@ -22,7 +22,7 @@ class TypedConfigurationWriter extends Writer_1.Writer {
         return true;
     }
     prepareImportings() {
-        this.importStatement(`import { Configuration, newConfiguration } from 'graph-state';`);
+        this.importStatement(`import { Configuration, newConfiguration } from 'graphql-state';`);
         for (const fetcherType of this.ctx.fetcherTypes) {
             this.importStatement(`import { ${Utils_1.instancePrefix(fetcherType.name)}$ } from './fetchers';`);
             if (fetcherType.name !== "Query" &&

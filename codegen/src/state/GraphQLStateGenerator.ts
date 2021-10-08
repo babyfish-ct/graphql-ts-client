@@ -17,7 +17,7 @@ import { GeneratorConfig } from "../GeneratorConfig";
 import { TriggerEventWiter } from "./TriggerEventWriter";
 import { TypedConfigurationWriter } from "./TypedConfigurationWriter";
 
-export class GraphStateGenerator extends Generator {
+export class GraphQLStateGenerator extends Generator {
 
     constructor(config: GeneratorConfig) {
         super(config);
@@ -86,7 +86,7 @@ export class GraphStateGenerator extends Generator {
             ctx.edgeTypes.has(fetcherType)) {
                 continue;
             }
-            stream.write(`export { ${fetcherType.name}ChangeEvent } from './${fetcherType.name}ChangeEvent';\n`);
+            stream.write(`export type { ${fetcherType.name}ChangeEvent } from './${fetcherType.name}ChangeEvent';\n`);
         }
         await closeStream(stream);
     }

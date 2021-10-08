@@ -14,4 +14,4 @@ export { Generator } from './Generator';
 export { AsyncGenerator}  from './async/AsyncGenerator';
 export { ApolloGenerator } from './apollo/ApolloGenerator';
 export { RelayGenerator } from './relay/RelayGenerator';
-export { GraphStateGenerator } from './state/GraphStateGenerator';
+export { GraphQLStateGenerator } from './state/GraphQLStateGenerator';

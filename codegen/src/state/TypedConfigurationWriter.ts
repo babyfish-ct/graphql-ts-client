@@ -30,7 +30,7 @@ export class TypedConfigurationWriter extends Writer {
     }
 
     protected prepareImportings() {
-        this.importStatement(`import { Configuration, newConfiguration } from 'graph-state';`);
+        this.importStatement(`import { Configuration, newConfiguration } from 'graphql-state';`);
         for (const fetcherType of this.ctx.fetcherTypes) {
             this.importStatement(`import { ${instancePrefix(fetcherType.name)}$ } from './fetchers';`);
             if (fetcherType.name !== "Query" && 
