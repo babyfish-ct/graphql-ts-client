@@ -220,7 +220,7 @@ export abstract class Writer {
 
     protected typeRef(
         type: GraphQLType,
-        overrideObjectTypeName?: string
+        objectRender?: string | ((type: GraphQLObjectType | GraphQLInterfaceType, field: GraphQLField<any, any>) => boolean)
     ) {
         if (type instanceof GraphQLScalarType) {
             const mappedTypeName = 
@@ -234,8 +234,8 @@ export abstract class Writer {
             type instanceof GraphQLInterfaceType ||
             type instanceof GraphQLUnionType
         ) {
-            if (overrideObjectTypeName !== undefined) {
-                this.text(overrideObjectTypeName);
+            if (typeof objectRender === "string") {
+                this.text(objectRender);
             } else if (type instanceof GraphQLUnionType) {
                 this.enter("BLANK");
                 for (const itemType of type.getTypes()) {
@@ -243,26 +243,40 @@ export abstract class Writer {
                     this.text(itemType.name);    
                 }
                 this.leave();
+            } else if (typeof objectRender === 'function') {
+                this.scope({type: "BLOCK", multiLines: true}, () => {
+                    const fieldMap = type.getFields();
+                    for (const fieldName in fieldMap) {
+                        const field = fieldMap[fieldName];
+                        if (objectRender(type, field)) {
+                            this.separator(", ");
+                            this.text("readonly ");
+                            this.text(fieldName);
+                            this.text(": ");
+                            this.typeRef(field.type, objectRender);
+                        }
+                    }
+                });
             } else {
                 this.text(type.name);
             }
         } else if (type instanceof GraphQLEnumType || type instanceof GraphQLInputObjectType) {
             this.text(type.name);
         } else if (type instanceof GraphQLNonNull) {
-            this.typeRef(type.ofType, overrideObjectTypeName);
+            this.typeRef(type.ofType, objectRender);
         } else if (type instanceof GraphQLList) {
             if (type.ofType instanceof GraphQLNonNull) {
                 if (!this.config.arrayEditable) {
                     this.text("readonly ");
                 }
-                this.typeRef(type.ofType, overrideObjectTypeName);
+                this.typeRef(type.ofType, objectRender);
                 this.text("[]");
             } else {
                 if (!this.config.arrayEditable) {
                     this.text("Readonly");
                 }
                 this.text("Array<");
-                this.typeRef(type.ofType, overrideObjectTypeName);
+                this.typeRef(type.ofType, objectRender);
                 this.text(" | undefined>");
             }
         }

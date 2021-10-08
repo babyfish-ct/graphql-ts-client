@@ -60,7 +60,7 @@ export class GraphStateGenerator extends Generator {
                     }
                 }
                 const dir = join(this.config.targetDir, "triggers");
-                const stream = createStreamAndLog(join(dir, `${fetcherType.name}Event.ts`));
+                const stream = createStreamAndLog(join(dir, `${fetcherType.name}ChangeEvent.ts`));
                 new TriggerEventWiter(
                     fetcherType, 
                     idField, 
@@ -80,10 +80,13 @@ export class GraphStateGenerator extends Generator {
             )
         );
         for (const fetcherType of ctx.fetcherTypes) {
-            if (fetcherType.name === "Mutation" || ctx.connectionTypes.has(fetcherType) || ctx.edgeTypes.has(fetcherType)) {
+            if (fetcherType.name === "Query" || 
+            fetcherType.name === "Mutation" || 
+            ctx.connectionTypes.has(fetcherType) || 
+            ctx.edgeTypes.has(fetcherType)) {
                 continue;
             }
-            stream.write(`export { ${fetcherType.name}ChangeEvent } from './${fetcherType.name}Event';\n`);
+            stream.write(`export { ${fetcherType.name}ChangeEvent } from './${fetcherType.name}ChangeEvent';\n`);
         }
         await closeStream(stream);
     }

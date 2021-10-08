@@ -9,7 +9,7 @@
  */
 /// <reference types="node" />
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLNamedType, GraphQLType } from "graphql";
+import { GraphQLField, GraphQLInterfaceType, GraphQLNamedType, GraphQLObjectType, GraphQLType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
 export declare abstract class Writer {
     private stream;
@@ -35,7 +35,7 @@ export declare abstract class Writer {
     protected str(value: string): void;
     protected separator(value?: string): void;
     protected varableDecl(name: string, type: GraphQLType, overrideObjectTypeName?: string): void;
-    protected typeRef(type: GraphQLType, overrideObjectTypeName?: string): void;
+    protected typeRef(type: GraphQLType, objectRender?: string | ((type: GraphQLObjectType | GraphQLInterfaceType, field: GraphQLField<any, any>) => boolean)): void;
     protected gqlTypeRef(type: GraphQLType): void;
     protected isUnderGlobalDir(): boolean;
     private writeIndent;

@@ -201,7 +201,7 @@ class Writer {
         this.text(": ");
         this.typeRef(type, overrideObjectTypeName);
     }
-    typeRef(type, overrideObjectTypeName) {
+    typeRef(type, objectRender) {
         var _a, _b;
         if (type instanceof graphql_1.GraphQLScalarType) {
             const mappedTypeName = (_b = ((_a = this.config.scalarTypeMap) !== null && _a !== void 0 ? _a : EMPTY_MAP)[type.name]) !== null && _b !== void 0 ? _b : SCALAR_MAP[type.name];
@@ -213,8 +213,8 @@ class Writer {
         else if (type instanceof graphql_1.GraphQLObjectType ||
             type instanceof graphql_1.GraphQLInterfaceType ||
             type instanceof graphql_1.GraphQLUnionType) {
-            if (overrideObjectTypeName !== undefined) {
-                this.text(overrideObjectTypeName);
+            if (typeof objectRender === "string") {
+                this.text(objectRender);
             }
             else if (type instanceof graphql_1.GraphQLUnionType) {
                 this.enter("BLANK");
@@ -224,6 +224,21 @@ class Writer {
                 }
                 this.leave();
             }
+            else if (typeof objectRender === 'function') {
+                this.scope({ type: "BLOCK", multiLines: true }, () => {
+                    const fieldMap = type.getFields();
+                    for (const fieldName in fieldMap) {
+                        const field = fieldMap[fieldName];
+                        if (objectRender(type, field)) {
+                            this.separator(", ");
+                            this.text("readonly ");
+                            this.text(fieldName);
+                            this.text(": ");
+                            this.typeRef(field.type, objectRender);
+                        }
+                    }
+                });
+            }
             else {
                 this.text(type.name);
             }
@@ -232,14 +247,14 @@ class Writer {
             this.text(type.name);
         }
         else if (type instanceof graphql_1.GraphQLNonNull) {
-            this.typeRef(type.ofType, overrideObjectTypeName);
+            this.typeRef(type.ofType, objectRender);
         }
         else if (type instanceof graphql_1.GraphQLList) {
             if (type.ofType instanceof graphql_1.GraphQLNonNull) {
                 if (!this.config.arrayEditable) {
                     this.text("readonly ");
                 }
-                this.typeRef(type.ofType, overrideObjectTypeName);
+                this.typeRef(type.ofType, objectRender);
                 this.text("[]");
             }
             else {
@@ -247,7 +262,7 @@ class Writer {
                     this.text("Readonly");
                 }
                 this.text("Array<");
-                this.typeRef(type.ofType, overrideObjectTypeName);
+                this.typeRef(type.ofType, objectRender);
                 this.text(" | undefined>");
             }
         }

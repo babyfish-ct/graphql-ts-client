@@ -70,7 +70,7 @@ class GraphStateGenerator extends Generator_1.Generator {
                         }
                     }
                     const dir = path_1.join(this.config.targetDir, "triggers");
-                    const stream = Generator_1.createStreamAndLog(path_1.join(dir, `${fetcherType.name}Event.ts`));
+                    const stream = Generator_1.createStreamAndLog(path_1.join(dir, `${fetcherType.name}ChangeEvent.ts`));
                     new TriggerEventWriter_1.TriggerEventWiter(fetcherType, idField, stream, this.config).write();
                     yield Generator_1.closeStream(stream);
                 }
@@ -81,10 +81,13 @@ class GraphStateGenerator extends Generator_1.Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = Generator_1.createStreamAndLog(path_1.join(path_1.join(this.config.targetDir, "triggers"), "index.ts"));
             for (const fetcherType of ctx.fetcherTypes) {
-                if (fetcherType.name === "Mutation" || ctx.connectionTypes.has(fetcherType) || ctx.edgeTypes.has(fetcherType)) {
+                if (fetcherType.name === "Query" ||
+                    fetcherType.name === "Mutation" ||
+                    ctx.connectionTypes.has(fetcherType) ||
+                    ctx.edgeTypes.has(fetcherType)) {
                     continue;
                 }
-                stream.write(`export { ${fetcherType.name}ChangeEvent } from './${fetcherType.name}Event';\n`);
+                stream.write(`export { ${fetcherType.name}ChangeEvent } from './${fetcherType.name}ChangeEvent';\n`);
             }
             yield Generator_1.closeStream(stream);
         });

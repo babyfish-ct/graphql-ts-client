@@ -1,13 +1,15 @@
+import { timeStamp } from "console";
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType } from "graphql";
+import { assertObjectType, GraphQLField, GraphQLInterfaceType, GraphQLObjectType } from "graphql";
 import { GeneratorConfig } from "../GeneratorConfig";
+import { associatedTypeOf } from "../Utils";
 import { Writer } from "../Writer";
 
 export class TriggerEventWiter extends Writer {
 
-    private simpleKeys: ReadonlySet<string>;
+    private simpleFieldNames: ReadonlySet<string>;
 
-    private parameterizedKeys: ReadonlySet<string>;
+    private parameterizedFieldNames: ReadonlySet<string>;
 
     constructor(
         private modelType: GraphQLObjectType | GraphQLInterfaceType,
@@ -17,25 +19,25 @@ export class TriggerEventWiter extends Writer {
     ) {
         super(stream, config);
 
-        const simpleKeys = new Set<string>();
-        const parameterizedKeys = new Set<string>();
+        const simpleFieldNames = new Set<string>();
+        const parameterizedFieldNames = new Set<string>();
         const fieldMap = modelType.getFields();
         for (const fieldName in fieldMap) {
             if (fieldName !== idField?.name) {
                 if (fieldMap[fieldName].args.length === 0) {
-                    simpleKeys.add(fieldName);
+                    simpleFieldNames.add(fieldName);
                 } else {
-                    parameterizedKeys.add(fieldName);
+                    parameterizedFieldNames.add(fieldName);
                 }
             }
         }
-        this.simpleKeys = simpleKeys;
-        this.parameterizedKeys = parameterizedKeys;
+        this.simpleFieldNames = simpleFieldNames;
+        this.parameterizedFieldNames = parameterizedFieldNames;
     }
 
     protected prepareImportings() {
         this.importStatement(`import {ImplementationType} from '../CommonTypes';`);
-        if (this.parameterizedKeys.size !== 0) {
+        if (this.parameterizedFieldNames.size !== 0) {
             this.importStatement(`import {${this.modelType.name}Args} from '../fetchers/${this.modelType.name}Fetcher';`);
         }
     }
@@ -59,32 +61,21 @@ export class TriggerEventWiter extends Writer {
                 t(`\nreadonly changedType: "INSERT" | "UPDATE" | "DELETE";\n`);
             }
 
-            t(`\nreadonly changedKeys: ReadonlyArray<${this.modelType.name}ChangeEventKey>;\n`);
+            t(`\nreadonly changedKeys: ReadonlyArray<${this.modelType.name}ChangeEventKey<any>>;\n`);
 
             for (const prefix of ["old", "new"]) {
-                if (this.simpleKeys.size !== 0) {
-                    t(`\n${prefix}Value<TKey extends ${this.modelType.name}ChangeEventSimpleKeys>`);
+                if (this.simpleFieldNames.size !== 0) {
+                    t(`\n${prefix}Value<TFieldName extends ${this.modelType.name}ChangeEventFields>`);
                     this.scope({type: "PARAMETERS", multiLines: true}, () => {
-                        t(`key: TKey`);
+                        t(`key: ${this.modelType.name}ChangeEventKey<TFieldName>`);
                     });
-                    t(`: ${this.modelType.name}ChangeEventValues[TKey] | undefined;\n`);
-                }
-
-                if (this.parameterizedKeys.size !== 0) {
-                    t(`\n${prefix}Value<TKey extends ${this.modelType.name}ChangeEventParameterizedKeys>`);
-                    this.scope({type: "PARAMETERS", multiLines: true}, () => {
-                        t(`key: TKey`);
-                        this.separator(", ");
-                        t(`variables: ${this.modelType.name}Args[TKey]`);
-                    });
-                    t(`: ${this.modelType.name}ChangeEventValues[TKey] | undefined;\n`);
+                    t(`: ${this.modelType.name}ChangeEventValues[TFieldName] | undefined;\n`);
                 }
             }
         });
 
         this.writeEventKey();
-        this.writeEventSimpleKeys();
-        this.writeEventParameterizedKeys();
+        this.writeEventFieldNames();
         this.writeEventValues();
     }
 
@@ -92,53 +83,31 @@ export class TriggerEventWiter extends Writer {
 
         const t = this.text.bind(this);
 
+        t(`\nexport type ${this.modelType}ChangeEventKey<TFieldName extends ${this.modelType}ChangeEventFields> = `);
+        this.scope({type: "BLANK", multiLines: true, suffix: ";\n"}, () => {
+            for (const fieldName of this.parameterizedFieldNames) {
+                t(`TFieldName extends "${fieldName}" ? \n`);
+                t(`{ readonly name: "${fieldName}"; readonly variables: ${this.modelType.name}Args } : \n`);
+            }
+            t('TFieldName\n');
+        });
+    }
+
+    private writeEventFieldNames() {
+
+        const t = this.text.bind(this);
+
         const fieldMap = this.modelType.getFields();
 
-        t(`\nexport type ${this.modelType}ChangeEventKey = `);
+        t(`\nexport type ${this.modelType}ChangeEventFields = `);
         this.scope({type: "BLANK", multiLines: true, suffix: ";\n"}, () => {
-            if (this.simpleKeys.size !== 0) {
-                t(`${this.modelType}ChangeEventSimpleKeys`);
-            }
-            for (const key of this.parameterizedKeys) {
+            for (const fieldName of this.simpleFieldNames) {
                 this.separator(" | ");
-                this.scope({type: "BLOCK", multiLines: true}, () => {
-                    t(`readonly name: "${key}";\n`);
-                    t(`readonly variables: ${this.modelType.name}Args["${key}"];\n`);
-                });
+                t(`"${fieldName}"`);
             }
-        });
-    }
-
-    private writeEventSimpleKeys() {
-
-        if (this.simpleKeys.size === 0) {
-            return;
-        }
-
-        const t = this.text.bind(this);
-
-        t(`\nexport type ${this.modelType}ChangeEventSimpleKeys = `);
-        this.scope({type: "BLANK", multiLines: true, suffix: ";\n"}, () => {
-            for (const key of this.simpleKeys) {
+            for (const fieldName of this.parameterizedFieldNames) {
                 this.separator(" | ");
-                t(`"${key}"`);
-            }
-        });
-    }
-
-    private writeEventParameterizedKeys() {
-
-        if (this.parameterizedKeys.size === 0) {
-            return;
-        }
-
-        const t = this.text.bind(this);
-
-        t(`\nexport type ${this.modelType}ChangeEventParameterizedKeys = `);
-        this.scope({type: "BLANK", multiLines: true, suffix: ";\n"}, () => {
-            for (const key of this.parameterizedKeys) {
-                this.separator(" | ");
-                t(`"${key}"`);
+                t(`"${fieldName}"`);
             }
         });
     }
@@ -147,15 +116,23 @@ export class TriggerEventWiter extends Writer {
 
         const t = this.text.bind(this);
 
-        const typeMap = this.modelType.getFields();
-
         t(`\nexport interface ${this.modelType}ChangeEventValues `);
         this.scope({type: "BLOCK", multiLines: true, suffix: ";\n"}, () => {
             const typeMap = this.modelType.getFields();
             for (const fieldName in typeMap) {
                 if (fieldName !== this.idField?.name) {
-                    t(`${fieldName}: `);
-                    this.typeRef(typeMap[fieldName].type, "{readonly id: any}");
+                    const associatedType = associatedTypeOf(typeMap[fieldName].type);
+                    t(`readonly ${fieldName}: `);
+                    this.typeRef(typeMap[fieldName].type, (type, field) => {
+                        if (type === associatedType) {
+                            const fieldMap = type.getFields();
+                            const idFieldName = this.config.idFieldMap !== undefined ?
+                                this.config.idFieldMap[type.name] ?? "id" :
+                                "id";
+                            return field.name === fieldMap[idFieldName]?.name;
+                        }
+                        return true;
+                    });
                     t(";\n");
                 }
             }
