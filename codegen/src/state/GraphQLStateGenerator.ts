@@ -24,7 +24,7 @@ export class GraphQLStateGenerator extends Generator {
     }
 
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
-        stream.write(`export type { newTypedConfiguration } from "./TypedConfiguration";\n`);
+        stream.write(`export { newTypedConfiguration } from "./TypedConfiguration";\n`);
         await super.writeIndexCode(stream, schema);
     }
 

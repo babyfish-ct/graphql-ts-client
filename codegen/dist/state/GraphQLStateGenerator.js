@@ -33,7 +33,7 @@ class GraphQLStateGenerator extends Generator_1.Generator {
             writeIndexCode: { get: () => super.writeIndexCode }
         });
         return __awaiter(this, void 0, void 0, function* () {
-            stream.write(`export type { newTypedConfiguration } from "./TypedConfiguration";\n`);
+            stream.write(`export { newTypedConfiguration } from "./TypedConfiguration";\n`);
             yield _super.writeIndexCode.call(this, stream, schema);
         });
     }

@@ -34,11 +34,6 @@ export interface Fetcher<E extends string, T extends object, TVariables extends 
     " $supressWarnings"(_1: T, _2: TVariables): never;
 }
 
-export type ModelType<F> = 
-    F extends Fetcher<string, infer M, object> ? 
-    M : 
-    never;
-
 export interface ObjectFetcher<E extends string, T extends object, TVariables extends object> extends Fetcher<E, T, TVariables> {
     readonly " $category": "OBJECT";
 }
@@ -50,6 +45,18 @@ export interface ConnectionFetcher<E extends string, T extends object, TVariable
 export interface EdgeFetcher<E extends string, T extends object, TVariables extends object> extends Fetcher<E, T, TVariables> {
     readonly " $category": "EDGE";
 }
+
+export type ModelType<F> = 
+    F extends Fetcher<string, infer M, object> ? 
+    M : 
+    F extends ObjectFetcher<string, infer M, object> ?
+    M :
+    F extends ConnectionFetcher<string, infer M, object> ?
+    M :
+    F extends EdgeFetcher<string, infer M, object> ?
+    M :
+    never
+;
 
 export abstract class AbstractFetcher<E extends string, T extends object, TVariables extends object> implements Fetcher<E, T, TVariables> {
 
