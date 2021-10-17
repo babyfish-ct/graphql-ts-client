@@ -15,7 +15,7 @@ function createFetchableType(name, category, superTypes, declaredFields) {
                     argGraphQLTypeMap.set(argName, argGraphQLType);
                 }
             }
-            declaredFieldMap.set(declaredField.name, new FetchableFieldImpl(declaredField.name, declaredField.category, argGraphQLTypeMap, declaredField.targetTypeName, declaredField.connectionTypeName, declaredField.edgeTypeName));
+            declaredFieldMap.set(declaredField.name, new FetchableFieldImpl(declaredField.name, declaredField.category, argGraphQLTypeMap, declaredField.targetTypeName, declaredField.connectionTypeName, declaredField.edgeTypeName, declaredField.undefinable));
         }
     }
     return new FetchableTypeImpl(name, category, superTypes, declaredFieldMap);
@@ -80,13 +80,14 @@ class FetchableTypeImpl {
     }
 }
 class FetchableFieldImpl {
-    constructor(name, category, argGraphQLTypeMap, targetTypeName, connectionTypeName, edgeTypeName) {
+    constructor(name, category, argGraphQLTypeMap, targetTypeName, connectionTypeName, edgeTypeName, undefinable) {
         this.name = name;
         this.category = category;
         this.argGraphQLTypeMap = argGraphQLTypeMap;
         this.targetTypeName = targetTypeName;
         this.connectionTypeName = connectionTypeName;
         this.edgeTypeName = edgeTypeName;
+        this._undefinable = undefinable !== null && undefinable !== void 0 ? undefinable : false;
     }
     get isPlural() {
         return this.category === "LIST" || this.category === "CONNECTION";
@@ -96,6 +97,9 @@ class FetchableFieldImpl {
     }
     get isFunction() {
         return this.argGraphQLTypeMap.size !== 0 || this.isAssociation;
+    }
+    get isUndefinable() {
+        return this._undefinable;
     }
 }
 function collectFields(fetchableType, output) {

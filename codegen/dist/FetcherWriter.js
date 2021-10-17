@@ -401,10 +401,13 @@ class FetcherWriter extends Writer_1.Writer {
                     this.separator(", ");
                     this.scope({ type: "ARRAY", multiLines: true }, () => {
                         for (const declaredFieldName of this.declaredFieldNames()) {
+                            const field = this.fieldMap[declaredFieldName];
                             this.separator(", ");
                             const args = this.fieldArgsMap.get(declaredFieldName);
                             const category = this.fieldCategoryMap.get(declaredFieldName);
-                            if (args === undefined && (category === undefined || category === "SCALAR")) {
+                            if (args === undefined &&
+                                (category === undefined || category === "SCALAR") &&
+                                field.type instanceof graphql_1.GraphQLNonNull) {
                                 t(`"${declaredFieldName}"`);
                             }
                             else {
@@ -425,7 +428,6 @@ class FetcherWriter extends Writer_1.Writer {
                                             }
                                         });
                                     }
-                                    const field = this.fieldMap[declaredFieldName];
                                     const associationType = Utils_1.associatedTypeOf(field.type);
                                     if (associationType !== undefined) {
                                         this.separator(", ");
@@ -440,6 +442,10 @@ class FetcherWriter extends Writer_1.Writer {
                                         else {
                                             t(`targetTypeName: "${associationType.name}"`);
                                         }
+                                    }
+                                    if (!(field.type instanceof graphql_1.GraphQLNonNull)) {
+                                        this.separator(", ");
+                                        t("undefinable: true");
                                     }
                                 });
                             }

@@ -467,10 +467,14 @@ export class FetcherWriter extends Writer {
                     this.separator(", ");
                     this.scope({type: "ARRAY", multiLines: true }, () => {
                         for (const declaredFieldName of this.declaredFieldNames()) {
+                            const field = this.fieldMap[declaredFieldName];
                             this.separator(", ");
                             const args = this.fieldArgsMap.get(declaredFieldName);
                             const category = this.fieldCategoryMap.get(declaredFieldName);
-                            if (args === undefined && (category === undefined || category === "SCALAR")) {
+                            if (args === undefined && 
+                                (category === undefined || category === "SCALAR") &&
+                                field.type instanceof GraphQLNonNull
+                            ) {
                                 t(`"${declaredFieldName}"`);
                             } else {
                                 this.scope({type: "BLOCK", multiLines: true}, () => {
@@ -490,7 +494,6 @@ export class FetcherWriter extends Writer {
                                             }
                                         });
                                     }
-                                    const field = this.fieldMap[declaredFieldName];
                                     const associationType = associatedTypeOf(field.type);
                                     if (associationType !== undefined) {
                                         this.separator(", ");
@@ -505,7 +508,11 @@ export class FetcherWriter extends Writer {
                                             t(`targetTypeName: "${associationType.name}"`);
                                         }
                                     }
-                                })
+                                    if (!(field.type instanceof GraphQLNonNull)) {
+                                        this.separator(", ");
+                                        t("undefinable: true");
+                                    }
+                                });
                             }
                         }
                     });

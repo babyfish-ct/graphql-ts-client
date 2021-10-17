@@ -7,6 +7,7 @@ export interface FetcherContext {
     readonly connectionTypes: Map<GraphQLType, Connection>;
     readonly edgeTypes: Set<GraphQLType>;
     readonly idFieldMap: Map<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, GraphQLField<any, any>>;
+    readonly typesWithParameterizedField: Set<GraphQLObjectType | GraphQLInterfaceType>;
 }
 export interface Connection {
     readonly edgeType: GraphQLObjectType | GraphQLInterfaceType;

@@ -16,6 +16,7 @@ export interface FetchableField {
     readonly isPlural: boolean;
     readonly isAssociation: boolean;
     readonly isFunction: boolean;
+    readonly isUndefinable: boolean;
 }
 
 export type FetchableTypeCategory = "OBJECT" | "CONNECTION" | "EDGE";
@@ -29,6 +30,7 @@ export function createFetchableType<E extends string>(
     declaredFields: ReadonlyArray<string | { 
         readonly name: string,
         readonly category: FetchableFieldCategory,
+        readonly undefinable?: boolean,
         readonly argGraphQLTypeMap?: { readonly [key: string]: string },
         readonly targetTypeName?: string,
         readonly connectionTypeName?: string,
@@ -57,7 +59,8 @@ export function createFetchableType<E extends string>(
                 argGraphQLTypeMap,
                 declaredField.targetTypeName,
                 declaredField.connectionTypeName,
-                declaredField.edgeTypeName
+                declaredField.edgeTypeName,
+                declaredField.undefinable
             ));
         }
     }
@@ -141,6 +144,8 @@ class FetchableTypeImpl<E extends string> implements FetchableType<E> {
 }
 
 class FetchableFieldImpl implements FetchableField {
+
+    private _undefinable: boolean;
     
     constructor(
         readonly name: string,
@@ -148,8 +153,11 @@ class FetchableFieldImpl implements FetchableField {
         readonly argGraphQLTypeMap: ReadonlyMap<string, string>,
         readonly targetTypeName?: string,
         readonly connectionTypeName?: string,
-        readonly edgeTypeName?: string
-    ) {}
+        readonly edgeTypeName?: string,
+        undefinable?: boolean
+    ) {
+        this._undefinable = undefinable ?? false;
+    }
 
     get isPlural(): boolean {
         return this.category === "LIST" || this.category === "CONNECTION";
@@ -161,6 +169,10 @@ class FetchableFieldImpl implements FetchableField {
 
     get isFunction(): boolean {
         return this.argGraphQLTypeMap.size !== 0 || this.isAssociation;
+    }
+
+    get isUndefinable(): boolean {
+        return this._undefinable;
     }
 }
 

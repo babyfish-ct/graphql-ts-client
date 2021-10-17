@@ -1,4 +1,4 @@
-import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLType, GraphQLUnionType } from "graphql";
+import { GraphQLArgument, GraphQLField, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLType, GraphQLUnionType } from "graphql";
 import { InheritanceInfo } from "./InheritanceInfo";
 
 export interface FetcherContext {
@@ -8,6 +8,7 @@ export interface FetcherContext {
     readonly connectionTypes: Map<GraphQLType, Connection>;
     readonly edgeTypes: Set<GraphQLType>;
     readonly idFieldMap: Map<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, GraphQLField<any, any>>;
+    readonly typesWithParameterizedField: Set<GraphQLObjectType | GraphQLInterfaceType>; 
 }
 
 export interface Connection {

@@ -74,14 +74,25 @@ class Generator {
             }
             const configuredIdFieldMap = (_a = this.config.idFieldMap) !== null && _a !== void 0 ? _a : {};
             const idFieldMap = new Map();
+            const typesWithParameterizedField = new Set();
             for (const fetcherType of fetcherTypes) {
-                if (fetcherType.name === "Query" || connectionTypes.has(fetcherType) || edgeTypes.has(fetcherType)) {
+                if (connectionTypes.has(fetcherType) || edgeTypes.has(fetcherType)) {
                     continue;
                 }
                 if (fetcherType instanceof graphql_1.GraphQLObjectType || fetcherType instanceof graphql_1.GraphQLInterfaceType) {
-                    const idField = fetcherType.getFields()[(_b = configuredIdFieldMap[fetcherType.name]) !== null && _b !== void 0 ? _b : "id"];
-                    if (idField !== undefined && idField !== null) {
-                        idFieldMap.set(fetcherType, idField);
+                    const fieldMap = fetcherType.getFields();
+                    if (fetcherType.name !== "Query") {
+                        const idField = fieldMap[(_b = configuredIdFieldMap[fetcherType.name]) !== null && _b !== void 0 ? _b : "id"];
+                        if (idField !== undefined && idField !== null) {
+                            idFieldMap.set(fetcherType, idField);
+                        }
+                    }
+                    for (const fieldName in fieldMap) {
+                        const args = fieldMap[fieldName].args;
+                        if (args.length !== 0) {
+                            typesWithParameterizedField.add(fetcherType);
+                            break;
+                        }
                     }
                 }
             }
@@ -91,7 +102,8 @@ class Generator {
                 fetcherTypes,
                 connectionTypes,
                 edgeTypes,
-                idFieldMap
+                idFieldMap,
+                typesWithParameterizedField
             };
             const promises = [];
             if (fetcherTypes.length !== 0) {
@@ -152,7 +164,10 @@ class Generator {
                     const stream = createStreamAndLog(path_1.join(dir, "index.ts"));
                     for (const type of ctx.fetcherTypes) {
                         const fetcherTypeName = `${type.name}${(_d = (_c = this.config) === null || _c === void 0 ? void 0 : _c.fetcherSuffix) !== null && _d !== void 0 ? _d : "Fetcher"}`;
-                        stream.write(`export type {${fetcherTypeName}} from './${fetcherTypeName}';\n`);
+                        stream.write(`export type {${fetcherTypeName}${(type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType) &&
+                            ctx.typesWithParameterizedField.has(type) ?
+                            `, ${type.name}Args` :
+                            ''}} from './${fetcherTypeName}';\n`);
                         const defaultFetcherName = defaultFetcherNameMap.get(type);
                         stream.write(`export {${emptyFetcherNameMap.get(type)}${defaultFetcherName !== undefined ?
                             `, ${defaultFetcherName}` :

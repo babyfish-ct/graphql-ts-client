@@ -8,7 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString, GraphQLType, GraphQLUnionType } from "graphql";
+import { GraphQLArgument, GraphQLEnumType, GraphQLField, GraphQLInputObjectType, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString, GraphQLType, GraphQLUnionType } from "graphql";
 import { GeneratorConfig, validateConfig, validateConfigAndSchema } from "./GeneratorConfig";
 import { mkdir, rmdir, access, createWriteStream, WriteStream } from "fs";
 import { promisify } from "util";
@@ -65,14 +65,25 @@ export abstract class Generator {
 
         const configuredIdFieldMap = this.config.idFieldMap ?? {};
         const idFieldMap = new Map<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, GraphQLField<any, any>>();
+        const typesWithParameterizedField = new Set<GraphQLObjectType | GraphQLInterfaceType>();
         for (const fetcherType of fetcherTypes) {
-            if (fetcherType.name === "Query" || connectionTypes.has(fetcherType) || edgeTypes.has(fetcherType)) {
+            if (connectionTypes.has(fetcherType) || edgeTypes.has(fetcherType)) {
                 continue;
             }
             if (fetcherType instanceof GraphQLObjectType || fetcherType instanceof GraphQLInterfaceType) {
-                const idField = fetcherType.getFields()[configuredIdFieldMap[fetcherType.name] ?? "id"];
-                if (idField !== undefined && idField !== null) {
-                    idFieldMap.set(fetcherType, idField);
+                const fieldMap = fetcherType.getFields();
+                if (fetcherType.name !== "Query") {
+                    const idField = fieldMap[configuredIdFieldMap[fetcherType.name] ?? "id"];
+                    if (idField !== undefined && idField !== null) {
+                        idFieldMap.set(fetcherType, idField);
+                    }
+                }
+                for (const fieldName in fieldMap) {
+                    const args = fieldMap[fieldName].args;
+                    if (args.length !== 0) {
+                        typesWithParameterizedField.add(fetcherType);
+                        break;
+                    }
                 }
             }
         }
@@ -83,7 +94,8 @@ export abstract class Generator {
             fetcherTypes,
             connectionTypes,
             edgeTypes,
-            idFieldMap
+            idFieldMap,
+            typesWithParameterizedField
         };
 
         const promises: Promise<any>[] = [];
@@ -165,7 +177,14 @@ export abstract class Generator {
                 for (const type of ctx.fetcherTypes) {
                     const fetcherTypeName = `${type.name}${this.config?.fetcherSuffix ?? "Fetcher"}`;
                     stream.write(
-                        `export type {${fetcherTypeName}} from './${fetcherTypeName}';\n`
+                        `export type {${
+                            fetcherTypeName
+                        }${
+                            (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType) &&
+                            ctx.typesWithParameterizedField.has(type) ? 
+                            `, ${type.name}Args` : 
+                            ''
+                        }} from './${fetcherTypeName}';\n`
                     );
                     const defaultFetcherName = defaultFetcherNameMap.get(type);
                     stream.write(
