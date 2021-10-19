@@ -13,5 +13,4 @@ export declare class TriggerEventWiter extends Writer {
     protected writeCode(): void;
     private writeEventKey;
     private writeEventFieldNames;
-    private writeEventValues;
 }

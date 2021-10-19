@@ -9,11 +9,12 @@
  */
 
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema } from "graphql";
+import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
 import { join } from "path";
 import { FetcherContext } from "../FetcherContext";
 import { closeStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
+import { GraphQLStateFetcherWriter } from "./GraphQLStateFetcherWriter";
 import { TriggerEventWiter } from "./TriggerEventWriter";
 import { TypedConfigurationWriter } from "./TypedConfigurationWriter";
 
@@ -26,6 +27,33 @@ export class GraphQLStateGenerator extends Generator {
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
         stream.write(`export { newTypedConfiguration } from "./TypedConfiguration";\n`);
         await super.writeIndexCode(stream, schema);
+    }
+
+    protected additionalTypeNamesForFetcher(
+        modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType
+    ): ReadonlyArray<string> {
+        if (modelType.name === "Query" || modelType.name === "Mutation") {
+            return super.additionalTypeNamesForFetcher(modelType);
+        }
+        return [
+            ...super.additionalTypeNamesForFetcher(modelType),
+            `${modelType.name}ScalarType`,
+            `${modelType.name}FlatType`
+        ];
+    }
+
+    protected createFetcheWriter(
+        modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
+        ctx: FetcherContext,
+        stream: WriteStream,
+        config: GeneratorConfig
+    ): GraphQLStateFetcherWriter {
+        return new GraphQLStateFetcherWriter(
+            modelType,
+            ctx,
+            stream,
+            config
+        );
     }
 
     protected async generateServices(ctx: FetcherContext, promises: Promise<void>[]) {

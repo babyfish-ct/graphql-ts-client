@@ -128,12 +128,17 @@ export abstract class Generator {
         config: GeneratorConfig
     ): FetcherWriter {
         return new FetcherWriter(
-            false,
             modelType,
             ctx,
             stream,
             config
         );
+    }
+
+    protected additionalTypeNamesForFetcher(
+        modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType
+    ): ReadonlyArray<string> {
+        return [];
     }
 
     private async loadSchema(): Promise<GraphQLSchema> {
@@ -178,12 +183,16 @@ export abstract class Generator {
                     const fetcherTypeName = `${type.name}${this.config?.fetcherSuffix ?? "Fetcher"}`;
                     stream.write(
                         `export type {${
-                            fetcherTypeName
-                        }${
-                            (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType) &&
-                            ctx.typesWithParameterizedField.has(type) ? 
-                            `, ${type.name}Args` : 
-                            ''
+                            [
+                                fetcherTypeName,
+                                (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType) &&
+                                ctx.typesWithParameterizedField.has(type) ? 
+                                `${type.name}Args` : 
+                                undefined,
+                                ...this.additionalTypeNamesForFetcher(type)
+                            ]
+                            .filter(text => text !== undefined)
+                            .join(", ")
                         }} from './${fetcherTypeName}';\n`
                     );
                     const defaultFetcherName = defaultFetcherNameMap.get(type);

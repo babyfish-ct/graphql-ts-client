@@ -191,12 +191,14 @@ export function useTypedMutation<
 
 function requestBody(fetcher: Fetcher<string, object, object>): string {
     const writer = new TextWriter();
-    writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
-        util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
-            writer.seperator();
-            writer.text(\`$\${name}: \${type}\`);
+    if (fetcher.variableTypeMap.size !== 0) {
+        writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
+            util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
+                writer.seperator();
+                writer.text(\`$\${name}: \${type}\`);
+            });
         });
-    });
+    }
     writer.text(fetcher.toString());
     writer.text("\\n");
     writer.text(fetcher.toFragmentString());

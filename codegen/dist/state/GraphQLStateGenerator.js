@@ -22,6 +22,7 @@ exports.GraphQLStateGenerator = void 0;
 const graphql_1 = require("graphql");
 const path_1 = require("path");
 const Generator_1 = require("../Generator");
+const GraphQLStateFetcherWriter_1 = require("./GraphQLStateFetcherWriter");
 const TriggerEventWriter_1 = require("./TriggerEventWriter");
 const TypedConfigurationWriter_1 = require("./TypedConfigurationWriter");
 class GraphQLStateGenerator extends Generator_1.Generator {
@@ -36,6 +37,19 @@ class GraphQLStateGenerator extends Generator_1.Generator {
             stream.write(`export { newTypedConfiguration } from "./TypedConfiguration";\n`);
             yield _super.writeIndexCode.call(this, stream, schema);
         });
+    }
+    additionalTypeNamesForFetcher(modelType) {
+        if (modelType.name === "Query" || modelType.name === "Mutation") {
+            return super.additionalTypeNamesForFetcher(modelType);
+        }
+        return [
+            ...super.additionalTypeNamesForFetcher(modelType),
+            `${modelType.name}ScalarType`,
+            `${modelType.name}FlatType`
+        ];
+    }
+    createFetcheWriter(modelType, ctx, stream, config) {
+        return new GraphQLStateFetcherWriter_1.GraphQLStateFetcherWriter(modelType, ctx, stream, config);
     }
     generateServices(ctx, promises) {
         return __awaiter(this, void 0, void 0, function* () {

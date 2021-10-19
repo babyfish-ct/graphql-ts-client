@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TriggerEventWiter = void 0;
-const Utils_1 = require("../Utils");
 const Writer_1 = require("../Writer");
 class TriggerEventWiter extends Writer_1.Writer {
     constructor(modelType, idField, stream, config) {
@@ -26,9 +25,14 @@ class TriggerEventWiter extends Writer_1.Writer {
     }
     prepareImportings() {
         this.importStatement(`import {ImplementationType} from '../CommonTypes';`);
-        if (this.parameterizedFieldNames.size !== 0) {
-            this.importStatement(`import {${this.modelType.name}Args} from '../fetchers/${this.modelType.name}Fetcher';`);
-        }
+        this.importStatement(`import {${[
+            this.parameterizedFieldNames.size !== 0 ?
+                `${this.modelType.name}Args` :
+                undefined,
+            `${this.modelType.name}FlatType`
+        ]
+            .filter(text => text !== undefined)
+            .join(", ")}} from '../fetchers/${this.modelType.name}Fetcher';`);
     }
     writeCode() {
         const t = this.text.bind(this);
@@ -50,13 +54,12 @@ class TriggerEventWiter extends Writer_1.Writer {
                     this.scope({ type: "PARAMETERS", multiLines: true }, () => {
                         t(`key: ${this.modelType.name}ChangeEventKey<TFieldName>`);
                     });
-                    t(`: ${this.modelType.name}ChangeEventValues[TFieldName] | undefined;\n`);
+                    t(`: ${this.modelType.name}FlatType[TFieldName] | undefined;\n`);
                 }
             }
         });
         this.writeEventKey();
         this.writeEventFieldNames();
-        this.writeEventValues();
     }
     writeEventKey() {
         const t = this.text.bind(this);
@@ -80,32 +83,6 @@ class TriggerEventWiter extends Writer_1.Writer {
             for (const fieldName of this.parameterizedFieldNames) {
                 this.separator(" | ");
                 t(`"${fieldName}"`);
-            }
-        });
-    }
-    writeEventValues() {
-        const t = this.text.bind(this);
-        t(`\nexport interface ${this.modelType}ChangeEventValues `);
-        this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
-            var _a;
-            const typeMap = this.modelType.getFields();
-            for (const fieldName in typeMap) {
-                if (fieldName !== ((_a = this.idField) === null || _a === void 0 ? void 0 : _a.name)) {
-                    const associatedType = Utils_1.associatedTypeOf(typeMap[fieldName].type);
-                    t(`readonly ${fieldName}: `);
-                    this.typeRef(typeMap[fieldName].type, (type, field) => {
-                        var _a, _b;
-                        if (type === associatedType) {
-                            const fieldMap = type.getFields();
-                            const idFieldName = this.config.idFieldMap !== undefined ?
-                                (_a = this.config.idFieldMap[type.name]) !== null && _a !== void 0 ? _a : "id" :
-                                "id";
-                            return field.name === ((_b = fieldMap[idFieldName]) === null || _b === void 0 ? void 0 : _b.name);
-                        }
-                        return true;
-                    });
-                    t(";\n");
-                }
             }
         });
     }

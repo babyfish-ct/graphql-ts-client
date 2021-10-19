@@ -14,10 +14,9 @@ const graphql_1 = require("graphql");
 const Utils_1 = require("./Utils");
 const Writer_1 = require("./Writer");
 class FetcherWriter extends Writer_1.Writer {
-    constructor(relay, modelType, ctx, stream, config) {
+    constructor(modelType, ctx, stream, config) {
         var _a, _b;
         super(stream, config);
-        this.relay = relay;
         this.modelType = modelType;
         this.ctx = ctx;
         this.fetcherTypeName = `${this.modelType.name}${(_a = config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher"}`;
@@ -118,10 +117,6 @@ class FetcherWriter extends Writer_1.Writer {
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
         }
-        if (this.relay) {
-            this.importStatement("import { FragmentRefs } from 'relay-runtime';");
-            this.importStatement("import { TypedFragment } from 'graphql-ts-client-relay';");
-        }
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
             this.importFieldTypes(field);
@@ -129,9 +124,12 @@ class FetcherWriter extends Writer_1.Writer {
         const upcastTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
         if (upcastTypes !== undefined) {
             for (const upcastType of upcastTypes) {
-                this.importStatement(`import { ${Utils_1.instancePrefix(upcastType.name)}$ } from './${upcastType.name}${(_a = this.config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher"}';`);
+                this.importStatement(`import { ${this.importedNamesForSuperType(upcastType).join(", ")} } from './${upcastType.name}${(_a = this.config.fetcherSuffix) !== null && _a !== void 0 ? _a : "Fetcher"}';`);
             }
         }
+    }
+    importedNamesForSuperType(superType) {
+        return [`${Utils_1.instancePrefix(superType.name)}$`];
     }
     importingBehavior(type) {
         if (type === this.modelType) {
@@ -153,7 +151,7 @@ class FetcherWriter extends Writer_1.Writer {
         t(this.modelType.name);
         t("', T, TVariables> ");
         this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
-            this.writeFragment();
+            this.writeFragmentMethods();
             this.writeDirective();
             this.writeTypeName();
             for (const fieldName in this.fieldMap) {
@@ -166,7 +164,7 @@ class FetcherWriter extends Writer_1.Writer {
         this.writeInstances();
         this.writeArgsInterface();
     }
-    writeFragment() {
+    writeFragmentMethods() {
         const t = this.text.bind(this);
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             t(`\non<XName extends ImplementationType<'${this.modelType.name}'>, X extends object, XVariables extends object>`);
@@ -186,24 +184,6 @@ class FetcherWriter extends Writer_1.Writer {
                     t("WithTypeName<X, ImplementationType<XName>>");
                     this.separator(" | ");
                     t(`{__typename: Exclude<ImplementationType<'${this.modelType}'>, ImplementationType<XName>>}`);
-                });
-                this.separator(", ");
-                t("TVariables & XVariables");
-            });
-            t(";\n");
-        }
-        if (this.relay) {
-            t(`\non<XFragmentName extends string, XData extends object, XVariables extends object>`);
-            this.scope({ type: "PARAMETERS", multiLines: !(this.modelType instanceof graphql_1.GraphQLUnionType) }, () => {
-                t(`child: TypedFragment<XFragmentName, "${this.modelType.name}", XData, XVariables>`);
-            });
-            t(`: ${this.fetcherTypeName}`);
-            this.scope({ type: "GENERIC", multiLines: true }, () => {
-                t('T & ');
-                this.scope({ type: "BLOCK", multiLines: true }, () => {
-                    t('readonly " $data": XData');
-                    this.separator(", ");
-                    t('readonly " $fragmentRefs": FragmentRefs<XFragmentName>');
                 });
                 this.separator(", ");
                 t("TVariables & XVariables");
@@ -400,7 +380,7 @@ class FetcherWriter extends Writer_1.Writer {
                     });
                     this.separator(", ");
                     this.scope({ type: "ARRAY", multiLines: true }, () => {
-                        for (const declaredFieldName of this.declaredFieldNames()) {
+                        for (const declaredFieldName of this.declaredFieldNames) {
                             const field = this.fieldMap[declaredFieldName];
                             this.separator(", ");
                             const args = this.fieldArgsMap.get(declaredFieldName);
@@ -510,7 +490,14 @@ class FetcherWriter extends Writer_1.Writer {
             }
         });
     }
-    declaredFieldNames() {
+    get declaredFieldNames() {
+        let set = this._declaredFieldNames;
+        if (set === undefined) {
+            this._declaredFieldNames = set = this.getDeclaredFieldNames();
+        }
+        return set;
+    }
+    getDeclaredFieldNames() {
         const fields = new Set();
         if (this.modelType instanceof graphql_1.GraphQLObjectType || this.modelType instanceof graphql_1.GraphQLInterfaceType) {
             const fieldMap = this.modelType.getFields();

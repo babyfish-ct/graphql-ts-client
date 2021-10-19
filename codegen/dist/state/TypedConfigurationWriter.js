@@ -24,13 +24,14 @@ class TypedConfigurationWriter extends Writer_1.Writer {
     prepareImportings() {
         var _a;
         this.importStatement(`import { Configuration, newConfiguration } from 'graphql-state';`);
+        const scalarTypeNames = [];
         const eventTypeNames = [];
         const instanceNames = [];
         for (const fetcherType of this.ctx.fetcherTypes) {
-            if (fetcherType.name !== "Mutation" &&
-                !this.ctx.connectionTypes.has(fetcherType) &&
+            if (!this.ctx.connectionTypes.has(fetcherType) &&
                 !this.ctx.edgeTypes.has(fetcherType)) {
-                if (fetcherType.name !== 'Query') {
+                if (fetcherType.name !== 'Query' && fetcherType.name !== 'Mutation') {
+                    scalarTypeNames.push(`${fetcherType.name}ScalarType`);
                     eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
                 }
                 instanceNames.push(`${Utils_1.instancePrefix(fetcherType.name)}$`);
@@ -42,7 +43,13 @@ class TypedConfigurationWriter extends Writer_1.Writer {
             this.importStatement(`import {\n${indent}${instanceNames.join(separator)}\n} from './fetchers';`);
         }
         if (this.ctx.typesWithParameterizedField.size !== 0) {
-            this.importStatement(`import {\n${indent}${Array.from(this.ctx.typesWithParameterizedField).map(type => `${type.name}Args`).join(separator)}\n} from './fetchers';`);
+            this.importStatement(`import {\n${indent}${Array.from(this.ctx.typesWithParameterizedField)
+                .filter(type => type.name !== 'Mutation')
+                .map(type => `${type.name}Args`)
+                .join(separator)}\n} from './fetchers';`);
+        }
+        if (eventTypeNames.length !== 0) {
+            this.importStatement(`import {\n${indent}${scalarTypeNames.join(separator)}\n} from './fetchers';`);
         }
         if (eventTypeNames.length !== 0) {
             this.importStatement(`import {\n${indent}${eventTypeNames.join(separator)}\n} from './triggers';`);
@@ -67,65 +74,67 @@ class TypedConfigurationWriter extends Writer_1.Writer {
         const t = this.text.bind(this);
         t("\nexport type Schema = ");
         this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
-            t("readonly query: ");
-            this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
-                t(`readonly " $associationArgs": `);
-                this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
-                    const queryType = this.ctx.fetcherTypes.find(type => type.name === "Query");
-                    if (queryType instanceof graphql_1.GraphQLObjectType || queryType instanceof graphql_1.GraphQLInterfaceType) {
-                        const fieldMap = queryType.getFields();
-                        for (const fieldName in fieldMap) {
-                            if (fieldMap[fieldName].args.length !== 0) {
-                                this.separator(", ");
-                                t(`readonly ${fieldName}: ${queryType.name}Args["${fieldName}"]`);
-                            }
-                        }
-                    }
-                });
-            });
+            const queryType = this.ctx.fetcherTypes.find(type => type.name === 'Query');
+            if (queryType !== undefined) {
+                t("readonly query: ");
+                this.writeFetcherType(queryType);
+            }
             t("readonly entities: ");
             this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
                 for (const fetcherType of this.ctx.fetcherTypes) {
-                    if (fetcherType.name === "Query" ||
-                        fetcherType.name === "Mutation" ||
-                        fetcherType instanceof graphql_1.GraphQLUnionType ||
-                        this.ctx.connectionTypes.has(fetcherType) ||
-                        this.ctx.edgeTypes.has(fetcherType)) {
-                        continue;
+                    if (fetcherType.name !== "Query" && fetcherType.name !== "Mutation") {
+                        t(`readonly "${fetcherType.name}": `);
+                        this.writeFetcherType(fetcherType);
                     }
-                    t(`readonly "${fetcherType.name}": `);
-                    this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
-                        const idField = this.ctx.idFieldMap.get(fetcherType);
-                        if (idField !== undefined) {
-                            t(`readonly " $id": `);
-                            this.typeRef(idField.type);
-                            t(";\n");
-                        }
-                        t(`readonly " $event": ${fetcherType.name}ChangeEvent;\n`);
-                        const fieldAssociationTypeMap = this.associationTypeMap(fetcherType);
-                        t(`readonly " $associationTypes": `);
-                        this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
-                            for (const [fieldName, typeName] of fieldAssociationTypeMap) {
-                                this.separator(", ");
-                                t(`readonly ${fieldName}: "${typeName}"`);
-                            }
-                        });
-                        t(`readonly " $associationArgs": `);
-                        this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
-                            const fieldMap = fetcherType.getFields();
-                            for (const fieldName in fieldMap) {
-                                if (fieldMap[fieldName].args.length !== 0) {
-                                    this.separator(", ");
-                                    t(`readonly ${fieldName}: ${fetcherType.name}Args["${fieldName}"]`);
-                                }
-                            }
-                        });
-                    });
                 }
             });
         });
     }
-    associationTypeMap(fetcherType) {
+    writeFetcherType(fetcherType) {
+        if (fetcherType instanceof graphql_1.GraphQLUnionType ||
+            this.ctx.connectionTypes.has(fetcherType) ||
+            this.ctx.edgeTypes.has(fetcherType)) {
+            return;
+        }
+        const t = this.text.bind(this);
+        this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
+            if (fetcherType.name !== 'Query') {
+                const idField = this.ctx.idFieldMap.get(fetcherType);
+                if (idField !== undefined) {
+                    t(`readonly " $id": `);
+                    this.typeRef(idField.type);
+                    t(";\n");
+                }
+                t(`readonly " $event": ${fetcherType.name}ChangeEvent;\n`);
+            }
+            const fieldMap = fetcherType.getFields();
+            const associationTypeMap = this.associationTypeMapOf(fetcherType);
+            t(`readonly " $associationTypes": `);
+            this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
+                for (const [fieldName, typeName] of associationTypeMap) {
+                    this.separator(", ");
+                    t(`readonly ${fieldName}: "${typeName}"`);
+                }
+            });
+            t(`readonly " $associationArgs": `);
+            this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
+                for (const fieldName in fieldMap) {
+                    if (fieldMap[fieldName].args.length !== 0) {
+                        this.separator(", ");
+                        t(`readonly ${fieldName}: ${fetcherType.name}Args["${fieldName}"]`);
+                    }
+                }
+            });
+            t(`readonly " $associationTargetTypes": `);
+            this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
+                for (const [fieldName, typeName] of associationTypeMap) {
+                    this.separator(", ");
+                    t(`readonly ${fieldName}: ${typeName}ScalarType`);
+                }
+            });
+        });
+    }
+    associationTypeMapOf(fetcherType) {
         const map = new Map();
         const fieldMap = fetcherType.getFields();
         for (const fieldName in fieldMap) {

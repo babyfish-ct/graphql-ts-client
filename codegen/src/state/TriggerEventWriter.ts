@@ -37,9 +37,16 @@ export class TriggerEventWiter extends Writer {
 
     protected prepareImportings() {
         this.importStatement(`import {ImplementationType} from '../CommonTypes';`);
-        if (this.parameterizedFieldNames.size !== 0) {
-            this.importStatement(`import {${this.modelType.name}Args} from '../fetchers/${this.modelType.name}Fetcher';`);
-        }
+        this.importStatement(`import {${
+            [
+                this.parameterizedFieldNames.size !== 0 ?
+                `${this.modelType.name}Args` :
+                undefined,
+                `${this.modelType.name}FlatType`
+            ]
+            .filter(text => text !== undefined)
+            .join(", ")
+        }} from '../fetchers/${this.modelType.name}Fetcher';`);
     }
 
     protected writeCode() {
@@ -69,14 +76,13 @@ export class TriggerEventWiter extends Writer {
                     this.scope({type: "PARAMETERS", multiLines: true}, () => {
                         t(`key: ${this.modelType.name}ChangeEventKey<TFieldName>`);
                     });
-                    t(`: ${this.modelType.name}ChangeEventValues[TFieldName] | undefined;\n`);
+                    t(`: ${this.modelType.name}FlatType[TFieldName] | undefined;\n`);
                 }
             }
         });
 
         this.writeEventKey();
         this.writeEventFieldNames();
-        this.writeEventValues();
     }
 
     private writeEventKey() {
@@ -106,33 +112,6 @@ export class TriggerEventWiter extends Writer {
             for (const fieldName of this.parameterizedFieldNames) {
                 this.separator(" | ");
                 t(`"${fieldName}"`);
-            }
-        });
-    }
-
-    private writeEventValues() {
-
-        const t = this.text.bind(this);
-
-        t(`\nexport interface ${this.modelType}ChangeEventValues `);
-        this.scope({type: "BLOCK", multiLines: true, suffix: ";\n"}, () => {
-            const typeMap = this.modelType.getFields();
-            for (const fieldName in typeMap) {
-                if (fieldName !== this.idField?.name) {
-                    const associatedType = associatedTypeOf(typeMap[fieldName].type);
-                    t(`readonly ${fieldName}: `);
-                    this.typeRef(typeMap[fieldName].type, (type, field) => {
-                        if (type === associatedType) {
-                            const fieldMap = type.getFields();
-                            const idFieldName = this.config.idFieldMap !== undefined ?
-                                this.config.idFieldMap[type.name] ?? "id" :
-                                "id";
-                            return field.name === fieldMap[idFieldName]?.name;
-                        }
-                        return true;
-                    });
-                    t(";\n");
-                }
             }
         });
     }

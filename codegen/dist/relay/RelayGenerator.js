@@ -11,15 +11,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RelayGenerator = void 0;
 const path_1 = require("path");
-const FetcherWriter_1 = require("../FetcherWriter");
 const Generator_1 = require("../Generator");
+const RelayFetcherWriter_1 = require("./RelayFetcherWriter");
 const RelayWriter_1 = require("./RelayWriter");
 class RelayGenerator extends Generator_1.Generator {
     constructor(config) {
         super(config);
     }
     createFetcheWriter(modelType, ctx, stream, config) {
-        return new FetcherWriter_1.FetcherWriter(true, modelType, ctx, stream, config);
+        return new RelayFetcherWriter_1.RelayFetcherWriter(modelType, ctx, stream, config);
     }
     generateServices(ctx, promises) {
         return __awaiter(this, void 0, void 0, function* () {

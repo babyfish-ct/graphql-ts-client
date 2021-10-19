@@ -125,7 +125,10 @@ class Generator {
         });
     }
     createFetcheWriter(modelType, ctx, stream, config) {
-        return new FetcherWriter_1.FetcherWriter(false, modelType, ctx, stream, config);
+        return new FetcherWriter_1.FetcherWriter(modelType, ctx, stream, config);
+    }
+    additionalTypeNamesForFetcher(modelType) {
+        return [];
     }
     loadSchema() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -164,10 +167,16 @@ class Generator {
                     const stream = createStreamAndLog(path_1.join(dir, "index.ts"));
                     for (const type of ctx.fetcherTypes) {
                         const fetcherTypeName = `${type.name}${(_d = (_c = this.config) === null || _c === void 0 ? void 0 : _c.fetcherSuffix) !== null && _d !== void 0 ? _d : "Fetcher"}`;
-                        stream.write(`export type {${fetcherTypeName}${(type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType) &&
-                            ctx.typesWithParameterizedField.has(type) ?
-                            `, ${type.name}Args` :
-                            ''}} from './${fetcherTypeName}';\n`);
+                        stream.write(`export type {${[
+                            fetcherTypeName,
+                            (type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType) &&
+                                ctx.typesWithParameterizedField.has(type) ?
+                                `${type.name}Args` :
+                                undefined,
+                            ...this.additionalTypeNamesForFetcher(type)
+                        ]
+                            .filter(text => text !== undefined)
+                            .join(", ")}} from './${fetcherTypeName}';\n`);
                         const defaultFetcherName = defaultFetcherNameMap.get(type);
                         stream.write(`export {${emptyFetcherNameMap.get(type)}${defaultFetcherName !== undefined ?
                             `, ${defaultFetcherName}` :

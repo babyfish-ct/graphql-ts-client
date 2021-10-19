@@ -18,6 +18,7 @@ export declare abstract class Generator {
     constructor(config: GeneratorConfig);
     generate(): Promise<void>;
     protected createFetcheWriter(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, ctx: FetcherContext, stream: WriteStream, config: GeneratorConfig): FetcherWriter;
+    protected additionalTypeNamesForFetcher(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType): ReadonlyArray<string>;
     private loadSchema;
     private generateFetcherTypes;
     private generateInputTypes;

@@ -9,13 +9,16 @@
  */
 /// <reference types="node" />
 import { WriteStream } from "fs";
-import { GraphQLSchema } from "graphql";
+import { GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
 import { FetcherContext } from "../FetcherContext";
 import { Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
+import { GraphQLStateFetcherWriter } from "./GraphQLStateFetcherWriter";
 export declare class GraphQLStateGenerator extends Generator {
     constructor(config: GeneratorConfig);
     protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
+    protected additionalTypeNamesForFetcher(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType): ReadonlyArray<string>;
+    protected createFetcheWriter(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, ctx: FetcherContext, stream: WriteStream, config: GeneratorConfig): GraphQLStateFetcherWriter;
     protected generateServices(ctx: FetcherContext, promises: Promise<void>[]): Promise<void>;
     private generateTypedConfiguration;
     private generateTriggerEvents;

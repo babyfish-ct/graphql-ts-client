@@ -5,6 +5,7 @@ import { FetcherContext } from "../FetcherContext";
 import { FetcherWriter } from "../FetcherWriter";
 import { closeStream, createStreamAndLog, Generator } from "../Generator";
 import { GeneratorConfig } from "../GeneratorConfig";
+import { RelayFetcherWriter } from "./RelayFetcherWriter";
 import { RelayWriter } from "./RelayWriter";
 
 export class RelayGenerator extends Generator {
@@ -18,9 +19,8 @@ export class RelayGenerator extends Generator {
         ctx: FetcherContext,
         stream: WriteStream,
         config: GeneratorConfig
-    ): FetcherWriter {
-        return new FetcherWriter(
-            true,
+    ): RelayFetcherWriter {
+        return new RelayFetcherWriter(
             modelType,
             ctx,
             stream,

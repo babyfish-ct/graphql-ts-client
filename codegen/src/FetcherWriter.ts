@@ -18,9 +18,9 @@ import { FetcherContext } from "./FetcherContext";
 
 export class FetcherWriter extends Writer {
 
-    private readonly fetcherTypeName: string;
+    protected readonly fetcherTypeName: string;
 
-    private readonly defaultFetcherProps: string[];
+    protected readonly defaultFetcherProps: string[];
 
     readonly emptyFetcherName: string;
 
@@ -28,16 +28,17 @@ export class FetcherWriter extends Writer {
 
     readonly fieldMap: GraphQLFieldMap<any, any>;
 
-    private fieldArgsMap: Map<string, GraphQLArgument[]>;
+    protected fieldArgsMap: Map<string, GraphQLArgument[]>;
 
-    private fieldCategoryMap: Map<string, string>;
+    protected fieldCategoryMap: Map<string, string>;
 
-    private hasArgs: boolean;
+    protected hasArgs: boolean;
+
+    private _declaredFieldNames?: ReadonlySet<string>;
 
     constructor(
-        private relay: boolean,
-        private modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
-        private ctx: FetcherContext,
+        protected modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
+        protected ctx: FetcherContext,
         stream: WriteStream,
         config: GeneratorConfig
     ) {
@@ -148,10 +149,6 @@ export class FetcherWriter extends Writer {
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
         }
-        if (this.relay) {
-            this.importStatement("import { FragmentRefs } from 'relay-runtime';");
-            this.importStatement("import { TypedFragment } from 'graphql-ts-client-relay';");
-        } 
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
             this.importFieldTypes(field);
@@ -160,9 +157,15 @@ export class FetcherWriter extends Writer {
         const upcastTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
         if (upcastTypes !== undefined) {
             for (const upcastType of upcastTypes) {
-                this.importStatement(`import { ${instancePrefix(upcastType.name)}$ } from './${upcastType.name}${this.config.fetcherSuffix ?? "Fetcher"}';`);
+                this.importStatement(`import { ${
+                    this.importedNamesForSuperType(upcastType).join(", ")
+                } } from './${upcastType.name}${this.config.fetcherSuffix ?? "Fetcher"}';`);
             }
         }
+    }
+
+    protected importedNamesForSuperType(superType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType): string[] {
+        return [ `${instancePrefix(superType.name)}$` ];
     }
 
     protected importingBehavior(type: GraphQLNamedType): ImportingBehavior {
@@ -188,7 +191,7 @@ export class FetcherWriter extends Writer {
         t("', T, TVariables> ");
 
         this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
-            this.writeFragment();
+            this.writeFragmentMethods();
             this.writeDirective();
             this.writeTypeName();
 
@@ -205,7 +208,7 @@ export class FetcherWriter extends Writer {
         this.writeArgsInterface();
     }
 
-    private writeFragment() {
+    protected writeFragmentMethods() {
 
         const t = this.text.bind(this);
 
@@ -227,26 +230,6 @@ export class FetcherWriter extends Writer {
                     t("WithTypeName<X, ImplementationType<XName>>");
                     this.separator(" | ");
                     t(`{__typename: Exclude<ImplementationType<'${this.modelType}'>, ImplementationType<XName>>}`);
-                });
-                this.separator(", ");
-                t("TVariables & XVariables");
-            });
-            t(";\n");
-        }
-
-        if (this.relay) {
-
-            t(`\non<XFragmentName extends string, XData extends object, XVariables extends object>`);
-            this.scope({type: "PARAMETERS", multiLines: !(this.modelType instanceof GraphQLUnionType)}, () => {
-                t(`child: TypedFragment<XFragmentName, "${this.modelType.name}", XData, XVariables>`);
-            });
-            t(`: ${this.fetcherTypeName}`);
-            this.scope({type: "GENERIC", multiLines: true}, () => {
-                t('T & ');
-                this.scope({type: "BLOCK", multiLines: true}, () => {
-                    t('readonly " $data": XData');
-                    this.separator(", ");
-                    t('readonly " $fragmentRefs": FragmentRefs<XFragmentName>');
                 });
                 this.separator(", ");
                 t("TVariables & XVariables");
@@ -466,7 +449,7 @@ export class FetcherWriter extends Writer {
                     });
                     this.separator(", ");
                     this.scope({type: "ARRAY", multiLines: true }, () => {
-                        for (const declaredFieldName of this.declaredFieldNames()) {
+                        for (const declaredFieldName of this.declaredFieldNames) {
                             const field = this.fieldMap[declaredFieldName];
                             this.separator(", ");
                             const args = this.fieldArgsMap.get(declaredFieldName);
@@ -579,7 +562,15 @@ export class FetcherWriter extends Writer {
         });
     }
 
-    private declaredFieldNames(): Set<string> {
+    protected get declaredFieldNames(): ReadonlySet<string> {
+        let set = this._declaredFieldNames;
+        if (set === undefined) {
+            this._declaredFieldNames = set = this.getDeclaredFieldNames();
+        }
+        return set;
+    }
+
+    private getDeclaredFieldNames(): ReadonlySet<string> {
         const fields = new Set<string>();
         if (this.modelType instanceof GraphQLObjectType || this.modelType instanceof GraphQLInterfaceType) {
             const fieldMap = this.modelType.getFields();
