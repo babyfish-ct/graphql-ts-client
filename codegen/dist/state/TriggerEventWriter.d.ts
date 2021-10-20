@@ -11,6 +11,8 @@ export declare class TriggerEventWiter extends Writer {
     constructor(modelType: GraphQLObjectType | GraphQLInterfaceType, idField: GraphQLField<any, any> | undefined, stream: WriteStream, config: GeneratorConfig);
     protected prepareImportings(): void;
     protected writeCode(): void;
-    private writeEventKey;
-    private writeEventFieldNames;
+    private writeEvictEvent;
+    private writeChangeEvent;
+    private writeEntityKey;
+    private writeEntityFields;
 }

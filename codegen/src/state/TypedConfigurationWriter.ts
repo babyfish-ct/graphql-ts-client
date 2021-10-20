@@ -40,6 +40,7 @@ export class TypedConfigurationWriter extends Writer {
             !this.ctx.edgeTypes.has(fetcherType)) {
                 if (fetcherType.name !== 'Query' && fetcherType.name !== 'Mutation') {
                     scalarTypeNames.push(`${fetcherType.name}ScalarType`);
+                    eventTypeNames.push(`${fetcherType.name}EvictEvent`);
                     eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
                 }
                 instanceNames.push(`${instancePrefix(fetcherType.name)}$`);
@@ -133,7 +134,8 @@ export class TypedConfigurationWriter extends Writer {
                     t(";\n");
                 }
 
-                t(`readonly " $event": ${fetcherType.name}ChangeEvent;\n`);
+                t(`readonly " $evictEvent": ${fetcherType.name}EvictEvent;\n`);
+                t(`readonly " $changeEvent": ${fetcherType.name}ChangeEvent;\n`);
             }
 
             const fieldMap = fetcherType.getFields();

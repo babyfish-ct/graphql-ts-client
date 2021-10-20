@@ -35,8 +35,14 @@ class TriggerEventWiter extends Writer_1.Writer {
             .join(", ")}} from '../fetchers/${this.modelType.name}Fetcher';`);
     }
     writeCode() {
+        this.writeEvictEvent();
+        this.writeChangeEvent();
+        this.writeEntityKey();
+        this.writeEntityFields();
+    }
+    writeEvictEvent() {
         const t = this.text.bind(this);
-        t(`export interface ${this.modelType}ChangeEvent `);
+        t(`\nexport interface ${this.modelType}EvictEvent `);
         this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
             t(`\nreadonly typeName: ImplementationType<"${this.modelType.name}">;\n`);
             if (this.idField !== undefined) {
@@ -45,25 +51,42 @@ class TriggerEventWiter extends Writer_1.Writer {
                 t(`;\n`);
             }
             if (this.modelType.name !== "Query") {
-                t(`\nreadonly changedType: "INSERT" | "UPDATE" | "DELETE";\n`);
+                t(`\nreadonly evictedType: "row" | "fields";\n`);
             }
-            t(`\nreadonly changedKeys: ReadonlyArray<${this.modelType.name}ChangeEventKey<any>>;\n`);
+            t(`\nreadonly evictedKeys: ReadonlyArray<${this.modelType.name}EntityKey<any>>;\n`);
+            t(`\nevictedValue<TFieldName extends ${this.modelType.name}EntityFields>`);
+            this.scope({ type: "PARAMETERS", multiLines: true }, () => {
+                t(`key: ${this.modelType.name}EntityKey<TFieldName>`);
+            });
+            t(`: ${this.modelType.name}FlatType[TFieldName] | undefined;\n`);
+        });
+    }
+    writeChangeEvent() {
+        const t = this.text.bind(this);
+        t(`\nexport interface ${this.modelType}ChangeEvent `);
+        this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
+            t(`\nreadonly typeName: ImplementationType<"${this.modelType.name}">;\n`);
+            if (this.idField !== undefined) {
+                t(`\n readonly id: `);
+                this.typeRef(this.idField.type);
+                t(`;\n`);
+            }
+            if (this.modelType.name !== "Query") {
+                t(`\nreadonly changedType: "insert" | "update" | "delete";\n`);
+            }
+            t(`\nreadonly changedKeys: ReadonlyArray<${this.modelType.name}EntityKey<any>>;\n`);
             for (const prefix of ["old", "new"]) {
-                if (this.simpleFieldNames.size !== 0) {
-                    t(`\n${prefix}Value<TFieldName extends ${this.modelType.name}ChangeEventFields>`);
-                    this.scope({ type: "PARAMETERS", multiLines: true }, () => {
-                        t(`key: ${this.modelType.name}ChangeEventKey<TFieldName>`);
-                    });
-                    t(`: ${this.modelType.name}FlatType[TFieldName] | undefined;\n`);
-                }
+                t(`\n${prefix}Value<TFieldName extends ${this.modelType.name}EntityFields>`);
+                this.scope({ type: "PARAMETERS", multiLines: true }, () => {
+                    t(`key: ${this.modelType.name}EntityKey<TFieldName>`);
+                });
+                t(`: ${this.modelType.name}FlatType[TFieldName] | undefined;\n`);
             }
         });
-        this.writeEventKey();
-        this.writeEventFieldNames();
     }
-    writeEventKey() {
+    writeEntityKey() {
         const t = this.text.bind(this);
-        t(`\nexport type ${this.modelType}ChangeEventKey<TFieldName extends ${this.modelType}ChangeEventFields> = `);
+        t(`\nexport type ${this.modelType}EntityKey<TFieldName extends ${this.modelType}EntityFields> = `);
         this.scope({ type: "BLANK", multiLines: true, suffix: ";\n" }, () => {
             for (const fieldName of this.parameterizedFieldNames) {
                 t(`TFieldName extends "${fieldName}" ? \n`);
@@ -72,9 +95,9 @@ class TriggerEventWiter extends Writer_1.Writer {
             t('TFieldName\n');
         });
     }
-    writeEventFieldNames() {
+    writeEntityFields() {
         const t = this.text.bind(this);
-        t(`\nexport type ${this.modelType}ChangeEventFields = `);
+        t(`\nexport type ${this.modelType}EntityFields = `);
         this.scope({ type: "BLANK", multiLines: true, suffix: ";\n" }, () => {
             for (const fieldName of this.simpleFieldNames) {
                 this.separator(" | ");

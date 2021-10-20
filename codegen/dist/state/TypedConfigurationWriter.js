@@ -32,6 +32,7 @@ class TypedConfigurationWriter extends Writer_1.Writer {
                 !this.ctx.edgeTypes.has(fetcherType)) {
                 if (fetcherType.name !== 'Query' && fetcherType.name !== 'Mutation') {
                     scalarTypeNames.push(`${fetcherType.name}ScalarType`);
+                    eventTypeNames.push(`${fetcherType.name}EvictEvent`);
                     eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
                 }
                 instanceNames.push(`${Utils_1.instancePrefix(fetcherType.name)}$`);
@@ -105,7 +106,8 @@ class TypedConfigurationWriter extends Writer_1.Writer {
                     this.typeRef(idField.type);
                     t(";\n");
                 }
-                t(`readonly " $event": ${fetcherType.name}ChangeEvent;\n`);
+                t(`readonly " $evictEvent": ${fetcherType.name}EvictEvent;\n`);
+                t(`readonly " $changeEvent": ${fetcherType.name}ChangeEvent;\n`);
             }
             const fieldMap = fetcherType.getFields();
             const associationTypeMap = this.associationTypeMapOf(fetcherType);

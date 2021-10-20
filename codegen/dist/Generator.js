@@ -127,7 +127,7 @@ class Generator {
     createFetcheWriter(modelType, ctx, stream, config) {
         return new FetcherWriter_1.FetcherWriter(modelType, ctx, stream, config);
     }
-    additionalTypeNamesForFetcher(modelType) {
+    additionalExportedTypeNamesForFetcher(modelType) {
         return [];
     }
     loadSchema() {
@@ -173,7 +173,7 @@ class Generator {
                                 ctx.typesWithParameterizedField.has(type) ?
                                 `${type.name}Args` :
                                 undefined,
-                            ...this.additionalTypeNamesForFetcher(type)
+                            ...this.additionalExportedTypeNamesForFetcher(type)
                         ]
                             .filter(text => text !== undefined)
                             .join(", ")}} from './${fetcherTypeName}';\n`);

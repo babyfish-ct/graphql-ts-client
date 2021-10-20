@@ -135,7 +135,7 @@ export abstract class Generator {
         );
     }
 
-    protected additionalTypeNamesForFetcher(
+    protected additionalExportedTypeNamesForFetcher(
         modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType
     ): ReadonlyArray<string> {
         return [];
@@ -189,7 +189,7 @@ export abstract class Generator {
                                 ctx.typesWithParameterizedField.has(type) ? 
                                 `${type.name}Args` : 
                                 undefined,
-                                ...this.additionalTypeNamesForFetcher(type)
+                                ...this.additionalExportedTypeNamesForFetcher(type)
                             ]
                             .filter(text => text !== undefined)
                             .join(", ")

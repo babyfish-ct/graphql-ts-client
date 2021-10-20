@@ -38,12 +38,12 @@ class GraphQLStateGenerator extends Generator_1.Generator {
             yield _super.writeIndexCode.call(this, stream, schema);
         });
     }
-    additionalTypeNamesForFetcher(modelType) {
+    additionalExportedTypeNamesForFetcher(modelType) {
         if (modelType.name === "Query" || modelType.name === "Mutation") {
-            return super.additionalTypeNamesForFetcher(modelType);
+            return super.additionalExportedTypeNamesForFetcher(modelType);
         }
         return [
-            ...super.additionalTypeNamesForFetcher(modelType),
+            ...super.additionalExportedTypeNamesForFetcher(modelType),
             `${modelType.name}ScalarType`,
             `${modelType.name}FlatType`
         ];
@@ -101,7 +101,7 @@ class GraphQLStateGenerator extends Generator_1.Generator {
                     ctx.edgeTypes.has(fetcherType)) {
                     continue;
                 }
-                stream.write(`export type { ${fetcherType.name}ChangeEvent } from './${fetcherType.name}ChangeEvent';\n`);
+                stream.write(`export type { ${fetcherType.name}EvictEvent, ${fetcherType.name}ChangeEvent } from './${fetcherType.name}ChangeEvent';\n`);
             }
             yield Generator_1.closeStream(stream);
         });
