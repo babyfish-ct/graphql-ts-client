@@ -54,6 +54,7 @@ class TriggerEventWiter extends Writer_1.Writer {
                 t(`\nreadonly evictedType: "row" | "fields";\n`);
             }
             t(`\nreadonly evictedKeys: ReadonlyArray<${this.modelType.name}EntityKey<any>>;\n`);
+            t(`\nhas(evictedKey: ${this.modelType.name}EntityKey<any>): boolean;\n`);
             t(`\nevictedValue<TFieldName extends ${this.modelType.name}EntityFields>`);
             this.scope({ type: "PARAMETERS", multiLines: true }, () => {
                 t(`key: ${this.modelType.name}EntityKey<TFieldName>`);
@@ -75,6 +76,7 @@ class TriggerEventWiter extends Writer_1.Writer {
                 t(`\nreadonly changedType: "insert" | "update" | "delete";\n`);
             }
             t(`\nreadonly changedKeys: ReadonlyArray<${this.modelType.name}EntityKey<any>>;\n`);
+            t(`\nhas(changedKey: ${this.modelType.name}EntityKey<any>): boolean;\n`);
             for (const prefix of ["old", "new"]) {
                 t(`\n${prefix}Value<TFieldName extends ${this.modelType.name}EntityFields>`);
                 this.scope({ type: "PARAMETERS", multiLines: true }, () => {
