@@ -64,6 +64,8 @@ export abstract class Generator {
         }
 
         const configuredIdFieldMap = this.config.idFieldMap ?? {};
+        const entityTypes = new Set<GraphQLType>();
+        const embeddedTypes = new Set<GraphQLType>();
         const idFieldMap = new Map<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, GraphQLField<any, any>>();
         const typesWithParameterizedField = new Set<GraphQLObjectType | GraphQLInterfaceType>();
         for (const fetcherType of fetcherTypes) {
@@ -76,6 +78,9 @@ export abstract class Generator {
                     const idField = fieldMap[configuredIdFieldMap[fetcherType.name] ?? "id"];
                     if (idField !== undefined && idField !== null) {
                         idFieldMap.set(fetcherType, idField);
+                        entityTypes.add(fetcherType);
+                    } else {
+                        embeddedTypes.add(fetcherType);
                     }
                 }
                 for (const fieldName in fieldMap) {
@@ -92,6 +97,8 @@ export abstract class Generator {
             schema,
             inheritanceInfo,
             fetcherTypes,
+            entityTypes,
+            embeddedTypes,
             connectionTypes,
             edgeTypes,
             idFieldMap,
@@ -136,7 +143,8 @@ export abstract class Generator {
     }
 
     protected additionalExportedTypeNamesForFetcher(
-        modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType
+        modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
+        ctx: FetcherContext
     ): ReadonlyArray<string> {
         return [];
     }
@@ -189,7 +197,7 @@ export abstract class Generator {
                                 ctx.typesWithParameterizedField.has(type) ? 
                                 `${type.name}Args` : 
                                 undefined,
-                                ...this.additionalExportedTypeNamesForFetcher(type)
+                                ...this.additionalExportedTypeNamesForFetcher(type, ctx)
                             ]
                             .filter(text => text !== undefined)
                             .join(", ")

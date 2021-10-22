@@ -30,16 +30,17 @@ export class GraphQLStateGenerator extends Generator {
     }
 
     protected additionalExportedTypeNamesForFetcher(
-        modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType
+        modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
+        ctx: FetcherContext
     ): ReadonlyArray<string> {
-        if (modelType.name === "Query" || modelType.name === "Mutation") {
-            return super.additionalExportedTypeNamesForFetcher(modelType);
+        if (ctx.entityTypes.has(modelType)) {
+            return [
+                ...super.additionalExportedTypeNamesForFetcher(modelType, ctx),
+                `${modelType.name}ScalarType`,
+                `${modelType.name}FlatType`
+            ];
         }
-        return [
-            ...super.additionalExportedTypeNamesForFetcher(modelType),
-            `${modelType.name}ScalarType`,
-            `${modelType.name}FlatType`
-        ];
+        return super.additionalExportedTypeNamesForFetcher(modelType, ctx);
     }
 
     protected createFetcheWriter(
@@ -84,7 +85,7 @@ export class GraphQLStateGenerator extends Generator {
                 if (fetcherType.name !== "Query") {
                     idField = ctx.idFieldMap.get(fetcherType);
                     if (idField === undefined) {
-                        throw new Error(`There is no id field in the type "${fetcherType.name}"`);
+                        continue;
                     }
                 }
                 const dir = join(this.config.targetDir, "triggers");
@@ -107,13 +108,8 @@ export class GraphQLStateGenerator extends Generator {
                 "index.ts"
             )
         );
-        for (const fetcherType of ctx.fetcherTypes) {
-            if (fetcherType.name === "Query" || 
-            fetcherType.name === "Mutation" || 
-            ctx.connectionTypes.has(fetcherType) || 
-            ctx.edgeTypes.has(fetcherType)) {
-                continue;
-            }
+        for (const entityType of ctx.entityTypes) {
+            const fetcherType = entityType as GraphQLObjectType | GraphQLInterfaceType;
             stream.write(`export type { ${
                 fetcherType.name
             }EvictEvent, ${

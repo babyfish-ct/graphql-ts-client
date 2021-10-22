@@ -12,7 +12,6 @@ import { WriteStream } from "fs";
 import { GraphQLArgument, GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
 import { associatedTypeOf, instancePrefix } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
-import { InheritanceInfo } from "./InheritanceInfo";
 import { ImportingBehavior, Writer } from "./Writer";
 import { FetcherContext } from "./FetcherContext";
 
@@ -93,7 +92,9 @@ export class FetcherWriter extends Writer {
                 field.type instanceof GraphQLNonNull ?
                 field.type.ofType :
                 field.type;
-            if (this.ctx.connectionTypes.has(fieldCoreType)) {
+            if (this.ctx.embeddedTypes.has(fieldCoreType)) {
+                fieldCategoryMap.set(fieldName, "SCALAR");
+            } else if (this.ctx.connectionTypes.has(fieldCoreType)) {
                 fieldCategoryMap.set(fieldName, "CONNECTION");
             } else if (fieldCoreType instanceof GraphQLList) {
                 const elementType = 
@@ -430,7 +431,9 @@ export class FetcherWriter extends Writer {
                 this.scope({type: "PARAMETERS", multiLines: true}, () => {
                     t(`"${this.modelType.name}"`);
                     this.separator(", ");
-                    if (this.ctx.connectionTypes.has(this.modelType)) {
+                    if (this.ctx.embeddedTypes.has(this.modelType)) {
+                        t('"EMBEDDED"');
+                    } else if (this.ctx.connectionTypes.has(this.modelType)) {
                         t('"CONNECTION"');
                     } else if (this.ctx.edgeTypes.has(this.modelType)) {
                         t('"EDGE"');

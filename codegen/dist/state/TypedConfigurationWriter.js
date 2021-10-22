@@ -28,15 +28,12 @@ class TypedConfigurationWriter extends Writer_1.Writer {
         const eventTypeNames = [];
         const instanceNames = [];
         for (const fetcherType of this.ctx.fetcherTypes) {
-            if (!this.ctx.connectionTypes.has(fetcherType) &&
-                !this.ctx.edgeTypes.has(fetcherType)) {
-                if (fetcherType.name !== 'Query' && fetcherType.name !== 'Mutation') {
-                    scalarTypeNames.push(`${fetcherType.name}ScalarType`);
-                    eventTypeNames.push(`${fetcherType.name}EvictEvent`);
-                    eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
-                }
-                instanceNames.push(`${Utils_1.instancePrefix(fetcherType.name)}$`);
+            if (this.ctx.entityTypes.has(fetcherType)) {
+                scalarTypeNames.push(`${fetcherType.name}ScalarType`);
+                eventTypeNames.push(`${fetcherType.name}EvictEvent`);
+                eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
             }
+            instanceNames.push(`${Utils_1.instancePrefix(fetcherType.name)}$`);
         }
         const indent = (_a = this.config.indent) !== null && _a !== void 0 ? _a : "    ";
         const separator = `,\n${indent}`;
@@ -83,7 +80,10 @@ class TypedConfigurationWriter extends Writer_1.Writer {
             t("readonly entities: ");
             this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
                 for (const fetcherType of this.ctx.fetcherTypes) {
-                    if (fetcherType.name !== "Query" && fetcherType.name !== "Mutation") {
+                    if (fetcherType.name !== "Query" &&
+                        fetcherType.name !== "Mutation" &&
+                        !(fetcherType instanceof graphql_1.GraphQLUnionType) &&
+                        this.ctx.entityTypes.has(fetcherType)) {
                         t(`readonly "${fetcherType.name}": `);
                         this.writeFetcherType(fetcherType);
                     }
@@ -92,11 +92,6 @@ class TypedConfigurationWriter extends Writer_1.Writer {
         });
     }
     writeFetcherType(fetcherType) {
-        if (fetcherType instanceof graphql_1.GraphQLUnionType ||
-            this.ctx.connectionTypes.has(fetcherType) ||
-            this.ctx.edgeTypes.has(fetcherType)) {
-            return;
-        }
         const t = this.text.bind(this);
         this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
             if (fetcherType.name !== 'Query') {

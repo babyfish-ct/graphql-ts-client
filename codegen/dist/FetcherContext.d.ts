@@ -4,10 +4,12 @@ export interface FetcherContext {
     readonly schema: GraphQLSchema;
     readonly inheritanceInfo: InheritanceInfo;
     readonly fetcherTypes: ReadonlyArray<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType>;
-    readonly connectionTypes: Map<GraphQLType, Connection>;
-    readonly edgeTypes: Set<GraphQLType>;
-    readonly idFieldMap: Map<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, GraphQLField<any, any>>;
-    readonly typesWithParameterizedField: Set<GraphQLObjectType | GraphQLInterfaceType>;
+    readonly entityTypes: ReadonlySet<GraphQLType>;
+    readonly embeddedTypes: ReadonlySet<GraphQLType>;
+    readonly connectionTypes: ReadonlyMap<GraphQLType, Connection>;
+    readonly edgeTypes: ReadonlySet<GraphQLType>;
+    readonly idFieldMap: ReadonlyMap<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, GraphQLField<any, any>>;
+    readonly typesWithParameterizedField: ReadonlySet<GraphQLObjectType | GraphQLInterfaceType>;
 }
 export interface Connection {
     readonly edgeType: GraphQLObjectType | GraphQLInterfaceType;

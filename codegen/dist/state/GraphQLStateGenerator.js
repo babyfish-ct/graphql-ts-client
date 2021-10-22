@@ -38,15 +38,15 @@ class GraphQLStateGenerator extends Generator_1.Generator {
             yield _super.writeIndexCode.call(this, stream, schema);
         });
     }
-    additionalExportedTypeNamesForFetcher(modelType) {
-        if (modelType.name === "Query" || modelType.name === "Mutation") {
-            return super.additionalExportedTypeNamesForFetcher(modelType);
+    additionalExportedTypeNamesForFetcher(modelType, ctx) {
+        if (ctx.entityTypes.has(modelType)) {
+            return [
+                ...super.additionalExportedTypeNamesForFetcher(modelType, ctx),
+                `${modelType.name}ScalarType`,
+                `${modelType.name}FlatType`
+            ];
         }
-        return [
-            ...super.additionalExportedTypeNamesForFetcher(modelType),
-            `${modelType.name}ScalarType`,
-            `${modelType.name}FlatType`
-        ];
+        return super.additionalExportedTypeNamesForFetcher(modelType, ctx);
     }
     createFetcheWriter(modelType, ctx, stream, config) {
         return new GraphQLStateFetcherWriter_1.GraphQLStateFetcherWriter(modelType, ctx, stream, config);
@@ -80,7 +80,7 @@ class GraphQLStateGenerator extends Generator_1.Generator {
                     if (fetcherType.name !== "Query") {
                         idField = ctx.idFieldMap.get(fetcherType);
                         if (idField === undefined) {
-                            throw new Error(`There is no id field in the type "${fetcherType.name}"`);
+                            continue;
                         }
                     }
                     const dir = path_1.join(this.config.targetDir, "triggers");
@@ -94,13 +94,8 @@ class GraphQLStateGenerator extends Generator_1.Generator {
     generateTriggerIndex(ctx) {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = Generator_1.createStreamAndLog(path_1.join(path_1.join(this.config.targetDir, "triggers"), "index.ts"));
-            for (const fetcherType of ctx.fetcherTypes) {
-                if (fetcherType.name === "Query" ||
-                    fetcherType.name === "Mutation" ||
-                    ctx.connectionTypes.has(fetcherType) ||
-                    ctx.edgeTypes.has(fetcherType)) {
-                    continue;
-                }
+            for (const entityType of ctx.entityTypes) {
+                const fetcherType = entityType;
                 stream.write(`export type { ${fetcherType.name}EvictEvent, ${fetcherType.name}ChangeEvent } from './${fetcherType.name}ChangeEvent';\n`);
             }
             yield Generator_1.closeStream(stream);

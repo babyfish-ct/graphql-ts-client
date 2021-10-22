@@ -19,7 +19,7 @@ export interface FetchableField {
     readonly isUndefinable: boolean;
 }
 
-export type FetchableTypeCategory = "OBJECT" | "CONNECTION" | "EDGE";
+export type FetchableTypeCategory = "OBJECT" | "EMBEDDED" | "CONNECTION" | "EDGE";
 
 export type FetchableFieldCategory = "ID" | "SCALAR" | "REFERENCE" | "LIST" | "CONNECTION";
 

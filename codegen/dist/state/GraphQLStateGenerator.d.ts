@@ -17,7 +17,7 @@ import { GraphQLStateFetcherWriter } from "./GraphQLStateFetcherWriter";
 export declare class GraphQLStateGenerator extends Generator {
     constructor(config: GeneratorConfig);
     protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
-    protected additionalExportedTypeNamesForFetcher(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType): ReadonlyArray<string>;
+    protected additionalExportedTypeNamesForFetcher(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, ctx: FetcherContext): ReadonlyArray<string>;
     protected createFetcheWriter(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, ctx: FetcherContext, stream: WriteStream, config: GeneratorConfig): GraphQLStateFetcherWriter;
     protected generateServices(ctx: FetcherContext, promises: Promise<void>[]): Promise<void>;
     private generateTypedConfiguration;

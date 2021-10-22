@@ -73,6 +73,8 @@ class Generator {
                 }
             }
             const configuredIdFieldMap = (_a = this.config.idFieldMap) !== null && _a !== void 0 ? _a : {};
+            const entityTypes = new Set();
+            const embeddedTypes = new Set();
             const idFieldMap = new Map();
             const typesWithParameterizedField = new Set();
             for (const fetcherType of fetcherTypes) {
@@ -85,6 +87,10 @@ class Generator {
                         const idField = fieldMap[(_b = configuredIdFieldMap[fetcherType.name]) !== null && _b !== void 0 ? _b : "id"];
                         if (idField !== undefined && idField !== null) {
                             idFieldMap.set(fetcherType, idField);
+                            entityTypes.add(fetcherType);
+                        }
+                        else {
+                            embeddedTypes.add(fetcherType);
                         }
                     }
                     for (const fieldName in fieldMap) {
@@ -100,6 +106,8 @@ class Generator {
                 schema,
                 inheritanceInfo,
                 fetcherTypes,
+                entityTypes,
+                embeddedTypes,
                 connectionTypes,
                 edgeTypes,
                 idFieldMap,
@@ -127,7 +135,7 @@ class Generator {
     createFetcheWriter(modelType, ctx, stream, config) {
         return new FetcherWriter_1.FetcherWriter(modelType, ctx, stream, config);
     }
-    additionalExportedTypeNamesForFetcher(modelType) {
+    additionalExportedTypeNamesForFetcher(modelType, ctx) {
         return [];
     }
     loadSchema() {
@@ -173,7 +181,7 @@ class Generator {
                                 ctx.typesWithParameterizedField.has(type) ?
                                 `${type.name}Args` :
                                 undefined,
-                            ...this.additionalExportedTypeNamesForFetcher(type)
+                            ...this.additionalExportedTypeNamesForFetcher(type, ctx)
                         ]
                             .filter(text => text !== undefined)
                             .join(", ")}} from './${fetcherTypeName}';\n`);

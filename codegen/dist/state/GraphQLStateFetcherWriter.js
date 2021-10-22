@@ -14,7 +14,7 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
     }
     writeCode() {
         super.writeCode();
-        if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
+        if (this.ctx.entityTypes.has(this.modelType)) {
             this.writeScalarType();
             this.writeFlatType();
         }

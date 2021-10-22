@@ -64,7 +64,10 @@ class FetcherWriter extends Writer_1.Writer {
             const fieldCoreType = field.type instanceof graphql_1.GraphQLNonNull ?
                 field.type.ofType :
                 field.type;
-            if (this.ctx.connectionTypes.has(fieldCoreType)) {
+            if (this.ctx.embeddedTypes.has(fieldCoreType)) {
+                fieldCategoryMap.set(fieldName, "SCALAR");
+            }
+            else if (this.ctx.connectionTypes.has(fieldCoreType)) {
                 fieldCategoryMap.set(fieldName, "CONNECTION");
             }
             else if (fieldCoreType instanceof graphql_1.GraphQLList) {
@@ -359,7 +362,10 @@ class FetcherWriter extends Writer_1.Writer {
                 this.scope({ type: "PARAMETERS", multiLines: true }, () => {
                     t(`"${this.modelType.name}"`);
                     this.separator(", ");
-                    if (this.ctx.connectionTypes.has(this.modelType)) {
+                    if (this.ctx.embeddedTypes.has(this.modelType)) {
+                        t('"EMBEDDED"');
+                    }
+                    else if (this.ctx.connectionTypes.has(this.modelType)) {
                         t('"CONNECTION"');
                     }
                     else if (this.ctx.edgeTypes.has(this.modelType)) {
