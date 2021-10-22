@@ -44,6 +44,7 @@ class TriggerEventWiter extends Writer_1.Writer {
         const t = this.text.bind(this);
         t(`\nexport interface ${this.modelType}EvictEvent `);
         this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
+            t(`\nreadonly eventType: "evict";\n`);
             t(`\nreadonly typeName: ImplementationType<"${this.modelType.name}">;\n`);
             if (this.idField !== undefined) {
                 t(`\n readonly id: `);
@@ -66,6 +67,7 @@ class TriggerEventWiter extends Writer_1.Writer {
         const t = this.text.bind(this);
         t(`\nexport interface ${this.modelType}ChangeEvent `);
         this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
+            t(`\nreadonly eventType: "change";\n`);
             t(`\nreadonly typeName: ImplementationType<"${this.modelType.name}">;\n`);
             if (this.idField !== undefined) {
                 t(`\n readonly id: `);
