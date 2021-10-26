@@ -809,12 +809,11 @@ globals@^11.1.0:
   resolved "https://registry.yarnpkg.com/globals/-/globals-11.12.0.tgz#ab8795338868a0babd8525758018c2a7eb95c42e"
   integrity sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==
 
-graphql-ts-client-api@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.0.tgz#4029a751daa69c97afb3a09255d0f55b572e38e7"
-  integrity sha512-qLC8FDBH2M/7YwbkLrKCW5hEn/d7rqA5seZIlMMBrcpfuIM9BmT3lbEaUyUGmgnSrxBYqIG7AQ5pfLTXtwPhPg==
+graphql-ts-client-api@^3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.3.tgz#d945a20feff664a154aade75ceb68cf55005cfa2"
+  integrity sha512-Mh7QRlj8/UB3YpaEY67b7hjC44JZQ7VdGQsZBxuhIdPIsaRe1YoI0AvzPZ4rkBG4XKotkp3DK+aC8oZf9eBT1w==
   dependencies:
-    immer "^9.0.5"
     ts-md5 "^1.2.9"
 
 graphql@^14.5.3:
@@ -850,11 +849,6 @@ has@^1.0.3:
   integrity sha512-f2dvO0VU6Oej7RkWJGrehjbzMAjFp5/VKPp5tTpWIV4JHHZK1/BxbFRtf/siA2SWTe09caDmVtYYzWEIbBS4zw==
   dependencies:
     function-bind "^1.1.1"
-
-immer@^9.0.5:
-  version "9.0.6"
-  resolved "https://registry.yarnpkg.com/immer/-/immer-9.0.6.tgz#7a96bf2674d06c8143e327cbf73539388ddf1a73"
-  integrity sha512-G95ivKpy+EvVAnAab4fVa4YGYn24J1SpEktnJX7JJ45Bd7xqME/SCplFzYFmTbrkwZbQ4xJK1xMTUYBkN6pWsQ==
 
 immutable@~3.7.6:
   version "3.7.6"
