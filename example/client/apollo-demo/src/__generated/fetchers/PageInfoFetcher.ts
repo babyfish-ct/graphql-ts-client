@@ -123,7 +123,7 @@ export const pageInfo$: PageInfoFetcher<{}, {}> =
     createFetcher(
         createFetchableType(
             "PageInfo", 
-            "OBJECT", 
+            "EMBEDDED", 
             [], 
             [
                 "hasNextPage", 

@@ -35,7 +35,7 @@ class Generator {
         GeneratorConfig_1.validateConfig(config);
     }
     generate() {
-        var _a, _b;
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const schema = yield this.loadSchema();
             GeneratorConfig_1.validateConfigAndSchema(this.config, schema);
@@ -84,7 +84,21 @@ class Generator {
                 if (fetcherType instanceof graphql_1.GraphQLObjectType || fetcherType instanceof graphql_1.GraphQLInterfaceType) {
                     const fieldMap = fetcherType.getFields();
                     if (fetcherType.name !== "Query") {
-                        const idField = fieldMap[(_b = configuredIdFieldMap[fetcherType.name]) !== null && _b !== void 0 ? _b : "id"];
+                        let idFieldName = configuredIdFieldMap[fetcherType.name];
+                        if (idFieldName === undefined) {
+                            let configuredUpcastType = undefined;
+                            inheritanceInfo.visitUpcastTypesRecursively(fetcherType, upcastType => {
+                                const newIdFieldName = configuredIdFieldMap[upcastType.name];
+                                if (idFieldName === undefined) {
+                                    configuredUpcastType = upcastType;
+                                    idFieldName = newIdFieldName;
+                                }
+                                else if (idFieldName !== newIdFieldName) {
+                                    throw new Error(`Conflict id property configuration: ${configuredUpcastType.name}.${idFieldName} and ${fetcherType.name}.${newIdFieldName}`);
+                                }
+                            });
+                        }
+                        const idField = fieldMap[idFieldName !== null && idFieldName !== void 0 ? idFieldName : "id"];
                         if (idField !== undefined && idField !== null) {
                             idFieldMap.set(fetcherType, idField);
                             entityTypes.add(fetcherType);

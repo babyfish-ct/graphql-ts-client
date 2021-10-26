@@ -1,7 +1,7 @@
-import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, ConnectionFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import { FragmentRefs } from 'relay-runtime';
 import { TypedFragment } from 'graphql-ts-client-relay';
+import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
+import { ObjectFetcher, ConnectionFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 
 /*
  * Any instance of this interface is immutable,
@@ -161,7 +161,10 @@ export const query$: QueryFetcher<{}, {}> =
                         after: 'String', 
                         first: 'Int', 
                         name: 'String'
-                    }
+                    }, 
+                    connectionTypeName: "DepartmentConnection", 
+                    edgeTypeName: "DepartmentEdge", 
+                    targetTypeName: "Department"
                 }, 
                 {
                     category: "CONNECTION", 
@@ -175,12 +178,17 @@ export const query$: QueryFetcher<{}, {}> =
                         supervisorId: 'String', 
                         departmentId: 'String', 
                         name: 'String'
-                    }
+                    }, 
+                    connectionTypeName: "EmployeeConnection", 
+                    edgeTypeName: "EmployeeEdge", 
+                    targetTypeName: "Employee"
                 }, 
                 {
                     category: "REFERENCE", 
                     name: "node", 
-                    argGraphQLTypeMap: {id: 'ID!'}
+                    argGraphQLTypeMap: {id: 'ID!'}, 
+                    targetTypeName: "Node", 
+                    undefinable: true
                 }
             ]
         ), 

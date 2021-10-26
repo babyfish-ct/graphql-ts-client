@@ -82,7 +82,7 @@ export const EmployeeList: FC = memo(() => {
             );
             setData(data);
         } catch (e) {
-            setError(e);
+            setError(e as Error);
         } finally {
             setLoading(false);
         }

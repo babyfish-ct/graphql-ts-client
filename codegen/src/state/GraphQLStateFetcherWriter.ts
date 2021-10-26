@@ -1,6 +1,6 @@
 import { GraphQLInterfaceType, GraphQLNonNull, GraphQLObjectType, GraphQLUnionType } from "graphql";
 import { FetcherWriter } from "../FetcherWriter";
-import { associatedTypeOf } from "../Utils";
+import { targetTypeOf } from "../Utils";
 
 export class GraphQLStateFetcherWriter extends FetcherWriter {
 
@@ -42,7 +42,7 @@ export class GraphQLStateFetcherWriter extends FetcherWriter {
                 const fieldMap = this.modelType.getFields();
                 for (const fieldName of this.declaredFieldNames) {
                     const field = fieldMap[fieldName]!;
-                    if (associatedTypeOf(field.type) === undefined) {
+                    if (this.fieldCategoryMap.get(fieldName) === "SCALAR") {
                         t("readonly ");
                         t(fieldName);
                         if (!(field.type instanceof GraphQLNonNull)) {
@@ -66,7 +66,7 @@ export class GraphQLStateFetcherWriter extends FetcherWriter {
         const superTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
         if (superTypes !== undefined && superTypes.size !== 0) {
             for (const superType of superTypes) {
-                this.separator(", ");
+                t(", ");
                 t(`${superType.name}FlatType`);
             }
         }
@@ -76,9 +76,9 @@ export class GraphQLStateFetcherWriter extends FetcherWriter {
                 const fieldMap = this.modelType.getFields();
                 for (const fieldName of this.declaredFieldNames) {
                     const field = fieldMap[fieldName]!;
-                    const assocaitionType = associatedTypeOf(field.type);
-                    if (assocaitionType !== undefined) {
-                        const idField = this.ctx.idFieldMap.get(assocaitionType);
+                    const targetType = targetTypeOf(field.type);
+                    if (targetType !== undefined && this.fieldCategoryMap.get(fieldName) !== "SCALAR") {
+                        const idField = this.ctx.idFieldMap.get(targetType);
                         if (idField !== undefined) {
                             t("readonly ");
                             t(fieldName);
@@ -87,7 +87,7 @@ export class GraphQLStateFetcherWriter extends FetcherWriter {
                             }
                             t(": ");
                             this.typeRef(field.type, (type, field) => {
-                                if (type === assocaitionType) {
+                                if (type === targetType) {
                                     return field.name === idField.name;
                                 }
                                 return true;

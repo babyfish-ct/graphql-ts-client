@@ -14,6 +14,13 @@ class InheritanceInfo {
     get upcastTypeMap() {
         return this._upcastTypeMap;
     }
+    visitUpcastTypesRecursively(entityType, callback) {
+        var _a;
+        (_a = this._upcastTypeMap.get(entityType)) === null || _a === void 0 ? void 0 : _a.forEach(upcastType => {
+            callback(upcastType);
+            this.visitUpcastTypesRecursively(upcastType, callback);
+        });
+    }
     createDowncastTypeMap() {
         const downcastTypeMap = new Map();
         const typeMap = this.schema.getTypeMap();

@@ -10,12 +10,12 @@
 
 import { GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
 
-export function associatedTypeOf(type: GraphQLType): GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType | undefined {
+export function targetTypeOf(type: GraphQLType): GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType | undefined {
     if (type instanceof GraphQLNonNull) {
-        return associatedTypeOf(type.ofType);
+        return targetTypeOf(type.ofType);
     }
     if (type instanceof GraphQLList) {
-        return associatedTypeOf(type.ofType);
+        return targetTypeOf(type.ofType);
     }
     if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType || type instanceof GraphQLUnionType) {
         return type;

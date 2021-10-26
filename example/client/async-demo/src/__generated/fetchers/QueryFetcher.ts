@@ -149,7 +149,10 @@ export const query$: QueryFetcher<{}, {}> =
                         after: 'String', 
                         first: 'Int', 
                         name: 'String'
-                    }
+                    }, 
+                    connectionTypeName: "DepartmentConnection", 
+                    edgeTypeName: "DepartmentEdge", 
+                    targetTypeName: "Department"
                 }, 
                 {
                     category: "CONNECTION", 
@@ -163,12 +166,17 @@ export const query$: QueryFetcher<{}, {}> =
                         supervisorId: 'String', 
                         departmentId: 'String', 
                         name: 'String'
-                    }
+                    }, 
+                    connectionTypeName: "EmployeeConnection", 
+                    edgeTypeName: "EmployeeEdge", 
+                    targetTypeName: "Employee"
                 }, 
                 {
                     category: "REFERENCE", 
                     name: "node", 
-                    argGraphQLTypeMap: {id: 'ID!'}
+                    argGraphQLTypeMap: {id: 'ID!'}, 
+                    targetTypeName: "Node", 
+                    undefinable: true
                 }
             ]
         ), 

@@ -136,14 +136,14 @@ class TypedConfigurationWriter extends Writer_1.Writer {
         const fieldMap = fetcherType.getFields();
         for (const fieldName in fieldMap) {
             const field = fieldMap[fieldName];
-            const associatedType = Utils_1.associatedTypeOf(field.type);
-            if (associatedType !== undefined) {
-                const connection = this.ctx.connectionTypes.get(associatedType);
+            const targetType = Utils_1.targetTypeOf(field.type);
+            if (targetType !== undefined && !this.ctx.embeddedTypes.has(targetType)) {
+                const connection = this.ctx.connectionTypes.get(targetType);
                 if (connection !== undefined) {
                     map.set(fieldName, connection.nodeType.name);
                 }
                 else {
-                    map.set(fieldName, associatedType.name);
+                    map.set(fieldName, targetType.name);
                 }
             }
         }

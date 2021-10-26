@@ -37,7 +37,7 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
                 const fieldMap = this.modelType.getFields();
                 for (const fieldName of this.declaredFieldNames) {
                     const field = fieldMap[fieldName];
-                    if (Utils_1.associatedTypeOf(field.type) === undefined) {
+                    if (this.fieldCategoryMap.get(fieldName) === "SCALAR") {
                         t("readonly ");
                         t(fieldName);
                         if (!(field.type instanceof graphql_1.GraphQLNonNull)) {
@@ -57,7 +57,7 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
         const superTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
         if (superTypes !== undefined && superTypes.size !== 0) {
             for (const superType of superTypes) {
-                this.separator(", ");
+                t(", ");
                 t(`${superType.name}FlatType`);
             }
         }
@@ -66,9 +66,9 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
                 const fieldMap = this.modelType.getFields();
                 for (const fieldName of this.declaredFieldNames) {
                     const field = fieldMap[fieldName];
-                    const assocaitionType = Utils_1.associatedTypeOf(field.type);
-                    if (assocaitionType !== undefined) {
-                        const idField = this.ctx.idFieldMap.get(assocaitionType);
+                    const targetType = Utils_1.targetTypeOf(field.type);
+                    if (targetType !== undefined && this.fieldCategoryMap.get(fieldName) !== "SCALAR") {
+                        const idField = this.ctx.idFieldMap.get(targetType);
                         if (idField !== undefined) {
                             t("readonly ");
                             t(fieldName);
@@ -77,7 +77,7 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
                             }
                             t(": ");
                             this.typeRef(field.type, (type, field) => {
-                                if (type === assocaitionType) {
+                                if (type === targetType) {
                                     return field.name === idField.name;
                                 }
                                 return true;

@@ -168,7 +168,7 @@ class FetchableFieldImpl implements FetchableField {
     }
 
     get isFunction(): boolean {
-        return this.argGraphQLTypeMap.size !== 0 || this.isAssociation;
+        return this.argGraphQLTypeMap.size !== 0 || this.isAssociation || this.targetTypeName !== undefined;
     }
 
     get isUndefinable(): boolean {

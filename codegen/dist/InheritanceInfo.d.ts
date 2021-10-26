@@ -7,6 +7,7 @@ export declare class InheritanceInfo {
     constructor(schema: GraphQLSchema);
     get downcastTypeMap(): ReadonlyMap<EntityType, Set<EntityType>>;
     get upcastTypeMap(): ReadonlyMap<EntityType, Set<EntityType>>;
+    visitUpcastTypesRecursively(entityType: EntityType, callback: (upcastType: EntityType) => void): void;
     private createDowncastTypeMap;
     private createUpcastTypeMap;
     private static _add;

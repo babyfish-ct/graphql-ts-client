@@ -83,7 +83,8 @@ export const employeeEdge$: EmployeeEdgeFetcher<{}, {}> =
             [
                 {
                     category: "REFERENCE", 
-                    name: "node"
+                    name: "node", 
+                    targetTypeName: "Employee"
                 }, 
                 "cursor"
             ]

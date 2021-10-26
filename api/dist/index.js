@@ -27,5 +27,4 @@ Object.defineProperty(exports, "createFetcher", { enumerable: true, get: functio
 const Md5_1 = require("./util/Md5");
 const NullValues_1 = require("./util/NullValues");
 const MapIterator_1 = require("./util/MapIterator");
-const immer_1 = require("immer");
-exports.util = { toMd5: Md5_1.toMd5, removeNullValues: NullValues_1.removeNullValues, exceptNullValues: NullValues_1.exceptNullValues, iterateMap: MapIterator_1.iterateMap, produce: immer_1.produce };
+exports.util = { toMd5: Md5_1.toMd5, exceptNullValues: NullValues_1.exceptNullValues, iterateMap: MapIterator_1.iterateMap };

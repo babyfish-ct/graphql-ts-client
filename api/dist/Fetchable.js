@@ -96,7 +96,7 @@ class FetchableFieldImpl {
         return this.category === "REFERENCE" || this.isPlural;
     }
     get isFunction() {
-        return this.argGraphQLTypeMap.size !== 0 || this.isAssociation;
+        return this.argGraphQLTypeMap.size !== 0 || this.isAssociation || this.targetTypeName !== undefined;
     }
     get isUndefinable() {
         return this._undefinable;

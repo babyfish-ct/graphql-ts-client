@@ -83,7 +83,8 @@ export const departmentEdge$: DepartmentEdgeFetcher<{}, {}> =
             [
                 {
                     category: "REFERENCE", 
-                    name: "node"
+                    name: "node", 
+                    targetTypeName: "Department"
                 }, 
                 "cursor"
             ]

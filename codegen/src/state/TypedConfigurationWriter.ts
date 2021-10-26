@@ -12,7 +12,7 @@ import { WriteStream } from "fs";
 import { GraphQLInterfaceType, GraphQLObjectType, GraphQLUnionType } from "graphql";
 import { FetcherContext } from "../FetcherContext";
 import { GeneratorConfig } from "../GeneratorConfig";
-import { associatedTypeOf, instancePrefix } from "../Utils";
+import { targetTypeOf, instancePrefix } from "../Utils";
 import { Writer } from "../Writer";
 
 export class TypedConfigurationWriter extends Writer {
@@ -170,13 +170,13 @@ export class TypedConfigurationWriter extends Writer {
         const fieldMap = fetcherType.getFields();
         for (const fieldName in fieldMap) {
             const field = fieldMap[fieldName];
-            const associatedType = associatedTypeOf(field.type);
-            if (associatedType !== undefined) {
-                const connection = this.ctx.connectionTypes.get(associatedType);
+            const targetType = targetTypeOf(field.type);
+            if (targetType !== undefined && !this.ctx.embeddedTypes.has(targetType)) {
+                const connection = this.ctx.connectionTypes.get(targetType);
                 if (connection !== undefined) {
                     map.set(fieldName, connection.nodeType.name);
                 } else {
-                    map.set(fieldName, associatedType.name);
+                    map.set(fieldName, targetType.name);
                 }
             }
         }

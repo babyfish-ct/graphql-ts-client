@@ -9,7 +9,7 @@
  */
 
 import { GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema } from "graphql";
-import { associatedTypeOf } from "./Utils";
+import { targetTypeOf } from "./Utils";
 
 export interface GeneratorConfig {
     readonly schemaLoader: () => Promise<GraphQLSchema>,
@@ -181,7 +181,7 @@ export function validateConfigAndSchema(
                     `there is not field named '${idFieldMap[typeName]}' in the type '${typeName}'`
                 );
             }
-            if (associatedTypeOf(idField.type) !== undefined) {
+            if (targetTypeOf(idField.type) !== undefined) {
                 throw new Error(
                     `config.idFieldMap['${typeName}'] is illegal, ` +
                     `the field '${idFieldMap[typeName]}' of the type '${typeName}' is not scalar`

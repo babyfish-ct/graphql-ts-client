@@ -20,16 +20,13 @@ export { DependencyManager } from './DependencyManager';
 export { createFetcher } from './FetcherProxy';
 
 import { toMd5 } from "./util/Md5";
-import { removeNullValues, exceptNullValues } from './util/NullValues';
+import { exceptNullValues } from './util/NullValues';
 import { iterateMap } from './util/MapIterator';
-import { produce, Draft, PatchListener } from "immer";
 
 interface UtilInterace {
     toMd5(value: string): string;
-    removeNullValues<T>(value: T): T;
     exceptNullValues<T>(value: T): T;
     iterateMap<K, V>(map: ReadonlyMap<K, V>, onEach: (pair: [K, V]) => void): void;
-    produce<T>(base: T, recipe: (draft: Draft<T>) => void, listener?: PatchListener);
 }
 
-export const util: UtilInterace = { toMd5, removeNullValues, exceptNullValues, iterateMap, produce };
+export const util: UtilInterace = { toMd5, exceptNullValues, iterateMap };

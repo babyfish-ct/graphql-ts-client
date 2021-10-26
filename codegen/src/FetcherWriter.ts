@@ -10,10 +10,11 @@
 
 import { WriteStream } from "fs";
 import { GraphQLArgument, GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
-import { associatedTypeOf, instancePrefix } from "./Utils";
+import { targetTypeOf, instancePrefix } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { ImportingBehavior, Writer } from "./Writer";
 import { FetcherContext } from "./FetcherContext";
+import { throws } from "assert";
 
 export class FetcherWriter extends Writer {
 
@@ -73,8 +74,8 @@ export class FetcherWriter extends Writer {
         this.hasArgs = false;
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName]!;
-            const associatedType = associatedTypeOf(field.type);
-            if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation" && associatedType === undefined && field.args.length === 0) {
+            const targetType = targetTypeOf(field.type);
+            if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation" && targetType === undefined && field.args.length === 0) {
                 if (config.defaultFetcherExcludeMap !== undefined) {
                     const excludeProps = config.defaultFetcherExcludeMap[modelType.name];
                     if (excludeProps !== undefined && excludeProps.filter(name => name === fieldName).length !== 0) {
@@ -112,8 +113,10 @@ export class FetcherWriter extends Writer {
                 fieldCoreType instanceof GraphQLUnionType
             ) {
                 fieldCategoryMap.set(fieldName, "REFERENCE");
-            } else if (fieldName === "id") {
+            } else if (this.ctx.idFieldMap.get(this.modelType) === field) {
                 fieldCategoryMap.set(fieldName, "ID");
+            } else {
+                fieldCategoryMap.set(fieldName, "SCALAR");
             }
 
             if (field.args.length !== 0) {
@@ -141,9 +144,9 @@ export class FetcherWriter extends Writer {
         importedFetcherTypeNames.add(this.superFetcherTypeName(this.modelType));
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
-            const associatedType = associatedTypeOf(field.type);
-            if (associatedType !== undefined) {
-                importedFetcherTypeNames.add(this.superFetcherTypeName(associatedType));
+            const targetType = targetTypeOf(field.type);
+            if (targetType !== undefined) {
+                importedFetcherTypeNames.add(this.superFetcherTypeName(targetType));
             }
         }
         this.importStatement(`import { ${Array.from(importedFetcherTypeNames).join(", ")}, createFetcher, createFetchableType } from 'graphql-ts-client-api';`);
@@ -263,9 +266,9 @@ export class FetcherWriter extends Writer {
 
     private writePositiveProp(field: GraphQLField<unknown, unknown>) {
         
-        const associatedType = associatedTypeOf(field.type);
+        const targetType = targetTypeOf(field.type);
 
-        const isField = field.args.length === 0 && associatedType === undefined;
+        const isField = field.args.length === 0 && targetType === undefined;
         
         if (field.args.length !== 0) {
             this.writePositivePropImpl(field, "NO_ARGS");
@@ -279,7 +282,7 @@ export class FetcherWriter extends Writer {
 
     private writeNegativeProp(field: GraphQLField<unknown, unknown>) {
         
-        if (field.args.length !== 0 ||  associatedTypeOf(field.type) !== undefined) {
+        if (field.args.length !== 0 ||  targetTypeOf(field.type) !== undefined) {
             return;
         }
 
@@ -298,9 +301,9 @@ export class FetcherWriter extends Writer {
 
         const t = this.text.bind(this);
 
-        const associatedType = associatedTypeOf(field.type);
+        const targetType = targetTypeOf(field.type);
         
-        const renderAsField = field.args.length === 0 && associatedType === undefined && mode !== "FIELD_PLUS";
+        const renderAsField = field.args.length === 0 && targetType === undefined && mode !== "FIELD_PLUS";
 
         const nonNull = field.type instanceof GraphQLNonNull;
 
@@ -315,7 +318,7 @@ export class FetcherWriter extends Writer {
                     this.separator(", ");
                     t(`XArgs extends AcceptableVariables<${this.modelType.name}Args['${field.name}']>`);
                 }
-                if (associatedType !== undefined) {
+                if (targetType !== undefined) {
                     this.separator(", ");
                     t("X extends object");
                     this.separator(", ");
@@ -337,12 +340,12 @@ export class FetcherWriter extends Writer {
                     this.separator(", ");
                     t("args: XArgs");
                 }
-                if (associatedType !== undefined) {
+                if (targetType !== undefined) {
                     this.separator(", ");
                     t("child: ");
-                    t(this.superFetcherTypeName(associatedType));
+                    t(this.superFetcherTypeName(targetType));
                     t("<'");
-                    t(associatedType.name);
+                    t(targetType.name);
                     t("', X, XVariables>");
                 }
                 this.separator(", ");
@@ -379,7 +382,7 @@ export class FetcherWriter extends Writer {
 
             this.separator(", ");
             t("TVariables");
-            if (associatedType !== undefined) {
+            if (targetType !== undefined) {
                 t(" & XVariables");
             }
             if (field.args.length !== 0) {
@@ -410,7 +413,7 @@ export class FetcherWriter extends Writer {
             t("?");
         }
         t(": ");
-        this.typeRef(field.type, associatedTypeOf(field.type) !== undefined ? "X" : undefined);
+        this.typeRef(field.type, targetTypeOf(field.type) !== undefined ? "X" : undefined);
         t("}");
     }
 
@@ -457,11 +460,22 @@ export class FetcherWriter extends Writer {
                             this.separator(", ");
                             const args = this.fieldArgsMap.get(declaredFieldName);
                             const category = this.fieldCategoryMap.get(declaredFieldName);
+                            const targetType = targetTypeOf(field.type);
                             if (args === undefined && 
                                 (category === undefined || category === "SCALAR") &&
                                 field.type instanceof GraphQLNonNull
                             ) {
-                                t(`"${declaredFieldName}"`);
+                                if (targetType === undefined) {
+                                    t(`"${declaredFieldName}"`);
+                                } else {
+                                    this.scope({type: "BLOCK", multiLines: true}, () => {
+                                        t(`category: "SCALAR"`);
+                                        this.separator(", ");
+                                        t(`name: "${declaredFieldName}"`); 
+                                        this.separator(", ");
+                                        t(`targetTypeName: "${targetType.name}"`);
+                                    });
+                                }
                             } else {
                                 this.scope({type: "BLOCK", multiLines: true}, () => {
                                     t(`category: "${category ?? 'SCALAR'}"`);
@@ -480,18 +494,17 @@ export class FetcherWriter extends Writer {
                                             }
                                         });
                                     }
-                                    const associationType = associatedTypeOf(field.type);
-                                    if (associationType !== undefined) {
+                                    if (targetType !== undefined) {
                                         this.separator(", ");
-                                        const connection = this.ctx.connectionTypes.get(associationType);
+                                        const connection = this.ctx.connectionTypes.get(targetType);
                                         if (connection !== undefined) {
-                                            t(`connectionTypeName: "${associationType.name}"`);
+                                            t(`connectionTypeName: "${targetType.name}"`);
                                             this.separator(", ");
                                             t(`edgeTypeName: "${connection.edgeType.name}"`);
                                             this.separator(", ");
                                             t(`targetTypeName: "${connection.nodeType.name}"`);
                                         } else {
-                                            t(`targetTypeName: "${associationType.name}"`);
+                                            t(`targetTypeName: "${targetType.name}"`);
                                         }
                                     }
                                     if (!(field.type instanceof GraphQLNonNull)) {

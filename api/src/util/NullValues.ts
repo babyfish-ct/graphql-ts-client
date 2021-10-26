@@ -8,37 +8,6 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
-import { produce } from 'immer';
-
-export function removeNullValues<T>(value: T): T {
-    removeNullValues0(value);
-    return value;
-}
-
-function removeNullValues0(value: any) {
-    if (typeof value === 'object') {
-        if (Array.isArray(value)) {
-            for (let i = value.length - 1; i >= 0; --i) {
-                const childValue = value[i];
-                if (childValue === null) {
-                    value[i] = undefined;
-                } else if (childValue !== undefined) {
-                    removeNullValues0(childValue);
-                }
-            }
-        } else {
-            for (const fieldName of Object.keys(value)) {
-                const childValue = value[fieldName];
-                if (childValue === null) {
-                    value[fieldName] = undefined;
-                } else if (childValue !== undefined) {
-                    removeNullValues0(childValue);
-                }
-            }
-        }
-    }
-}
-
 /**
  * In typescript, undefined is better than null, for example
  * 
@@ -63,7 +32,20 @@ export function exceptNullValues<T>(value: T): T {
     if (typeof value !== 'object') {
         return value;
     }
-    return produce(value, draft => {
-        removeNullValues(draft);
-    });
+    if (Array.isArray(value)) {
+        return value.map(element => {
+            if (element === undefined || element === null) {
+                return undefined;
+            }
+            return exceptNullValues(element);
+        }) as any as T;
+    }
+    let obj: {[key: string]: any} = {};
+    for (const fieldName in value) {
+        const fieldValue = value[fieldName];
+        if (fieldValue !== undefined && fieldValue !== null) {
+            obj[fieldName] = exceptNullValues(fieldValue);
+        }
+    }
+    return obj as T;
 }

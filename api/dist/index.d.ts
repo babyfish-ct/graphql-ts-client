@@ -17,12 +17,9 @@ export type { FieldOptions } from './FieldOptions';
 export { TextWriter } from './TextWriter';
 export { DependencyManager } from './DependencyManager';
 export { createFetcher } from './FetcherProxy';
-import { Draft, PatchListener } from "immer";
 interface UtilInterace {
     toMd5(value: string): string;
-    removeNullValues<T>(value: T): T;
     exceptNullValues<T>(value: T): T;
     iterateMap<K, V>(map: ReadonlyMap<K, V>, onEach: (pair: [K, V]) => void): void;
-    produce<T>(base: T, recipe: (draft: Draft<T>) => void, listener?: PatchListener): any;
 }
 export declare const util: UtilInterace;

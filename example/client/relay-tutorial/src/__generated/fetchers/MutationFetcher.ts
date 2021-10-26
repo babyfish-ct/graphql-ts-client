@@ -1,7 +1,7 @@
-import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import { FragmentRefs } from 'relay-runtime';
 import { TypedFragment } from 'graphql-ts-client-relay';
+import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
+import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import {DepartmentInput} from '../inputs';
 import {EmployeeInput} from '../inputs';
 
@@ -192,7 +192,7 @@ export const mutation$: MutationFetcher<{}, {}> =
     createFetcher(
         createFetchableType(
             "Mutation", 
-            "OBJECT", 
+            "EMBEDDED", 
             [], 
             [
                 {

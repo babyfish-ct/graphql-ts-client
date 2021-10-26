@@ -1,8 +1,8 @@
+import { FragmentRefs } from 'relay-runtime';
+import { TypedFragment } from 'graphql-ts-client-relay';
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
-import { FragmentRefs } from 'relay-runtime';
-import { TypedFragment } from 'graphql-ts-client-relay';
 import { node$ } from './NodeFetcher';
 import {Gender} from '../enums';
 
@@ -226,15 +226,19 @@ export const employee$: EmployeeFetcher<{}, {}> =
                 "salary", 
                 {
                     category: "REFERENCE", 
-                    name: "department"
+                    name: "department", 
+                    targetTypeName: "Department"
                 }, 
                 {
                     category: "REFERENCE", 
-                    name: "supervisor"
+                    name: "supervisor", 
+                    targetTypeName: "Employee", 
+                    undefinable: true
                 }, 
                 {
                     category: "LIST", 
-                    name: "subordinates"
+                    name: "subordinates", 
+                    targetTypeName: "Employee"
                 }
             ]
         ), 

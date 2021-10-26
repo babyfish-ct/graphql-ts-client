@@ -111,9 +111,7 @@ export function useTypedQuery<
 	const response = useQuery<TData, TVariables>(request, options);
 	const responseData = response.data;
 	const newResponseData = useMemo(() => util.exceptNullValues(responseData), [responseData]);
-	return newResponseData === responseData ? response : util.produce(response, draft => {
-		draft.data = util.produce(newResponseData, () => {});
-	});
+	return newResponseData === responseData ? response : { ...response, data: newResponseData };
 }
 
 export function useTypedLazyQuery<
@@ -152,9 +150,10 @@ export function useTypedLazyQuery<
 	const response = useLazyQuery<TData, TVariables>(request, options);
 	const responseData = response[1].data;
 	const newResponseData = useMemo(() => util.exceptNullValues(responseData), [responseData]);
-	return newResponseData === responseData ? response : util.produce(response, draft => {
-		draft[1].data = util.produce(newResponseData, () => {});
-	});
+	return newResponseData === responseData ? response : [
+        response[0],
+        { ...response[1], data: newResponseData }
+    ] as QueryTuple<TData, TVariables>;
 }
 
 export function useTypedMutation<
@@ -188,9 +187,10 @@ export function useTypedMutation<
 	>(request, options);
 	const responseData = response[1].data;
 	const newResponseData = useMemo(() => util.exceptNullValues(responseData), [responseData]);
-	return newResponseData === responseData ? response : util.produce(response, draft => {
-		draft[1].data = util.produce(newResponseData, () => {});
-	});
+	return newResponseData === responseData ? response : [
+        response[0],
+        { ...response[1], data: newResponseData }
+    ];
 }
 
 function requestBody(fetcher: Fetcher<string, object, object>): string {

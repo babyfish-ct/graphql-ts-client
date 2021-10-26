@@ -9,39 +9,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.exceptNullValues = exports.removeNullValues = void 0;
-const immer_1 = require("immer");
-function removeNullValues(value) {
-    removeNullValues0(value);
-    return value;
-}
-exports.removeNullValues = removeNullValues;
-function removeNullValues0(value) {
-    if (typeof value === 'object') {
-        if (Array.isArray(value)) {
-            for (let i = value.length - 1; i >= 0; --i) {
-                const childValue = value[i];
-                if (childValue === null) {
-                    value[i] = undefined;
-                }
-                else if (childValue !== undefined) {
-                    removeNullValues0(childValue);
-                }
-            }
-        }
-        else {
-            for (const fieldName of Object.keys(value)) {
-                const childValue = value[fieldName];
-                if (childValue === null) {
-                    value[fieldName] = undefined;
-                }
-                else if (childValue !== undefined) {
-                    removeNullValues0(childValue);
-                }
-            }
-        }
-    }
-}
+exports.exceptNullValues = void 0;
 /**
  * In typescript, undefined is better than null, for example
  *
@@ -65,8 +33,21 @@ function exceptNullValues(value) {
     if (typeof value !== 'object') {
         return value;
     }
-    return immer_1.produce(value, draft => {
-        removeNullValues(draft);
-    });
+    if (Array.isArray(value)) {
+        return value.map(element => {
+            if (element === undefined || element === null) {
+                return undefined;
+            }
+            return exceptNullValues(element);
+        });
+    }
+    let obj = {};
+    for (const fieldName in value) {
+        const fieldValue = value[fieldName];
+        if (fieldValue !== undefined && fieldValue !== null) {
+            obj[fieldName] = exceptNullValues(fieldValue);
+        }
+    }
+    return obj;
 }
 exports.exceptNullValues = exceptNullValues;

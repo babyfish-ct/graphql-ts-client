@@ -33,7 +33,7 @@ export async function execute<TData extends object, TVariables extends object>(
     writer.text(fetcher.toString());
     writer.text(fetcher.toFragmentString());
 
-    const rawResponse = util.removeNullValues(await executor(writer.toString(), options?.variables ?? {}));
+    const rawResponse = util.exceptNullValues(await executor(writer.toString(), options?.variables ?? {}));
     if (rawResponse.errors) {
         throw new GraphQLError(rawResponse.errors);
     }

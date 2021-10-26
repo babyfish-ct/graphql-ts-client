@@ -7,7 +7,6 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
-export declare function removeNullValues<T>(value: T): T;
 /**
  * In typescript, undefined is better than null, for example
  *

@@ -75,7 +75,22 @@ export abstract class Generator {
             if (fetcherType instanceof GraphQLObjectType || fetcherType instanceof GraphQLInterfaceType) {
                 const fieldMap = fetcherType.getFields();
                 if (fetcherType.name !== "Query") {
-                    const idField = fieldMap[configuredIdFieldMap[fetcherType.name] ?? "id"];
+                    let idFieldName = configuredIdFieldMap[fetcherType.name];
+                    if (idFieldName === undefined) {
+                        let configuredUpcastType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType | undefined = undefined;
+                        inheritanceInfo.visitUpcastTypesRecursively(fetcherType, upcastType => {
+                            const newIdFieldName = configuredIdFieldMap[upcastType.name];
+                            if (idFieldName === undefined) {
+                                configuredUpcastType = upcastType;
+                                idFieldName = newIdFieldName;
+                            } else if (idFieldName !== newIdFieldName) {
+                                throw new Error(
+                                    `Conflict id property configuration: ${configuredUpcastType!.name}.${idFieldName} and ${fetcherType.name}.${newIdFieldName}`
+                                );
+                            }
+                        });
+                    }
+                    const idField = fieldMap[idFieldName ?? "id"];
                     if (idField !== undefined && idField !== null) {
                         idFieldMap.set(fetcherType, idField);
                         entityTypes.add(fetcherType);

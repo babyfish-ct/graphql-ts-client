@@ -1,8 +1,8 @@
+import { FragmentRefs } from 'relay-runtime';
+import { TypedFragment } from 'graphql-ts-client-relay';
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { EdgeFetcher, ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
-import { FragmentRefs } from 'relay-runtime';
-import { TypedFragment } from 'graphql-ts-client-relay';
 
 /*
  * Any instance of this interface is immutable,
@@ -95,7 +95,8 @@ export const employeeEdge$: EmployeeEdgeFetcher<{}, {}> =
             [
                 {
                     category: "REFERENCE", 
-                    name: "node"
+                    name: "node", 
+                    targetTypeName: "Employee"
                 }, 
                 "cursor"
             ]

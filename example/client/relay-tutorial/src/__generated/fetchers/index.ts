@@ -1,4 +1,4 @@
-export type {QueryFetcher} from './QueryFetcher';
+export type {QueryFetcher, QueryArgs} from './QueryFetcher';
 export {query$} from './QueryFetcher';
 export type {DepartmentConnectionFetcher} from './DepartmentConnectionFetcher';
 export {departmentConnection$, departmentConnection$$} from './DepartmentConnectionFetcher';
@@ -16,5 +16,5 @@ export type {EmployeeConnectionFetcher} from './EmployeeConnectionFetcher';
 export {employeeConnection$, employeeConnection$$} from './EmployeeConnectionFetcher';
 export type {EmployeeEdgeFetcher} from './EmployeeEdgeFetcher';
 export {employeeEdge$, employeeEdge$$} from './EmployeeEdgeFetcher';
-export type {MutationFetcher} from './MutationFetcher';
+export type {MutationFetcher, MutationArgs} from './MutationFetcher';
 export {mutation$} from './MutationFetcher';

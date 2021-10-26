@@ -52,9 +52,7 @@ export function useTypedQuery<
 	const response = useQuery<TData, TVariables>(request, options);
 	const responseData = response.data;
 	const newResponseData = useMemo(() => util.exceptNullValues(responseData), [responseData]);
-	return newResponseData === responseData ? response : util.produce(response, draft => {
-		draft.data = util.produce(newResponseData, () => {});
-	});
+	return newResponseData === responseData ? response : { ...response, data: newResponseData };
 }
 
 export function useTypedLazyQuery<
@@ -93,9 +91,10 @@ export function useTypedLazyQuery<
 	const response = useLazyQuery<TData, TVariables>(request, options);
 	const responseData = response[1].data;
 	const newResponseData = useMemo(() => util.exceptNullValues(responseData), [responseData]);
-	return newResponseData === responseData ? response : util.produce(response, draft => {
-		draft[1].data = util.produce(newResponseData, () => {});
-	});
+	return newResponseData === responseData ? response : [
+        response[0],
+        { ...response[1], data: newResponseData }
+    ] as QueryTuple<TData, TVariables>;
 }
 
 export function useTypedMutation<
@@ -129,19 +128,22 @@ export function useTypedMutation<
 	>(request, options);
 	const responseData = response[1].data;
 	const newResponseData = useMemo(() => util.exceptNullValues(responseData), [responseData]);
-	return newResponseData === responseData ? response : util.produce(response, draft => {
-		draft[1].data = util.produce(newResponseData, () => {});
-	});
+	return newResponseData === responseData ? response : [
+        response[0],
+        { ...response[1], data: newResponseData }
+    ];
 }
 
 function requestBody(fetcher: Fetcher<string, object, object>): string {
     const writer = new TextWriter();
-    writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
-        util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
-            writer.seperator();
-            writer.text(`$${name}: ${type}`);
+    if (fetcher.variableTypeMap.size !== 0) {
+        writer.scope({type: "ARGUMENTS", multiLines: fetcher.variableTypeMap.size > 2, suffix: " "}, () => {
+            util.iterateMap(fetcher.variableTypeMap, ([name, type]) => {
+                writer.seperator();
+                writer.text(`$${name}: ${type}`);
+            });
         });
-    });
+    }
     writer.text(fetcher.toString());
     writer.text("\n");
     writer.text(fetcher.toFragmentString());

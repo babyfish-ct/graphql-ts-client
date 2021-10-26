@@ -8,5 +8,5 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 import { GraphQLInterfaceType, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
-export declare function associatedTypeOf(type: GraphQLType): GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType | undefined;
+export declare function targetTypeOf(type: GraphQLType): GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType | undefined;
 export declare function instancePrefix(name: string): string;

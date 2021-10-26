@@ -1,8 +1,8 @@
+import { FragmentRefs } from 'relay-runtime';
+import { TypedFragment } from 'graphql-ts-client-relay';
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { ConnectionFetcher, EdgeFetcher, ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
-import { FragmentRefs } from 'relay-runtime';
-import { TypedFragment } from 'graphql-ts-client-relay';
 
 /*
  * Any instance of this interface is immutable,
@@ -121,7 +121,7 @@ export const departmentConnection$: DepartmentConnectionFetcher<{}, {}> =
                     targetTypeName: "DepartmentEdge"
                 }, 
                 {
-                    category: "REFERENCE", 
+                    category: "SCALAR", 
                     name: "pageInfo", 
                     targetTypeName: "PageInfo"
                 }

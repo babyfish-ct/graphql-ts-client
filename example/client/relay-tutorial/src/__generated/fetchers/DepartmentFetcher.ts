@@ -1,8 +1,8 @@
+import { FragmentRefs } from 'relay-runtime';
+import { TypedFragment } from 'graphql-ts-client-relay';
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
 import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
-import { FragmentRefs } from 'relay-runtime';
-import { TypedFragment } from 'graphql-ts-client-relay';
 import { node$ } from './NodeFetcher';
 
 /*
