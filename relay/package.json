@@ -1,6 +1,6 @@
 {
   "name": "graphql-ts-client-relay",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "Relay tools for graphql client",
   "author": "ChenTao",
   "license": "MIT",
@@ -20,10 +20,8 @@
     "relay-compiler": "^12.0.0",
     "relay-runtime": "^12.0.0"
   },
-  "devDependencies": {
-    "graphql-ts-client-api": "^3.0.1"
-  },
+  "devDependencies": {},
   "peerDependencies": {
-    "graphql-ts-client-api": "^3.0.1"
+    "graphql-ts-client-api": "^3.0.3"
   }
 }
