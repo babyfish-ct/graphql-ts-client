@@ -28,7 +28,7 @@ class TypedConfigurationWriter extends Writer_1.Writer {
         const eventTypeNames = [];
         const instanceNames = [];
         for (const fetcherType of this.ctx.fetcherTypes) {
-            if (this.ctx.entityTypes.has(fetcherType)) {
+            if (this.ctx.triggerableTypes.has(fetcherType)) {
                 scalarTypeNames.push(`${fetcherType.name}ScalarType`);
                 eventTypeNames.push(`${fetcherType.name}EvictEvent`);
                 eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
@@ -83,7 +83,8 @@ class TypedConfigurationWriter extends Writer_1.Writer {
                     if (fetcherType.name !== "Query" &&
                         fetcherType.name !== "Mutation" &&
                         !(fetcherType instanceof graphql_1.GraphQLUnionType) &&
-                        this.ctx.entityTypes.has(fetcherType)) {
+                        this.ctx.entityTypes.has(fetcherType) &&
+                        this.ctx.triggerableTypes.has(fetcherType)) {
                         t(`readonly "${fetcherType.name}": `);
                         this.writeFetcherType(fetcherType);
                     }
@@ -124,9 +125,14 @@ class TypedConfigurationWriter extends Writer_1.Writer {
             });
             t(`readonly " $associationTargetTypes": `);
             this.scope({ type: "BLOCK", multiLines: true, suffix: ";\n" }, () => {
+                const triggerableTypeNames = new Set(Array
+                    .from(this.ctx.triggerableTypes)
+                    .map(it => it.name));
                 for (const [fieldName, typeName] of associationTypeMap) {
-                    this.separator(", ");
-                    t(`readonly ${fieldName}: ${typeName}ScalarType`);
+                    if (triggerableTypeNames.has(typeName)) {
+                        this.separator(", ");
+                        t(`readonly ${fieldName}: ${typeName}ScalarType`);
+                    }
                 }
             });
         });
@@ -138,7 +144,7 @@ class TypedConfigurationWriter extends Writer_1.Writer {
             const field = fieldMap[fieldName];
             const targetType = Utils_1.targetTypeOf(field.type);
             if (targetType !== undefined && !this.ctx.embeddedTypes.has(targetType)) {
-                const connection = this.ctx.connectionTypes.get(targetType);
+                const connection = this.ctx.connections.get(targetType);
                 if (connection !== undefined) {
                     map.set(fieldName, connection.nodeType.name);
                 }

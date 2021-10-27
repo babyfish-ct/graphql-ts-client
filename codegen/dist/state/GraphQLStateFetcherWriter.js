@@ -6,6 +6,9 @@ const FetcherWriter_1 = require("../FetcherWriter");
 const Utils_1 = require("../Utils");
 class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
     importedNamesForSuperType(superType) {
+        if (!this.ctx.triggerableTypes.has(superType)) {
+            return super.importedNamesForSuperType(superType);
+        }
         return [
             ...super.importedNamesForSuperType(superType),
             `${superType.name}ScalarType`,
@@ -14,7 +17,7 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
     }
     writeCode() {
         super.writeCode();
-        if (this.ctx.entityTypes.has(this.modelType)) {
+        if (this.ctx.triggerableTypes.has(this.modelType)) {
             this.writeScalarType();
             this.writeFlatType();
         }
@@ -23,14 +26,17 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
         const t = this.text.bind(this);
         t(`\nexport interface ${this.modelType.name}ScalarType`);
         const superTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
-        if (superTypes !== undefined && superTypes.size !== 0) {
-            t(' extends ');
-            this.scope({ type: "BLANK" }, () => {
-                for (const superType of superTypes) {
-                    this.separator(", ");
-                    t(`${superType.name}ScalarType`);
-                }
-            });
+        if (superTypes !== undefined) {
+            const arr = Array.from(superTypes).filter(it => this.ctx.triggerableTypes.has(it));
+            if (arr.length !== 0) {
+                t(' extends ');
+                this.scope({ type: "BLANK" }, () => {
+                    for (const superType of arr) {
+                        this.separator(", ");
+                        t(`${superType.name}ScalarType`);
+                    }
+                });
+            }
         }
         this.scope({ type: "BLOCK", multiLines: true, prefix: " ", suffix: "\n" }, () => {
             if (this.modelType instanceof graphql_1.GraphQLObjectType || this.modelType instanceof graphql_1.GraphQLInterfaceType) {
@@ -55,34 +61,41 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
         const t = this.text.bind(this);
         t(`\nexport interface ${this.modelType.name}FlatType extends ${this.modelType.name}ScalarType`);
         const superTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
-        if (superTypes !== undefined && superTypes.size !== 0) {
-            for (const superType of superTypes) {
-                t(", ");
-                t(`${superType.name}FlatType`);
+        if (superTypes !== undefined) {
+            const arr = Array.from(superTypes).filter(it => this.ctx.triggerableTypes.has(it));
+            if (arr.length !== 0) {
+                for (const superType of arr) {
+                    t(", ");
+                    t(`${superType.name}FlatType`);
+                }
             }
         }
         this.scope({ type: "BLOCK", multiLines: true, prefix: " ", suffix: "\n" }, () => {
+            var _a, _b;
             if (this.modelType instanceof graphql_1.GraphQLObjectType || this.modelType instanceof graphql_1.GraphQLInterfaceType) {
                 const fieldMap = this.modelType.getFields();
                 for (const fieldName of this.declaredFieldNames) {
                     const field = fieldMap[fieldName];
+                    const category = this.fieldCategoryMap.get(fieldName);
                     const targetType = Utils_1.targetTypeOf(field.type);
-                    if (targetType !== undefined && this.fieldCategoryMap.get(fieldName) !== "SCALAR") {
-                        const idField = this.ctx.idFieldMap.get(targetType);
-                        if (idField !== undefined) {
-                            t("readonly ");
-                            t(fieldName);
-                            if (!(field.type instanceof graphql_1.GraphQLNonNull)) {
-                                t("?");
-                            }
-                            t(": ");
-                            this.typeRef(field.type, (type, field) => {
-                                if (type === targetType) {
-                                    return field.name === idField.name;
-                                }
-                                return true;
-                            });
+                    if (targetType !== undefined && category !== "SCALAR") {
+                        let nodeType = (_b = (_a = this.ctx.connections.get(targetType)) === null || _a === void 0 ? void 0 : _a.nodeType) !== null && _b !== void 0 ? _b : targetType;
+                        const idField = this.ctx.idFieldMap.get(nodeType);
+                        if (idField === undefined) {
+                            throw new Error(`${nodeType.name} does not has id field`);
                         }
+                        t("readonly ");
+                        t(fieldName);
+                        if (!(field.type instanceof graphql_1.GraphQLNonNull)) {
+                            t("?");
+                        }
+                        t(": ");
+                        this.typeRef(field.type, (type, field) => {
+                            if (type === nodeType) {
+                                return field.name === idField.name;
+                            }
+                            return true;
+                        });
                         t(";\n");
                     }
                 }

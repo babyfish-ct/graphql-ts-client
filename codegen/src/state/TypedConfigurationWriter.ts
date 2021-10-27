@@ -36,7 +36,7 @@ export class TypedConfigurationWriter extends Writer {
         
         const instanceNames: string[] = [];
         for (const fetcherType of this.ctx.fetcherTypes) {
-            if (this.ctx.entityTypes.has(fetcherType)) {
+            if (this.ctx.triggerableTypes.has(fetcherType)) {
                 scalarTypeNames.push(`${fetcherType.name}ScalarType`);
                 eventTypeNames.push(`${fetcherType.name}EvictEvent`);
                 eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
@@ -103,7 +103,8 @@ export class TypedConfigurationWriter extends Writer {
                     if (fetcherType.name !== "Query" && 
                         fetcherType.name !== "Mutation" && 
                         !(fetcherType instanceof GraphQLUnionType) &&
-                        this.ctx.entityTypes.has(fetcherType)
+                        this.ctx.entityTypes.has(fetcherType) &&
+                        this.ctx.triggerableTypes.has(fetcherType)
                     ) {
                         t(`readonly "${fetcherType.name}": `);
                         this.writeFetcherType(fetcherType);
@@ -155,9 +156,16 @@ export class TypedConfigurationWriter extends Writer {
 
             t(`readonly " $associationTargetTypes": `);
             this.scope({type: "BLOCK", multiLines: true, suffix: ";\n"}, () => {
+                const triggerableTypeNames = new Set<string>(
+                    Array
+                    .from(this.ctx.triggerableTypes)
+                    .map(it => (it as GraphQLObjectType | GraphQLInterfaceType).name)
+                );
                 for (const [fieldName, typeName] of associationTypeMap) {
-                    this.separator(", ");
-                    t(`readonly ${fieldName}: ${typeName}ScalarType`);
+                    if (triggerableTypeNames.has(typeName)) {
+                        this.separator(", ");
+                        t(`readonly ${fieldName}: ${typeName}ScalarType`);
+                    }
                 }
             });
         })
@@ -172,7 +180,7 @@ export class TypedConfigurationWriter extends Writer {
             const field = fieldMap[fieldName];
             const targetType = targetTypeOf(field.type);
             if (targetType !== undefined && !this.ctx.embeddedTypes.has(targetType)) {
-                const connection = this.ctx.connectionTypes.get(targetType);
+                const connection = this.ctx.connections.get(targetType);
                 if (connection !== undefined) {
                     map.set(fieldName, connection.nodeType.name);
                 } else {

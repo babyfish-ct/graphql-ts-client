@@ -25,6 +25,7 @@ export class GraphQLStateGenerator extends Generator {
     }
 
     protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
+        stream.write(`export type { Schema } from "./TypedConfiguration";\n`);
         stream.write(`export { newTypedConfiguration } from "./TypedConfiguration";\n`);
         await super.writeIndexCode(stream, schema);
     }
@@ -33,7 +34,7 @@ export class GraphQLStateGenerator extends Generator {
         modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType,
         ctx: FetcherContext
     ): ReadonlyArray<string> {
-        if (ctx.entityTypes.has(modelType)) {
+        if (ctx.triggerableTypes.has(modelType)) {
             return [
                 ...super.additionalExportedTypeNamesForFetcher(modelType, ctx),
                 `${modelType.name}ScalarType`,
@@ -73,31 +74,17 @@ export class GraphQLStateGenerator extends Generator {
     }
 
     private async generateTriggerEvents(ctx: FetcherContext) {
-        for (const fetcherType of ctx.fetcherTypes) {
-            if (fetcherType.name === "Query" || fetcherType.name === "Mutation") {
-                continue;
-            }
-            if (ctx.connectionTypes.has(fetcherType) || ctx.edgeTypes.has(fetcherType)) {
-                continue;
-            }
-            if (fetcherType instanceof GraphQLObjectType || fetcherType instanceof GraphQLInterfaceType) {
-                let idField: GraphQLField<any, any> | undefined = undefined;
-                if (fetcherType.name !== "Query") {
-                    idField = ctx.idFieldMap.get(fetcherType);
-                    if (idField === undefined) {
-                        continue;
-                    }
-                }
-                const dir = join(this.config.targetDir, "triggers");
-                const stream = createStreamAndLog(join(dir, `${fetcherType.name}ChangeEvent.ts`));
-                new TriggerEventWiter(
-                    fetcherType, 
-                    idField, 
-                    stream, 
-                    this.config
-                ).write();
-                await closeStream(stream);
-            }
+        for (const triggerableType  of ctx.triggerableTypes) {
+            const fetcherType = triggerableType as GraphQLObjectType | GraphQLInterfaceType;
+            const dir = join(this.config.targetDir, "triggers");
+            const stream = createStreamAndLog(join(dir, `${fetcherType.name}ChangeEvent.ts`));
+            new TriggerEventWiter(
+                fetcherType, 
+                ctx.idFieldMap.get(fetcherType), 
+                stream, 
+                this.config
+            ).write();
+            await closeStream(stream);
         }
     }
 
@@ -108,8 +95,8 @@ export class GraphQLStateGenerator extends Generator {
                 "index.ts"
             )
         );
-        for (const entityType of ctx.entityTypes) {
-            const fetcherType = entityType as GraphQLObjectType | GraphQLInterfaceType;
+        for (const triggerableType of ctx.triggerableTypes) {
+            const fetcherType = triggerableType as GraphQLObjectType | GraphQLInterfaceType;
             stream.write(`export type { ${
                 fetcherType.name
             }EvictEvent, ${

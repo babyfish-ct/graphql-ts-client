@@ -19,7 +19,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GraphQLStateGenerator = void 0;
-const graphql_1 = require("graphql");
 const path_1 = require("path");
 const Generator_1 = require("../Generator");
 const GraphQLStateFetcherWriter_1 = require("./GraphQLStateFetcherWriter");
@@ -34,12 +33,13 @@ class GraphQLStateGenerator extends Generator_1.Generator {
             writeIndexCode: { get: () => super.writeIndexCode }
         });
         return __awaiter(this, void 0, void 0, function* () {
+            stream.write(`export type { Schema } from "./TypedConfiguration";\n`);
             stream.write(`export { newTypedConfiguration } from "./TypedConfiguration";\n`);
             yield _super.writeIndexCode.call(this, stream, schema);
         });
     }
     additionalExportedTypeNamesForFetcher(modelType, ctx) {
-        if (ctx.entityTypes.has(modelType)) {
+        if (ctx.triggerableTypes.has(modelType)) {
             return [
                 ...super.additionalExportedTypeNamesForFetcher(modelType, ctx),
                 `${modelType.name}ScalarType`,
@@ -68,34 +68,20 @@ class GraphQLStateGenerator extends Generator_1.Generator {
     }
     generateTriggerEvents(ctx) {
         return __awaiter(this, void 0, void 0, function* () {
-            for (const fetcherType of ctx.fetcherTypes) {
-                if (fetcherType.name === "Query" || fetcherType.name === "Mutation") {
-                    continue;
-                }
-                if (ctx.connectionTypes.has(fetcherType) || ctx.edgeTypes.has(fetcherType)) {
-                    continue;
-                }
-                if (fetcherType instanceof graphql_1.GraphQLObjectType || fetcherType instanceof graphql_1.GraphQLInterfaceType) {
-                    let idField = undefined;
-                    if (fetcherType.name !== "Query") {
-                        idField = ctx.idFieldMap.get(fetcherType);
-                        if (idField === undefined) {
-                            continue;
-                        }
-                    }
-                    const dir = path_1.join(this.config.targetDir, "triggers");
-                    const stream = Generator_1.createStreamAndLog(path_1.join(dir, `${fetcherType.name}ChangeEvent.ts`));
-                    new TriggerEventWriter_1.TriggerEventWiter(fetcherType, idField, stream, this.config).write();
-                    yield Generator_1.closeStream(stream);
-                }
+            for (const triggerableType of ctx.triggerableTypes) {
+                const fetcherType = triggerableType;
+                const dir = path_1.join(this.config.targetDir, "triggers");
+                const stream = Generator_1.createStreamAndLog(path_1.join(dir, `${fetcherType.name}ChangeEvent.ts`));
+                new TriggerEventWriter_1.TriggerEventWiter(fetcherType, ctx.idFieldMap.get(fetcherType), stream, this.config).write();
+                yield Generator_1.closeStream(stream);
             }
         });
     }
     generateTriggerIndex(ctx) {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = Generator_1.createStreamAndLog(path_1.join(path_1.join(this.config.targetDir, "triggers"), "index.ts"));
-            for (const entityType of ctx.entityTypes) {
-                const fetcherType = entityType;
+            for (const triggerableType of ctx.triggerableTypes) {
+                const fetcherType = triggerableType;
                 stream.write(`export type { ${fetcherType.name}EvictEvent, ${fetcherType.name}ChangeEvent } from './${fetcherType.name}ChangeEvent';\n`);
             }
             yield Generator_1.closeStream(stream);

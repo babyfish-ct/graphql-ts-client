@@ -67,17 +67,14 @@ export class TriggerEventWiter extends Writer {
             t(`\nreadonly typeName: ImplementationType<"${this.modelType.name}">;\n`);
 
             if (this.idField !== undefined) {
-                t(`\n readonly id: `);
+                t(`\nreadonly id: `);
                 this.typeRef(this.idField.type);
                 t(`;\n`);
             }
 
-            if (this.modelType.name !== "Query") {
-                t(`\nreadonly evictedType: "row" | "fields";\n`);
-            }
+            t(`\nreadonly evictedType: "row" | "fields";\n`);
 
             t(`\nreadonly evictedKeys: ReadonlyArray<${this.modelType.name}EntityKey<any>>;\n`);
-
             t(`\nhas(evictedKey: ${this.modelType.name}EntityKey<any>): boolean;\n`);
 
             t(`\nevictedValue<TFieldName extends ${this.modelType.name}EntityFields>`);
@@ -100,7 +97,7 @@ export class TriggerEventWiter extends Writer {
             t(`\nreadonly typeName: ImplementationType<"${this.modelType.name}">;\n`);
 
             if (this.idField !== undefined) {
-                t(`\n readonly id: `);
+                t(`\nreadonly id: `);
                 this.typeRef(this.idField.type);
                 t(`;\n`);
             }

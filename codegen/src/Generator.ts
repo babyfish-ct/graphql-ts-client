@@ -35,7 +35,7 @@ export abstract class Generator {
 
         const inheritanceInfo = new InheritanceInfo(schema);
         const fetcherTypes: Array<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType> = [];
-        const connectionTypes = new Map<GraphQLType, Connection>();
+        const connections = new Map<GraphQLType, Connection>();
         const edgeTypes = new Set<GraphQLType>();
         const inputTypes: GraphQLInputObjectType[] = [];
         const enumTypes: GraphQLEnumType[] = [];
@@ -46,7 +46,7 @@ export abstract class Generator {
                 if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType) {
                     const tuple = connectionTypeTuple(type);
                     if (tuple !== undefined) {
-                        connectionTypes.set(tuple[0], {
+                        connections.set(tuple[0], {
                             edgeType: tuple[1],
                             nodeType: tuple[2]
                         });
@@ -67,14 +67,19 @@ export abstract class Generator {
         const entityTypes = new Set<GraphQLType>();
         const embeddedTypes = new Set<GraphQLType>();
         const idFieldMap = new Map<GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, GraphQLField<any, any>>();
+        const triggerableTypes = new Set<GraphQLType>();
         const typesWithParameterizedField = new Set<GraphQLObjectType | GraphQLInterfaceType>();
         for (const fetcherType of fetcherTypes) {
-            if (connectionTypes.has(fetcherType) || edgeTypes.has(fetcherType)) {
+            if (connections.has(fetcherType) || edgeTypes.has(fetcherType)) {
                 continue;
             }
             if (fetcherType instanceof GraphQLObjectType || fetcherType instanceof GraphQLInterfaceType) {
                 const fieldMap = fetcherType.getFields();
-                if (fetcherType.name !== "Query") {
+                if (fetcherType.name === "Query") {
+                    if (Object.keys(fieldMap).length !== 0) {
+                        triggerableTypes.add(fetcherType);
+                    }
+                } else {
                     let idFieldName = configuredIdFieldMap[fetcherType.name];
                     if (idFieldName === undefined) {
                         let configuredUpcastType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType | undefined = undefined;
@@ -94,6 +99,9 @@ export abstract class Generator {
                     if (idField !== undefined && idField !== null) {
                         idFieldMap.set(fetcherType, idField);
                         entityTypes.add(fetcherType);
+                        if (Object.keys(fieldMap).length !== 1) {
+                            triggerableTypes.add(fetcherType);
+                        }
                     } else {
                         embeddedTypes.add(fetcherType);
                     }
@@ -114,8 +122,9 @@ export abstract class Generator {
             fetcherTypes,
             entityTypes,
             embeddedTypes,
-            connectionTypes,
+            connections,
             edgeTypes,
+            triggerableTypes,
             idFieldMap,
             typesWithParameterizedField
         };

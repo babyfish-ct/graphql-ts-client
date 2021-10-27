@@ -67,7 +67,7 @@ class FetcherWriter extends Writer_1.Writer {
             if (this.ctx.embeddedTypes.has(fieldCoreType)) {
                 fieldCategoryMap.set(fieldName, "SCALAR");
             }
-            else if (this.ctx.connectionTypes.has(fieldCoreType)) {
+            else if (this.ctx.connections.has(fieldCoreType)) {
                 fieldCategoryMap.set(fieldName, "CONNECTION");
             }
             else if (fieldCoreType instanceof graphql_1.GraphQLList) {
@@ -368,7 +368,7 @@ class FetcherWriter extends Writer_1.Writer {
                     if (this.ctx.embeddedTypes.has(this.modelType)) {
                         t('"EMBEDDED"');
                     }
-                    else if (this.ctx.connectionTypes.has(this.modelType)) {
+                    else if (this.ctx.connections.has(this.modelType)) {
                         t('"CONNECTION"');
                     }
                     else if (this.ctx.edgeTypes.has(this.modelType)) {
@@ -431,7 +431,7 @@ class FetcherWriter extends Writer_1.Writer {
                                     }
                                     if (targetType !== undefined) {
                                         this.separator(", ");
-                                        const connection = this.ctx.connectionTypes.get(targetType);
+                                        const connection = this.ctx.connections.get(targetType);
                                         if (connection !== undefined) {
                                             t(`connectionTypeName: "${targetType.name}"`);
                                             this.separator(", ");
@@ -488,7 +488,7 @@ class FetcherWriter extends Writer_1.Writer {
         }
         const t = this.text.bind(this);
         t(`\nexport interface ${this.modelType.name}Args `);
-        this.scope({ type: "BLOCK", multiLines: true }, () => {
+        this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
             for (const fieldName in this.fieldMap) {
                 const field = this.fieldMap[fieldName];
                 if (field.args.length !== 0) {
@@ -542,7 +542,7 @@ class FetcherWriter extends Writer_1.Writer {
         }
     }
     superFetcherTypeName(graphQLType) {
-        if (this.ctx.connectionTypes.has(graphQLType)) {
+        if (this.ctx.connections.has(graphQLType)) {
             return "ConnectionFetcher";
         }
         if (this.ctx.edgeTypes.has(graphQLType)) {

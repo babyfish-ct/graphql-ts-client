@@ -43,7 +43,7 @@ class Generator {
             yield this.mkdirIfNecessary();
             const inheritanceInfo = new InheritanceInfo_1.InheritanceInfo(schema);
             const fetcherTypes = [];
-            const connectionTypes = new Map();
+            const connections = new Map();
             const edgeTypes = new Set();
             const inputTypes = [];
             const enumTypes = [];
@@ -54,7 +54,7 @@ class Generator {
                     if (type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType) {
                         const tuple = connectionTypeTuple(type);
                         if (tuple !== undefined) {
-                            connectionTypes.set(tuple[0], {
+                            connections.set(tuple[0], {
                                 edgeType: tuple[1],
                                 nodeType: tuple[2]
                             });
@@ -76,14 +76,20 @@ class Generator {
             const entityTypes = new Set();
             const embeddedTypes = new Set();
             const idFieldMap = new Map();
+            const triggerableTypes = new Set();
             const typesWithParameterizedField = new Set();
             for (const fetcherType of fetcherTypes) {
-                if (connectionTypes.has(fetcherType) || edgeTypes.has(fetcherType)) {
+                if (connections.has(fetcherType) || edgeTypes.has(fetcherType)) {
                     continue;
                 }
                 if (fetcherType instanceof graphql_1.GraphQLObjectType || fetcherType instanceof graphql_1.GraphQLInterfaceType) {
                     const fieldMap = fetcherType.getFields();
-                    if (fetcherType.name !== "Query") {
+                    if (fetcherType.name === "Query") {
+                        if (Object.keys(fieldMap).length !== 0) {
+                            triggerableTypes.add(fetcherType);
+                        }
+                    }
+                    else {
                         let idFieldName = configuredIdFieldMap[fetcherType.name];
                         if (idFieldName === undefined) {
                             let configuredUpcastType = undefined;
@@ -102,6 +108,9 @@ class Generator {
                         if (idField !== undefined && idField !== null) {
                             idFieldMap.set(fetcherType, idField);
                             entityTypes.add(fetcherType);
+                            if (Object.keys(fieldMap).length !== 1) {
+                                triggerableTypes.add(fetcherType);
+                            }
                         }
                         else {
                             embeddedTypes.add(fetcherType);
@@ -122,8 +131,9 @@ class Generator {
                 fetcherTypes,
                 entityTypes,
                 embeddedTypes,
-                connectionTypes,
+                connections,
                 edgeTypes,
+                triggerableTypes,
                 idFieldMap,
                 typesWithParameterizedField
             };

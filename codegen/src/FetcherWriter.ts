@@ -95,7 +95,7 @@ export class FetcherWriter extends Writer {
                 field.type;
             if (this.ctx.embeddedTypes.has(fieldCoreType)) {
                 fieldCategoryMap.set(fieldName, "SCALAR");
-            } else if (this.ctx.connectionTypes.has(fieldCoreType)) {
+            } else if (this.ctx.connections.has(fieldCoreType)) {
                 fieldCategoryMap.set(fieldName, "CONNECTION");
             } else if (fieldCoreType instanceof GraphQLList) {
                 const elementType = 
@@ -436,7 +436,7 @@ export class FetcherWriter extends Writer {
                     this.separator(", ");
                     if (this.ctx.embeddedTypes.has(this.modelType)) {
                         t('"EMBEDDED"');
-                    } else if (this.ctx.connectionTypes.has(this.modelType)) {
+                    } else if (this.ctx.connections.has(this.modelType)) {
                         t('"CONNECTION"');
                     } else if (this.ctx.edgeTypes.has(this.modelType)) {
                         t('"EDGE"');
@@ -496,7 +496,7 @@ export class FetcherWriter extends Writer {
                                     }
                                     if (targetType !== undefined) {
                                         this.separator(", ");
-                                        const connection = this.ctx.connectionTypes.get(targetType);
+                                        const connection = this.ctx.connections.get(targetType);
                                         if (connection !== undefined) {
                                             t(`connectionTypeName: "${targetType.name}"`);
                                             this.separator(", ");
@@ -555,7 +555,7 @@ export class FetcherWriter extends Writer {
 
         const t = this.text.bind(this);
         t(`\nexport interface ${this.modelType.name}Args `);
-        this.scope({type: "BLOCK", multiLines: true}, () => {
+        this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
             for (const fieldName in this.fieldMap) {
                 const field = this.fieldMap[fieldName];
                 if (field.args.length !== 0) {
@@ -613,7 +613,7 @@ export class FetcherWriter extends Writer {
     }
 
     private superFetcherTypeName(graphQLType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType): string {
-        if (this.ctx.connectionTypes.has(graphQLType)) {
+        if (this.ctx.connections.has(graphQLType)) {
             return "ConnectionFetcher";
         }
         if (this.ctx.edgeTypes.has(graphQLType)) {
