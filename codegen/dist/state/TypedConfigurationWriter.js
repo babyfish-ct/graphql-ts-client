@@ -30,8 +30,10 @@ class TypedConfigurationWriter extends Writer_1.Writer {
         for (const fetcherType of this.ctx.fetcherTypes) {
             if (this.ctx.triggerableTypes.has(fetcherType)) {
                 scalarTypeNames.push(`${fetcherType.name}ScalarType`);
-                eventTypeNames.push(`${fetcherType.name}EvictEvent`);
-                eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
+                if (fetcherType.name !== "Query") {
+                    eventTypeNames.push(`${fetcherType.name}EvictEvent`);
+                    eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
+                }
             }
             instanceNames.push(`${Utils_1.instancePrefix(fetcherType.name)}$`);
         }
