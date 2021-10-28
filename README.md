@@ -1,4 +1,4 @@
-A new GraphQL client for TypeScript
+A new GraphQL client for TypeScript. it's TypeScript-DSL for GraphQL with full features.
 
 1. Supports GraphQL queries with strongly typed code.
 2. **Automatically infers the type of the returned data according to the strongly typed query request**, This is the essential difference between this framework and other similar frameworks, and it is also the reason why I created it.
@@ -12,6 +12,10 @@ A new GraphQL client for TypeScript
 1. [Step-by-step guide with nothing](get-start-async.md)
 2. [Step-by-step guide with apollo](get-start-apollo.md)
 3. [Step-by-step guide with relay](get-start-relay.md)
+4. Work with [graphql-state](https://github.com/babyfish-ct/graphql-state) **(Suggested)**
+
+[graphql-state](https://github.com/babyfish-ct/graphql-state) is a collaborative framework tailored for graphql-ts-client, and is a complete react state management framework.
+
 
 # Documentation
 [English Documentation](doc/README.md) | [中文文档](doc/README_zh_CN.md)
