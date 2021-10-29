@@ -13,8 +13,8 @@
     "@types/react-dom": "^17.0.0",
     "@types/react-relay": "^11.0.2",
     "@types/relay-runtime": "^11.0.3",
-    "graphql-ts-client-api": "^3.0.4",
-    "graphql-ts-client-relay": "^3.0.4",
+    "graphql-ts-client-api": "^3.0.7",
+    "graphql-ts-client-relay": "^3.0.7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-relay": "^12.0.0",
@@ -49,7 +49,5 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {
-    "graphql-ts-client-codegen": "^3.0.4"
-  }
+  "devDependencies": {}
 }
