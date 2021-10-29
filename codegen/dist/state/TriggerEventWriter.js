@@ -51,6 +51,7 @@ class TriggerEventWiter extends Writer_1.Writer {
                 this.typeRef(this.idField.type);
                 t(`;\n`);
             }
+            t("\nreadonly causedByGC: boolean;\n");
             t(`\nreadonly evictedType: "row" | "fields";\n`);
             t(`\nreadonly evictedKeys: ReadonlyArray<${this.modelType.name}EntityKey<any>>;\n`);
             t(`\nhas(evictedKey: ${this.modelType.name}EntityKey<any>): boolean;\n`);
