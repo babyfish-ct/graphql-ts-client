@@ -268,16 +268,10 @@ export class FetcherWriter extends Writer {
         
         const targetType = targetTypeOf(field.type);
 
-        const isField = field.args.length === 0 && targetType === undefined;
-        
-        if (field.args.length !== 0) {
-            this.writePositivePropImpl(field, "NO_ARGS");
-        }
-        this.writePositivePropImpl(field, "NORMAL");
-
-        if (isField) {
-            this.writePositivePropImpl(field, "FIELD_PLUS");
-        }
+        this.writePositivePropImpl(field, "SIMPLEST");
+        this.writePositivePropImpl(field, "WITH_ARGS");
+        this.writePositivePropImpl(field, "WITH_OTPIONS");
+        this.writePositivePropImpl(field, "FULL");
     }
 
     private writeNegativeProp(field: GraphQLField<unknown, unknown>) {
@@ -297,46 +291,51 @@ export class FetcherWriter extends Writer {
         t("'>, TVariables>;\n");
     }
 
-    private writePositivePropImpl(field: GraphQLField<unknown, unknown>, mode: "NORMAL" | "NO_ARGS" | "FIELD_PLUS") {
+    private writePositivePropImpl(field: GraphQLField<unknown, unknown>, mode: "SIMPLEST" | "WITH_ARGS" | "WITH_OTPIONS" | "FULL") {
 
-        const t = this.text.bind(this);
-
+        const withArgs = mode === "WITH_ARGS" || mode === "FULL";
+        if (withArgs && field.args.length === 0) {
+            return;
+        }
         const targetType = targetTypeOf(field.type);
-        
-        const renderAsField = field.args.length === 0 && targetType === undefined && mode !== "FIELD_PLUS";
-
+        const withOptions = mode === "WITH_OTPIONS" || mode === "FULL";
+        const renderAsField = field.args.length === 0 && targetType === undefined && !withOptions;
+        const namePlus = field.args.length === 0 && targetType === undefined && withOptions;
         const nonNull = field.type instanceof GraphQLNonNull;
+        const t = this.text.bind(this);
 
         t("\n");
         if (renderAsField) {
             t("readonly ");
             t(field.name);
         } else {
-            t(mode === "FIELD_PLUS" ? `"${field.name}+"` : field.name);
-            this.scope({type: "GENERIC", multiLines: true}, () => {
-                if (field.args.length !== 0 && mode != "NO_ARGS") {
-                    this.separator(", ");
-                    t(`XArgs extends AcceptableVariables<${this.modelType.name}Args['${field.name}']>`);
-                }
-                if (targetType !== undefined) {
-                    this.separator(", ");
-                    t("X extends object");
-                    this.separator(", ");
-                    t("XVariables extends object");
-                }
-                this.separator(", ");
-                t(`XAlias extends string = "${field.name}"`);
-                if (nonNull) {
-                    this.separator(", ");
-                    t(`XDirectives extends { readonly [key: string]: DirectiveArgs } = {}`);
-                }
-                if (!renderAsField) {
-                    this.separator(", ");
-                    t(`XDirectiveVariables extends object = {}`);
-                }
-            });
+            t(namePlus ? `"${field.name}+"` : field.name);
+            if (withArgs || targetType !== undefined || withOptions) {
+                this.scope({type: "GENERIC", multiLines: true}, () => {
+                    if (withArgs) {
+                        this.separator(", ");
+                        t(`XArgs extends AcceptableVariables<${this.modelType.name}Args['${field.name}']>`);
+                    }
+                    if (targetType !== undefined) {
+                        this.separator(", ");
+                        t("X extends object");
+                        this.separator(", ");
+                        t("XVariables extends object");
+                    }
+                    if (withOptions) {
+                        this.separator(", ");
+                        t(`XAlias extends string = "${field.name}"`);
+                        if (nonNull) {
+                            this.separator(", ");
+                            t(`XDirectives extends { readonly [key: string]: DirectiveArgs } = {}`);
+                        }
+                        this.separator(", ");
+                        t(`XDirectiveVariables extends object = {}`);
+                    }
+                });
+            }
             this.scope({ type: "PARAMETERS", multiLines: true }, () => {
-                if (field.args.length !== 0 && mode !== "NO_ARGS") {
+                if (withArgs) {
                     this.separator(", ");
                     t("args: XArgs");
                 }
@@ -348,12 +347,14 @@ export class FetcherWriter extends Writer {
                     t(targetType.name);
                     t("', X, XVariables>");
                 }
-                this.separator(", ");
-                t("optionsConfigurer?: ");
-                this.scope({type: "PARAMETERS", multiLines: true}, () => {
-                    t(`options: FieldOptions<"${field.name}", {}, {}>`);
-                });
-                t(` => FieldOptions<XAlias, ${nonNull ? "XDirectives" : "{readonly [key: string]: DirectiveArgs}"}, XDirectiveVariables>`);
+                if (withOptions) {
+                    this.separator(", ");
+                    t("optionsConfigurer: ");
+                    this.scope({type: "PARAMETERS", multiLines: true}, () => {
+                        t(`options: FieldOptions<"${field.name}", {}, {}>`);
+                    });
+                    t(` => FieldOptions<XAlias, ${nonNull ? "XDirectives" : "{readonly [key: string]: DirectiveArgs}"}, XDirectiveVariables>`);
+                }
             });
         }
 
@@ -363,21 +364,17 @@ export class FetcherWriter extends Writer {
             
             t("T & ");
             
-            if (nonNull) {
-                if (renderAsField) {
-                    this.writePositivePropChangedDataType(field, renderAsField, false);
-                } else {
-                    this.scope({type: "PARAMETERS", multiLines: true}, () => {
-                        t("XDirectives extends { readonly include: any } | { readonly skip: any } ? ");
-                        this.scope({type: "BLANK", multiLines: true}, () => {
-                            this.writePositivePropChangedDataType(field, renderAsField, true);
-                            this.separator(" : ");
-                            this.writePositivePropChangedDataType(field, renderAsField, false);    
-                        });
+            if (withOptions && nonNull) {
+                this.scope({type: "PARAMETERS", multiLines: true}, () => {
+                    t("XDirectives extends { readonly include: any } | { readonly skip: any } ? ");
+                    this.scope({type: "BLANK", multiLines: true}, () => {
+                        this.writePositivePropChangedDataType(field, withOptions, true);
+                        this.separator(" : ");
+                        this.writePositivePropChangedDataType(field, withOptions, false);    
                     });
-                }
+                });
             } else {
-                this.writePositivePropChangedDataType(field, renderAsField, true);
+                this.writePositivePropChangedDataType(field, withOptions, !nonNull);
             }
 
             this.separator(", ");
@@ -386,28 +383,28 @@ export class FetcherWriter extends Writer {
                 t(" & XVariables");
             }
             if (field.args.length !== 0) {
-                if (mode === "NO_ARGS") {
-                    t(` & ${this.modelType.name}Args["${field.name}"]`);
-                } else {
+                if (withArgs) {
                     t(` & UnresolvedVariables<XArgs, ${this.modelType.name}Args['${field.name}']>`);
+                } else {
+                    t(` & ${this.modelType.name}Args["${field.name}"]`);
                 }
             }
-            if (!renderAsField) {
+            if (withOptions) {
                 t(" & XDirectiveVariables");
             }
         });
     }
 
-    private writePositivePropChangedDataType(field: GraphQLField<unknown, unknown>, renderAsField: boolean, nullable: boolean) {
+    private writePositivePropChangedDataType(field: GraphQLField<unknown, unknown>, withOptions: boolean, nullable: boolean) {
         const t = this.text.bind(this);
         t("{");
         if (!this.config.objectEditable) {
             t("readonly ");
         }
-        if (renderAsField) {
-            t(`"${field.name}"`);
-        } else {
+        if (withOptions) {
             t(`[key in XAlias]`);
+        } else {
+            t(`"${field.name}"`);
         }
         if (nullable) {
             t("?");
