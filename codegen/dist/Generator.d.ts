@@ -29,7 +29,7 @@ export declare abstract class Generator {
     protected mkdirIfNecessary(subDir?: string): Promise<void>;
     protected abstract generateServices(ctx: FetcherContext, promises: Promise<void>[]): Promise<void>;
     private writeIndex;
-    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): void;
 }
 export declare function createStreamAndLog(path: string): WriteStream;
 export declare function closeStream(stream: WriteStream): Promise<any>;

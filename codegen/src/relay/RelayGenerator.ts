@@ -43,10 +43,10 @@ export class RelayGenerator extends Generator {
         await closeStream(stream);
     }
 
-    protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
         stream.write(EXPORT_RELAY_TYPES_CODE);
         stream.write(EXPORT_RELAY_CODE);
-        await super.writeIndexCode(stream, schema);
+        super.writeIndexCode(stream, schema);
     }
 }
 

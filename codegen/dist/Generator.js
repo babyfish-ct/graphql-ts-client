@@ -308,10 +308,8 @@ class Generator {
         });
     }
     writeIndexCode(stream, schema) {
-        return __awaiter(this, void 0, void 0, function* () {
-            stream.write("export type { ImplementationType } from './CommonTypes';\n");
-            stream.write("export { upcastTypes, downcastTypes } from './CommonTypes';\n");
-        });
+        stream.write("export type { ImplementationType } from './CommonTypes';\n");
+        stream.write("export { upcastTypes, downcastTypes } from './CommonTypes';\n");
     }
 }
 exports.Generator = Generator;

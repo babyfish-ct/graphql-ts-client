@@ -10,7 +10,6 @@ export class GraphQLStateFetcherWriter extends FetcherWriter {
         }
         return [
             ...super.importedNamesForSuperType(superType),
-            `${superType.name}ScalarType`,
             `${superType.name}FlatType`
         ];
     }
@@ -18,16 +17,15 @@ export class GraphQLStateFetcherWriter extends FetcherWriter {
     protected writeCode() {
         super.writeCode();
         if (this.ctx.triggerableTypes.has(this.modelType)) {
-            this.writeScalarType();
             this.writeFlatType();
         }
     }
 
-    private writeScalarType() {
+    private writeFlatType() {
 
         const t = this.text.bind(this);
 
-        t(`\nexport interface ${this.modelType.name}ScalarType`);
+        t(`\nexport interface ${this.modelType.name}FlatType`);
         
         const superTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
         if (superTypes !== undefined) {
@@ -37,7 +35,7 @@ export class GraphQLStateFetcherWriter extends FetcherWriter {
                 this.scope({type: "BLANK"}, () => {
                     for (const superType of arr) {
                         this.separator(", ");
-                        t(`${superType.name}ScalarType`);
+                        t(`${superType.name}FlatType`);
                     }
                 });
             }
@@ -48,7 +46,9 @@ export class GraphQLStateFetcherWriter extends FetcherWriter {
                 const fieldMap = this.modelType.getFields();
                 for (const fieldName of this.declaredFieldNames) {
                     const field = fieldMap[fieldName]!;
-                    if (this.fieldCategoryMap.get(fieldName) === "SCALAR") {
+                    const category = this.fieldCategoryMap.get(fieldName);
+                    const targetType = targetTypeOf(field.type);
+                    if (category === "SCALAR") {
                         t("readonly ");
                         t(fieldName);
                         if (!(field.type instanceof GraphQLNonNull)) {
@@ -57,37 +57,7 @@ export class GraphQLStateFetcherWriter extends FetcherWriter {
                         t(": ");
                         this.typeRef(field.type);
                         t(";\n");
-                    }
-                }
-            }            
-        });
-    }
-
-    private writeFlatType() {
-
-        const t = this.text.bind(this);
-
-        t(`\nexport interface ${this.modelType.name}FlatType extends ${this.modelType.name}ScalarType`);
-        
-        const superTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
-        if (superTypes !== undefined) {
-            const arr = Array.from(superTypes).filter(it => this.ctx.triggerableTypes.has(it));
-            if (arr.length !== 0) {
-                for (const superType of arr) {
-                    t(", ");
-                    t(`${superType.name}FlatType`);
-                }
-            }
-        }
-
-        this.scope({type: "BLOCK", multiLines: true, prefix: " ", suffix: "\n"}, () => {
-            if (this.modelType instanceof GraphQLObjectType || this.modelType instanceof GraphQLInterfaceType) {
-                const fieldMap = this.modelType.getFields();
-                for (const fieldName of this.declaredFieldNames) {
-                    const field = fieldMap[fieldName]!;
-                    const category = this.fieldCategoryMap.get(fieldName);
-                    const targetType = targetTypeOf(field.type);
-                    if (targetType !== undefined && category !== "SCALAR") {
+                    } else if (targetType !== undefined && category !== "SCALAR") {
                         let nodeType = this.ctx.connections.get(targetType)?.nodeType ?? targetType;
                         const idField = this.ctx.idFieldMap.get(nodeType);
                         if (idField === undefined) {

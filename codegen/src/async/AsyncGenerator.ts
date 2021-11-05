@@ -36,10 +36,10 @@ export class AsyncGenerator extends Generator {
         await closeStream(stream);
     }
 
-    protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
         stream.write(`export type { GraphQLExecutor } from "./Async";\n`);
         stream.write(`export { setGraphQLExecutor, execute } from "./Async";\n`);
-        await super.writeIndexCode(stream, schema);
+        super.writeIndexCode(stream, schema);
     }
 }
 

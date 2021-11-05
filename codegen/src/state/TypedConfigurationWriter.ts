@@ -30,15 +30,16 @@ export class TypedConfigurationWriter extends Writer {
     }
 
     protected prepareImportings() {
-        this.importStatement(`import { Configuration, newConfiguration } from 'graphql-state';`);
-        const scalarTypeNames: string[] = [];
-        const eventTypeNames: string[] = [];
         
+        this.importStatement(`import { Configuration, newConfiguration } from 'graphql-state'`);
+
+        const flatTypeNames: string[] = [];
+        const eventTypeNames: string[] = [];
         const instanceNames: string[] = [];
         for (const fetcherType of this.ctx.fetcherTypes) {
             if (this.ctx.triggerableTypes.has(fetcherType)) {
                 if (fetcherType.name !== "Query") {
-                    scalarTypeNames.push(`${fetcherType.name}ScalarType`);
+                    flatTypeNames.push(`${fetcherType.name}FlatType`);
                     eventTypeNames.push(`${fetcherType.name}EvictEvent`);
                     eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
                 }
@@ -62,7 +63,7 @@ export class TypedConfigurationWriter extends Writer {
         }
         if (eventTypeNames.length !== 0) {
             this.importStatement(`import {\n${indent}${
-                scalarTypeNames.join(separator)
+                flatTypeNames.join(separator)
             }\n} from './fetchers';`);
         }
         if (eventTypeNames.length !== 0) {
@@ -74,6 +75,7 @@ export class TypedConfigurationWriter extends Writer {
 
     protected writeCode() {
         const t = this.text.bind(this);
+        
         t("export function newTypedConfiguration(): Configuration<Schema> ");
         this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
             t("return newConfiguration<Schema>");
@@ -85,6 +87,7 @@ export class TypedConfigurationWriter extends Writer {
                 }
             });
         });
+        
         this.writeSchema();
     }
 
@@ -166,7 +169,7 @@ export class TypedConfigurationWriter extends Writer {
                 for (const [fieldName, typeName] of associationTypeMap) {
                     if (triggerableTypeNames.has(typeName)) {
                         this.separator(", ");
-                        t(`readonly ${fieldName}: ${typeName}ScalarType`);
+                        t(`readonly ${fieldName}: ${typeName}FlatType`);
                     }
                 }
             });
@@ -193,3 +196,4 @@ export class TypedConfigurationWriter extends Writer {
         return map;
     }
 }
+

@@ -17,5 +17,5 @@ export declare class AsyncGenerator extends Generator {
     constructor(config: GeneratorConfig);
     protected generateServices(_: FetcherContext, promises: Promise<void>[]): Promise<void>;
     private generateAsync;
-    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): void;
 }

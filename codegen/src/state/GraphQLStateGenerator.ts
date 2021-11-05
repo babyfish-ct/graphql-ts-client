@@ -24,10 +24,15 @@ export class GraphQLStateGenerator extends Generator {
         super(config);
     }
 
-    protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
+        stream.write(`import { StateManager, makeStateFactory, makeManagedObjectHooks, useStateManager } from 'graphql-state';\n`);
+        stream.write(`import type { Schema } from "./TypedConfiguration";\n`);
         stream.write(`export type { Schema } from "./TypedConfiguration";\n`);
-        stream.write(`export { newTypedConfiguration } from "./TypedConfiguration";\n`);
-        await super.writeIndexCode(stream, schema);
+
+        super.writeIndexCode(stream, schema);
+
+        stream.write(TYPED_API);
+        stream.write(`export { newTypedConfiguration} from "./TypedConfiguration";\n`);
     }
 
     protected additionalExportedTypeNamesForFetcher(
@@ -37,7 +42,6 @@ export class GraphQLStateGenerator extends Generator {
         if (ctx.triggerableTypes.has(modelType)) {
             return [
                 ...super.additionalExportedTypeNamesForFetcher(modelType, ctx),
-                `${modelType.name}ScalarType`,
                 `${modelType.name}FlatType`
             ];
         }
@@ -106,3 +110,32 @@ export class GraphQLStateGenerator extends Generator {
         await closeStream(stream);
     }
 }
+
+const TYPED_API =`
+const {
+    createState,
+    createParameterizedState,
+    createComputedState,
+    createParameterizedComputedState,
+    createAsyncState,
+    createParameterizedAsyncState
+} = makeStateFactory<Schema>();
+
+export {
+    createState,
+    createParameterizedState,
+    createComputedState,
+    createParameterizedComputedState,
+    createAsyncState,
+    createParameterizedAsyncState
+};
+
+const { useObject, useObjects } = makeManagedObjectHooks<Schema>();
+
+export { useObject, useObjects };
+
+export function useTypedStateManager(): StateManager<Schema> {
+    return useStateManager<Schema>();
+}
+
+`;

@@ -334,7 +334,7 @@ export abstract class Generator {
         await closeStream(stream);
     }
 
-    protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
         stream.write("export type { ImplementationType } from './CommonTypes';\n");
         stream.write("export { upcastTypes, downcastTypes } from './CommonTypes';\n");
     }

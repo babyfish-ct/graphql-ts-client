@@ -38,14 +38,9 @@ class AsyncGenerator extends Generator_1.Generator {
         });
     }
     writeIndexCode(stream, schema) {
-        const _super = Object.create(null, {
-            writeIndexCode: { get: () => super.writeIndexCode }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            stream.write(`export type { GraphQLExecutor } from "./Async";\n`);
-            stream.write(`export { setGraphQLExecutor, execute } from "./Async";\n`);
-            yield _super.writeIndexCode.call(this, stream, schema);
-        });
+        stream.write(`export type { GraphQLExecutor } from "./Async";\n`);
+        stream.write(`export { setGraphQLExecutor, execute } from "./Async";\n`);
+        super.writeIndexCode(stream, schema);
     }
 }
 exports.AsyncGenerator = AsyncGenerator;

@@ -23,14 +23,14 @@ class TypedConfigurationWriter extends Writer_1.Writer {
     }
     prepareImportings() {
         var _a;
-        this.importStatement(`import { Configuration, newConfiguration } from 'graphql-state';`);
-        const scalarTypeNames = [];
+        this.importStatement(`import { Configuration, newConfiguration } from 'graphql-state'`);
+        const flatTypeNames = [];
         const eventTypeNames = [];
         const instanceNames = [];
         for (const fetcherType of this.ctx.fetcherTypes) {
             if (this.ctx.triggerableTypes.has(fetcherType)) {
                 if (fetcherType.name !== "Query") {
-                    scalarTypeNames.push(`${fetcherType.name}ScalarType`);
+                    flatTypeNames.push(`${fetcherType.name}FlatType`);
                     eventTypeNames.push(`${fetcherType.name}EvictEvent`);
                     eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
                 }
@@ -49,7 +49,7 @@ class TypedConfigurationWriter extends Writer_1.Writer {
                 .join(separator)}\n} from './fetchers';`);
         }
         if (eventTypeNames.length !== 0) {
-            this.importStatement(`import {\n${indent}${scalarTypeNames.join(separator)}\n} from './fetchers';`);
+            this.importStatement(`import {\n${indent}${flatTypeNames.join(separator)}\n} from './fetchers';`);
         }
         if (eventTypeNames.length !== 0) {
             this.importStatement(`import {\n${indent}${eventTypeNames.join(separator)}\n} from './triggers';`);
@@ -133,7 +133,7 @@ class TypedConfigurationWriter extends Writer_1.Writer {
                 for (const [fieldName, typeName] of associationTypeMap) {
                     if (triggerableTypeNames.has(typeName)) {
                         this.separator(", ");
-                        t(`readonly ${fieldName}: ${typeName}ScalarType`);
+                        t(`readonly ${fieldName}: ${typeName}FlatType`);
                     }
                 }
             });

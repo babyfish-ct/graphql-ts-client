@@ -46,14 +46,9 @@ class ApolloGenerator extends Generator_1.Generator {
         });
     }
     writeIndexCode(stream, schema) {
-        const _super = Object.create(null, {
-            writeIndexCode: { get: () => super.writeIndexCode }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            stream.write("export { useTypedQuery, useTypedLazyQuery, useTypedMutation } from './Apollo';\n");
-            stream.write("export { DependencyManagerProvider, useDependencyManager } from './DependencyManager';\n");
-            yield _super.writeIndexCode.call(this, stream, schema);
-        });
+        stream.write("export { useTypedQuery, useTypedLazyQuery, useTypedMutation } from './Apollo';\n");
+        stream.write("export { DependencyManagerProvider, useDependencyManager } from './DependencyManager';\n");
+        super.writeIndexCode(stream, schema);
     }
 }
 exports.ApolloGenerator = ApolloGenerator;

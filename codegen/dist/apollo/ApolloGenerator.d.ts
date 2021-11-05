@@ -18,5 +18,5 @@ export declare class ApolloGenerator extends Generator {
     protected generateServices(_: FetcherContext, promises: Promise<void>[]): Promise<void>;
     private generateApollo;
     private generateDependencyManager;
-    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): void;
 }

@@ -34,14 +34,9 @@ class RelayGenerator extends Generator_1.Generator {
         });
     }
     writeIndexCode(stream, schema) {
-        const _super = Object.create(null, {
-            writeIndexCode: { get: () => super.writeIndexCode }
-        });
-        return __awaiter(this, void 0, void 0, function* () {
-            stream.write(EXPORT_RELAY_TYPES_CODE);
-            stream.write(EXPORT_RELAY_CODE);
-            yield _super.writeIndexCode.call(this, stream, schema);
-        });
+        stream.write(EXPORT_RELAY_TYPES_CODE);
+        stream.write(EXPORT_RELAY_CODE);
+        super.writeIndexCode(stream, schema);
     }
 }
 exports.RelayGenerator = RelayGenerator;

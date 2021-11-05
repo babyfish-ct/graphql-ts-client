@@ -45,11 +45,11 @@ export class ApolloGenerator extends Generator {
         await closeStream(stream);
     }
 
-    protected async writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema) {
         
         stream.write("export { useTypedQuery, useTypedLazyQuery, useTypedMutation } from './Apollo';\n");
         stream.write("export { DependencyManagerProvider, useDependencyManager } from './DependencyManager';\n");
-        await super.writeIndexCode(stream, schema);
+        super.writeIndexCode(stream, schema);
     }
 }
 

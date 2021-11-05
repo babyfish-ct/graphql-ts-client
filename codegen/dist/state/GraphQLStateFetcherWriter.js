@@ -11,20 +11,18 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
         }
         return [
             ...super.importedNamesForSuperType(superType),
-            `${superType.name}ScalarType`,
             `${superType.name}FlatType`
         ];
     }
     writeCode() {
         super.writeCode();
         if (this.ctx.triggerableTypes.has(this.modelType)) {
-            this.writeScalarType();
             this.writeFlatType();
         }
     }
-    writeScalarType() {
+    writeFlatType() {
         const t = this.text.bind(this);
-        t(`\nexport interface ${this.modelType.name}ScalarType`);
+        t(`\nexport interface ${this.modelType.name}FlatType`);
         const superTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
         if (superTypes !== undefined) {
             const arr = Array.from(superTypes).filter(it => this.ctx.triggerableTypes.has(it));
@@ -33,41 +31,9 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
                 this.scope({ type: "BLANK" }, () => {
                     for (const superType of arr) {
                         this.separator(", ");
-                        t(`${superType.name}ScalarType`);
+                        t(`${superType.name}FlatType`);
                     }
                 });
-            }
-        }
-        this.scope({ type: "BLOCK", multiLines: true, prefix: " ", suffix: "\n" }, () => {
-            if (this.modelType instanceof graphql_1.GraphQLObjectType || this.modelType instanceof graphql_1.GraphQLInterfaceType) {
-                const fieldMap = this.modelType.getFields();
-                for (const fieldName of this.declaredFieldNames) {
-                    const field = fieldMap[fieldName];
-                    if (this.fieldCategoryMap.get(fieldName) === "SCALAR") {
-                        t("readonly ");
-                        t(fieldName);
-                        if (!(field.type instanceof graphql_1.GraphQLNonNull)) {
-                            t("?");
-                        }
-                        t(": ");
-                        this.typeRef(field.type);
-                        t(";\n");
-                    }
-                }
-            }
-        });
-    }
-    writeFlatType() {
-        const t = this.text.bind(this);
-        t(`\nexport interface ${this.modelType.name}FlatType extends ${this.modelType.name}ScalarType`);
-        const superTypes = this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType);
-        if (superTypes !== undefined) {
-            const arr = Array.from(superTypes).filter(it => this.ctx.triggerableTypes.has(it));
-            if (arr.length !== 0) {
-                for (const superType of arr) {
-                    t(", ");
-                    t(`${superType.name}FlatType`);
-                }
             }
         }
         this.scope({ type: "BLOCK", multiLines: true, prefix: " ", suffix: "\n" }, () => {
@@ -78,7 +44,17 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
                     const field = fieldMap[fieldName];
                     const category = this.fieldCategoryMap.get(fieldName);
                     const targetType = Utils_1.targetTypeOf(field.type);
-                    if (targetType !== undefined && category !== "SCALAR") {
+                    if (category === "SCALAR") {
+                        t("readonly ");
+                        t(fieldName);
+                        if (!(field.type instanceof graphql_1.GraphQLNonNull)) {
+                            t("?");
+                        }
+                        t(": ");
+                        this.typeRef(field.type);
+                        t(";\n");
+                    }
+                    else if (targetType !== undefined && category !== "SCALAR") {
                         let nodeType = (_b = (_a = this.ctx.connections.get(targetType)) === null || _a === void 0 ? void 0 : _a.nodeType) !== null && _b !== void 0 ? _b : targetType;
                         const idField = this.ctx.idFieldMap.get(nodeType);
                         if (idField === undefined) {

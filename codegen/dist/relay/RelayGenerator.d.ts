@@ -10,5 +10,5 @@ export declare class RelayGenerator extends Generator {
     protected createFetcheWriter(modelType: GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType, ctx: FetcherContext, stream: WriteStream, config: GeneratorConfig): RelayFetcherWriter;
     protected generateServices(ctx: FetcherContext, promises: Promise<void>[]): Promise<void>;
     generateRelayCode(schema: GraphQLSchema): Promise<void>;
-    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): Promise<void>;
+    protected writeIndexCode(stream: WriteStream, schema: GraphQLSchema): void;
 }
