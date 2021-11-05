@@ -38,7 +38,7 @@ export interface PageInfoFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"hasNextPage", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): PageInfoFetcher<
@@ -60,7 +60,7 @@ export interface PageInfoFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"hasPreviousPage", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): PageInfoFetcher<
@@ -82,7 +82,7 @@ export interface PageInfoFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"startCursor", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): PageInfoFetcher<
@@ -104,7 +104,7 @@ export interface PageInfoFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"endCursor", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): PageInfoFetcher<

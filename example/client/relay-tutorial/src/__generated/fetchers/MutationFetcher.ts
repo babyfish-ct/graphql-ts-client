@@ -30,13 +30,35 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 
     mergeDepartment<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Department', X, XVariables>
+    ): MutationFetcher<
+        T & {readonly "mergeDepartment": X}, 
+        TVariables & XVariables & MutationArgs["mergeDepartment"]
+    >;
+
+    mergeDepartment<
+        XArgs extends AcceptableVariables<MutationArgs['mergeDepartment']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Department', X, XVariables>
+    ): MutationFetcher<
+        T & {readonly "mergeDepartment": X}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, MutationArgs['mergeDepartment']>
+    >;
+
+    mergeDepartment<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "mergeDepartment", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Department', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"mergeDepartment", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -58,7 +80,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
     >(
         args: XArgs, 
         child: ObjectFetcher<'Department', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"mergeDepartment", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -71,12 +93,27 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
     >;
 
 
+    deleteDepartment(
+    ): MutationFetcher<
+        T & {readonly "deleteDepartment": string}, 
+        TVariables & MutationArgs["deleteDepartment"]
+    >;
+
+    deleteDepartment<
+        XArgs extends AcceptableVariables<MutationArgs['deleteDepartment']>
+    >(
+        args: XArgs
+    ): MutationFetcher<
+        T & {readonly "deleteDepartment": string}, 
+        TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteDepartment']>
+    >;
+
     deleteDepartment<
         XAlias extends string = "deleteDepartment", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"deleteDepartment", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -95,7 +132,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"deleteDepartment", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -110,13 +147,35 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
 
     mergeEmployee<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Employee', X, XVariables>
+    ): MutationFetcher<
+        T & {readonly "mergeEmployee": X}, 
+        TVariables & XVariables & MutationArgs["mergeEmployee"]
+    >;
+
+    mergeEmployee<
+        XArgs extends AcceptableVariables<MutationArgs['mergeEmployee']>, 
+        X extends object, 
+        XVariables extends object
+    >(
+        args: XArgs, 
+        child: ObjectFetcher<'Employee', X, XVariables>
+    ): MutationFetcher<
+        T & {readonly "mergeEmployee": X}, 
+        TVariables & XVariables & UnresolvedVariables<XArgs, MutationArgs['mergeEmployee']>
+    >;
+
+    mergeEmployee<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "mergeEmployee", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Employee', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"mergeEmployee", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -138,7 +197,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
     >(
         args: XArgs, 
         child: ObjectFetcher<'Employee', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"mergeEmployee", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -151,12 +210,27 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
     >;
 
 
+    deleteEmployee(
+    ): MutationFetcher<
+        T & {readonly "deleteEmployee": string}, 
+        TVariables & MutationArgs["deleteEmployee"]
+    >;
+
+    deleteEmployee<
+        XArgs extends AcceptableVariables<MutationArgs['deleteEmployee']>
+    >(
+        args: XArgs
+    ): MutationFetcher<
+        T & {readonly "deleteEmployee": string}, 
+        TVariables & UnresolvedVariables<XArgs, MutationArgs['deleteEmployee']>
+    >;
+
     deleteEmployee<
         XAlias extends string = "deleteEmployee", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"deleteEmployee", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<
@@ -175,7 +249,7 @@ export interface MutationFetcher<T extends object, TVariables extends object> ex
         XDirectiveVariables extends object = {}
     >(
         args: XArgs, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"deleteEmployee", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): MutationFetcher<

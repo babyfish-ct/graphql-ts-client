@@ -1835,9 +1835,9 @@
     form-data "^3.0.0"
 
 "@types/node@*":
-  version "16.9.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.9.1.tgz#0611b37db4246c937feef529ddcc018cf8e35708"
-  integrity sha512-QpLcX9ZSsq3YYUUnD3nFDY8H7wctAhQj/TFKL8Ya8v5fMm3CFXxo8zStsLAl780ltoYoo1WvKUVGBQK+1ifr7g==
+  version "16.11.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.6.tgz#6bef7a2a0ad684cf6e90fcfe31cecabd9ce0a3ae"
+  integrity sha512-ua7PgUoeQFjmWPcoo9khiPum3Pd60k4/2ZGXt18sm2Slk0W0xZTqt5Y0Ny1NyBiN1EVQ/+FaF9NcY4Qe6rwk5w==
 
 "@types/node@^12.0.0":
   version "12.20.15"
@@ -5439,17 +5439,17 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-ts-client-api@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.4.tgz#7be2c833d5c301125de33cee9fbac88a2d52732c"
-  integrity sha512-WNim28Xa/1gWRSnkDAyG2yxEosRvqPumQz8ibmKN4AWIvW90T8oYC1DVkMZKS1P9M+QdSovsPpZoARIaNvIZkg==
+graphql-ts-client-api@^3.0.8:
+  version "3.0.8"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.8.tgz#5cfe7245ea21abf1525aa7a169c8363752921a99"
+  integrity sha512-qmNceZjNsMAQrYfEce3RDqQMZEmwiq7j0SkjIvD6MM+5DnSBnm0v92hFDJGVyLpNYjCATPfRog2p6eSD/WN0Ag==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.4:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.4.tgz#2974a6210d463248aaf6b0783bf59bdb34dd7297"
-  integrity sha512-ukFEK0zgCatnehs1/xbva2S1AmTjPdbd4YELgF5+ts4Hb1ezq+qUUdx3R5LnycKScN98Lr/zKSbr8QgcGThSIg==
+graphql-ts-client-codegen@^3.0.8:
+  version "3.0.8"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.8.tgz#1be100b1b45d9e7e3f3561a851e798b046876a08"
+  integrity sha512-suZWutWTqV2cEbd7UFySEC++MtsDd2inkQ2EPNdxs4DJZxpg0lSfA1k/9F+ACOlsux/XtAm87jczXfVgdVFwOQ==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -5463,9 +5463,9 @@ graphql@^15.5.0:
   integrity sha1-OdGUlNvmnR6nGZFbV4v5IDRKadU=
 
 graphql@^15.5.1:
-  version "15.7.1"
-  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.7.1.tgz#c821a1741e04e2bc2c91e138f34c06a86c0464f1"
-  integrity sha512-x34S6gC0/peBZnlK60zCJox/d45A7p6At9oN9EPA3qhoIAlR4LNZmXRLkICBckwwTMJzVdA8cx3QIQZMOl606A==
+  version "15.7.2"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.7.2.tgz#85ab0eeb83722977151b3feb4d631b5f2ab287ef"
+  integrity sha512-AnnKk7hFQFmU/2I9YSQf3xw44ctnSFCfp3zE0N6W174gqe9fWG/2rKaKxROK7CcI3XtERpjEKFqts8o319Kf7A==
 
 growly@^1.3.0:
   version "1.3.0"
@@ -7382,17 +7382,17 @@ mime-db@1.46.0, "mime-db@>= 1.43.0 < 2":
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.46.0.tgz#6267748a7f799594de3cbc8cde91def349661cee"
   integrity sha512-svXaP8UQRZ5K7or+ZmfNhg2xX3yKDMUzqadsSqi4NCH/KomcH75MAMYAGVlvXn4+b/xOPhS3I2uHKRUzvjY7BQ==
 
-mime-db@1.49.0:
-  version "1.49.0"
-  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.49.0.tgz#f3dfde60c99e9cf3bc9701d687778f537001cbed"
-  integrity sha512-CIc8j9URtOVApSFCQIF+VBkX1RwXp/oMMOrqdyXSBXq5RWNEsRfyj1kiRnQgmNXmHxPoFIxOroKA3zcU9P+nAA==
+mime-db@1.50.0:
+  version "1.50.0"
+  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.50.0.tgz#abd4ac94e98d3c0e185016c67ab45d5fde40c11f"
+  integrity sha512-9tMZCDlYHqeERXEHO9f/hKfNXhre5dK2eE/krIvUjZbS2KPcqGDfNShIWS1uW9XOTKQKqK6qbeOci18rbfW77A==
 
 mime-types@^2.1.12:
-  version "2.1.32"
-  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.32.tgz#1d00e89e7de7fe02008db61001d9e02852670fd5"
-  integrity sha512-hJGaVS4G4c9TSMYh2n6SQAGrC4RnfU+daP8G7cSCmaqNjiOoUY0VHCMS42pxnQmVF1GWwFhbHWn3RIxCqTmZ9A==
+  version "2.1.33"
+  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.33.tgz#1fa12a904472fafd068e48d9e8401f74d3f70edb"
+  integrity sha512-plLElXp7pRDd0bNZHw+nMd52vRYjLwQjygaNg7ddJ2uJtTlmnTCjWuPKxVu6//AdaRuME84SvLW91sIkBqGT0g==
   dependencies:
-    mime-db "1.49.0"
+    mime-db "1.50.0"
 
 mime-types@^2.1.27, mime-types@~2.1.17, mime-types@~2.1.19, mime-types@~2.1.24:
   version "2.1.29"

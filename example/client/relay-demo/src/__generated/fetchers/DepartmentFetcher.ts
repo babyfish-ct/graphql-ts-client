@@ -51,7 +51,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"id", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentFetcher<
@@ -73,7 +73,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"name", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentFetcher<
@@ -90,13 +90,23 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
 
     employees<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Employee', X, XVariables>
+    ): DepartmentFetcher<
+        T & {readonly "employees": readonly X[]}, 
+        TVariables & XVariables
+    >;
+
+    employees<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "employees", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Employee', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"employees", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentFetcher<
@@ -116,7 +126,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"avgSalary", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentFetcher<

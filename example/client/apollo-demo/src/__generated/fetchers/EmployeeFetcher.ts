@@ -40,7 +40,7 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"id", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): EmployeeFetcher<
@@ -62,7 +62,7 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"firstName", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): EmployeeFetcher<
@@ -84,7 +84,7 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"lastName", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): EmployeeFetcher<
@@ -106,7 +106,7 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"gender", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): EmployeeFetcher<
@@ -128,7 +128,7 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"salary", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): EmployeeFetcher<
@@ -145,13 +145,23 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 
     department<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Department', X, XVariables>
+    ): EmployeeFetcher<
+        T & {readonly "department": X}, 
+        TVariables & XVariables
+    >;
+
+    department<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "department", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Department', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"department", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): EmployeeFetcher<
@@ -166,12 +176,22 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 
     supervisor<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Employee', X, XVariables>
+    ): EmployeeFetcher<
+        T & {readonly "supervisor"?: X}, 
+        TVariables & XVariables
+    >;
+
+    supervisor<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "supervisor", 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Employee', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"supervisor", {}, {}>
         ) => FieldOptions<XAlias, {readonly [key: string]: DirectiveArgs}, XDirectiveVariables>
     ): EmployeeFetcher<
@@ -182,13 +202,23 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
 
     subordinates<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Employee', X, XVariables>
+    ): EmployeeFetcher<
+        T & {readonly "subordinates": readonly X[]}, 
+        TVariables & XVariables
+    >;
+
+    subordinates<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "subordinates", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Employee', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"subordinates", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): EmployeeFetcher<

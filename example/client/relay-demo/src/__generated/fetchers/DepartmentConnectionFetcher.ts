@@ -50,7 +50,7 @@ export interface DepartmentConnectionFetcher<T extends object, TVariables extend
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"totalCount", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentConnectionFetcher<
@@ -67,13 +67,23 @@ export interface DepartmentConnectionFetcher<T extends object, TVariables extend
 
     edges<
         X extends object, 
+        XVariables extends object
+    >(
+        child: EdgeFetcher<'DepartmentEdge', X, XVariables>
+    ): DepartmentConnectionFetcher<
+        T & {readonly "edges": readonly X[]}, 
+        TVariables & XVariables
+    >;
+
+    edges<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "edges", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: EdgeFetcher<'DepartmentEdge', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"edges", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentConnectionFetcher<
@@ -88,13 +98,23 @@ export interface DepartmentConnectionFetcher<T extends object, TVariables extend
 
     pageInfo<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'PageInfo', X, XVariables>
+    ): DepartmentConnectionFetcher<
+        T & {readonly "pageInfo": X}, 
+        TVariables & XVariables
+    >;
+
+    pageInfo<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "pageInfo", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'PageInfo', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"pageInfo", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentConnectionFetcher<

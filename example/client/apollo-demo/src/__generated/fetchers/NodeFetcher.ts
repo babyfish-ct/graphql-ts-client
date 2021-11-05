@@ -38,7 +38,7 @@ export interface NodeFetcher<T extends object, TVariables extends object> extend
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"id", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): NodeFetcher<

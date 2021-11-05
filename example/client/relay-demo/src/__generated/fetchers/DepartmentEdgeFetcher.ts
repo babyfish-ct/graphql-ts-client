@@ -45,13 +45,23 @@ export interface DepartmentEdgeFetcher<T extends object, TVariables extends obje
 
     node<
         X extends object, 
+        XVariables extends object
+    >(
+        child: ObjectFetcher<'Department', X, XVariables>
+    ): DepartmentEdgeFetcher<
+        T & {readonly "node": X}, 
+        TVariables & XVariables
+    >;
+
+    node<
+        X extends object, 
         XVariables extends object, 
         XAlias extends string = "node", 
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
         child: ObjectFetcher<'Department', X, XVariables>, 
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"node", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentEdgeFetcher<
@@ -71,7 +81,7 @@ export interface DepartmentEdgeFetcher<T extends object, TVariables extends obje
         XDirectives extends { readonly [key: string]: DirectiveArgs } = {}, 
         XDirectiveVariables extends object = {}
     >(
-        optionsConfigurer?: (
+        optionsConfigurer: (
             options: FieldOptions<"cursor", {}, {}>
         ) => FieldOptions<XAlias, XDirectives, XDirectiveVariables>
     ): DepartmentEdgeFetcher<
