@@ -18,13 +18,12 @@ A new GraphQL client for TypeScript. it's TypeScript-DSL for GraphQL with full f
    
    **[graphql-state](https://github.com/babyfish-ct/graphql-state) is very smart. After mutation, there is no need to manually update the local cache, nor to specify which queries need to be refetched, everything is automatic**
 
-
 # Documentation
 [English Documentation](doc/README.md) | [中文文档](doc/README_zh_CN.md)
 
 # Notes
-
-*My npm packages are 'graphql-ts-client-api', 'graphql-ts-client-codegen' and 'graphql-ts-client-relay'. There is another package named 'graphql-ts-client' in npm repository, but that's not my framework.*
+> 1. For a long time, null and undefined have led to the differentiation of JavaScript/TypeScript development. This framework eliminates null and uniformly adopts undefined which is more friendly to TypeScript.
+> 2. *My npm packages are 'graphql-ts-client-api', 'graphql-ts-client-codegen' and 'graphql-ts-client-relay'. There is another package named 'graphql-ts-client' in npm repository, but that's not my framework.*
 
 # Contact me
 babyfish.ct@gmail.com
