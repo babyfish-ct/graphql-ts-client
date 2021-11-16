@@ -1,4 +1,4 @@
-# Step-by-step guide
+# Step-by-step guide with [graphql-state](https://github.com/babyfish-ct/graphql-state)
 
 
 ### 1. Start the server
@@ -58,7 +58,7 @@ yarn codegen
 ``` 
 *Notes:*
 
-*This is a one-time job! you need not to generate code again and again.*
+*This is a one-time job! Be different with code generator of other similar frameworks or the compiler of relay, you need not to generate code again and again.*
 
 *After this step, you can forget the code generator until the server-side team tell you their interface has been changed.*
 
