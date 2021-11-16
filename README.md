@@ -16,7 +16,7 @@ A new GraphQL client for TypeScript. it's TypeScript-DSL for GraphQL with full f
 
    [graphql-state](https://github.com/babyfish-ct/graphql-state) is a collaborative framework tailored for graphql-ts-client, and is a complete react state management framework.
    
-   **[graphql-state](https://github.com/babyfish-ct/graphql-state) is very smart, After mutation, there is no need to manually update the local cache, nor to specify which queries need to be refetched, everything is automatic**
+   **[graphql-state](https://github.com/babyfish-ct/graphql-state) is very smart. After mutation, there is no need to manually update the local cache, nor to specify which queries need to be refetched, everything is automatic**
 
 
 # Documentation
