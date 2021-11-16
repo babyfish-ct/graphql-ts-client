@@ -174,5 +174,5 @@ yarn start
 
 ____________________
 
-[Back to home](https://github.com/babyfish-ct/graphql-state)
+[Back to home](https://github.com/babyfish-ct/graphql-ts-client)
 
