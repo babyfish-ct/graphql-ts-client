@@ -12,7 +12,7 @@ A new GraphQL client for TypeScript. it's TypeScript-DSL for GraphQL with full f
 1. [Step-by-step guide with nothing](get-start-async.md)
 2. [Step-by-step guide with apollo](get-start-apollo.md)
 3. [Step-by-step guide with relay](get-start-relay.md)
-4. Work with [graphql-state](https://github.com/babyfish-ct/graphql-state) **(Suggested)**
+4. [Step-by-step guide with graphql-state](get-start-graphql-state.md) **(Suggested)**
 
 [graphql-state](https://github.com/babyfish-ct/graphql-state) is a collaborative framework tailored for graphql-ts-client, and is a complete react state management framework.
 
