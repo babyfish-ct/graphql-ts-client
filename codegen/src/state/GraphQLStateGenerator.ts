@@ -9,7 +9,7 @@
  */
 
 import { WriteStream } from "fs";
-import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
+import { GraphQLInterfaceType, GraphQLObjectType, GraphQLSchema, GraphQLUnionType } from "graphql";
 import { join } from "path";
 import { FetcherContext } from "../FetcherContext";
 import { closeStream, createStreamAndLog, Generator } from "../Generator";
@@ -81,7 +81,7 @@ export class GraphQLStateGenerator extends Generator {
         for (const triggerableType  of ctx.triggerableTypes) {
             const fetcherType = triggerableType as GraphQLObjectType | GraphQLInterfaceType;
             const dir = join(this.config.targetDir, "triggers");
-            const stream = createStreamAndLog(join(dir, `${fetcherType.name}ChangeEvent.ts`));
+            const stream = createStreamAndLog(join(dir, `${fetcherType.name}Event.ts`));
             new TriggerEventWiter(
                 fetcherType, 
                 ctx.idFieldMap.get(fetcherType), 
@@ -105,7 +105,7 @@ export class GraphQLStateGenerator extends Generator {
                 fetcherType.name
             }EvictEvent, ${
                 fetcherType.name
-            }ChangeEvent } from './${fetcherType.name}ChangeEvent';\n`);
+            }ChangeEvent } from './${fetcherType.name}Event';\n`);
         }
         await closeStream(stream);
     }

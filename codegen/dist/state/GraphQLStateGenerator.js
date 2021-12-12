@@ -68,7 +68,7 @@ class GraphQLStateGenerator extends Generator_1.Generator {
             for (const triggerableType of ctx.triggerableTypes) {
                 const fetcherType = triggerableType;
                 const dir = path_1.join(this.config.targetDir, "triggers");
-                const stream = Generator_1.createStreamAndLog(path_1.join(dir, `${fetcherType.name}ChangeEvent.ts`));
+                const stream = Generator_1.createStreamAndLog(path_1.join(dir, `${fetcherType.name}Event.ts`));
                 new TriggerEventWriter_1.TriggerEventWiter(fetcherType, ctx.idFieldMap.get(fetcherType), stream, this.config).write();
                 yield Generator_1.closeStream(stream);
             }
@@ -79,7 +79,7 @@ class GraphQLStateGenerator extends Generator_1.Generator {
             const stream = Generator_1.createStreamAndLog(path_1.join(path_1.join(this.config.targetDir, "triggers"), "index.ts"));
             for (const triggerableType of ctx.triggerableTypes) {
                 const fetcherType = triggerableType;
-                stream.write(`export type { ${fetcherType.name}EvictEvent, ${fetcherType.name}ChangeEvent } from './${fetcherType.name}ChangeEvent';\n`);
+                stream.write(`export type { ${fetcherType.name}EvictEvent, ${fetcherType.name}ChangeEvent } from './${fetcherType.name}Event';\n`);
             }
             yield Generator_1.closeStream(stream);
         });

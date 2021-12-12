@@ -119,10 +119,10 @@ class FetchableTypeImpl<E extends string> implements FetchableType<E> {
                 );
             }
         }
-        if (category !== "OBJECT" && superTypes.length !== 0) {
+        if ((category === "CONNECTION" || category === "EDGE") && superTypes.length !== 0) {
             throw new Error(
                 `Illegal fetchable type "${name}", ` +
-                `super class can only be specified for object type but its category is "${category}"`
+                `super class can only be specified for object/embeddable type but its category is "${category}"`
             );
         }
     }
