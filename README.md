@@ -9,20 +9,24 @@ A new GraphQL client for TypeScript. it's TypeScript-DSL for GraphQL with full f
 
 # Get started
 
-1. [Step-by-step guide with nothing](get-start-async.md)
-2. [Step-by-step guide with apollo](get-start-apollo.md)
-3. [Step-by-step guide with relay](get-start-relay.md)
-4. [Step-by-step guide with graphql-state](get-start-graphql-state.md) **(Suggested)**
+You can choose any of the following 4 ways
 
-[graphql-state](https://github.com/babyfish-ct/graphql-state) is a collaborative framework tailored for graphql-ts-client, and is a complete react state management framework.
+- [Step-by-step guide with nothing](get-start-async.md)
+- [Step-by-step guide with apollo](get-start-apollo.md)
+- [Step-by-step guide with relay](get-start-relay.md)
+- [Step-by-step guide with graphql-state](get-start-graphql-state.md) **(Suggested)**
 
+   [graphql-state](https://github.com/babyfish-ct/graphql-state) is a collaborative framework tailored for graphql-ts-client, and is a complete react state management framework.
+   
+   - [graphql-state](https://github.com/babyfish-ct/graphql-state) is very smart. It can automatically guarantees consistency of local cache. After mutation, you neither need to write complex code to update the local cache, nor do you need to determine which queries will be affected by the mutation and need to be refetched.
+   - [graphql-state](https://github.com/babyfish-ct/graphql-state) can map the REST service to GraphQL service on client-side, access REST service with GraphQL semantics, and enjoying syntactic sugar provided by graphql-ts-client.
 
 # Documentation
 [English Documentation](doc/README.md) | [中文文档](doc/README_zh_CN.md)
 
 # Notes
-
-*My npm packages are 'graphql-ts-client-api', 'graphql-ts-client-codegen' and 'graphql-ts-client-relay'. There is another package named 'graphql-ts-client' in npm repository, but that's not my framework.*
+> 1. For a long time, null and undefined have led to the differentiation of JavaScript/TypeScript development. This framework eliminates null and uniformly adopts undefined which is more friendly to TypeScript.
+> 2. *My npm packages are 'graphql-ts-client-api', 'graphql-ts-client-codegen' and 'graphql-ts-client-relay'. There is another package named 'graphql-ts-client' in npm repository, but that's not my framework.*
 
 # Contact me
 babyfish.ct@gmail.com
