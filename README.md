@@ -12,13 +12,14 @@ A new GraphQL client for TypeScript. it's TypeScript-DSL for GraphQL with full f
 You can choose any of the following 4 ways
 
 - [Step-by-step guide with nothing](get-start-async.md)
-- [Step-by-step guide with apollo](get-start-apollo.md)
+- [Step-by-step guide with apollo-client](get-start-apollo.md)
 - [Step-by-step guide with relay](get-start-relay.md)
 - [Step-by-step guide with graphql-state](get-start-graphql-state.md) **(Suggested)**
 
    [graphql-state](https://github.com/babyfish-ct/graphql-state) is a collaborative framework tailored for graphql-ts-client, and is a complete react state management framework.
    
-   - [graphql-state](https://github.com/babyfish-ct/graphql-state) is very smart. It can automatically guarantees consistency of local cache. After mutation, you neither need to write complex code to update the local cache, nor do you need to determine which queries will be affected by the mutation and need to be refetched.
+   - [graphql-state](https://github.com/babyfish-ct/graphql-state) is very smart. 
+The essence of UI state is that **one main mutation causes N extra mutations. The more complex the UI, the larger the N**. graphql-state allows developer only focus on main mutation, all the extra mutations will be executed automatically. Compare with Apollo Client and Relay, after mutation, you neither need to update other affected data in the cache, nor need to determine which queries will be affected and need to be refetched.
    - [graphql-state](https://github.com/babyfish-ct/graphql-state) can map the REST service to GraphQL service on client-side, access REST service with GraphQL semantics, and enjoying syntactic sugar provided by graphql-ts-client.
 
 # Documentation
