@@ -19,7 +19,7 @@ You can choose any of the following 4 ways
    [graphql-state](https://github.com/babyfish-ct/graphql-state) is a collaborative framework tailored for graphql-ts-client, and is a complete react state management framework.
    
    - [graphql-state](https://github.com/babyfish-ct/graphql-state) is very smart. 
-The essence of UI state is that **one main mutation causes N extra mutations. The more complex the UI, the larger the N**. graphql-state allows developer only focus on main mutation, all the extra mutations will be executed automatically. Compare with Apollo Client and Relay, after mutation, you neither need to update other affected data in the cache, nor need to determine which queries will be affected and need to be refetched.
+The essence of UI state is that one main mutation causes N extra mutations, the more complex the UI, the larger the N. graphql-state allows developer only focus on main mutation, all the extra mutations will be executed automatically. Compare with Apollo Client and Relay, after mutation, you neither need to update other affected data in the cache, nor need to determine which queries will be affected and need to be refetched.
    - [graphql-state](https://github.com/babyfish-ct/graphql-state) can map the REST service to GraphQL service on client-side, access REST service with GraphQL semantics, and enjoying syntactic sugar provided by graphql-ts-client.
 
 # Documentation
