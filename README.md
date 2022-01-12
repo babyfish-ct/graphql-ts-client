@@ -6,6 +6,8 @@ A new GraphQL client for TypeScript. it's TypeScript-DSL for GraphQL with full f
 
 ![Loading_GIF_Animation](graphql-ts-client.gif)
 
+# Null & Undefined
+For a long time, null and undefined have led to the differentiation of JavaScript/TypeScript development. This framework eliminates null and uniformly adopts undefined which is more friendly to TypeScript.
 
 # Get started
 
@@ -26,8 +28,7 @@ The essence of UI state is that one main mutation causes N extra mutations, the 
 [English Documentation](doc/README.md) | [中文文档](doc/README_zh_CN.md)
 
 # Notes
-> 1. For a long time, null and undefined have led to the differentiation of JavaScript/TypeScript development. This framework eliminates null and uniformly adopts undefined which is more friendly to TypeScript.
-> 2. *My npm packages are 'graphql-ts-client-api', 'graphql-ts-client-codegen' and 'graphql-ts-client-relay'. There is another package named 'graphql-ts-client' in npm repository, but that's not my framework.*
+> *My npm packages are 'graphql-ts-client-api', 'graphql-ts-client-codegen' and 'graphql-ts-client-relay'. There is another package named 'graphql-ts-client' in npm repository, but that's not my framework.*
 
 # Contact me
 babyfish.ct@gmail.com
