@@ -45,6 +45,8 @@ export function exceptNullValues<T>(value: T): T {
         const fieldValue = value[fieldName];
         if (fieldValue !== undefined && fieldValue !== null) {
             obj[fieldName] = exceptNullValues(fieldValue);
+        } else {
+            obj[fieldName] = undefined;
         }
     }
     return obj as T;
