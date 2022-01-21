@@ -47,6 +47,9 @@ function exceptNullValues(value) {
         if (fieldValue !== undefined && fieldValue !== null) {
             obj[fieldName] = exceptNullValues(fieldValue);
         }
+        else {
+            obj[fieldName] = undefined;
+        }
     }
     return obj;
 }

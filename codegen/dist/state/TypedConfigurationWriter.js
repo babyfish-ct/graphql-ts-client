@@ -35,7 +35,7 @@ class TypedConfigurationWriter extends Writer_1.Writer {
                     eventTypeNames.push(`${fetcherType.name}ChangeEvent`);
                 }
             }
-            instanceNames.push(`${Utils_1.instancePrefix(fetcherType.name)}$`);
+            instanceNames.push(`${(0, Utils_1.instancePrefix)(fetcherType.name)}$`);
         }
         const indent = (_a = this.config.indent) !== null && _a !== void 0 ? _a : "    ";
         const separator = `,\n${indent}`;
@@ -63,7 +63,7 @@ class TypedConfigurationWriter extends Writer_1.Writer {
             this.scope({ type: "PARAMETERS", multiLines: true, suffix: ";\n" }, () => {
                 for (const fetcherType of this.ctx.fetcherTypes) {
                     this.separator(", ");
-                    t(Utils_1.instancePrefix(fetcherType.name));
+                    t((0, Utils_1.instancePrefix)(fetcherType.name));
                     t("$");
                 }
             });
@@ -144,7 +144,7 @@ class TypedConfigurationWriter extends Writer_1.Writer {
         const fieldMap = fetcherType.getFields();
         for (const fieldName in fieldMap) {
             const field = fieldMap[fieldName];
-            const targetType = Utils_1.targetTypeOf(field.type);
+            const targetType = (0, Utils_1.targetTypeOf)(field.type);
             if (targetType !== undefined && !this.ctx.embeddedTypes.has(targetType)) {
                 const connection = this.ctx.connections.get(targetType);
                 if (connection !== undefined) {

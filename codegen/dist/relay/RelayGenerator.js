@@ -28,9 +28,9 @@ class RelayGenerator extends Generator_1.Generator {
     }
     generateRelayCode(schema) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Relay.ts"));
+            const stream = (0, Generator_1.createStreamAndLog)((0, path_1.join)(this.config.targetDir, "Relay.ts"));
             new RelayWriter_1.RelayWriter(schema, stream, this.config).write();
-            yield Generator_1.closeStream(stream);
+            yield (0, Generator_1.closeStream)(stream);
         });
     }
     writeIndexCode(stream, schema) {

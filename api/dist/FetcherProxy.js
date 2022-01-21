@@ -99,7 +99,7 @@ function methodProxyHandler(targetFetcher, handler, field) {
                     child = arg;
                 }
                 else if (typeof arg === 'function') {
-                    optionsValue = arg(FieldOptions_1.createFieldOptions()).value;
+                    optionsValue = arg((0, FieldOptions_1.createFieldOptions)()).value;
                 }
                 else {
                     args = arg;
@@ -120,4 +120,4 @@ function methodProxyHandler(targetFetcher, handler, field) {
     };
 }
 function dummyTargetMethod() { }
-const FETCHER_TARGET = new FetcherTarget([Fetchable_1.createFetchableType("Any", "OBJECT", [], []), undefined], false, "");
+const FETCHER_TARGET = new FetcherTarget([(0, Fetchable_1.createFetchableType)("Any", "OBJECT", [], []), undefined], false, "");

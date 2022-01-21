@@ -160,7 +160,7 @@ function validateConfigAndSchema(config, schema) {
                 throw new Error(`config.idFieldMap['${typeName}'] is illegal, ` +
                     `there is not field named '${idFieldMap[typeName]}' in the type '${typeName}'`);
             }
-            if (Utils_1.targetTypeOf(idField.type) !== undefined) {
+            if ((0, Utils_1.targetTypeOf)(idField.type) !== undefined) {
                 throw new Error(`config.idFieldMap['${typeName}'] is illegal, ` +
                     `the field '${idFieldMap[typeName]}' of the type '${typeName}' is not scalar`);
             }

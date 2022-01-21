@@ -7,7 +7,7 @@ const TaggedNode_1 = require("./TaggedNode");
 class TypedEnvironment {
     constructor(schema) {
         this.registry = new Registry();
-        this.schema = Schema_1.createSchema(schema);
+        this.schema = (0, Schema_1.createSchema)(schema);
     }
     query(operationName, fetcher) {
         return this.operation(operationName, fetcher);
@@ -29,7 +29,7 @@ class TypedEnvironment {
         }
         writer.text(fetcher.toString());
         writer.text(fetcher.toFragmentString());
-        const taggedNode = TaggedNode_1.parseTaggedNode(this.schema, name, writer.toString());
+        const taggedNode = (0, TaggedNode_1.parseTaggedNode)(this.schema, name, writer.toString());
         const typedOperation = {
             name,
             fetcher,
@@ -41,7 +41,7 @@ class TypedEnvironment {
     fragment(name, fetcher) {
         const refetchQueryName = (fetcher.directiveMap.get("refetchable") || {})["queryName"];
         this.registry.validate(name, refetchQueryName);
-        const taggedNode = TaggedNode_1.parseTaggedNode(this.schema, name, `fragment ${name} on ${fetcher.fetchableType.name} ${fetcher.toString()}\n${fetcher.toFragmentString()}`);
+        const taggedNode = (0, TaggedNode_1.parseTaggedNode)(this.schema, name, `fragment ${name} on ${fetcher.fetchableType.name} ${fetcher.toString()}\n${fetcher.toFragmentString()}`);
         const typedFragment = new TypedFragmentImpl(name, fetcher, taggedNode);
         this.registry.register(taggedNode, name, refetchQueryName);
         return typedFragment;

@@ -43,7 +43,7 @@ class GraphQLStateFetcherWriter extends FetcherWriter_1.FetcherWriter {
                 for (const fieldName of this.declaredFieldNames) {
                     const field = fieldMap[fieldName];
                     const category = this.fieldCategoryMap.get(fieldName);
-                    const targetType = Utils_1.targetTypeOf(field.type);
+                    const targetType = (0, Utils_1.targetTypeOf)(field.type);
                     if (category === "SCALAR") {
                         t("readonly ");
                         t(fieldName);

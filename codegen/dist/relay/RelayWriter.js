@@ -21,7 +21,7 @@ class RelayWriter extends Writer_1.Writer {
         }
         this.text(relayCode);
         this.text('\nconst typedEnvironment = new TypedEnvironment(`');
-        this.text(graphql_1.printSchema(this.schema));
+        this.text((0, graphql_1.printSchema)(this.schema));
         this.text('`);');
     }
 }
