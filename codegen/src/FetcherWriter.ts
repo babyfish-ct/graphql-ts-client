@@ -14,7 +14,6 @@ import { targetTypeOf, instancePrefix } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { ImportingBehavior, Writer } from "./Writer";
 import { FetcherContext } from "./FetcherContext";
-import { throws } from "assert";
 
 export class FetcherWriter extends Writer {
 
@@ -75,7 +74,11 @@ export class FetcherWriter extends Writer {
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName]!;
             const targetType = targetTypeOf(field.type);
-            if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation" && targetType === undefined && field.args.length === 0) {
+            if (this.modelType.name !== "Query" && 
+            this.modelType.name !== "Mutation" && 
+            targetType === undefined && 
+            field.args.length === 0 &&
+            !field.isDeprecated) {
                 if (config.defaultFetcherExcludeMap !== undefined) {
                     const excludeProps = config.defaultFetcherExcludeMap[modelType.name];
                     if (excludeProps !== undefined && excludeProps.filter(name => name === fieldName).length !== 0) {
@@ -265,9 +268,6 @@ export class FetcherWriter extends Writer {
     }
 
     private writePositiveProp(field: GraphQLField<unknown, unknown>) {
-        
-        const targetType = targetTypeOf(field.type);
-
         this.writePositivePropImpl(field, "SIMPLEST");
         this.writePositivePropImpl(field, "WITH_ARGS");
         this.writePositivePropImpl(field, "WITH_OTPIONS");
@@ -305,6 +305,13 @@ export class FetcherWriter extends Writer {
         const t = this.text.bind(this);
 
         t("\n");
+        if (field.isDeprecated) {
+            t("/**\n");
+            t(" * @deprecated")
+            t(' ');
+            t(field.deprecationReason)
+            t("\n */\n");
+        }
         if (renderAsField) {
             t("readonly ");
             t(field.name);
@@ -591,7 +598,11 @@ export class FetcherWriter extends Writer {
                 fields.add(fieldMap[fieldName]!.name);
             }
             this.removeSuperFieldNames(fields, this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType));
-        }
+        } else if (this.modelType instanceof GraphQLUnionType) {
+            for (const fieldName in this.fieldMap) {
+                fields.add(fieldName);
+            }
+        } 
         return fields;
     }
 

@@ -49,7 +49,11 @@ class FetcherWriter extends Writer_1.Writer {
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
             const targetType = (0, Utils_1.targetTypeOf)(field.type);
-            if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation" && targetType === undefined && field.args.length === 0) {
+            if (this.modelType.name !== "Query" &&
+                this.modelType.name !== "Mutation" &&
+                targetType === undefined &&
+                field.args.length === 0 &&
+                !field.isDeprecated) {
                 if (config.defaultFetcherExcludeMap !== undefined) {
                     const excludeProps = config.defaultFetcherExcludeMap[modelType.name];
                     if (excludeProps !== undefined && excludeProps.filter(name => name === fieldName).length !== 0) {
@@ -213,7 +217,6 @@ class FetcherWriter extends Writer_1.Writer {
         }
     }
     writePositiveProp(field) {
-        const targetType = (0, Utils_1.targetTypeOf)(field.type);
         this.writePositivePropImpl(field, "SIMPLEST");
         this.writePositivePropImpl(field, "WITH_ARGS");
         this.writePositivePropImpl(field, "WITH_OTPIONS");
@@ -244,6 +247,13 @@ class FetcherWriter extends Writer_1.Writer {
         const nonNull = field.type instanceof graphql_1.GraphQLNonNull;
         const t = this.text.bind(this);
         t("\n");
+        if (field.isDeprecated) {
+            t("/**\n");
+            t(" * @deprecated");
+            t(' ');
+            t(field.deprecationReason);
+            t("\n */\n");
+        }
         if (renderAsField) {
             t("readonly ");
             t(field.name);
@@ -526,6 +536,11 @@ class FetcherWriter extends Writer_1.Writer {
                 fields.add(fieldMap[fieldName].name);
             }
             this.removeSuperFieldNames(fields, this.ctx.inheritanceInfo.upcastTypeMap.get(this.modelType));
+        }
+        else if (this.modelType instanceof graphql_1.GraphQLUnionType) {
+            for (const fieldName in this.fieldMap) {
+                fields.add(fieldName);
+            }
         }
         return fields;
     }
