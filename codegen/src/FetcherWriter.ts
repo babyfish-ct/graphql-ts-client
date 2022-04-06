@@ -305,7 +305,7 @@ export class FetcherWriter extends Writer {
         const t = this.text.bind(this);
 
         t("\n");
-        if (field.isDeprecated) {
+        if (field.deprecationReason) {
             t("/**\n");
             t(" * @deprecated")
             t(' ');

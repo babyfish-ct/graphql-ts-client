@@ -4933,9 +4933,9 @@ electron-to-chromium@^1.3.564, electron-to-chromium@^1.3.649:
   integrity sha512-RTD97QkdrJKaKwRv9h/wGAaoR2lGxNXEcBXS31vjitgTPwTWAbLdS7cEsBK68eEQy7p6YyT8D5BxBEYHu2SuwQ==
 
 electron-to-chromium@^1.4.84:
-  version "1.4.103"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.103.tgz#abfe376a4d70fa1e1b4b353b95df5d6dfd05da3a"
-  integrity sha512-c/uKWR1Z/W30Wy/sx3dkZoj4BijbXX85QKWu9jJfjho3LBAXNEGAEW3oWiGb+dotA6C6BzCTxL2/aLes7jlUeg==
+  version "1.4.104"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.104.tgz#60973b0a7d398efa877196e8ccb0c93d48b918d8"
+  integrity sha512-2kjoAyiG7uMyGRM9mx25s3HAzmQG2ayuYXxsFmYugHSDcwxREgLtscZvbL1JcW9S/OemeQ3f/SG6JhDwpnCclQ==
 
 elliptic@^6.5.3:
   version "6.5.4"
@@ -6074,17 +6074,17 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-ts-client-api@^3.0.11:
-  version "3.0.11"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.11.tgz#1cdba026bc9b1754e302ef0b437aa17c5cf20fa4"
-  integrity sha512-6t+VfOcnQJduLvKv+WVG8Cakl+aaj0S9Hue0hHsB1ECLZgzVjM+2TUtTuLMTs+x9ng1BH8MA/ixnvToUY/yqUg==
+graphql-ts-client-api@^3.0.12:
+  version "3.0.12"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.12.tgz#f5b3883f1c75eacc6d6a5d16f13adbea99b5a937"
+  integrity sha512-ZemZZ4X2SrnqUklAv25xviL8cTjyFou4PoZuhj7cXeGbyDwTvFieoirq9DyrFdtKe4sGJb4Q1rqCzxcaG7gzgw==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.11:
-  version "3.0.11"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.11.tgz#c8865c7a3ef3d4cc23cc66df129db2862f963cdc"
-  integrity sha512-5+lf4bBzptIZ0ryUU+/IjBVUWzLvBIf9wXLLbmDrYKhpyclfDjtdh0ujrd5JIXaQQwsRUl2+VrgajUjXycOi2A==
+graphql-ts-client-codegen@^3.0.12:
+  version "3.0.12"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.12.tgz#e14b826d01a1d0a5e742cc785e8a1e2f46f1246e"
+  integrity sha512-Addw4E288UaKHOZhfQp2azHNTcfJ/NDYg9H13QOr6uocytfExupCPCRK2/+dHWhLeLm3UZgxC+29FEDOg843VA==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -6092,10 +6092,10 @@ graphql-ts-client-codegen@^3.0.11:
     node-fetch "^2.6.1"
     typescript "^4.3.2"
 
-graphql-ts-client-relay@^3.0.11:
-  version "3.0.11"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-relay/-/graphql-ts-client-relay-3.0.11.tgz#50ce222d7bae16fc88a99f779417b0ef7064abed"
-  integrity sha512-Uh0u6h4DjwHkhqgH0lgEZReBMYATzjfYqkX+h1lAFd2+JP08FyL3nHkkIeHZSX2bxwzZCvaWtMaceTtyfd6nIg==
+graphql-ts-client-relay@^3.0.12:
+  version "3.0.12"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-relay/-/graphql-ts-client-relay-3.0.12.tgz#e16537d8d8773e9a4e555e6e491f8902a5006429"
+  integrity sha512-qffpTOlZ16NuAwcBJbVpuVUCy5ywk1T24cD6syhp2K5RSLdIKFJ5L6AZ1EKIpdUeQxVaBLKsgg3Y8ZjpJYgVdA==
   dependencies:
     "@types/node" "^16.7.10"
     "@types/react-relay" "^11.0.2"
@@ -6103,7 +6103,7 @@ graphql-ts-client-relay@^3.0.11:
     "@types/relay-runtime" "^11.0.3"
     browser-process-hrtime "^1.0.0"
     graphql "^15.5.2"
-    graphql-ts-client-api "^3.0.11"
+    graphql-ts-client-api "^3.0.12"
     relay-compiler "^12.0.0"
     relay-runtime "^12.0.0"
 
