@@ -14,8 +14,8 @@
     "@types/react-relay": "^11.0.2",
     "@types/relay-runtime": "^11.0.3",
     "antd": "^4.16.13",
-    "graphql-ts-client-api": "^3.0.12",
-    "graphql-ts-client-relay": "^3.0.12",
+    "graphql-ts-client-api": "^3.0.13",
+    "graphql-ts-client-relay": "^3.0.13",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-relay": "^12.0.0",
@@ -51,6 +51,6 @@
     ]
   },
   "devDependencies": {
-    "graphql-ts-client-codegen": "^3.0.12"
+    "graphql-ts-client-codegen": "^3.0.13"
   }
 }

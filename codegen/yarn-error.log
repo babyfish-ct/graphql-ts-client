@@ -1,43 +1,47 @@
 Arguments: 
-  C:\Program Files\nodejs\node.exe C:\Users\babyfish\AppData\Roaming\npm\node_modules\yarn\bin\yarn.js init
+  /opt/homebrew/Cellar/node/16.5.0/bin/node /opt/homebrew/bin/yarn publish
 
 PATH: 
-  C:\ProgramData\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\develop\java\software\apache-maven-3.5.0\bin;C:\Program Files\Git\cmd;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\;C:\Program Files\Microsoft SQL Server\140\Tools\Binn\;C:\Program Files\Microsoft SQL Server\140\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\Client SDK\ODBC\130\Tools\Binn\;C:\Program Files (x86)\Microsoft SQL Server\140\DTS\Binn\;C:\Program Files (x86)\Microsoft SQL Server\140\Tools\Binn\ManagementStudio\;C:\windows\System32\inetsrv;C:\windows\SysWOW64\inetsrv;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\nodejs\;C:\Users\babyfish\AppData\Local\Microsoft\WindowsApps;;C:\Program Files\JetBrains\WebStorm 2019.1\bin;;C:\Users\babyfish\AppData\Roaming\npm;C:\Users\babyfish\AppData\Local\Programs\Microsoft VS Code\bin
+  /Users/chentao/.config/yarn/global/node_modules/.bin:/opt/homebrew/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/Apple/usr/bin:/Users/chentao/.config/yarn/global/node_modules/.bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/chentao/.cargo/bin
 
 Yarn version: 
   1.22.10
 
 Node version: 
-  14.17.0
+  16.5.0
 
 Platform: 
-  win32 x64
+  darwin arm64
 
 Trace: 
-  Error: canceled
-      at Interface.<anonymous> (C:\Users\babyfish\AppData\Roaming\npm\node_modules\yarn\lib\cli.js:136216:13)
-      at Interface.emit (events.js:376:20)
-      at Interface._ttyWrite (readline.js:880:16)
-      at ReadStream.onkeypress (readline.js:213:10)
-      at ReadStream.emit (events.js:376:20)
-      at emitKeys (internal/readline/utils.js:345:14)
-      at emitKeys.next (<anonymous>)
-      at ReadStream.onData (readline.js:1149:36)
-      at ReadStream.emit (events.js:376:20)
-      at addChunk (internal/streams/readable.js:309:12)
+  Error: https://registry.yarnpkg.com/-/user/org.couchdb.user:babyfish-ct: failed to authenticate: Could not authenticate babyfish-ct: bad password
+      at Request.params.callback [as _callback] (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:66988:18)
+      at Request.self.callback (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:140662:22)
+      at Request.emit (node:events:394:28)
+      at Request.<anonymous> (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:141634:10)
+      at Request.emit (node:events:394:28)
+      at IncomingMessage.<anonymous> (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:141556:12)
+      at Object.onceWrapper (node:events:513:28)
+      at IncomingMessage.emit (node:events:406:35)
+      at endReadableNT (node:internal/streams/readable:1331:12)
+      at processTicksAndRejections (node:internal/process/task_queues:83:21)
 
 npm manifest: 
   {
-    "name": "graphql-fetcher-codegen",
-    "version": "1.0.0",
+    "name": "graphql-ts-client-codegen",
+    "version": "3.0.13",
     "description": "A tool to generate strong type client code by GraphQL schema",
     "author": "ChenTao",
     "license": "MIT",
     "dependencies": {
-      "graphql": "^15.5.0",
+      "@types/node": "^15.12.2",
+      "@types/node-fetch": "^2.5.10",
+      "graphql": "^15.5.1",
+      "node-fetch": "^2.6.1",
       "typescript": "^4.3.2"
     },
     "main": "dist/index.js",
+    "repository": "https://github.com/babyfish-ct/graphql-ts-client",
     "types": "dist/index.d.ts",
     "files": [
       "/dist"
@@ -52,10 +56,71 @@ Lockfile:
   # yarn lockfile v1
   
   
-  graphql@^15.5.0:
-    version "15.5.0"
-    resolved "https://registry.nlark.com/graphql/download/graphql-15.5.0.tgz#39d19494dbe69d1ea719915b578bf920344a69d5"
-    integrity sha1-OdGUlNvmnR6nGZFbV4v5IDRKadU=
+  "@types/node-fetch@^2.5.10":
+    version "2.5.10"
+    resolved "https://registry.nlark.com/@types/node-fetch/download/@types/node-fetch-2.5.10.tgz?cache=0&sync_timestamp=1621242066206&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40types%2Fnode-fetch%2Fdownload%2F%40types%2Fnode-fetch-2.5.10.tgz#9b4d4a0425562f9fcea70b12cb3fcdd946ca8132"
+    integrity sha1-m01KBCVWL5/OpwsSyz/N2UbKgTI=
+    dependencies:
+      "@types/node" "*"
+      form-data "^3.0.0"
+  
+  "@types/node@*":
+    version "15.12.4"
+    resolved "https://registry.nlark.com/@types/node/download/@types/node-15.12.4.tgz#e1cf817d70a1e118e81922c4ff6683ce9d422e26"
+    integrity sha1-4c+BfXCh4RjoGSLE/2aDzp1CLiY=
+  
+  "@types/node@^15.12.2":
+    version "15.12.2"
+    resolved "https://registry.nlark.com/@types/node/download/@types/node-15.12.2.tgz#1f2b42c4be7156ff4a6f914b2fb03d05fa84e38d"
+    integrity sha1-HytCxL5xVv9Kb5FLL7A9BfqE440=
+  
+  asynckit@^0.4.0:
+    version "0.4.0"
+    resolved "https://registry.npm.taobao.org/asynckit/download/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
+    integrity sha1-x57Zf380y48robyXkLzDZkdLS3k=
+  
+  combined-stream@^1.0.8:
+    version "1.0.8"
+    resolved "https://registry.npm.taobao.org/combined-stream/download/combined-stream-1.0.8.tgz#c3d45a8b34fd730631a110a8a2520682b31d5a7f"
+    integrity sha1-w9RaizT9cwYxoRCoolIGgrMdWn8=
+    dependencies:
+      delayed-stream "~1.0.0"
+  
+  delayed-stream@~1.0.0:
+    version "1.0.0"
+    resolved "https://registry.npm.taobao.org/delayed-stream/download/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
+    integrity sha1-3zrhmayt+31ECqrgsp4icrJOxhk=
+  
+  form-data@^3.0.0:
+    version "3.0.1"
+    resolved "https://registry.npm.taobao.org/form-data/download/form-data-3.0.1.tgz?cache=0&sync_timestamp=1613410812604&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fform-data%2Fdownload%2Fform-data-3.0.1.tgz#ebd53791b78356a99af9a300d4282c4d5eb9755f"
+    integrity sha1-69U3kbeDVqma+aMA1CgsTV65dV8=
+    dependencies:
+      asynckit "^0.4.0"
+      combined-stream "^1.0.8"
+      mime-types "^2.1.12"
+  
+  graphql@^15.5.1:
+    version "15.5.1"
+    resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.5.1.tgz#f2f84415d8985e7b84731e7f3536f8bb9d383aad"
+    integrity sha512-FeTRX67T3LoE3LWAxxOlW2K3Bz+rMYAC18rRguK4wgXaTZMiJwSUwDmPFo3UadAKbzirKIg5Qy+sNJXbpPRnQw==
+  
+  mime-db@1.48.0:
+    version "1.48.0"
+    resolved "https://registry.nlark.com/mime-db/download/mime-db-1.48.0.tgz#e35b31045dd7eada3aaad537ed88a33afbef2d1d"
+    integrity sha1-41sxBF3X6to6qtU37YijOvvvLR0=
+  
+  mime-types@^2.1.12:
+    version "2.1.31"
+    resolved "https://registry.nlark.com/mime-types/download/mime-types-2.1.31.tgz?cache=0&sync_timestamp=1622570117952&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fmime-types%2Fdownload%2Fmime-types-2.1.31.tgz#a00d76b74317c61f9c2db2218b8e9f8e9c5c9e6b"
+    integrity sha1-oA12t0MXxh+cLbIhi46fjpxcnms=
+    dependencies:
+      mime-db "1.48.0"
+  
+  node-fetch@^2.6.1:
+    version "2.6.1"
+    resolved "https://registry.npm.taobao.org/node-fetch/download/node-fetch-2.6.1.tgz?cache=0&sync_timestamp=1599309667528&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fnode-fetch%2Fdownload%2Fnode-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
+    integrity sha1-BFvTI2Mfdu0uK1VXM5RBa2OaAFI=
   
   typescript@^4.3.2:
     version "4.3.2"

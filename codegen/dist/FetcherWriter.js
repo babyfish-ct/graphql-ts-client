@@ -247,7 +247,7 @@ class FetcherWriter extends Writer_1.Writer {
         const nonNull = field.type instanceof graphql_1.GraphQLNonNull;
         const t = this.text.bind(this);
         t("\n");
-        if (field.isDeprecated) {
+        if (field.deprecationReason) {
             t("/**\n");
             t(" * @deprecated");
             t(' ');
