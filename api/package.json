@@ -1,11 +1,11 @@
 {
-  "name": "graphql-ts-client-api",
+  "name": "@rnwbllabs/graphql-ts-client-api",
   "version": "3.0.13",
   "description": "Strongly type API for graphql client",
   "author": "ChenTao",
   "license": "MIT",
   "main": "dist/index.js",
-  "repository": "https://github.com/babyfish-ct/graphql-ts-client",
+  "repository": "git://github.com/rnwbllabs/graphql-ts-client.git",
   "types": "dist/index.d.ts",
   "files": [
     "/dist"

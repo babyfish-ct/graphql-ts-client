@@ -53,16 +53,19 @@ export function setGraphQLExecutor(exeucotr: GraphQLExecutor) {
 }
 
 export async function execute<TData extends object, TVariables extends object>(
-    fetcher: Fetcher<"Query" | "Mutation", TData, TVariables>,
+    fetcher: Fetcher<"Query" | "Mutation" | "query_root" | "mutation_root", TData, TVariables>,
     options?: {
         readonly operationName?: string,
         readonly variables?: TVariables
-    }
+    },
+    executor?: GraphQLExecutor
 ) : Promise<TData> {
 
-    const executor = graphQLExecutor;
+    if (!executor) {
+        executor = graphQLExecutor;
+    }
     if (executor === undefined) {
-        throw new Error("'setGraphQLExecutor' has not been called");
+        throw new Error("'setGraphQLExecutor' has not been called and one has not been passed");
     }
 
     const writer = new TextWriter();
