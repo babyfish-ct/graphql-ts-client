@@ -100,7 +100,7 @@ export class GraphQLError extends Error {
     constructor(errors: any) {
         super();
         this.errors = errors;
-        this.message = JSON.stringify(errors)
+        this.message = JSON.stringify(errors);
     }
 }
 
