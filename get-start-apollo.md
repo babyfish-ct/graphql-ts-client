@@ -44,13 +44,21 @@ const generator = new ApolloGenerator({
       return loadRemoteSchema("http://localhost:8080/graphql");
     },
     targetDir: path.join(__dirname, "../src/__generated"),
-    recreateTargetDir: true,
     defaultFetcherExcludeMap: {
       "Department": ["avgSalary"]
     },
 });
 generator.generate();
 ```
+
+> *Notes*
+> ```
+> defaultFetcherExcludeMap: {
+>     "Department": ["avgSalary"]
+> }
+> ```
+> Only for the server of the attached demo of this framework, if you are generating code for other servers, please delete it.
+
 Open the package.json of the root dir, find the object "scripts" and add this field into it
 ```
 "codegen": "node scripts/GraphQLCodeGenerator.js"
