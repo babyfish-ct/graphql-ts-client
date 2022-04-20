@@ -40,10 +40,22 @@ const generator = new GraphQLStateGenerator({
     schemaLoader: async() => {
         return loadRemoteSchema("http://localhost:8080/graphql");
     },
-    targetDir: path.join(__dirname, "../src/__generated")
+    targetDir: path.join(__dirname, "../src/__generated"),
+    defaultFetcherExcludeMap: {
+        "Department": ["avgSalary"]
+    }
 });
 generator.generate();
 ```
+
+> *Notes*
+> ```
+> defaultFetcherExcludeMap: {
+>     "Department": ["avgSalary"]
+> }
+> ```
+> Can only work with the server of the attached demo of this framework, if you are generating code for other servers, please delete it.
+
 Open the package.json of the root dir, find the object "scripts" and add this field into it
 ```
 "codegen": "node scripts/GraphQLCodeGenerator.js"
