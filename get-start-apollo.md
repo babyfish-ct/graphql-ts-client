@@ -57,7 +57,7 @@ generator.generate();
 >     "Department": ["avgSalary"]
 > }
 > ```
-> Only for the server of the attached demo of this framework, if you are generating code for other servers, please delete it.
+> Can only work with the server of the attached demo of this framework, if you are generating code for other servers, please delete it.
 
 Open the package.json of the root dir, find the object "scripts" and add this field into it
 ```
