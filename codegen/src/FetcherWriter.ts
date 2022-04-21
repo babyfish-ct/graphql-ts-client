@@ -152,7 +152,8 @@ export class FetcherWriter extends Writer {
                 importedFetcherTypeNames.add(this.superFetcherTypeName(targetType));
             }
         }
-        this.importStatement(`import { ${Array.from(importedFetcherTypeNames).join(", ")}, createFetcher, createFetchableType } from 'graphql-ts-client-api';`);
+        this.importStatement(`import type { ${Array.from(importedFetcherTypeNames).join(", ")} } from 'graphql-ts-client-api';`);
+        this.importStatement(`import { createFetcher, createFetchableType } from 'graphql-ts-client-api';`);
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
         }
