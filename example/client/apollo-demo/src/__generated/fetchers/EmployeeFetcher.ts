@@ -3,7 +3,7 @@ import type { ObjectFetcher } from 'graphql-ts-client-api';
 import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 import { node$ } from './NodeFetcher';
-import {Gender} from '../enums';
+import type {Gender} from '../enums';
 
 /*
  * Any instance of this interface is immutable,

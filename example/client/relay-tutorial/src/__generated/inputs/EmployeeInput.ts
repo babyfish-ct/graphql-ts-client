@@ -1,4 +1,4 @@
-import {Gender} from '../enums';
+import type {Gender} from '../enums';
 
 /*
  * This input type is not interface, because interfaces 

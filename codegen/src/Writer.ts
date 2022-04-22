@@ -46,7 +46,7 @@ export abstract class Writer {
                 continue;
             }
             if (behavior === 'SAME_DIR') {
-                this.stream.write(`import {${importedType.name}} from '.';\n`);
+                this.stream.write(`import type {${importedType.name}} from '.';\n`);
             } else {
                 let subDir: string;
                 if (importedType instanceof GraphQLInputObjectType) {
@@ -57,9 +57,9 @@ export abstract class Writer {
                     subDir = "fetchers";
                 }
                 if (this.isUnderGlobalDir()) {
-                    this.stream.write(`import {${importedType.name}} from './${subDir}';\n`);    
+                    this.stream.write(`import type {${importedType.name}} from './${subDir}';\n`);    
                 } else {
-                    this.stream.write(`import {${importedType.name}} from '../${subDir}';\n`);
+                    this.stream.write(`import type {${importedType.name}} from '../${subDir}';\n`);
                 }
             }
         }

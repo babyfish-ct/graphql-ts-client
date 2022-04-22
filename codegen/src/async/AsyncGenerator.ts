@@ -44,7 +44,8 @@ export class AsyncGenerator extends Generator {
 }
 
 const ASYNC_CODE = `
-import { Fetcher, TextWriter, util } from "graphql-ts-client-api";
+import type { Fetcher } from "graphql-ts-client-api";
+import { TextWriter, util } from "graphql-ts-client-api";
 
 export type GraphQLExecutor = (request: string, variables: object) => Promise<any>;
 

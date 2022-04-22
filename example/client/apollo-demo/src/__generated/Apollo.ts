@@ -12,7 +12,8 @@ import {
     QueryResult, 
     QueryTuple 
 } from "@apollo/client";
-import { Fetcher, TextWriter, util } from "graphql-ts-client-api";
+import type { Fetcher } from "graphql-ts-client-api";
+import { TextWriter, util } from "graphql-ts-client-api";
 import { useContext, useEffect, useMemo } from "react";
 import { dependencyManagerContext } from "./DependencyManager";
 

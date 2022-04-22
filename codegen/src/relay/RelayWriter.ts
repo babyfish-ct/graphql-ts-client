@@ -30,7 +30,8 @@ export class RelayWriter extends Writer {
 }
 
 const RELAY_CODE = `import { useMemo } from 'react';
-import { Fetcher, util } from "graphql-ts-client-api";
+import type { Fetcher } from "graphql-ts-client-api";
+import { util } from "graphql-ts-client-api";
 import { 
     loadQuery, 
     useQueryLoader, 
