@@ -44,13 +44,17 @@ export abstract class Generator {
             if (!typeName.startsWith("__")) {
                 const type = typeMap[typeName]!;
                 if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType) {
-                    const tuple = connectionTypeTuple(type);
-                    if (tuple !== undefined) {
-                        connections.set(tuple[0], {
-                            edgeType: tuple[1],
-                            nodeType: tuple[2]
-                        });
-                        edgeTypes.add(tuple[1]);
+                    try {
+                        const tuple = connectionTypeTuple(type);
+                        if (tuple !== undefined) {
+                            connections.set(tuple[0], {
+                                edgeType: tuple[1],
+                                nodeType: tuple[2]
+                            });
+                            edgeTypes.add(tuple[1]);
+                        }
+                    } catch (e) {
+                        console.error(`Cannot get connection type tuple for ${typeName} because: ${e.message}`);
                     }
                 }
                 if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType || type instanceof GraphQLUnionType) {
