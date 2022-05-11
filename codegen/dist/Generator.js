@@ -338,20 +338,25 @@ function connectionTypeTuple(type) {
                 const node = edgeType.getFields()["node"];
                 if (node !== undefined) {
                     if (!(edges.type instanceof graphql_1.GraphQLNonNull)) {
-                        throw new Error(`The type "${type.name}" is connection, its field "edges" must be not-null list`);
+                        waring(`The type "${type.name}" is connection, its field "edges" must be not-null list`);
                     }
                     if (!(listType.ofType instanceof graphql_1.GraphQLNonNull)) {
-                        throw new Error(`The type "${type.name}" is connection, element of  its field "edges" must be not-null`);
+                        waring(`The type "${type.name}" is connection, element of  its field "edges" must be not-null`);
                     }
-                    if (!(node.type instanceof graphql_1.GraphQLNonNull)) {
-                        throw new Error(`The type "${edgeType}" is edge, its field "node" must be non-null`);
+                    let nodeType;
+                    if (node.type instanceof graphql_1.GraphQLNonNull) {
+                        nodeType = node.type.ofType;
                     }
-                    else if (!(node.type.ofType instanceof graphql_1.GraphQLObjectType) && !(node.type.ofType instanceof graphql_1.GraphQLInterfaceType) && !(node.type.ofType instanceof graphql_1.GraphQLUnionType)) {
-                        throw new Error(`The type "${edgeType}" is edge, its field "node" must be object, interface or union`);
+                    else {
+                        waring(`The type "${edgeType}" is edge, its field "node" must be non-null`);
+                        nodeType = node.type;
+                    }
+                    if (!(nodeType instanceof graphql_1.GraphQLObjectType) && !(nodeType instanceof graphql_1.GraphQLInterfaceType) && !(nodeType instanceof graphql_1.GraphQLUnionType)) {
+                        throw new Error(`The type "${edgeType}" is edge, its field "node" must be object, interface, union or their non-null wrappers`);
                     }
                     const cursor = edgeType.getFields()["cursor"];
                     if (cursor === undefined) {
-                        throw new Error(`The type "${edgeType}" is edge, it must defined a field named "cursor"`);
+                        waring(`The type "${edgeType}" is edge, it must defined a field named "cursor"`);
                     }
                     else {
                         const cursorType = cursor.type instanceof graphql_1.GraphQLNonNull ?
@@ -361,12 +366,18 @@ function connectionTypeTuple(type) {
                             throw new Error(`The type "${edgeType}" is edge, its field "cursor" must be string`);
                         }
                     }
-                    return [type, edgeType, node.type.ofType];
+                    return [type, edgeType, nodeType];
                 }
             }
         }
     }
     return undefined;
+}
+function waring(message) {
+    console.warn("******** GraphQL code generator warning! ********");
+    console.log(message);
+    console.warn("*************************************************");
+    console.log("");
 }
 const mkdirAsync = (0, util_1.promisify)(fs_1.mkdir);
 const rmdirAsync = (0, util_1.promisify)(fs_1.rmdir);

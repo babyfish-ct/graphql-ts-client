@@ -5439,17 +5439,17 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-ts-client-api@^3.0.15:
-  version "3.0.15"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.15.tgz#fbc8097d8855e90869537cab012b545354b7946a"
-  integrity sha512-2PITBbRjbjATMXyYlquYc4PLKyFUG1yQKZZ0PzLr+VOz9ovasIbHfCL6Brl/vJOvYxswNu2H9aThCjMZBkjcZA==
+graphql-ts-client-api@^3.0.16:
+  version "3.0.16"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.16.tgz#c05d61323cb73d3785a3b46f241d66ca87e1c28e"
+  integrity sha512-NnvD9sCQiXDXIw7QH0WmyIE2kZVCCICLBjlylIhVAMDS83QLFLZtTjV7JQquk4+9mcpjreUHRl4ZL4GchiSsig==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.15:
-  version "3.0.15"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.15.tgz#aa699f4d4f9f4fe40cc95ce1be67e8907f56bd24"
-  integrity sha512-zCXg64xs/EjD1i3S9mMUEiqJbH5QTB8MjSwIudj78FVV9N3zDYLg7PqeWzCFbXbvLiXvsSmkYcNlXBL+oqdoVg==
+graphql-ts-client-codegen@^3.0.16:
+  version "3.0.16"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.16.tgz#2c2e8d9f306dee6495b140519bc98045c2390769"
+  integrity sha512-7MbapI3sd0QLXkaELt0I87Eucpc2LLpmTDfr7xR3MC8NrA/wgED/mKjaPTWO1asGKQbSSiq79/Jcgqs9FPB7Fw==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -10974,9 +10974,9 @@ typescript@^4.1.2:
   integrity sha512-rUvLW0WtF7PF2b9yenwWUi9Da9euvDRhmH7BLyBG4DCFfOJ850LGNknmRpp8Z8kXNUPObdZQEfKOiHtXuQHHKA==
 
 typescript@^4.3.2:
-  version "4.6.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.6.3.tgz#eefeafa6afdd31d725584c67a0eaba80f6fc6c6c"
-  integrity sha512-yNIatDa5iaofVozS/uQJEl3JRWLKKGJKh6Yaiv0GLGSuhpFJe7P3SbHZ8/yjAHRQwKRoA6YZqlfjXWmVzoVSMw==
+  version "4.6.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.6.4.tgz#caa78bbc3a59e6a5c510d35703f6a09877ce45e9"
+  integrity sha512-9ia/jWHIEbo49HfjrLGfKbZSuWo9iTMwXO+Ca3pRsSpbsMbc7/IU8NKdCZVRRBafVPGnoJeFL76ZOAA84I9fEg==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"

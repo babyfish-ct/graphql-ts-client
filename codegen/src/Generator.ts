@@ -371,27 +371,32 @@ function connectionTypeTuple(
                 const node = edgeType.getFields()["node"];
                 if (node !== undefined) {
                     if (!(edges.type instanceof GraphQLNonNull)) {
-                        throw new Error(
+                        waring(
                             `The type "${type.name}" is connection, its field "edges" must be not-null list`
                         );
                     }
                     if (!(listType.ofType instanceof GraphQLNonNull)) {
-                        throw new Error(
+                        waring(
                             `The type "${type.name}" is connection, element of  its field "edges" must be not-null`
                         );
                     }
-                    if (!(node.type instanceof GraphQLNonNull)) {
-                        throw new Error(
+                    let nodeType: GraphQLType;
+                    if (node.type instanceof GraphQLNonNull) {
+                        nodeType = node.type.ofType;
+                    } else {
+                        waring(
                             `The type "${edgeType}" is edge, its field "node" must be non-null`
                         );
-                    } else if (!(node.type.ofType instanceof GraphQLObjectType) && !(node.type.ofType instanceof GraphQLInterfaceType) && !(node.type.ofType instanceof GraphQLUnionType)) {
+                        nodeType = node.type;
+                    }
+                    if (!(nodeType instanceof GraphQLObjectType) && !(nodeType instanceof GraphQLInterfaceType) && !(nodeType instanceof GraphQLUnionType)) {
                         throw new Error(
-                            `The type "${edgeType}" is edge, its field "node" must be object, interface or union`
+                            `The type "${edgeType}" is edge, its field "node" must be object, interface, union or their non-null wrappers`
                         );
                     }
                     const cursor = edgeType.getFields()["cursor"];
                     if (cursor === undefined) {
-                        throw new Error(
+                        waring(
                             `The type "${edgeType}" is edge, it must defined a field named "cursor"`
                         );
                     } else {
@@ -405,12 +410,19 @@ function connectionTypeTuple(
                             );
                         }
                     }
-                    return [type, edgeType, node.type.ofType];
+                    return [type, edgeType, nodeType];
                 }
             }
         }
     }
     return undefined;
+}
+
+function waring(message: String) {
+    console.warn("******** GraphQL code generator warning! ********");
+    console.log(message);
+    console.warn("*************************************************");
+    console.log("");
 }
 
 const mkdirAsync = promisify(mkdir);
