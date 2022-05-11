@@ -6201,17 +6201,17 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-ts-client-api@^3.0.16:
-  version "3.0.16"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.16.tgz#c05d61323cb73d3785a3b46f241d66ca87e1c28e"
-  integrity sha512-NnvD9sCQiXDXIw7QH0WmyIE2kZVCCICLBjlylIhVAMDS83QLFLZtTjV7JQquk4+9mcpjreUHRl4ZL4GchiSsig==
+graphql-ts-client-api@^3.0.17:
+  version "3.0.17"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.17.tgz#fb0d1ed1fda7591737c663703727b22f66a3e4b7"
+  integrity sha512-wc7YzKwMEFXzGT50Yc8d8yQZwyhReNz79q1crmXQSp0Pa6yh3OvPKtSiJ9+tJC+hDXUKs9T6ntzBGqhYFJhJlg==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.16:
-  version "3.0.16"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.16.tgz#2c2e8d9f306dee6495b140519bc98045c2390769"
-  integrity sha512-7MbapI3sd0QLXkaELt0I87Eucpc2LLpmTDfr7xR3MC8NrA/wgED/mKjaPTWO1asGKQbSSiq79/Jcgqs9FPB7Fw==
+graphql-ts-client-codegen@^3.0.17:
+  version "3.0.17"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.17.tgz#91d70ed97bc22e084141f4d61e833101aca262ce"
+  integrity sha512-wYURKxSu5R5OG+EkypHDcDzx7S+vO4rmTmZihjxl49TgIz8rd227mP3YYhFgc0qeydqm1AwPM3JckTyLPVUlxg==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -6219,10 +6219,10 @@ graphql-ts-client-codegen@^3.0.16:
     node-fetch "^2.6.1"
     typescript "^4.3.2"
 
-graphql-ts-client-relay@^3.0.16:
-  version "3.0.16"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-relay/-/graphql-ts-client-relay-3.0.16.tgz#da31d20dcdcf59557f8d0bf12174e98330c19ee3"
-  integrity sha512-u26aZnLGz5EdRtN5+9PaPwat532nHrNh0fl7T9GYOKYGWHt+w7nlOKt/3my0ZuxRWodAnTVmi4Q4OGn+sRL3gw==
+graphql-ts-client-relay@^3.0.17:
+  version "3.0.17"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-relay/-/graphql-ts-client-relay-3.0.17.tgz#a38c043a605eafb4eefee093b7eee692eb212878"
+  integrity sha512-893PgpPcKnYPWurqTUx/rakaLAe5aLqSWgH3ApE+Z1wZuZFUVMI/ou8wwQxhiNtCeWKl0YC4jQ9KlFYtyLzaYg==
   dependencies:
     "@types/node" "^16.7.10"
     "@types/react-relay" "^11.0.2"

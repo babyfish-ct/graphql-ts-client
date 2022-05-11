@@ -369,37 +369,30 @@ class ResultContext {
         else if (Array.isArray(value) || value instanceof Set) {
             this.writer.scope({ type: "ARRAY" }, () => {
                 for (const e of value) {
-                    this.writer.seperator();
+                    this.writer.seperator(", ");
                     this.acceptLiteral(e);
                 }
             });
         }
         else if (value instanceof Map) {
-            for (const [k, v] of value) {
-                this.writer.seperator();
-                this.acceptMapKey(k);
-                t(": ");
-                this.acceptLiteral(v);
-            }
+            this.writer.scope({ type: "BLOCK" }, () => {
+                for (const [k, v] of value) {
+                    this.writer.seperator(", ");
+                    this.writer.text(k);
+                    t(": ");
+                    this.acceptLiteral(v);
+                }
+            });
         }
         else if (typeof value === 'object') {
-            for (const k in value) {
-                this.writer.seperator();
-                this.acceptMapKey(k);
-                t(": ");
-                this.acceptLiteral(value[k]);
-            }
-        }
-    }
-    acceptMapKey(key) {
-        if (typeof key === "string") {
-            this.writer.text(`"${key.replace('"', '\\"')}"`);
-        }
-        else if (typeof key === "number") {
-            this.writer.text("${key}");
-        }
-        else {
-            throw new Error(`Unsupported map key ${key}`);
+            this.writer.scope({ type: "BLOCK" }, () => {
+                for (const k in value) {
+                    this.writer.seperator(", ");
+                    this.writer.text(k);
+                    t(": ");
+                    this.acceptLiteral(value[k]);
+                }
+            });
         }
     }
 }
