@@ -1964,9 +1964,9 @@
   integrity sha512-GryiOJmNcWbovBxTfZSF71V/mXbgcV3MewDe3kIMCLyIh5e7SKAeUZs+rMnJ8jkMolZ/4/VsdBmMrw3l+VdZ3w==
 
 "@jridgewell/trace-mapping@^0.3.9":
-  version "0.3.11"
-  resolved "https://registry.yarnpkg.com/@jridgewell/trace-mapping/-/trace-mapping-0.3.11.tgz#eb2e124521f27673493030d02dffedf60e56553f"
-  integrity sha512-RllI476aSMsxzeI9TtlSMoNTgHDxEmnl6GkkHwhr0vdL8W+0WuesyI8Vd3rBOfrwtPXbPxdT9ADJdiOKgzxPQA==
+  version "0.3.13"
+  resolved "https://registry.yarnpkg.com/@jridgewell/trace-mapping/-/trace-mapping-0.3.13.tgz#dcfe3e95f224c8fe97a87a5235defec999aa92ea"
+  integrity sha512-o1xbKhp9qnIAoHJSWd6KlCZfqslL4valSF81H8ImioOAxluWYWOpWkpyktY2vnt4tbrX9XYaxovq6cgowaJp2w==
   dependencies:
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
@@ -3796,9 +3796,9 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001109, can
   integrity sha512-xJJqzyd+7GCJXkcoBiQ1GuxEiOBCLQ0aVW9HMekifZsAVGdj5eJ4mFB9fEhSHipq9IOk/QXFJUiIr9lZT+EsGw==
 
 caniuse-lite@^1.0.30001332:
-  version "1.0.30001339"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001339.tgz#f9aece4ea8156071613b27791547ba0b33f176cf"
-  integrity sha512-Es8PiVqCe+uXdms0Gu5xP5PF2bxLR7OBp3wUzUnuO7OHzhOfCyg3hdiGWVPVxhiuniOzng+hTc1u3fEQ0TlkSQ==
+  version "1.0.30001340"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001340.tgz#029a2f8bfc025d4820fafbfaa6259fd7778340c7"
+  integrity sha512-jUNz+a9blQTQVu4uFcn17uAD8IDizPzQkIKh3LCJfg9BkyIqExYYdyc/ZSlWUSKb8iYiXxKsxbv4zYSvkqjrxw==
 
 capture-exit@^2.0.0:
   version "2.0.0"
@@ -6080,17 +6080,17 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-ts-client-api@^3.0.17:
-  version "3.0.17"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.17.tgz#fb0d1ed1fda7591737c663703727b22f66a3e4b7"
-  integrity sha512-wc7YzKwMEFXzGT50Yc8d8yQZwyhReNz79q1crmXQSp0Pa6yh3OvPKtSiJ9+tJC+hDXUKs9T6ntzBGqhYFJhJlg==
+graphql-ts-client-api@^3.0.18:
+  version "3.0.18"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.18.tgz#671f29d8c58e2ff9013646be4d0400c8cf9d52b2"
+  integrity sha512-3+qNVi/oYVtyeJNUfI3jZklsngJaWcwe9VgyE9sKAi4DSTKbPlU7XD9ZXCzi93phvI/7mRkFJSnNRFGBpau2Jg==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.17:
-  version "3.0.17"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.17.tgz#91d70ed97bc22e084141f4d61e833101aca262ce"
-  integrity sha512-wYURKxSu5R5OG+EkypHDcDzx7S+vO4rmTmZihjxl49TgIz8rd227mP3YYhFgc0qeydqm1AwPM3JckTyLPVUlxg==
+graphql-ts-client-codegen@^3.0.18:
+  version "3.0.18"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.18.tgz#50cf1c72c4d80541f3f5c337630c3772f4df4a3e"
+  integrity sha512-bBhwcrSRLvawxBdJdZwez7Ncaiq+gfLX1NqTnoitQ2xv3Xh8/tSfDjnc3AVvJMZZCNfSmisBpkeRNHTS+rYwTw==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -6098,10 +6098,10 @@ graphql-ts-client-codegen@^3.0.17:
     node-fetch "^2.6.1"
     typescript "^4.3.2"
 
-graphql-ts-client-relay@^3.0.17:
-  version "3.0.17"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-relay/-/graphql-ts-client-relay-3.0.17.tgz#a38c043a605eafb4eefee093b7eee692eb212878"
-  integrity sha512-893PgpPcKnYPWurqTUx/rakaLAe5aLqSWgH3ApE+Z1wZuZFUVMI/ou8wwQxhiNtCeWKl0YC4jQ9KlFYtyLzaYg==
+graphql-ts-client-relay@^3.0.18:
+  version "3.0.18"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-relay/-/graphql-ts-client-relay-3.0.18.tgz#78679afb5c06b5348e02047aa74d4c4394977a18"
+  integrity sha512-Nsn4oCTeCsqebKPsDd3xaZd63gH7ifjn9u5ZRyiV8vWZmbU+dxey2V0vUwJwaWyFqN19uf3nrR15K5srwZvfLA==
   dependencies:
     "@types/node" "^16.7.10"
     "@types/react-relay" "^11.0.2"

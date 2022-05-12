@@ -809,10 +809,10 @@ globals@^11.1.0:
   resolved "https://registry.yarnpkg.com/globals/-/globals-11.12.0.tgz#ab8795338868a0babd8525758018c2a7eb95c42e"
   integrity sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==
 
-graphql-ts-client-api@^3.0.17:
-  version "3.0.17"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.17.tgz#fb0d1ed1fda7591737c663703727b22f66a3e4b7"
-  integrity sha512-wc7YzKwMEFXzGT50Yc8d8yQZwyhReNz79q1crmXQSp0Pa6yh3OvPKtSiJ9+tJC+hDXUKs9T6ntzBGqhYFJhJlg==
+graphql-ts-client-api@^3.0.18:
+  version "3.0.18"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.18.tgz#671f29d8c58e2ff9013646be4d0400c8cf9d52b2"
+  integrity sha512-3+qNVi/oYVtyeJNUfI3jZklsngJaWcwe9VgyE9sKAi4DSTKbPlU7XD9ZXCzi93phvI/7mRkFJSnNRFGBpau2Jg==
   dependencies:
     ts-md5 "^1.2.9"
 

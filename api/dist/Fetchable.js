@@ -49,13 +49,9 @@ class FetchableTypeImpl {
                     `its category cannot be "CONNECTION" because its field "node" is not referece`);
             }
             const cursor = declaredFields.get("cursor");
-            if (cursor === undefined) {
+            if (cursor !== undefined && cursor.category !== "SCALAR") {
                 throw new Error(`Illegal fetchable type "${name}", ` +
-                    `its category cannot be "EDGE" because it's not field named "cursor"`);
-            }
-            if (cursor.category !== "SCALAR") {
-                throw new Error(`Illegal fetchable type "${name}", ` +
-                    `its category cannot be "CONNECTION" because its field "cursor" is not referece`);
+                    `its category cannot be "EDGE" because its field "cursor" is not referece`);
             }
         }
         if ((category === "CONNECTION" || category === "EDGE") && superTypes.length !== 0) {

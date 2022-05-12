@@ -106,16 +106,10 @@ class FetchableTypeImpl<E extends string> implements FetchableType<E> {
                 );
             }
             const cursor = declaredFields.get("cursor");
-            if (cursor === undefined) {
+            if (cursor !== undefined && cursor.category !== "SCALAR") {
                 throw new Error(
                     `Illegal fetchable type "${name}", ` +
-                    `its category cannot be "EDGE" because it's not field named "cursor"`
-                );
-            }
-            if (cursor.category !== "SCALAR") {
-                throw new Error(
-                    `Illegal fetchable type "${name}", ` +
-                    `its category cannot be "CONNECTION" because its field "cursor" is not referece`
+                    `its category cannot be "EDGE" because its field "cursor" is not referece`
                 );
             }
         }
