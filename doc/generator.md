@@ -214,7 +214,7 @@ Code generator can handle some scalar types by itself, but scalar type name can 
 
 ```
 {
-	"scalarType": { 
+	"scalarTypeMap": { 
 		"Int8": "number", 
 		"Int16": "number",
 		"Int32": "number", 
@@ -230,7 +230,7 @@ You can also use the configuration to override the default behavior of code gene
 
 ```
 {
-	"scalarType": { 
+	"scalarTypeMap": { 
 		"GraphQLPoint": "{readonly x: number, readonly: number}" 
                 // Becareful, this value is string
 	}
@@ -240,7 +240,7 @@ You can also use the configuration to override the default behavior of code gene
 **Custom non-inline type**
 ```
 {
-	"scalarType": { 
+	"scalarTypeMap": { 
 		"GraphQLPoint": {
 		    typeName: "Point",
 		    importSource: "commons/Type"
