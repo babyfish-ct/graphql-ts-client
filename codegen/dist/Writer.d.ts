@@ -19,6 +19,7 @@ export declare abstract class Writer {
     private needIndent;
     private importStatements;
     private importedTypes;
+    private importedScalarTypes;
     private imported;
     constructor(stream: WriteStream, config: GeneratorConfig);
     write(): void;

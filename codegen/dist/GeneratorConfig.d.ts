@@ -16,7 +16,10 @@ export interface GeneratorConfig {
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
     readonly scalarTypeMap: {
-        [key: string]: 'string' | 'number' | 'boolean';
+        [key: string]: string | {
+            readonly typeName: string;
+            readonly importSource: string;
+        };
     };
     readonly idFieldMap?: {
         [key: string]: string;

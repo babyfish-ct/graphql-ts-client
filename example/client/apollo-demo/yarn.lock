@@ -5527,17 +5527,17 @@ graphql-tag@^2.12.3:
   dependencies:
     tslib "^2.1.0"
 
-graphql-ts-client-api@^3.0.18:
-  version "3.0.18"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.0.18.tgz#671f29d8c58e2ff9013646be4d0400c8cf9d52b2"
-  integrity sha512-3+qNVi/oYVtyeJNUfI3jZklsngJaWcwe9VgyE9sKAi4DSTKbPlU7XD9ZXCzi93phvI/7mRkFJSnNRFGBpau2Jg==
+graphql-ts-client-api@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.0.tgz#f6f5625f5b3cb1dfa58dafd0454888bf372e24fe"
+  integrity sha512-gjqfd4KGkN58T0mKeC9Q0tbWcK1BqZYFYC/yst8GoAUPXKC0iw81l1CtKhzHdSHLfmV4O/aZD+gbhhrtblZy+g==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.0.18:
-  version "3.0.18"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.0.18.tgz#50cf1c72c4d80541f3f5c337630c3772f4df4a3e"
-  integrity sha512-bBhwcrSRLvawxBdJdZwez7Ncaiq+gfLX1NqTnoitQ2xv3Xh8/tSfDjnc3AVvJMZZCNfSmisBpkeRNHTS+rYwTw==
+graphql-ts-client-codegen@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.0.tgz#9c942424bb7aa05100d4fbfb18f2eb284e4f24ba"
+  integrity sha512-H4MOH5Avh2nPq14zcnh2zkCg7F2npRzvVK1YWFS6uB01i0AaIRbFx2zGKvwhhwP3RhzQFWveMfrKZuOo5RMtAg==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"

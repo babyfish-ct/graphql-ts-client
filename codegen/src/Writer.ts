@@ -24,6 +24,8 @@ export abstract class Writer {
 
     private importedTypes = new Set<GraphQLNamedType>();
 
+    private importedScalarTypes = new Map<string, Set<String>>();
+
     private imported = false;
     
     constructor(
@@ -63,7 +65,13 @@ export abstract class Writer {
                 }
             }
         }
-        if (this.importStatements.size !== 0 || this.importedTypes.size !== 0) {
+        if (this.importedScalarTypes.size !== 0) {
+            const sourcePrefix = this.isUnderGlobalDir() ? "../" : "../../";
+            for (const [importSource, typeNames] of this.importedScalarTypes) {
+                this.stream.write(`import type { ${Array.from(typeNames).join(", ")} } from '${sourcePrefix}${importSource}';\n`);
+            }
+        }
+        if (this.importStatements.size !== 0 || this.importedTypes.size !== 0 || this.importedScalarTypes.size !== 0) {
             this.stream.write("\n");
         }
         this.writeCode();
@@ -92,6 +100,17 @@ export abstract class Writer {
             this.importedTypes.add(type);
         } else if (type instanceof GraphQLEnumType) {
             this.importedTypes.add(type);
+        } else if (type instanceof GraphQLScalarType && this.config.scalarTypeMap !== undefined) {
+            const mappedType = this.config.scalarTypeMap[type.name];
+            if (typeof mappedType == 'object') {
+                const importSource = mappedType.importSource;
+                let set = this.importedScalarTypes.get(importSource);
+                if (set === undefined) {
+                    set = new Set<string>();
+                    this.importedScalarTypes.set(importSource, set);
+                }
+                set.add(mappedType.typeName);
+            };
         }
     }
 
@@ -223,13 +242,17 @@ export abstract class Writer {
         objectRender?: string | ((type: GraphQLObjectType | GraphQLInterfaceType, field: GraphQLField<any, any>) => boolean)
     ) {
         if (type instanceof GraphQLScalarType) {
-            const mappedTypeName = 
+            const mappedType = 
                 (this.config.scalarTypeMap ?? EMPTY_MAP)[type.name] 
                 ?? SCALAR_MAP[type.name];
-            if (mappedTypeName === undefined) {
+            if (mappedType === undefined) {
                 throw new Error(`Unknown scalar type ${type.name}`);
             }
-            this.text(mappedTypeName);
+            if (typeof mappedType === 'string') {
+                this.text(mappedType);
+            } else {
+                this.text(mappedType.typeName);
+            }
         } else if (type instanceof GraphQLObjectType || 
             type instanceof GraphQLInterfaceType ||
             type instanceof GraphQLUnionType

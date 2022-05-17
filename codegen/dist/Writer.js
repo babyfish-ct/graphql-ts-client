@@ -20,6 +20,7 @@ class Writer {
         this.needIndent = false;
         this.importStatements = new Set();
         this.importedTypes = new Set();
+        this.importedScalarTypes = new Map();
         this.imported = false;
         this.indent = (_a = this.config.indent) !== null && _a !== void 0 ? _a : "    ";
     }
@@ -57,7 +58,13 @@ class Writer {
                 }
             }
         }
-        if (this.importStatements.size !== 0 || this.importedTypes.size !== 0) {
+        if (this.importedScalarTypes.size !== 0) {
+            const sourcePrefix = this.isUnderGlobalDir() ? "../" : "../../";
+            for (const [importSource, typeNames] of this.importedScalarTypes) {
+                this.stream.write(`import type { ${Array.from(typeNames).join(", ")} } from '${sourcePrefix}${importSource}';\n`);
+            }
+        }
+        if (this.importStatements.size !== 0 || this.importedTypes.size !== 0 || this.importedScalarTypes.size !== 0) {
             this.stream.write("\n");
         }
         this.writeCode();
@@ -84,6 +91,19 @@ class Writer {
         }
         else if (type instanceof graphql_1.GraphQLEnumType) {
             this.importedTypes.add(type);
+        }
+        else if (type instanceof graphql_1.GraphQLScalarType && this.config.scalarTypeMap !== undefined) {
+            const mappedType = this.config.scalarTypeMap[type.name];
+            if (typeof mappedType == 'object') {
+                const importSource = mappedType.importSource;
+                let set = this.importedScalarTypes.get(importSource);
+                if (set === undefined) {
+                    set = new Set();
+                    this.importedScalarTypes.set(importSource, set);
+                }
+                set.add(mappedType.typeName);
+            }
+            ;
         }
     }
     importStatement(statement) {
@@ -204,11 +224,16 @@ class Writer {
     typeRef(type, objectRender) {
         var _a, _b;
         if (type instanceof graphql_1.GraphQLScalarType) {
-            const mappedTypeName = (_b = ((_a = this.config.scalarTypeMap) !== null && _a !== void 0 ? _a : EMPTY_MAP)[type.name]) !== null && _b !== void 0 ? _b : SCALAR_MAP[type.name];
-            if (mappedTypeName === undefined) {
+            const mappedType = (_b = ((_a = this.config.scalarTypeMap) !== null && _a !== void 0 ? _a : EMPTY_MAP)[type.name]) !== null && _b !== void 0 ? _b : SCALAR_MAP[type.name];
+            if (mappedType === undefined) {
                 throw new Error(`Unknown scalar type ${type.name}`);
             }
-            this.text(mappedTypeName);
+            if (typeof mappedType === 'string') {
+                this.text(mappedType);
+            }
+            else {
+                this.text(mappedType.typeName);
+            }
         }
         else if (type instanceof graphql_1.GraphQLObjectType ||
             type instanceof graphql_1.GraphQLInterfaceType ||

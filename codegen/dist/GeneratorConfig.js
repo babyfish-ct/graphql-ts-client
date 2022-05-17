@@ -90,11 +90,13 @@ config) {
                     }
                     for (const scalarTypeName in value) {
                         const mappedType = value[scalarTypeName];
-                        if (typeof mappedType !== 'string') {
-                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must be string`);
+                        if (typeof mappedType === 'object') {
+                            if (typeof mappedType.typeName !== 'string' || typeof mappedType.importSource !== 'string') {
+                                throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must have two string fields: 'typeName' and 'importSource'`);
+                            }
                         }
-                        if (mappedType !== 'string' && mappedType !== 'number' && mappedType !== 'boolean') {
-                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" is illegal value '${mappedType}', its value must be 'string' | 'number' | 'boolean'`);
+                        else if (typeof mappedType !== 'string') {
+                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must be string or object`);
                         }
                     }
                 }

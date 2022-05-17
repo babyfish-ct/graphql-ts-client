@@ -18,9 +18,9 @@ export interface GeneratorConfig {
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
-    readonly scalarTypeMap: {[key: string]: string};
+    readonly scalarTypeMap: {[key: string]: string | { readonly typeName: string, readonly importSource: string; }};
     readonly idFieldMap?: {[key: string]: string};
-    readonly defaultFetcherExcludeMap?: {[key: string]: string[]}
+    readonly defaultFetcherExcludeMap?: {[key: string]: string[]};
 }
 
 export function validateConfig(
@@ -101,8 +101,12 @@ export function validateConfig(
                     }
                     for (const scalarTypeName in value) {
                         const mappedType = value[scalarTypeName];
-                        if (typeof mappedType !== 'string') {
-                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must be string`);
+                        if (typeof mappedType === 'object') {
+                            if (typeof mappedType.typeName !== 'string' || typeof mappedType.importSource !== 'string') {
+                                throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must have two string fields: 'typeName' and 'importSource'`);
+                            }
+                        } else if (typeof mappedType !== 'string') {
+                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must be string or object`);
                         }
                     }
                 }
