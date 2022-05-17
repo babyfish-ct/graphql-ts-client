@@ -18,7 +18,7 @@ export interface GeneratorConfig {
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
-    readonly scalarTypeMap: {[key: string]: 'string' | 'number' | 'boolean'};
+    readonly scalarTypeMap: {[key: string]: string};
     readonly idFieldMap?: {[key: string]: string};
     readonly defaultFetcherExcludeMap?: {[key: string]: string[]}
 }
@@ -103,9 +103,6 @@ export function validateConfig(
                         const mappedType = value[scalarTypeName];
                         if (typeof mappedType !== 'string') {
                             throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must be string`);
-                        }
-                        if (mappedType !== 'string' && mappedType !== 'number' && mappedType !== 'boolean') {
-                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" is illegal value '${mappedType}', its value must be 'string' | 'number' | 'boolean'`);
                         }
                     }
                 }
