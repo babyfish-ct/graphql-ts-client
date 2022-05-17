@@ -140,7 +140,7 @@ As mentioned above, no matter which Generator is used, its constructor needs a c
 |arrayEditable|boolean|false|false|
 |fetcherSuffix|string|false|"Fetcher"|
 |excludedTypes|string[]|false||
-|scalarTypeMap|{[key:string:] string | { readonly typeName: string, readonly importSource: string }}|false||
+|scalarTypeMap|{[key:string:] string &#124; { readonly typeName: string, readonly importSource: string }}|false||
 |defaultFetcherExcludeMap|{[key:string]: string[]}|false||
 
 ### schemaLoader
