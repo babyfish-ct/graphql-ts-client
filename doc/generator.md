@@ -231,7 +231,8 @@ You can also use the configuration to override the default behavior of code gene
 ```
 {
 	"scalarType": { 
-		"GraphQLPoint": "{readonly x: number, readonly: number}" // Becareful, this is string
+		"GraphQLPoint": "{readonly x: number, readonly: number}" 
+                // Becareful, this value is string
 	}
 }
 ```
@@ -242,7 +243,8 @@ You can also use the configuration to override the default behavior of code gene
 	"scalarType": { 
 		"GraphQLPoint": {
 		    typeName: "Point",
-		    importSource: "commons/Type" // will generate "import { Point } from '../common/Types';"
+		    importSource: "commons/Type"
+                    // "import { Point } from '../common/Types';" will be generated
 		}
 	}
 }
