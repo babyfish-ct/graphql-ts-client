@@ -12,6 +12,7 @@ import { AbstractFetcher, DirectiveArgs, Fetcher, SpreadFragment } from './Fetch
 import { FetchableType, createFetchableType } from './Fetchable';
 import { createFieldOptions, FieldOptionsValue } from './FieldOptions';
 import { ParameterRef } from './Parameter';
+import { EnumInputMetadata, EnumInputMetadataBuilder } from './EnumInputMetadata';
 
 /*
  * In order to reduce compacity of compiled target code,
@@ -23,10 +24,11 @@ import { ParameterRef } from './Parameter';
  */
 export function createFetcher<E extends string, F extends Fetcher<E, object, object>>(
     fetchableType: FetchableType<E>,
+    enumInputMedata: EnumInputMetadata,
     unionEntityTypes: string[] | undefined
 ) {
     return new Proxy(
-        new FetcherTarget([fetchableType, unionEntityTypes], false, ""),
+        new FetcherTarget([fetchableType, enumInputMedata, unionEntityTypes], false, ""),
         proxyHandler(fetchableType),
     ) as F;
 }
@@ -191,7 +193,7 @@ type ADD_DIRECTIVE = (
 function dummyTargetMethod() {}
 
 const FETCHER_TARGET = new FetcherTarget(
-    [createFetchableType("Any", "OBJECT", [], []), undefined], 
+    [createFetchableType("Any", "OBJECT", [], []), new EnumInputMetadataBuilder().build(), undefined], 
     false, 
     ""
 );

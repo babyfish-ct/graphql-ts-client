@@ -22,10 +22,12 @@ class AbstractFetcher {
         this._directiveArgs = _directiveArgs;
         if (Array.isArray(ctx)) {
             this._fetchableType = ctx[0];
-            this._unionItemTypes = ctx[1] !== undefined && ctx[1].length !== 0 ? ctx[1] : undefined;
+            this._enumInputMetadata = ctx[1];
+            this._unionItemTypes = ctx.length > 2 && ctx[2] !== undefined && ctx[2].length !== 0 ? ctx[2] : undefined;
         }
         else {
             this._fetchableType = ctx._fetchableType;
+            this._enumInputMetadata = ctx._enumInputMetadata;
             this._unionItemTypes = ctx._unionItemTypes;
             this._prev = ctx;
         }
@@ -230,7 +232,8 @@ class ResultContext {
                 }
                 t(fieldName);
                 if (field.argGraphQLTypes !== undefined) {
-                    this.acceptArgs(field.args, field.argGraphQLTypes);
+                    const enumInputMedata = fetcher["_enumInputMetadata"];
+                    this.acceptArgs(field.args, field.argGraphQLTypes, enumInputMedata);
                 }
                 this.acceptDirectives((_b = field.fieldOptionsValue) === null || _b === void 0 ? void 0 : _b.directives);
             }
@@ -271,8 +274,8 @@ class ResultContext {
             }
         }
     }
-    acceptArgs(args, argGraphQLTypeMap // undefined: directive args; otherwise: field args 
-    ) {
+    acceptArgs(args, argGraphQLTypeMap, // undefined: directive args; otherwise: field args,
+    enumInputMetadata) {
         if (args === undefined) {
             return;
         }
@@ -299,9 +302,8 @@ class ResultContext {
                 for (const argName in args) {
                     this.writer.seperator();
                     const arg = args[argName];
-                    let argGraphQLTypeName;
                     if (argGraphQLTypeMap !== undefined) {
-                        argGraphQLTypeName = argGraphQLTypeMap.get(argName);
+                        const argGraphQLTypeName = argGraphQLTypeMap.get(argName);
                         if (argGraphQLTypeName !== undefined) {
                             if (arg[" $__instanceOfParameterRef"]) {
                                 const parameterRef = arg;
@@ -319,7 +321,7 @@ class ResultContext {
                             }
                             else {
                                 t(`${argName}: `);
-                                this.acceptLiteral(arg);
+                                this.acceptLiteral(arg, ResultContext.enumInputMetaType(enumInputMetadata, argGraphQLTypeName));
                             }
                         }
                         else {
@@ -337,14 +339,14 @@ class ResultContext {
                         }
                         else {
                             t(`${argName}: `);
-                            this.acceptLiteral(arg);
+                            this.acceptLiteral(arg, undefined);
                         }
                     }
                 }
             });
         }
     }
-    acceptLiteral(value) {
+    acceptLiteral(value, enumInputMetaType) {
         const t = this.writer.text.bind(this.writer);
         if (value === undefined || value === null) {
             t("null");
@@ -353,7 +355,12 @@ class ResultContext {
             t(value.toString());
         }
         else if (typeof value === 'string') {
-            t(`"${value.replace('"', '\\"')}"`);
+            if (enumInputMetaType !== undefined) {
+                t(value);
+            }
+            else {
+                t(`"${value.replace('"', '\\"')}"`);
+            }
         }
         else if (typeof value === 'boolean') {
             t(value ? "true" : "false");
@@ -370,30 +377,38 @@ class ResultContext {
             this.writer.scope({ type: "ARRAY" }, () => {
                 for (const e of value) {
                     this.writer.seperator(", ");
-                    this.acceptLiteral(e);
+                    this.acceptLiteral(e, enumInputMetaType);
                 }
             });
         }
         else if (value instanceof Map) {
             this.writer.scope({ type: "BLOCK" }, () => {
+                var _a;
                 for (const [k, v] of value) {
                     this.writer.seperator(", ");
                     this.writer.text(k);
                     t(": ");
-                    this.acceptLiteral(v);
+                    this.acceptLiteral(v, (_a = enumInputMetaType === null || enumInputMetaType === void 0 ? void 0 : enumInputMetaType.fields) === null || _a === void 0 ? void 0 : _a.get(k));
                 }
             });
         }
         else if (typeof value === 'object') {
             this.writer.scope({ type: "BLOCK" }, () => {
+                var _a;
                 for (const k in value) {
                     this.writer.seperator(", ");
                     this.writer.text(k);
                     t(": ");
-                    this.acceptLiteral(value[k]);
+                    this.acceptLiteral(value[k], (_a = enumInputMetaType === null || enumInputMetaType === void 0 ? void 0 : enumInputMetaType.fields) === null || _a === void 0 ? void 0 : _a.get(k));
                 }
             });
         }
+    }
+    static enumInputMetaType(enumInputMedata, argGraphQLTypeName) {
+        if (enumInputMedata === undefined || argGraphQLTypeName === undefined) {
+            return undefined;
+        }
+        return enumInputMedata.getType(argGraphQLTypeName.replace(/\[|\]|!/, ""));
     }
 }
 function isMultLineJSON(obj) {

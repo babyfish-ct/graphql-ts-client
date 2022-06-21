@@ -11,13 +11,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommonTypesWriter = void 0;
 const graphql_1 = require("graphql");
-const InheritanceInfo_1 = require("./InheritanceInfo");
 const Writer_1 = require("./Writer");
 class CommonTypesWriter extends Writer_1.Writer {
     constructor(schema, inheritanceInfo, stream, config) {
         super(stream, config);
         this.inheritanceInfo = inheritanceInfo;
-        const info = new InheritanceInfo_1.InheritanceInfo(schema);
     }
     writeCode() {
         this.writeImplementionType();

@@ -9,4 +9,5 @@
  */
 import { Fetcher } from './Fetcher';
 import { FetchableType } from './Fetchable';
-export declare function createFetcher<E extends string, F extends Fetcher<E, object, object>>(fetchableType: FetchableType<E>, unionEntityTypes: string[] | undefined): F;
+import { EnumInputMetadata } from './EnumInputMetadata';
+export declare function createFetcher<E extends string, F extends Fetcher<E, object, object>>(fetchableType: FetchableType<E>, enumInputMedata: EnumInputMetadata, unionEntityTypes: string[] | undefined): F;

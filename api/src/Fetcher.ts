@@ -8,6 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
+import { EnumInputMetadata, EnumInputMetaType } from "./EnumInputMetadata";
 import { FetchableType } from "./Fetchable";
 import { FieldOptionsValue } from "./FieldOptions";
 import { ParameterRef } from "./Parameter";
@@ -62,6 +63,8 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
 
     private _fetchableType: FetchableType<E>;
 
+    private _enumInputMetadata: EnumInputMetadata;
+
     private _unionItemTypes?: string[];
 
     private _prev?: AbstractFetcher<string, object, object>;
@@ -73,7 +76,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
     private _result: Result; 
 
     constructor(
-        ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, string[] | undefined],
+        ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, EnumInputMetadata, string[] | undefined],
         private _negative: boolean,
         private _field: string,
         private _args?: {[key: string]: any},
@@ -84,9 +87,11 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
     ) {
         if (Array.isArray(ctx)) {
             this._fetchableType = ctx[0];
-            this._unionItemTypes = ctx[1] !== undefined && ctx[1].length !== 0 ? ctx[1] : undefined;
+            this._enumInputMetadata = ctx[1];
+            this._unionItemTypes = ctx.length > 2 && ctx[2] !== undefined && ctx[2].length !== 0 ? ctx[2] : undefined;
         } else {
             this._fetchableType = ctx._fetchableType as FetchableType<E>;
+            this._enumInputMetadata = ctx._enumInputMetadata;
             this._unionItemTypes = ctx._unionItemTypes;
             this._prev = ctx;
         }
@@ -380,7 +385,8 @@ class ResultContext {
                 }
                 t(fieldName);
                 if (field.argGraphQLTypes !== undefined) {
-                    this.acceptArgs(field.args, field.argGraphQLTypes);
+                    const enumInputMedata = (fetcher as any)["_enumInputMetadata"] as EnumInputMetadata;
+                    this.acceptArgs(field.args, field.argGraphQLTypes, enumInputMedata);
                 }
                 this.acceptDirectives(field.fieldOptionsValue?.directives);
             }
@@ -423,7 +429,8 @@ class ResultContext {
 
     private acceptArgs(
         args?: object, 
-        argGraphQLTypeMap?: ReadonlyMap<string, string> // undefined: directive args; otherwise: field args 
+        argGraphQLTypeMap?: ReadonlyMap<string, string>, // undefined: directive args; otherwise: field args,
+        enumInputMetadata?: EnumInputMetadata
     ) {
         if (args === undefined) {
             return;
@@ -450,9 +457,8 @@ class ResultContext {
                 for (const argName in args) {
                     this.writer.seperator();
                     const arg = args[argName];
-                    let argGraphQLTypeName: string | undefined;
                     if (argGraphQLTypeMap !== undefined) {
-                        argGraphQLTypeName = argGraphQLTypeMap.get(argName);
+                        const argGraphQLTypeName = argGraphQLTypeMap.get(argName);
                         if (argGraphQLTypeName !== undefined) {
                             if (arg[" $__instanceOfParameterRef"]) {
                                 const parameterRef = arg as ParameterRef<string>;
@@ -473,7 +479,7 @@ class ResultContext {
                                 t(`${argName}: $${parameterRef.name}`);
                             } else {
                                 t(`${argName}: `);
-                                this.acceptLiteral(arg);
+                                this.acceptLiteral(arg, ResultContext.enumInputMetaType(enumInputMetadata, argGraphQLTypeName));
                             }
                         } else {
                             throw new Error(`Unknown argument '${argName}'`);
@@ -488,7 +494,7 @@ class ResultContext {
                             t(`${argName}: $${parameterRef.name}`);
                         } else {
                             t(`${argName}: `);
-                            this.acceptLiteral(arg);
+                            this.acceptLiteral(arg, undefined);
                         }
                     }
                 }
@@ -496,7 +502,7 @@ class ResultContext {
         }
     }
 
-    private acceptLiteral(value: any) {
+    private acceptLiteral(value: any, enumInputMetaType: EnumInputMetaType | undefined) {
 
         const t = this.writer.text.bind(this.writer);
 
@@ -505,7 +511,11 @@ class ResultContext {
         } else if (typeof value === 'number') {
             t(value.toString());
         } else if (typeof value === 'string') {
-            t(`"${value.replace('"', '\\"')}"`);
+            if (enumInputMetaType !== undefined) {
+                t(value);
+            } else {
+                t(`"${value.replace('"', '\\"')}"`);
+            }
         } else if (typeof value === 'boolean') {
             t(value ? "true" : "false");
         } else if (value instanceof StringValue) {
@@ -518,7 +528,7 @@ class ResultContext {
             this.writer.scope({type: "ARRAY"}, () => {
                 for (const e of value) {
                     this.writer.seperator(", ");
-                    this.acceptLiteral(e);
+                    this.acceptLiteral(e, enumInputMetaType);
                 }
             });
         } else if (value instanceof Map) {
@@ -527,7 +537,7 @@ class ResultContext {
                     this.writer.seperator(", ");
                     this.writer.text(k);
                     t(": ");
-                    this.acceptLiteral(v);
+                    this.acceptLiteral(v, enumInputMetaType?.fields?.get(k));
                 }
             });
         } else if (typeof value === 'object') {
@@ -536,10 +546,20 @@ class ResultContext {
                     this.writer.seperator(", ");
                     this.writer.text(k);
                     t(": ");
-                    this.acceptLiteral(value[k]);
+                    this.acceptLiteral(value[k], enumInputMetaType?.fields?.get(k));
                 }
             });
         }
+    }
+
+    private static enumInputMetaType(
+        enumInputMedata: EnumInputMetadata | undefined, 
+        argGraphQLTypeName: string | undefined
+    ): EnumInputMetaType | undefined {
+        if (enumInputMedata === undefined || argGraphQLTypeName === undefined) {
+            return undefined;
+        }
+        return enumInputMedata.getType(argGraphQLTypeName.replace(/\[|\]|!/, ""));
     }
 }
 

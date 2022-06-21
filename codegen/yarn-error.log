@@ -1,35 +1,35 @@
 Arguments: 
-  /opt/homebrew/Cellar/node/16.5.0/bin/node /opt/homebrew/bin/yarn publish
+  /Users/chentao/.nvm/versions/node/v16.15.1/bin/node /Users/chentao/.node/corepack/yarn/1.22.15/bin/yarn.js publish
 
 PATH: 
-  /Users/chentao/.config/yarn/global/node_modules/.bin:/opt/homebrew/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/Apple/usr/bin:/Users/chentao/.config/yarn/global/node_modules/.bin:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/chentao/.cargo/bin
+  /Users/chentao/.nvm/versions/node/v16.15.1/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/go/bin:/usr/local/MacGPG2/bin:/usr/local/share/dotnet:~/.dotnet/tools:/Library/Apple/usr/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/chentao/.cargo/bin:/Users/chentao/tools/apache-maven-3.8.6/bin
 
 Yarn version: 
-  1.22.10
+  1.22.15
 
 Node version: 
-  16.5.0
+  16.15.1
 
 Platform: 
   darwin arm64
 
 Trace: 
   Error: https://registry.yarnpkg.com/-/user/org.couchdb.user:babyfish-ct: failed to authenticate: Could not authenticate babyfish-ct: bad password
-      at Request.params.callback [as _callback] (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:66988:18)
-      at Request.self.callback (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:140662:22)
-      at Request.emit (node:events:394:28)
-      at Request.<anonymous> (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:141634:10)
-      at Request.emit (node:events:394:28)
-      at IncomingMessage.<anonymous> (/opt/homebrew/lib/node_modules/yarn/lib/cli.js:141556:12)
-      at Object.onceWrapper (node:events:513:28)
-      at IncomingMessage.emit (node:events:406:35)
-      at endReadableNT (node:internal/streams/readable:1331:12)
+      at Request.params.callback [as _callback] (/Users/chentao/.node/corepack/yarn/1.22.15/lib/cli.js:66140:18)
+      at Request.self.callback (/Users/chentao/.node/corepack/yarn/1.22.15/lib/cli.js:140885:22)
+      at Request.emit (node:events:527:28)
+      at Request.<anonymous> (/Users/chentao/.node/corepack/yarn/1.22.15/lib/cli.js:141857:10)
+      at Request.emit (node:events:527:28)
+      at IncomingMessage.<anonymous> (/Users/chentao/.node/corepack/yarn/1.22.15/lib/cli.js:141779:12)
+      at Object.onceWrapper (node:events:641:28)
+      at IncomingMessage.emit (node:events:539:35)
+      at endReadableNT (node:internal/streams/readable:1345:12)
       at processTicksAndRejections (node:internal/process/task_queues:83:21)
 
 npm manifest: 
   {
     "name": "graphql-ts-client-codegen",
-    "version": "3.0.13",
+    "version": "3.1.1",
     "description": "A tool to generate strong type client code by GraphQL schema",
     "author": "ChenTao",
     "license": "MIT",

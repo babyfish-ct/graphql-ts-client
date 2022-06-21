@@ -1827,9 +1827,9 @@
   integrity sha512-tHq6qdbT9U1IRSGf14CL0pUlULksvY9OZ+5eEgl1N7t+OA3tGvNpxJCzuKQlsNgCVwbAs670L1vcVQi8j9HjnA==
 
 "@types/node-fetch@^2.5.10":
-  version "2.6.1"
-  resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.6.1.tgz#8f127c50481db65886800ef496f20bbf15518975"
-  integrity sha512-oMqjURCaxoSIsHSr1E47QHzbmzNR5rK8McHuNb11BOM9cHcIK3Avy0s/b2JlXHoQGTYS3NsvWzV1M0iK7l0wbA==
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/@types/node-fetch/-/node-fetch-2.6.2.tgz#d1a9c5fd049d9415dce61571557104dec3ec81da"
+  integrity sha512-DHqhlq5jeESLy19TYhLakJ07kNumXWjcDdxXsLUMJZ6ue8VZJj4kLPQVE/2mdHh3xZziNF1xppu5lwmS53HR+A==
   dependencies:
     "@types/node" "*"
     form-data "^3.0.0"
@@ -5439,17 +5439,17 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-ts-client-api@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.0.tgz#f6f5625f5b3cb1dfa58dafd0454888bf372e24fe"
-  integrity sha512-gjqfd4KGkN58T0mKeC9Q0tbWcK1BqZYFYC/yst8GoAUPXKC0iw81l1CtKhzHdSHLfmV4O/aZD+gbhhrtblZy+g==
+graphql-ts-client-api@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.2.tgz#c6ee66541af8473b28b860d0b33aacee6b3a1343"
+  integrity sha512-RurZAUMtZGWqhp3u/UMR0mBnUiNrO34LZ4pxcjT9p+IuG6lSGmmHxI36/0YLBX7Y0ZbP/m+Ym05iYvDW0yvUVg==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.0.tgz#9c942424bb7aa05100d4fbfb18f2eb284e4f24ba"
-  integrity sha512-H4MOH5Avh2nPq14zcnh2zkCg7F2npRzvVK1YWFS6uB01i0AaIRbFx2zGKvwhhwP3RhzQFWveMfrKZuOo5RMtAg==
+graphql-ts-client-codegen@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.2.tgz#4076d4d26057bd16d9be4e5aeb1c9c1e5e002bd7"
+  integrity sha512-pYanD5MrNVio8O6qQnbVSftfaSDL1ol9LT9DNl2olg5htdI4zMG/iSQ1ZIaLi1GQGzUXHpzQm2Q3gK+jZMzTRQ==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -10974,9 +10974,9 @@ typescript@^4.1.2:
   integrity sha512-rUvLW0WtF7PF2b9yenwWUi9Da9euvDRhmH7BLyBG4DCFfOJ850LGNknmRpp8Z8kXNUPObdZQEfKOiHtXuQHHKA==
 
 typescript@^4.3.2:
-  version "4.6.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.6.4.tgz#caa78bbc3a59e6a5c510d35703f6a09877ce45e9"
-  integrity sha512-9ia/jWHIEbo49HfjrLGfKbZSuWo9iTMwXO+Ca3pRsSpbsMbc7/IU8NKdCZVRRBafVPGnoJeFL76ZOAA84I9fEg==
+  version "4.7.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.7.4.tgz#1a88596d1cf47d59507a1bcdfb5b9dfe4d488235"
+  integrity sha512-C0WQT0gezHuw6AdY1M2jxUO83Rjf0HP7Sk1DtXj6j1EwkQNZrHAg2XPWlq62oqEhYvONq5pkC2Y9oPljWToLmQ==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"

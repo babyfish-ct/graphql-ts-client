@@ -1,6 +1,7 @@
 import { FragmentRefs } from 'relay-runtime';
 import { TypedFragment } from 'graphql-ts-client-relay';
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
 import type { ObjectFetcher } from 'graphql-ts-client-api';
 import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type {DepartmentInput} from '../inputs';
@@ -294,6 +295,7 @@ export const mutation$: MutationFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;

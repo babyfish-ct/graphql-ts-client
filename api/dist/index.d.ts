@@ -14,6 +14,8 @@ export { AbstractFetcher, SpreadFragment, StringValue } from './Fetcher';
 export type { AcceptableVariables, UnresolvedVariables } from './Parameter';
 export { ParameterRef } from "./Parameter";
 export type { FieldOptions } from './FieldOptions';
+export type { EnumInputMetadata, EnumInputMetaType } from './EnumInputMetadata';
+export { EnumInputMetadataBuilder } from './EnumInputMetadata';
 export { TextWriter } from './TextWriter';
 export { DependencyManager } from './DependencyManager';
 export { createFetcher } from './FetcherProxy';

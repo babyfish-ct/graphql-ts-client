@@ -142,6 +142,7 @@ export class FetcherWriter extends Writer {
         } else {
             this.importStatement("import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';");
         }
+        this.importStatement("import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';");
 
         const importedFetcherTypeNames = new Set<string>();
         importedFetcherTypeNames.add(this.superFetcherTypeName(this.modelType));
@@ -521,6 +522,8 @@ export class FetcherWriter extends Writer {
                         }
                     });
                 });
+                this.separator(", ");
+                this.text("ENUM_INPUT_METADATA");
                 this.separator(", ");
                 if (itemTypes.length === 0) {
                     t("undefined");

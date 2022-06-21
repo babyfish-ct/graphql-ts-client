@@ -1,4 +1,5 @@
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
 import type { EdgeFetcher, ObjectFetcher } from 'graphql-ts-client-api';
 import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
@@ -100,6 +101,7 @@ export const departmentEdge$: DepartmentEdgeFetcher<{}, {}> =
                 "cursor"
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;

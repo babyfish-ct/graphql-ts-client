@@ -7,6 +7,7 @@
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
+import { EnumInputMetadata } from "./EnumInputMetadata";
 import { FetchableType } from "./Fetchable";
 import { FieldOptionsValue } from "./FieldOptions";
 import { ParameterRef } from "./Parameter";
@@ -40,12 +41,13 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     private _directive?;
     private _directiveArgs?;
     private _fetchableType;
+    private _enumInputMetadata;
     private _unionItemTypes?;
     private _prev?;
     private _fieldMap?;
     private _directiveMap;
     private _result;
-    constructor(ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, string[] | undefined], _negative: boolean, _field: string, _args?: {
+    constructor(ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, EnumInputMetadata, string[] | undefined], _negative: boolean, _field: string, _args?: {
         [key: string]: any;
     } | undefined, _child?: AbstractFetcher<string, object, object> | undefined, _fieldOptionsValue?: FieldOptionsValue | undefined, _directive?: string | undefined, _directiveArgs?: DirectiveArgs);
     get fetchableType(): FetchableType<E>;

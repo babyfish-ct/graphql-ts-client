@@ -29,6 +29,7 @@ const EnumWriter_1 = require("./EnumWriter");
 const InputWriter_1 = require("./InputWriter");
 const CommonTypesWriter_1 = require("./CommonTypesWriter");
 const InheritanceInfo_1 = require("./InheritanceInfo");
+const EnumInputMetadataWriter_1 = require("./EnumInputMetadataWriter");
 class Generator {
     constructor(config) {
         this.config = config;
@@ -151,6 +152,7 @@ class Generator {
                 promises.push(this.generateEnumTypes(enumTypes));
             }
             promises.push(this.generateCommonTypes(schema, inheritanceInfo));
+            promises.push(this.generateEnumInputMeatadata(schema));
             this.generateServices(ctx, promises);
             promises.push(this.writeIndex(schema));
             yield Promise.all(promises);
@@ -251,6 +253,13 @@ class Generator {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = createStreamAndLog((0, path_1.join)(this.config.targetDir, "CommonTypes.ts"));
             new CommonTypesWriter_1.CommonTypesWriter(schema, inheritanceInfo, stream, this.config).write();
+            yield closeStream(stream);
+        });
+    }
+    generateEnumInputMeatadata(schema) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const stream = createStreamAndLog((0, path_1.join)(this.config.targetDir, "EnumInputMetadata.ts"));
+            new EnumInputMetadataWriter_1.EnumInputMetadataWriter(schema, stream, this.config).write();
             yield closeStream(stream);
         });
     }

@@ -9,7 +9,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.util = exports.createFetcher = exports.DependencyManager = exports.TextWriter = exports.ParameterRef = exports.StringValue = exports.SpreadFragment = exports.AbstractFetcher = exports.createFetchableType = void 0;
+exports.util = exports.createFetcher = exports.DependencyManager = exports.TextWriter = exports.EnumInputMetadataBuilder = exports.ParameterRef = exports.StringValue = exports.SpreadFragment = exports.AbstractFetcher = exports.createFetchableType = void 0;
 var Fetchable_1 = require("./Fetchable");
 Object.defineProperty(exports, "createFetchableType", { enumerable: true, get: function () { return Fetchable_1.createFetchableType; } });
 var Fetcher_1 = require("./Fetcher");
@@ -18,6 +18,8 @@ Object.defineProperty(exports, "SpreadFragment", { enumerable: true, get: functi
 Object.defineProperty(exports, "StringValue", { enumerable: true, get: function () { return Fetcher_1.StringValue; } });
 var Parameter_1 = require("./Parameter");
 Object.defineProperty(exports, "ParameterRef", { enumerable: true, get: function () { return Parameter_1.ParameterRef; } });
+var EnumInputMetadata_1 = require("./EnumInputMetadata");
+Object.defineProperty(exports, "EnumInputMetadataBuilder", { enumerable: true, get: function () { return EnumInputMetadata_1.EnumInputMetadataBuilder; } });
 var TextWriter_1 = require("./TextWriter");
 Object.defineProperty(exports, "TextWriter", { enumerable: true, get: function () { return TextWriter_1.TextWriter; } });
 var DependencyManager_1 = require("./DependencyManager");

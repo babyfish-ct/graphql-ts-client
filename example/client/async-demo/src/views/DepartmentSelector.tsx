@@ -39,8 +39,8 @@ export const DepartmentSelector: FC<{
         try {
             const data = await execute(DEPARTMENT_LIST_FETCHER);
             setData(data);
-        } catch (e) {
-            setError(e);
+        } catch (ex) {
+            setError(ex as Error);
         } finally {
             setLoading(false);
         }

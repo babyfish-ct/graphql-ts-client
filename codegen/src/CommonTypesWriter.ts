@@ -23,7 +23,6 @@ export class CommonTypesWriter extends Writer {
         config: GeneratorConfig
     ) {
         super(stream, config);
-        const info = new InheritanceInfo(schema);
     }
 
     protected writeCode() {

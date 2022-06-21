@@ -14,6 +14,7 @@ const Fetcher_1 = require("./Fetcher");
 const Fetchable_1 = require("./Fetchable");
 const FieldOptions_1 = require("./FieldOptions");
 const Parameter_1 = require("./Parameter");
+const EnumInputMetadata_1 = require("./EnumInputMetadata");
 /*
  * In order to reduce compacity of compiled target code,
  * the code generator does not generate derived classes of AbstractFetcher.
@@ -22,8 +23,8 @@ const Parameter_1 = require("./Parameter");
  * interfaces cannot affect the capacity of compilied targe code
  * ), and this "createFetcher" method uses proxies to create instances of those interfaces.
  */
-function createFetcher(fetchableType, unionEntityTypes) {
-    return new Proxy(new FetcherTarget([fetchableType, unionEntityTypes], false, ""), proxyHandler(fetchableType));
+function createFetcher(fetchableType, enumInputMedata, unionEntityTypes) {
+    return new Proxy(new FetcherTarget([fetchableType, enumInputMedata, unionEntityTypes], false, ""), proxyHandler(fetchableType));
 }
 exports.createFetcher = createFetcher;
 class FetcherTarget extends Fetcher_1.AbstractFetcher {
@@ -120,4 +121,4 @@ function methodProxyHandler(targetFetcher, handler, field) {
     };
 }
 function dummyTargetMethod() { }
-const FETCHER_TARGET = new FetcherTarget([(0, Fetchable_1.createFetchableType)("Any", "OBJECT", [], []), undefined], false, "");
+const FETCHER_TARGET = new FetcherTarget([(0, Fetchable_1.createFetchableType)("Any", "OBJECT", [], []), new EnumInputMetadata_1.EnumInputMetadataBuilder().build(), undefined], false, "");

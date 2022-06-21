@@ -19,6 +19,7 @@ import { InputWriter } from "./InputWriter";
 import { CommonTypesWriter } from "./CommonTypesWriter";
 import { InheritanceInfo } from "./InheritanceInfo";
 import { Connection, FetcherContext } from "./FetcherContext";
+import { EnumInputMetadataWriter } from "./EnumInputMetadataWriter";
 
 export abstract class Generator {
 
@@ -144,6 +145,7 @@ export abstract class Generator {
         }
 
         promises.push(this.generateCommonTypes(schema, inheritanceInfo));
+        promises.push(this.generateEnumInputMeatadata(schema));
 
         this.generateServices(ctx, promises);
 
@@ -278,6 +280,14 @@ export abstract class Generator {
             join(this.config.targetDir, "CommonTypes.ts")
         );
         new CommonTypesWriter(schema, inheritanceInfo, stream, this.config).write();
+        await closeStream(stream);
+    }
+
+    private async generateEnumInputMeatadata(schema: GraphQLSchema) {
+        const stream = createStreamAndLog(
+            join(this.config.targetDir, "EnumInputMetadata.ts")
+        );
+        new EnumInputMetadataWriter(schema, stream, this.config).write();
         await closeStream(stream);
     }
 

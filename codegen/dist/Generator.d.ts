@@ -24,6 +24,7 @@ export declare abstract class Generator {
     private generateInputTypes;
     private generateEnumTypes;
     private generateCommonTypes;
+    private generateEnumInputMeatadata;
     private writeSimpleIndex;
     private rmdirIfNecessary;
     protected mkdirIfNecessary(subDir?: string): Promise<void>;
