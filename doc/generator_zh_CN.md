@@ -143,7 +143,7 @@ yarn add \
 |arrayEditable|boolean|否|false|
 |fetcherSuffix|string|否|"Fetcher"|
 |excludedTypes|string[]|否||
-|scalarTypeMap|{[key:string:] "string" \| "number" \| "boolean"}|否||
+|scalarTypeMap|{[key:string:] string &#124; {readonly typeName: string, readonly importSource: string }}|否||
 |defaultFetcherExcludeMap|{[key:string]: string[]}|否||
 
 ### schemaLoader
@@ -213,9 +213,10 @@ readonly items: readonly Item[];
 
 代码生成器可以自己处理一些标量类型，但是标量类型名称可以被服务器端定义为任何文本，并不是所有的标量类型都可以自动处理，例如：
 
+**基本类型映射**
 ```
 {
-	"scalarType": { 
+	"scalarTypeMap": { 
 		"Int8": "number", 
 		"Int16": "number",
 		"Int32": "number", 
@@ -226,6 +227,30 @@ readonly items: readonly Item[];
 代码生成器将根据此配置将“Int8”、“Int16”、“Int32”和“Int64”视为“数字”。
 
 您还可以使用配置来覆盖代码生成器的默认行为。 如果此处配置了代码生成器可以自动处理的标量类型，则用户配置的优先级更高。
+
+**内联自定义类型映射**
+
+```
+{
+	"scalarTypeMap": { 
+		"GraphQLPoint": "{readonly x: number, readonly: number}" 
+                // Becareful, this value is string
+	}
+}
+```
+
+**非内联自定义类型映射**
+```
+{
+	"scalarTypeMap": { 
+		"GraphQLPoint": {
+		    typeName: "Point",
+		    importSource: "commons/Type"
+                    // "import { Point } from '../common/Types';" will be generated
+		}
+	}
+}
+```
 
 ### defaultFetcherExcludeMap
 

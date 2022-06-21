@@ -140,7 +140,7 @@ As mentioned above, no matter which Generator is used, its constructor needs a c
 |arrayEditable|boolean|false|false|
 |fetcherSuffix|string|false|"Fetcher"|
 |excludedTypes|string[]|false||
-|scalarTypeMap|{[key:string:] "string" \| "number" \| "boolean"}|false||
+|scalarTypeMap|{[key:string:] string &#124; { readonly typeName: string, readonly importSource: string }}|false||
 |defaultFetcherExcludeMap|{[key:string]: string[]}|false||
 
 ### schemaLoader
@@ -208,11 +208,13 @@ This configuration will be validated by the GraphQL schema, all the spelling err
 
 ## scalarTypeMap
 
+**Custom primary type**
+
 Code generator can handle some scalar types by itself, but scalar type name can be defined as any text by server-side, not all the scalar types can be handled automatically, eg:
 
 ```
 {
-	"scalarType": { 
+	"scalarTypeMap": { 
 		"Int8": "number", 
 		"Int16": "number",
 		"Int32": "number", 
@@ -223,6 +225,30 @@ Code generator can handle some scalar types by itself, but scalar type name can 
 Code generator will consider "Int8", "Int16", "Int32" and "Int64" to be "number" according to this configuration.
 
 You can also use the configuration to override the default behavior of code generator. If the scalar type that can be automatically handled by code generator is configured here, the user configuration has higher priority.
+
+**Custom inline type**
+
+```
+{
+	"scalarTypeMap": { 
+		"GraphQLPoint": "{readonly x: number, readonly: number}" 
+                // Becareful, this value is string
+	}
+}
+```
+
+**Custom non-inline type**
+```
+{
+	"scalarTypeMap": { 
+		"GraphQLPoint": {
+		    typeName: "Point",
+		    importSource: "commons/Type"
+                    // "import { Point } from '../common/Types';" will be generated
+		}
+	}
+}
+```
 
 ## defaultFetcherExcludeMap
 
