@@ -29,33 +29,29 @@ export class EnumInputMetadataWriter extends Writer {
                 this.collectEnumMetaTypes(type, processedTypeNames, enumInputMetaTypeMap);
             }
         }
-        this.text("export const ENUM_INPUT_METADATA = ");
-        this.scope({type: "BLANK", multiLines: true}, () => {
-            this.text("new EnumInputMetadataBuilder()\n");
-            for (const [typeName, fields] of enumInputMetaTypeMap) {
-                this.text('.add("');
-                this.text(typeName);
-                this.text('"');
-                if (fields !== undefined) {
-                    this.text(", ");
-                    this.scope({type: "ARRAY", multiLines: true}, () => {
-                        for (const field of fields) {
-                            this.separator(", ");
-                            this.scope({type: "BLOCK"}, () => {
-                                this.text('name: \"');
-                                this.text(field.name)
-                                this.text('", typeName: "');
-                                this.text(EnumInputMetadataWriter.inputTypeName(field.type));
-                                this.text('"');
-                            });
-                        }
-                    });
-                }
-                this.text(")\n");
+        this.text("const builder = new EnumInputMetadataBuilder();\n");
+        for (const [typeName, fields] of enumInputMetaTypeMap) {
+            this.text('\nbuilder.add("');
+            this.text(typeName);
+            this.text('"');
+            if (fields !== undefined) {
+                this.text(", ");
+                this.scope({type: "ARRAY", multiLines: true}, () => {
+                    for (const field of fields) {
+                        this.separator(", ");
+                        this.scope({type: "BLOCK"}, () => {
+                            this.text('name: \"');
+                            this.text(field.name)
+                            this.text('", typeName: "');
+                            this.text(EnumInputMetadataWriter.inputTypeName(field.type));
+                            this.text('"');
+                        });
+                    }
+                });
             }
-            this.text(".build()");
-        });
-        this.text(";");
+            this.text(");\n");
+        }
+        this.text("\nexport const ENUM_INPUT_METADATA = builder.build();\n");
     }
 
     private collectEnumMetaTypes(
