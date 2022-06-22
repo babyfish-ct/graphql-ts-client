@@ -288,20 +288,15 @@ export abstract class Writer {
         } else if (type instanceof GraphQLNonNull) {
             this.typeRef(type.ofType, objectRender);
         } else if (type instanceof GraphQLList) {
-            if (type.ofType instanceof GraphQLNonNull) {
-                if (!this.config.arrayEditable) {
-                    this.text("readonly ");
-                }
-                this.typeRef(type.ofType, objectRender);
-                this.text("[]");
-            } else {
-                if (!this.config.arrayEditable) {
-                    this.text("Readonly");
-                }
-                this.text("Array<");
-                this.typeRef(type.ofType, objectRender);
-                this.text(" | undefined>");
+            if (!this.config.arrayEditable) {
+                this.text("Readonly");
             }
+            this.text("Array<");
+            this.typeRef(type.ofType, objectRender);
+            if (!(type.ofType instanceof GraphQLNonNull)) {
+                this.text(" | undefined");
+            }
+            this.text(">");
         }
     }
 

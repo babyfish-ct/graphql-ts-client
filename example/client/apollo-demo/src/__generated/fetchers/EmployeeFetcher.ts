@@ -208,7 +208,7 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
     >(
         child: ObjectFetcher<'Employee', X, XVariables>
     ): EmployeeFetcher<
-        T & {readonly "subordinates": readonly X[]}, 
+        T & {readonly "subordinates": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -226,8 +226,8 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
     ): EmployeeFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;

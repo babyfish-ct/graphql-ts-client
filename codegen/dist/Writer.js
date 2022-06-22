@@ -275,21 +275,15 @@ class Writer {
             this.typeRef(type.ofType, objectRender);
         }
         else if (type instanceof graphql_1.GraphQLList) {
-            if (type.ofType instanceof graphql_1.GraphQLNonNull) {
-                if (!this.config.arrayEditable) {
-                    this.text("readonly ");
-                }
-                this.typeRef(type.ofType, objectRender);
-                this.text("[]");
+            if (!this.config.arrayEditable) {
+                this.text("Readonly");
             }
-            else {
-                if (!this.config.arrayEditable) {
-                    this.text("Readonly");
-                }
-                this.text("Array<");
-                this.typeRef(type.ofType, objectRender);
-                this.text(" | undefined>");
+            this.text("Array<");
+            this.typeRef(type.ofType, objectRender);
+            if (!(type.ofType instanceof graphql_1.GraphQLNonNull)) {
+                this.text(" | undefined");
             }
+            this.text(">");
         }
     }
     gqlTypeRef(type) {

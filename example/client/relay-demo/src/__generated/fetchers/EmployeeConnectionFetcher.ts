@@ -73,7 +73,7 @@ export interface EmployeeConnectionFetcher<T extends object, TVariables extends 
     >(
         child: EdgeFetcher<'EmployeeEdge', X, XVariables>
     ): EmployeeConnectionFetcher<
-        T & {readonly "edges": readonly X[]}, 
+        T & {readonly "edges": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -91,8 +91,8 @@ export interface EmployeeConnectionFetcher<T extends object, TVariables extends 
     ): EmployeeConnectionFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;

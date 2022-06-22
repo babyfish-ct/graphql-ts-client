@@ -18,14 +18,15 @@ export class EnumInputMetadataWriter extends Writer {
     }
 
     protected writeCode() {
+        const processedTypeNames = new Set<string>();
         const enumInputMetaTypeMap = new Map<string, ReadonlyArray<GraphQLInputField> | undefined>();
         const typeMap = this.schema.getTypeMap();
         for (const typeName in typeMap) {
             const type = typeMap[typeName];
             if (type instanceof GraphQLEnumType) {
-                this.collectEnumMetaTypes(type, enumInputMetaTypeMap);
+                this.collectEnumMetaTypes(type, processedTypeNames, enumInputMetaTypeMap);
             } else if (type instanceof GraphQLInputObjectType) {
-                this.collectEnumMetaTypes(type, enumInputMetaTypeMap);
+                this.collectEnumMetaTypes(type, processedTypeNames, enumInputMetaTypeMap);
             }
         }
         this.text("export const ENUM_INPUT_METADATA = ");
@@ -59,6 +60,7 @@ export class EnumInputMetadataWriter extends Writer {
 
     private collectEnumMetaTypes(
         type: GraphQLInputType,
+        processedTypeNames: Set<string>,
         outMap: Map<string, ReadonlyArray<GraphQLInputField> | undefined>
     ): boolean {
         
@@ -66,10 +68,10 @@ export class EnumInputMetadataWriter extends Writer {
             return false;
         }
         if (type instanceof GraphQLList) {
-            return this.collectEnumMetaTypes(type.ofType, outMap);
+            return this.collectEnumMetaTypes(type.ofType, processedTypeNames, outMap);
         }
         if (type instanceof GraphQLNonNull) {
-            return this.collectEnumMetaTypes(type.ofType, outMap);
+            return this.collectEnumMetaTypes(type.ofType, processedTypeNames, outMap);
         }
 
         if (type.name.startsWith("__")) {
@@ -80,15 +82,21 @@ export class EnumInputMetadataWriter extends Writer {
             return true;
         }
 
-        if (type instanceof GraphQLEnumType) {
+        if (processedTypeNames.has(type.name)) {
+            return false;
+        }
+
+        if (type instanceof GraphQLEnumType) { 
             outMap.set(type.name, undefined);
             return true;
         }
+        
+        processedTypeNames.add(type.name);
         const fieldMap = type.getFields();
         const fields: GraphQLInputField[] = [];
         for (const fieldName in fieldMap) {
             const field = fieldMap[fieldName];
-            if (this.collectEnumMetaTypes(field.type, outMap)) {
+            if (this.collectEnumMetaTypes(field.type, processedTypeNames, outMap)) {
                 fields.push(field);
             }
         }

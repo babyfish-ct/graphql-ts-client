@@ -61,7 +61,7 @@ export interface DepartmentConnectionFetcher<T extends object, TVariables extend
     >(
         child: EdgeFetcher<'DepartmentEdge', X, XVariables>
     ): DepartmentConnectionFetcher<
-        T & {readonly "edges": readonly X[]}, 
+        T & {readonly "edges": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -79,8 +79,8 @@ export interface DepartmentConnectionFetcher<T extends object, TVariables extend
     ): DepartmentConnectionFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;

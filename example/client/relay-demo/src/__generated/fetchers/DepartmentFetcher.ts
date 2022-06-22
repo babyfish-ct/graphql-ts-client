@@ -96,7 +96,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
     >(
         child: ObjectFetcher<'Employee', X, XVariables>
     ): DepartmentFetcher<
-        T & {readonly "employees": readonly X[]}, 
+        T & {readonly "employees": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -114,8 +114,8 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
     ): DepartmentFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;

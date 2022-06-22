@@ -5439,17 +5439,17 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-ts-client-api@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.2.tgz#c6ee66541af8473b28b860d0b33aacee6b3a1343"
-  integrity sha512-RurZAUMtZGWqhp3u/UMR0mBnUiNrO34LZ4pxcjT9p+IuG6lSGmmHxI36/0YLBX7Y0ZbP/m+Ym05iYvDW0yvUVg==
+graphql-ts-client-api@^3.1.5:
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.5.tgz#aaf7dd41ee06a903079b06ed1c551ec138dd9521"
+  integrity sha512-irLWGkkyusiWHkI7B3LoAYa1nLuII7UjuQ0BXy78T4DrReU6UK5lI5ZKMobmFVQYIkjyNcXbCvOceerB5OuepQ==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.2.tgz#4076d4d26057bd16d9be4e5aeb1c9c1e5e002bd7"
-  integrity sha512-pYanD5MrNVio8O6qQnbVSftfaSDL1ol9LT9DNl2olg5htdI4zMG/iSQ1ZIaLi1GQGzUXHpzQm2Q3gK+jZMzTRQ==
+graphql-ts-client-codegen@^3.1.5:
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.5.tgz#91920e85c274a06ebafd62e61581849a4368e7f6"
+  integrity sha512-GFu300xP5T2AlJBIkAIwVNNGidY51HpIAZeyE2TSufV52eO48AF3X8YAzRRyO4ukRighq6Ovy++JAGrCAXiXZQ==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
