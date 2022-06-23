@@ -6207,17 +6207,17 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.6.tgz#ff040b2b0853b23c3d31027523706f1885d76bee"
   integrity sha512-nTnJ528pbqxYanhpDYsi4Rd8MAeaBA67+RZ10CM1m3bTAVFEDcd5AuA4a6W5YkGZ1iNXHzZz8T6TBKLeBuNriQ==
 
-graphql-ts-client-api@^3.1.7:
-  version "3.1.7"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.7.tgz#7ed4f53abb411b780bb3d043fff71af6e7895f9a"
-  integrity sha512-PACVg9ivzKZTKQjnl/XqQqirJqQ8JGsKoAs2wX7rsd5vQRViH4X0NowB7KOcBKDhs9UznLD4kAD+bt0Dd73+/Q==
+graphql-ts-client-api@^3.1.8:
+  version "3.1.8"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.8.tgz#493d39c3101569abf39680c2d3274343b3168a48"
+  integrity sha512-Dct05eoymzVLK7mScaWw8SD2cmHV5leOUOqiWmQw2IhjpHqsLSfuwnhPyGMv/QRzH1QO4ZQ7FbqUMzVR5/SZOA==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.1.7:
-  version "3.1.7"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.7.tgz#155ceee50bc6410a35aa2ec65c337b67daf4909c"
-  integrity sha512-/DHUHhkD5wN2hfA/cxt4Vnv/ZCfhHIZ/ulLuT//8ZHo7d3RQ8k2YAv3hJd8mWRLQzsufaD5TCZnL2PKq26PAHA==
+graphql-ts-client-codegen@^3.1.8:
+  version "3.1.8"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.8.tgz#7b59816d62e11a443608457197b312df199ab2a2"
+  integrity sha512-qF16zpIZU9FxTAdc8KbZDuSBFazis2HbdqlwVb4WoMMOE/UyJpMcUp3Sn6ITbYNXtGEgeRBVP6ksAN22fQwezg==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -6225,10 +6225,10 @@ graphql-ts-client-codegen@^3.1.7:
     node-fetch "^2.6.1"
     typescript "^4.3.2"
 
-graphql-ts-client-relay@^3.1.7:
-  version "3.1.7"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-relay/-/graphql-ts-client-relay-3.1.7.tgz#98a4d98e847e790ace3891a83cc7c4a9946e9b0a"
-  integrity sha512-clOmgXrRTwi6t2YZgebsOXN+7N0S7tk/lvjoUh0WwWCct2BYmfsBwnhwwGCLgxL50nkjzp7bP23n+ZFZTkplfQ==
+graphql-ts-client-relay@^3.1.8:
+  version "3.1.8"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-relay/-/graphql-ts-client-relay-3.1.8.tgz#b89aa80e1402e8852c78bd1d0cb66042ab22e866"
+  integrity sha512-xDSMj7vM885WMU0hjZQ3ieSJy+VfjaQGKtAyFfH2w3VvJVTraGHimEcv0kbSeWDMjc5svoZZ7t+fQVqF6bEd3Q==
   dependencies:
     "@types/node" "^16.7.10"
     "@types/react-relay" "^11.0.2"
@@ -12262,9 +12262,9 @@ upath@^1.1.1, upath@^1.1.2, upath@^1.2.0:
   integrity sha512-aZwGpamFO61g3OlfT7OQCHqhGnW43ieH9WZeP7QxN/G/jS4jfqUkZxoryvJgVPEcrl5NL/ggHsSmLMHuH64Lhg==
 
 update-browserslist-db@^1.0.0:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/update-browserslist-db/-/update-browserslist-db-1.0.3.tgz#6c47cb996f34afb363e924748e2f6e4d983c6fc1"
-  integrity sha512-ufSazemeh9Gty0qiWtoRpJ9F5Q5W3xdIPm1UZQqYQv/q0Nyb9EMHUB2lu+O9x1re9WsorpMAUu4Y6Lxcs5n+XQ==
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/update-browserslist-db/-/update-browserslist-db-1.0.4.tgz#dbfc5a789caa26b1db8990796c2c8ebbce304824"
+  integrity sha512-jnmO2BEGUjsMOe/Fg9u0oczOe/ppIDZPebzccl1yDWGLFP16Pa1/RM5wEoKYPG2zstNcDuAStejyxsOuKINdGA==
   dependencies:
     escalade "^3.1.1"
     picocolors "^1.0.0"

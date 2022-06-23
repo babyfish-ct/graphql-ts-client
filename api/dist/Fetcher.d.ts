@@ -15,7 +15,9 @@ export interface Fetcher<E extends string, T extends object, TVariables extends 
     readonly fetchableType: FetchableType<E>;
     readonly fieldMap: ReadonlyMap<string, FetcherField>;
     readonly directiveMap: ReadonlyMap<string, DirectiveArgs>;
-    findField(fieldName: string): FetcherField | undefined;
+    findField(fieldKey: string): FetcherField | undefined;
+    findFieldsByName(fieldName: string): ReadonlyArray<FetcherField>;
+    findFieldByName(fieldName: string): FetcherField | undefined;
     toString(): string;
     toFragmentString(): string;
     toJSON(): string;
@@ -66,6 +68,9 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     private _getDirectiveMap;
     get variableTypeMap(): ReadonlyMap<string, string>;
     findField(fieldKey: string): FetcherField | undefined;
+    findFieldsByName(fieldName: string): ReadonlyArray<FetcherField>;
+    private collectFieldsByName;
+    findFieldByName(fieldName: string): FetcherField | undefined;
     toString(): string;
     toFragmentString(): string;
     toJSON(): string;

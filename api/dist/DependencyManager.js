@@ -49,7 +49,7 @@ class DependencyManager {
     }
     registerTypes(resource, fetchers) {
         for (const fetcher of fetchers) {
-            for (const [, field] of fetcher.fieldMap) {
+            for (const field of fetcher.fieldMap.values()) {
                 const fieldName = field.name;
                 if (!fieldName.startsWith("...")) {
                     const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
@@ -66,7 +66,7 @@ class DependencyManager {
     registerFields(resource, fetchers) {
         for (const fetcher of fetchers) {
             const isOperation = isOperationFetcher(fetcher);
-            for (const [, field] of fetcher.fieldMap) {
+            for (const field of fetcher.fieldMap.values()) {
                 const fieldName = field.name;
                 if (!isOperation && !fieldName.startsWith("...")) {
                     const subMap = compute(this.fieldResourceMap, fieldName, () => new Map());
@@ -170,7 +170,7 @@ class DependencyManager {
     collectAllResources(fetcher, output) {
         var _a, _b, _c, _d;
         (_a = this.rootTypeResourceMap.get(fetcher.fetchableType.name)) === null || _a === void 0 ? void 0 : _a.copyTo(output);
-        for (const [, field] of fetcher.fieldMap) {
+        for (const field of fetcher.fieldMap.values()) {
             const fieldName = field.name;
             if (!fieldName.startsWith("...")) { // Not fragment
                 const declaringTypes = getDeclaringTypeNames(fieldName, fetcher);

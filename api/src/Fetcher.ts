@@ -22,7 +22,11 @@ export interface Fetcher<E extends string, T extends object, TVariables extends 
 
     readonly directiveMap: ReadonlyMap<string, DirectiveArgs>;
 
-    findField(fieldName: string): FetcherField | undefined;
+    findField(fieldKey: string): FetcherField | undefined;
+
+    findFieldsByName(fieldName: string): ReadonlyArray<FetcherField>;
+
+    findFieldByName(fieldName: string): FetcherField | undefined;
 
     toString(): string;
 
@@ -270,6 +274,37 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         return undefined;
     }
 
+    findFieldsByName(fieldName: string): ReadonlyArray<FetcherField> {
+        const fields: FetcherField[] = [];
+        this.collectFieldsByName(fieldName, fields);
+        return fields;
+    }
+
+    private collectFieldsByName(fieldName: string, outArr: Array<FetcherField>) {
+        for (const field of this.fieldMap.values()) {
+            if (field.name === fieldName) {
+                outArr.push(field);
+            } else if (field.name.startsWith("...") && field.childFetchers !== undefined) {
+                for (const fragmentFetcher of field.childFetchers) {
+                    outArr.push(...fragmentFetcher.findFieldsByName(fieldName));
+                }
+            }
+        };
+    }
+
+    findFieldByName(fieldName: string): FetcherField | undefined {
+        const fields = this.findFieldsByName(fieldName);
+        if (fields.length > 1) {
+            throw new Error(
+                `Too many fields named "${fieldName}" are declared in the fetcher of type "${this.fetchableType.name}"`
+            );
+        }
+        if (fields.length === 0) {
+            return undefined;
+        }
+        return fields[0];
+    }
+
     toString(): string {
         return this.result.text;
     }
@@ -380,7 +415,7 @@ class ResultContext {
     accept(fetcher: Fetcher<string, object, object>) {
         
         const t = this.writer.text.bind(this.writer);
-        for (const [, field] of fetcher.fieldMap) {
+        for (const field of fetcher.fieldMap.values()) {
             const fieldName = field.name;
             if (fieldName !== "...") { // Inline fragment
                 const alias = field.fieldOptionsValue?.alias;

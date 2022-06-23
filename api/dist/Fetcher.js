@@ -149,6 +149,34 @@ class AbstractFetcher {
         }
         return undefined;
     }
+    findFieldsByName(fieldName) {
+        const fields = [];
+        this.collectFieldsByName(fieldName, fields);
+        return fields;
+    }
+    collectFieldsByName(fieldName, outArr) {
+        for (const field of this.fieldMap.values()) {
+            if (field.name === fieldName) {
+                outArr.push(field);
+            }
+            else if (field.name.startsWith("...") && field.childFetchers !== undefined) {
+                for (const fragmentFetcher of field.childFetchers) {
+                    outArr.push(...fragmentFetcher.findFieldsByName(fieldName));
+                }
+            }
+        }
+        ;
+    }
+    findFieldByName(fieldName) {
+        const fields = this.findFieldsByName(fieldName);
+        if (fields.length > 1) {
+            throw new Error(`Too many fields named "${fieldName}" are declared in the fetcher of type "${this.fetchableType.name}"`);
+        }
+        if (fields.length === 0) {
+            return undefined;
+        }
+        return fields[0];
+    }
     toString() {
         return this.result.text;
     }
@@ -226,7 +254,7 @@ class ResultContext {
     accept(fetcher) {
         var _a, _b;
         const t = this.writer.text.bind(this.writer);
-        for (const [, field] of fetcher.fieldMap) {
+        for (const field of fetcher.fieldMap.values()) {
             const fieldName = field.name;
             if (fieldName !== "...") { // Inline fragment
                 const alias = (_a = field.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;

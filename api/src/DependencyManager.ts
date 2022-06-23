@@ -68,7 +68,7 @@ export class DependencyManager {
 
     private registerTypes(resource: string, fetchers: readonly Fetcher<string, object, object>[]) {
         for (const fetcher of fetchers) {
-            for (const [, field] of fetcher.fieldMap) {
+            for (const field of fetcher.fieldMap.values()) {
                 const fieldName = field.name;
                 if (!fieldName.startsWith("...")) {
                     const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
@@ -86,7 +86,7 @@ export class DependencyManager {
     private registerFields(resource: string, fetchers: readonly Fetcher<string, object, object>[]) {
         for (const fetcher of fetchers) {
             const isOperation = isOperationFetcher(fetcher);
-            for (const [, field] of fetcher.fieldMap) {
+            for (const field of fetcher.fieldMap.values()) {
                 const fieldName = field.name;
                 if (!isOperation && !fieldName.startsWith("...")) {
                     const subMap = compute(this.fieldResourceMap, fieldName, () => new Map<string, Resources>());
@@ -197,7 +197,7 @@ export class DependencyManager {
 
     private collectAllResources(fetcher: Fetcher<string, object, object>, output: Set<string>) {
         this.rootTypeResourceMap.get(fetcher.fetchableType.name)?.copyTo(output);
-        for (const [, field] of fetcher.fieldMap) {
+        for (const field of fetcher.fieldMap.values()) {
             const fieldName = field.name;
             if (!fieldName.startsWith("...")) { // Not fragment
                 const declaringTypes = getDeclaringTypeNames(fieldName, fetcher);
