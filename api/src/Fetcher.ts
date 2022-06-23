@@ -198,18 +198,20 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         const fieldMap = new Map<string, FetcherField>();
         for (let i = fetchers.length - 1; i >= 0; --i) {
             const fetcher = fetchers[i];
+            const fetchKey = fetcher?._fieldOptionsValue?.alias ?? fetcher._field;
             if (fetcher._field.startsWith('...')) {
-                let childFetchers = fieldMap.get(fetcher._field)?.childFetchers as AbstractFetcher<string, object, object>[];
+                let childFetchers = fieldMap.get(fetchKey)?.childFetchers as AbstractFetcher<string, object, object>[];
                 if (childFetchers === undefined) {
                     childFetchers = [];
-                    fieldMap.set(fetcher._field, { plural: false, childFetchers }); // Fragment cause mutliple child fetchers
+                    fieldMap.set(fetchKey, { name: fetcher._field,  plural: false, childFetchers }); // Fragment cause mutliple child fetchers
                 }
                 childFetchers.push(fetcher._child!);
             } else {
                 if (fetcher._negative) {
-                    fieldMap.delete(fetcher._field);
+                    fieldMap.delete(fetchKey);
                 } else {
-                    fieldMap.set(fetcher._field, { 
+                    fieldMap.set(fetchKey, { 
+                        name: fetcher._field,
                         argGraphQLTypes: fetcher.fetchableType.fields.get(fetcher._field)?.argGraphQLTypeMap,
                         args: fetcher._args, 
                         fieldOptionsValue: fetcher._fieldOptionsValue,
@@ -250,15 +252,15 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         return this.result.variableTypeMap;
     }
 
-    findField(fieldName: string): FetcherField | undefined {
-        const field = this.fieldMap.get(fieldName);
+    findField(fieldKey: string): FetcherField | undefined {
+        const field = this.fieldMap.get(fieldKey);
         if (field !== undefined) {
             return field;
         }
-        for (const [fieldName, field] of this.fieldMap) {
-            if (fieldName.startsWith("...") && field.childFetchers !== undefined) {
+        for (const [fieldKey, field] of this.fieldMap) {
+            if (field.name.startsWith("...") && field.childFetchers !== undefined) {
                 for (const fragmentFetcher of field.childFetchers) {
-                    const deeperField = fragmentFetcher.findField(fieldName);
+                    const deeperField = fragmentFetcher.findField(fieldKey);
                     if (deeperField !== undefined) {
                         return deeperField;
                     }
@@ -329,6 +331,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
 }
 
 export interface FetcherField {
+    readonly name: string;
     readonly argGraphQLTypes?: ReadonlyMap<string, string>;
     readonly args?: object;
     readonly fieldOptionsValue?: FieldOptionsValue;
@@ -377,7 +380,8 @@ class ResultContext {
     accept(fetcher: Fetcher<string, object, object>) {
         
         const t = this.writer.text.bind(this.writer);
-        for (const [fieldName, field] of fetcher.fieldMap) {
+        for (const [, field] of fetcher.fieldMap) {
+            const fieldName = field.name;
             if (fieldName !== "...") { // Inline fragment
                 const alias = field.fieldOptionsValue?.alias;
                 if (alias !== undefined && alias !== "" && alias !== fieldName) {

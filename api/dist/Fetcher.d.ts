@@ -65,7 +65,7 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     get directiveMap(): ReadonlyMap<string, DirectiveArgs>;
     private _getDirectiveMap;
     get variableTypeMap(): ReadonlyMap<string, string>;
-    findField(fieldName: string): FetcherField | undefined;
+    findField(fieldKey: string): FetcherField | undefined;
     toString(): string;
     toFragmentString(): string;
     toJSON(): string;
@@ -74,6 +74,7 @@ export declare abstract class AbstractFetcher<E extends string, T extends object
     " $supressWarnings"(_: T, _2: TVariables): never;
 }
 export interface FetcherField {
+    readonly name: string;
     readonly argGraphQLTypes?: ReadonlyMap<string, string>;
     readonly args?: object;
     readonly fieldOptionsValue?: FieldOptionsValue;

@@ -20,7 +20,7 @@ export class DependencyManager {
 
     /*
      * level-1 key: FieldName
-     * level-2 key: Field name
+     * level-2 key: FieldName
      */
     private fieldResourceMap = new Map<string, Map<string, Resources>>();
 
@@ -68,8 +68,8 @@ export class DependencyManager {
 
     private registerTypes(resource: string, fetchers: readonly Fetcher<string, object, object>[]) {
         for (const fetcher of fetchers) {
-            const isOperation = isOperationFetcher(fetcher);
-            for (const [fieldName, field] of fetcher.fieldMap) {
+            for (const [, field] of fetcher.fieldMap) {
+                const fieldName = field.name;
                 if (!fieldName.startsWith("...")) {
                     const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
                     for (const declaringTypeName of declaringTypeNames) {
@@ -86,7 +86,8 @@ export class DependencyManager {
     private registerFields(resource: string, fetchers: readonly Fetcher<string, object, object>[]) {
         for (const fetcher of fetchers) {
             const isOperation = isOperationFetcher(fetcher);
-            for (const [fieldName, field] of fetcher.fieldMap) {
+            for (const [, field] of fetcher.fieldMap) {
+                const fieldName = field.name;
                 if (!isOperation && !fieldName.startsWith("...")) {
                     const subMap = compute(this.fieldResourceMap, fieldName, () => new Map<string, Resources>());
                     const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
@@ -121,7 +122,8 @@ export class DependencyManager {
             }
         }
 
-        for (const [fieldName, field] of fetcher.fieldMap) {
+        for (const [fieldKey, field] of fetcher.fieldMap) {
+            const fieldName = field.name;
             if (fieldName.startsWith("...")) { // Fragment, not assocaition
                 if (field.childFetchers !== undefined) {
                     for (const childFetcher of field.childFetchers) {
@@ -129,8 +131,8 @@ export class DependencyManager {
                     }
                 }
             } else {
-                const oldValue = nullToUndefined(oldObject !== undefined ? oldObject[fieldName] : undefined);
-                const newValue = nullToUndefined(newObject !== undefined ? newObject[fieldName] : undefined);
+                const oldValue = nullToUndefined(oldObject !== undefined ? oldObject[fieldKey] : undefined);
+                const newValue = nullToUndefined(newObject !== undefined ? newObject[fieldKey] : undefined);
                 if (field.childFetchers !== undefined && field.childFetchers.length !== 0) { // association
                     if (oldValue !== newValue) { // Not both undefined
                         for (const childFetcher of field.childFetchers) {
@@ -195,7 +197,8 @@ export class DependencyManager {
 
     private collectAllResources(fetcher: Fetcher<string, object, object>, output: Set<string>) {
         this.rootTypeResourceMap.get(fetcher.fetchableType.name)?.copyTo(output);
-        for (const [fieldName, field] of fetcher.fieldMap) {
+        for (const [, field] of fetcher.fieldMap) {
+            const fieldName = field.name;
             if (!fieldName.startsWith("...")) { // Not fragment
                 const declaringTypes = getDeclaringTypeNames(fieldName, fetcher);
                 for (const declaringType of declaringTypes) {

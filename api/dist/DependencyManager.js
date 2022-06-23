@@ -18,7 +18,7 @@ class DependencyManager {
         this.rootTypeResourceMap = new Map();
         /*
          * level-1 key: FieldName
-         * level-2 key: Field name
+         * level-2 key: FieldName
          */
         this.fieldResourceMap = new Map();
         window.dependencyManager = this;
@@ -49,8 +49,8 @@ class DependencyManager {
     }
     registerTypes(resource, fetchers) {
         for (const fetcher of fetchers) {
-            const isOperation = isOperationFetcher(fetcher);
-            for (const [fieldName, field] of fetcher.fieldMap) {
+            for (const [, field] of fetcher.fieldMap) {
+                const fieldName = field.name;
                 if (!fieldName.startsWith("...")) {
                     const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
                     for (const declaringTypeName of declaringTypeNames) {
@@ -66,7 +66,8 @@ class DependencyManager {
     registerFields(resource, fetchers) {
         for (const fetcher of fetchers) {
             const isOperation = isOperationFetcher(fetcher);
-            for (const [fieldName, field] of fetcher.fieldMap) {
+            for (const [, field] of fetcher.fieldMap) {
+                const fieldName = field.name;
                 if (!isOperation && !fieldName.startsWith("...")) {
                     const subMap = compute(this.fieldResourceMap, fieldName, () => new Map());
                     const declaringTypeNames = getDeclaringTypeNames(fieldName, fetcher);
@@ -95,7 +96,8 @@ class DependencyManager {
                 (_b = this.rootTypeResourceMap.get(fetcher.fetchableType.name)) === null || _b === void 0 ? void 0 : _b.copyTo(output);
             }
         }
-        for (const [fieldName, field] of fetcher.fieldMap) {
+        for (const [fieldKey, field] of fetcher.fieldMap) {
+            const fieldName = field.name;
             if (fieldName.startsWith("...")) { // Fragment, not assocaition
                 if (field.childFetchers !== undefined) {
                     for (const childFetcher of field.childFetchers) {
@@ -104,8 +106,8 @@ class DependencyManager {
                 }
             }
             else {
-                const oldValue = nullToUndefined(oldObject !== undefined ? oldObject[fieldName] : undefined);
-                const newValue = nullToUndefined(newObject !== undefined ? newObject[fieldName] : undefined);
+                const oldValue = nullToUndefined(oldObject !== undefined ? oldObject[fieldKey] : undefined);
+                const newValue = nullToUndefined(newObject !== undefined ? newObject[fieldKey] : undefined);
                 if (field.childFetchers !== undefined && field.childFetchers.length !== 0) { // association
                     if (oldValue !== newValue) { // Not both undefined
                         for (const childFetcher of field.childFetchers) {
@@ -168,7 +170,8 @@ class DependencyManager {
     collectAllResources(fetcher, output) {
         var _a, _b, _c, _d;
         (_a = this.rootTypeResourceMap.get(fetcher.fetchableType.name)) === null || _a === void 0 ? void 0 : _a.copyTo(output);
-        for (const [fieldName, field] of fetcher.fieldMap) {
+        for (const [, field] of fetcher.fieldMap) {
+            const fieldName = field.name;
             if (!fieldName.startsWith("...")) { // Not fragment
                 const declaringTypes = getDeclaringTypeNames(fieldName, fetcher);
                 for (const declaringType of declaringTypes) {

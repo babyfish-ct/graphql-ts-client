@@ -74,7 +74,7 @@ class AbstractFetcher {
         return m;
     }
     _getFieldMap0() {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e, _f;
         const fetchers = [];
         for (let fetcher = this; fetcher !== undefined; fetcher = fetcher._prev) {
             if (fetcher._field !== "") {
@@ -84,24 +84,26 @@ class AbstractFetcher {
         const fieldMap = new Map();
         for (let i = fetchers.length - 1; i >= 0; --i) {
             const fetcher = fetchers[i];
+            const fetchKey = (_b = (_a = fetcher === null || fetcher === void 0 ? void 0 : fetcher._fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias) !== null && _b !== void 0 ? _b : fetcher._field;
             if (fetcher._field.startsWith('...')) {
-                let childFetchers = (_a = fieldMap.get(fetcher._field)) === null || _a === void 0 ? void 0 : _a.childFetchers;
+                let childFetchers = (_c = fieldMap.get(fetchKey)) === null || _c === void 0 ? void 0 : _c.childFetchers;
                 if (childFetchers === undefined) {
                     childFetchers = [];
-                    fieldMap.set(fetcher._field, { plural: false, childFetchers }); // Fragment cause mutliple child fetchers
+                    fieldMap.set(fetchKey, { name: fetcher._field, plural: false, childFetchers }); // Fragment cause mutliple child fetchers
                 }
                 childFetchers.push(fetcher._child);
             }
             else {
                 if (fetcher._negative) {
-                    fieldMap.delete(fetcher._field);
+                    fieldMap.delete(fetchKey);
                 }
                 else {
-                    fieldMap.set(fetcher._field, {
-                        argGraphQLTypes: (_b = fetcher.fetchableType.fields.get(fetcher._field)) === null || _b === void 0 ? void 0 : _b.argGraphQLTypeMap,
+                    fieldMap.set(fetchKey, {
+                        name: fetcher._field,
+                        argGraphQLTypes: (_d = fetcher.fetchableType.fields.get(fetcher._field)) === null || _d === void 0 ? void 0 : _d.argGraphQLTypeMap,
                         args: fetcher._args,
                         fieldOptionsValue: fetcher._fieldOptionsValue,
-                        plural: (_d = (_c = fetcher.fetchableType.fields.get(fetcher._field)) === null || _c === void 0 ? void 0 : _c.isPlural) !== null && _d !== void 0 ? _d : false,
+                        plural: (_f = (_e = fetcher.fetchableType.fields.get(fetcher._field)) === null || _e === void 0 ? void 0 : _e.isPlural) !== null && _f !== void 0 ? _f : false,
                         childFetchers: fetcher._child === undefined ? undefined : [fetcher._child] // Association only cause one child fetcher
                     });
                 }
@@ -130,15 +132,15 @@ class AbstractFetcher {
     get variableTypeMap() {
         return this.result.variableTypeMap;
     }
-    findField(fieldName) {
-        const field = this.fieldMap.get(fieldName);
+    findField(fieldKey) {
+        const field = this.fieldMap.get(fieldKey);
         if (field !== undefined) {
             return field;
         }
-        for (const [fieldName, field] of this.fieldMap) {
-            if (fieldName.startsWith("...") && field.childFetchers !== undefined) {
+        for (const [fieldKey, field] of this.fieldMap) {
+            if (field.name.startsWith("...") && field.childFetchers !== undefined) {
                 for (const fragmentFetcher of field.childFetchers) {
-                    const deeperField = fragmentFetcher.findField(fieldName);
+                    const deeperField = fragmentFetcher.findField(fieldKey);
                     if (deeperField !== undefined) {
                         return deeperField;
                     }
@@ -224,7 +226,8 @@ class ResultContext {
     accept(fetcher) {
         var _a, _b;
         const t = this.writer.text.bind(this.writer);
-        for (const [fieldName, field] of fetcher.fieldMap) {
+        for (const [, field] of fetcher.fieldMap) {
+            const fieldName = field.name;
             if (fieldName !== "...") { // Inline fragment
                 const alias = (_a = field.fieldOptionsValue) === null || _a === void 0 ? void 0 : _a.alias;
                 if (alias !== undefined && alias !== "" && alias !== fieldName) {
