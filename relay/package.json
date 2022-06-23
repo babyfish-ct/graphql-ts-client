@@ -1,6 +1,6 @@
 {
   "name": "graphql-ts-client-relay",
-  "version": "3.1.7",
+  "version": "3.1.8",
   "description": "Relay tools for graphql client",
   "author": "ChenTao",
   "license": "MIT",
@@ -22,6 +22,6 @@
   },
   "devDependencies": {},
   "peerDependencies": {
-    "graphql-ts-client-api": "^3.1.7"
+    "graphql-ts-client-api": "^3.1.8"
   }
 }
