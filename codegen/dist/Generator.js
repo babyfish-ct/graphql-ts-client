@@ -30,6 +30,7 @@ const InputWriter_1 = require("./InputWriter");
 const CommonTypesWriter_1 = require("./CommonTypesWriter");
 const InheritanceInfo_1 = require("./InheritanceInfo");
 const EnumInputMetadataWriter_1 = require("./EnumInputMetadataWriter");
+const Utils_1 = require("./Utils");
 class Generator {
     constructor(config) {
         this.config = config;
@@ -62,14 +63,16 @@ class Generator {
                             edgeTypes.add(tuple[1]);
                         }
                     }
-                    if (type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType || type instanceof graphql_1.GraphQLUnionType) {
-                        fetcherTypes.push(type);
-                    }
-                    else if (type instanceof graphql_1.GraphQLInputObjectType) {
-                        inputTypes.push(type);
-                    }
-                    else if (type instanceof graphql_1.GraphQLEnumType) {
-                        enumTypes.push(type);
+                    if (!(0, Utils_1.isExecludedTypeName)(this.config, type.name)) {
+                        if (type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType || type instanceof graphql_1.GraphQLUnionType) {
+                            fetcherTypes.push(type);
+                        }
+                        else if (type instanceof graphql_1.GraphQLInputObjectType) {
+                            inputTypes.push(type);
+                        }
+                        else if (type instanceof graphql_1.GraphQLEnumType) {
+                            enumTypes.push(type);
+                        }
                     }
                 }
             }

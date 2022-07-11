@@ -11,6 +11,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CommonTypesWriter = void 0;
 const graphql_1 = require("graphql");
+const Utils_1 = require("./Utils");
 const Writer_1 = require("./Writer");
 class CommonTypesWriter extends Writer_1.Writer {
     constructor(schema, inheritanceInfo, stream, config) {
@@ -33,23 +34,27 @@ class CommonTypesWriter extends Writer_1.Writer {
         t("export type ImplementationType<T> = ");
         this.enter("BLANK", true);
         for (const [type, castTypes] of this.inheritanceInfo.downcastTypeMap) {
-            t("T extends '");
-            t(type.name);
-            t("' ? ");
-            this.enter("BLANK");
-            if (!(type instanceof graphql_1.GraphQLUnionType)) {
-                t("'");
+            if (!(0, Utils_1.isExecludedTypeName)(this.config, type.name)) {
+                t("T extends '");
                 t(type.name);
-                t("'");
+                t("' ? ");
+                this.enter("BLANK");
+                if (!(type instanceof graphql_1.GraphQLUnionType)) {
+                    t("'");
+                    t(type.name);
+                    t("'");
+                }
+                for (const castType of castTypes) {
+                    if (!(0, Utils_1.isExecludedTypeName)(this.config, castType.name)) {
+                        this.separator(" | ");
+                        t("ImplementationType<'");
+                        t(castType.name);
+                        t("'>");
+                    }
+                }
+                this.leave();
+                t(" :\n");
             }
-            for (const castType of castTypes) {
-                this.separator(" | ");
-                t("ImplementationType<'");
-                t(castType.name);
-                t("'>");
-            }
-            this.leave();
-            t(" :\n");
         }
         t("T\n");
         this.leave();
@@ -70,16 +75,20 @@ class CommonTypesWriter extends Writer_1.Writer {
             t("switch (typeName)");
             this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
                 for (const [type, castTypes] of castTypeMap) {
-                    t(`case '${type.name}':`);
-                    this.scope({ type: "BLANK", multiLines: true }, () => {
-                        if (!(type instanceof graphql_1.GraphQLUnionType)) {
-                            t(`output.push('${type.name}');\n`);
-                        }
-                        for (const castType of castTypes) {
-                            t(`${prefix}castTypes0('${castType.name}', output);\n`);
-                        }
-                        t("break;\n");
-                    });
+                    if (!(0, Utils_1.isExecludedTypeName)(this.config, type.name)) {
+                        t(`case '${type.name}':`);
+                        this.scope({ type: "BLANK", multiLines: true }, () => {
+                            if (!(type instanceof graphql_1.GraphQLUnionType)) {
+                                t(`output.push('${type.name}');\n`);
+                            }
+                            for (const castType of castTypes) {
+                                if (!(0, Utils_1.isExecludedTypeName)(this.config, castType.name)) {
+                                    t(`${prefix}castTypes0('${castType.name}', output);\n`);
+                                }
+                            }
+                            t("break;\n");
+                        });
+                    }
                 }
                 t("default:");
                 this.scope({ type: "BLANK", multiLines: true }, () => {

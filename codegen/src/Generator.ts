@@ -20,6 +20,7 @@ import { CommonTypesWriter } from "./CommonTypesWriter";
 import { InheritanceInfo } from "./InheritanceInfo";
 import { Connection, FetcherContext } from "./FetcherContext";
 import { EnumInputMetadataWriter } from "./EnumInputMetadataWriter";
+import { isExecludedTypeName } from "./Utils";
 
 export abstract class Generator {
 
@@ -54,12 +55,14 @@ export abstract class Generator {
                         edgeTypes.add(tuple[1]);
                     }
                 }
-                if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType || type instanceof GraphQLUnionType) {
-                    fetcherTypes.push(type);
-                } else if (type instanceof GraphQLInputObjectType) {
-                    inputTypes.push(type);
-                } else if (type instanceof GraphQLEnumType) {
-                    enumTypes.push(type);
+                if (!isExecludedTypeName(this.config, type.name)) {    
+                    if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType || type instanceof GraphQLUnionType) {
+                        fetcherTypes.push(type);
+                    } else if (type instanceof GraphQLInputObjectType) {
+                        inputTypes.push(type);
+                    } else if (type instanceof GraphQLEnumType) {
+                        enumTypes.push(type);
+                    }
                 }
             }
         }

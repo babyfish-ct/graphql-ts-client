@@ -15,7 +15,7 @@ const Utils_1 = require("./Utils");
 const Writer_1 = require("./Writer");
 class FetcherWriter extends Writer_1.Writer {
     constructor(modelType, ctx, stream, config) {
-        var _a, _b;
+        var _a, _b, _c;
         super(stream, config);
         this.modelType = modelType;
         this.ctx = ctx;
@@ -39,8 +39,20 @@ class FetcherWriter extends Writer_1.Writer {
             }
             this.fieldMap = map;
         }
-        else {
+        else if (config.excludedTypes === undefined) {
             this.fieldMap = modelType.getFields();
+        }
+        else {
+            const fieldMap = modelType.getFields();
+            const filteredFieldMap = {};
+            for (const fieldName in fieldMap) {
+                const field = fieldMap[fieldName];
+                const targetTypeName = (_c = (0, Utils_1.targetTypeOf)(field.type)) === null || _c === void 0 ? void 0 : _c.name;
+                if (!(0, Utils_1.isExecludedTypeName)(config, targetTypeName)) {
+                    filteredFieldMap[fieldName] = field;
+                }
+            }
+            this.fieldMap = filteredFieldMap;
         }
         const fieldArgsMap = new Map();
         const fieldCategoryMap = new Map();
@@ -167,8 +179,8 @@ class FetcherWriter extends Writer_1.Writer {
             this.writeDirective();
             this.writeTypeName();
             for (const fieldName in this.fieldMap) {
-                this.text("\n");
                 const field = this.fieldMap[fieldName];
+                this.text("\n");
                 this.writePositiveProp(field);
                 this.writeNegativeProp(field);
             }
@@ -535,7 +547,7 @@ class FetcherWriter extends Writer_1.Writer {
     getDeclaredFieldNames() {
         const fields = new Set();
         if (this.modelType instanceof graphql_1.GraphQLObjectType || this.modelType instanceof graphql_1.GraphQLInterfaceType) {
-            const fieldMap = this.modelType.getFields();
+            const fieldMap = this.fieldMap;
             for (const fieldName in fieldMap) {
                 fields.add(fieldMap[fieldName].name);
             }

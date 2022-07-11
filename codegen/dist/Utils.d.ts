@@ -8,5 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 import { GraphQLInterfaceType, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
+import { GeneratorConfig } from "./GeneratorConfig";
 export declare function targetTypeOf(type: GraphQLType): GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType | undefined;
 export declare function instancePrefix(name: string): string;
+export declare function isExecludedTypeName(config: GeneratorConfig, typeName: string | undefined): boolean;

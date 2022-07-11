@@ -1,9 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TriggerEventWiter = void 0;
+const Utils_1 = require("../Utils");
 const Writer_1 = require("../Writer");
 class TriggerEventWiter extends Writer_1.Writer {
     constructor(modelType, idField, stream, config) {
+        var _a;
         super(stream, config);
         this.modelType = modelType;
         this.idField = idField;
@@ -12,11 +14,14 @@ class TriggerEventWiter extends Writer_1.Writer {
         const fieldMap = modelType.getFields();
         for (const fieldName in fieldMap) {
             if (fieldName !== (idField === null || idField === void 0 ? void 0 : idField.name)) {
-                if (fieldMap[fieldName].args.length === 0) {
-                    simpleFieldNames.add(fieldName);
-                }
-                else {
-                    parameterizedFieldNames.add(fieldName);
+                const targetTypeName = (_a = (0, Utils_1.targetTypeOf)(fieldMap[fieldName].type)) === null || _a === void 0 ? void 0 : _a.name;
+                if (!(0, Utils_1.isExecludedTypeName)(config, targetTypeName)) {
+                    if (fieldMap[fieldName].args.length === 0) {
+                        simpleFieldNames.add(fieldName);
+                    }
+                    else {
+                        parameterizedFieldNames.add(fieldName);
+                    }
                 }
             }
         }

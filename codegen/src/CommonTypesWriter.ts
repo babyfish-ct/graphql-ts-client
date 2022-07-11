@@ -12,6 +12,7 @@ import { WriteStream } from "fs";
 import { GraphQLSchema, GraphQLUnionType } from "graphql";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { InheritanceInfo } from "./InheritanceInfo";
+import { isExecludedTypeName } from "./Utils";
 import { Writer } from "./Writer";
 
 export class CommonTypesWriter extends Writer {
@@ -45,23 +46,27 @@ export class CommonTypesWriter extends Writer {
         t("export type ImplementationType<T> = ");
         this.enter("BLANK", true);
         for (const [type, castTypes] of this.inheritanceInfo.downcastTypeMap) {
-            t("T extends '");
-            t(type.name)
-            t("' ? ");
-            this.enter("BLANK")
-            if (!(type instanceof GraphQLUnionType)) {
-                t("'");
-                t(type.name);
-                t("'");
+            if (!isExecludedTypeName(this.config, type.name)) {
+                t("T extends '");
+                t(type.name)
+                t("' ? ");
+                this.enter("BLANK")
+                if (!(type instanceof GraphQLUnionType)) {
+                    t("'");
+                    t(type.name);
+                    t("'");
+                }
+                for (const castType of castTypes) {
+                    if (!isExecludedTypeName(this.config, castType.name)) {
+                        this.separator(" | ");
+                        t("ImplementationType<'");
+                        t(castType.name);
+                        t("'>");
+                    }
+                }
+                this.leave();
+                t(" :\n");
             }
-            for (const castType of castTypes) {
-                this.separator(" | ");
-                t("ImplementationType<'");
-                t(castType.name);
-                t("'>");
-            }
-            this.leave();
-            t(" :\n");
         }
         t("T\n");
         this.leave();
@@ -87,16 +92,20 @@ export class CommonTypesWriter extends Writer {
             t("switch (typeName)");
             this.scope({type: "BLOCK", multiLines: true, suffix: "\n"}, () => {
                 for (const [type, castTypes] of castTypeMap) {
-                    t(`case '${type.name}':`);
-                    this.scope({type: "BLANK", multiLines: true}, () => {
-                        if (!(type instanceof GraphQLUnionType)) {
-                            t(`output.push('${type.name}');\n`);
-                        }
-                        for (const castType of castTypes) {
-                            t(`${prefix}castTypes0('${castType.name}', output);\n`);
-                        }
-                        t("break;\n");
-                    });
+                    if (!isExecludedTypeName(this.config, type.name)) {
+                        t(`case '${type.name}':`);
+                        this.scope({type: "BLANK", multiLines: true}, () => {
+                            if (!(type instanceof GraphQLUnionType)) {
+                                t(`output.push('${type.name}');\n`);
+                            }
+                            for (const castType of castTypes) {
+                                if (!isExecludedTypeName(this.config, castType.name)) {
+                                    t(`${prefix}castTypes0('${castType.name}', output);\n`);
+                                }
+                            }
+                            t("break;\n");
+                        });
+                    }
                 }
                 t("default:");
                 this.scope({type: "BLANK", multiLines: true}, () => {

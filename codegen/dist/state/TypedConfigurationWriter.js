@@ -145,7 +145,9 @@ class TypedConfigurationWriter extends Writer_1.Writer {
         for (const fieldName in fieldMap) {
             const field = fieldMap[fieldName];
             const targetType = (0, Utils_1.targetTypeOf)(field.type);
-            if (targetType !== undefined && !this.ctx.embeddedTypes.has(targetType)) {
+            if (targetType !== undefined &&
+                !(0, Utils_1.isExecludedTypeName)(this.config, targetType.name) &&
+                !this.ctx.embeddedTypes.has(targetType)) {
                 const connection = this.ctx.connections.get(targetType);
                 if (connection !== undefined) {
                     map.set(fieldName, connection.nodeType.name);

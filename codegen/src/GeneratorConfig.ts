@@ -18,9 +18,10 @@ export interface GeneratorConfig {
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
-    readonly scalarTypeMap: {[key: string]: string | { readonly typeName: string, readonly importSource: string; }};
-    readonly idFieldMap?: {[key: string]: string};
-    readonly defaultFetcherExcludeMap?: {[key: string]: string[]};
+    readonly excludedTypes?: ReadonlyArray<string>;
+    readonly scalarTypeMap?: {readonly [key: string]: string | { readonly typeName: string, readonly importSource: string; }};
+    readonly idFieldMap?: {readonly[key: string]: string};
+    readonly defaultFetcherExcludeMap?: {readonly [key: string]: string[]};
 }
 
 export function validateConfig(
