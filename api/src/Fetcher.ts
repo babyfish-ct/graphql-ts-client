@@ -553,13 +553,13 @@ class ResultContext {
             if (enumInputMetaType !== undefined) {
                 t(value);
             } else {
-                t(`"${value.replace('"', '\\"')}"`);
+                t(JSON.stringify(value));
             }
         } else if (typeof value === 'boolean') {
             t(value ? "true" : "false");
         } else if (value instanceof StringValue) {
             if (value.quotationMarks) {
-                t(`"${value.value.replace('"', '\\"')}"`);
+                t(JSON.stringify(value.value));
             } else {
                 t(value.value);
             }
