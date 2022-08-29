@@ -25,8 +25,8 @@ const utilities_2 = require("graphql/utilities");
 const node_fetch_1 = require("node-fetch");
 function loadRemoteSchema(endpoint, headers) {
     return __awaiter(this, void 0, void 0, function* () {
-        const body = JSON.stringify({ "query": (0, utilities_1.getIntrospectionQuery)() });
-        const response = yield (0, node_fetch_1.default)(endpoint, {
+        const body = JSON.stringify({ "query": utilities_1.getIntrospectionQuery() });
+        const response = yield node_fetch_1.default(endpoint, {
             method: 'POST',
             body,
             headers: Object.assign({ "Accept": "application/json", "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body).toString() }, headers)
@@ -35,14 +35,14 @@ function loadRemoteSchema(endpoint, headers) {
         if (errors !== undefined) {
             throw new Error();
         }
-        return (0, utilities_2.buildClientSchema)(data);
+        return utilities_2.buildClientSchema(data);
     });
 }
 exports.loadRemoteSchema = loadRemoteSchema;
 function loadLocalSchema(location) {
     return __awaiter(this, void 0, void 0, function* () {
-        const sdl = yield (0, promises_1.readFile)(location, { encoding: "utf8" });
-        return (0, utilities_1.buildSchema)(sdl);
+        const sdl = yield promises_1.readFile(location, { encoding: "utf8" });
+        return utilities_1.buildSchema(sdl);
     });
 }
 exports.loadLocalSchema = loadLocalSchema;

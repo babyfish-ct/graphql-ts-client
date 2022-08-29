@@ -33,16 +33,16 @@ class ApolloGenerator extends Generator_1.Generator {
     }
     generateApollo() {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = (0, Generator_1.createStreamAndLog)((0, path_1.join)(this.config.targetDir, "Apollo.ts"));
+            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Apollo.ts"));
             stream.write(APOLLO_CODE);
-            yield (0, Generator_1.closeStream)(stream);
+            yield Generator_1.closeStream(stream);
         });
     }
     generateDependencyManager() {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = (0, Generator_1.createStreamAndLog)((0, path_1.join)(this.config.targetDir, "DependencyManager.tsx"));
+            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "DependencyManager.tsx"));
             stream.write(DEPENDENCY_MANAGER_CODE);
-            yield (0, Generator_1.closeStream)(stream);
+            yield Generator_1.closeStream(stream);
         });
     }
     writeIndexCode(stream, schema) {

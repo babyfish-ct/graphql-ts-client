@@ -14,8 +14,8 @@ class TriggerEventWiter extends Writer_1.Writer {
         const fieldMap = modelType.getFields();
         for (const fieldName in fieldMap) {
             if (fieldName !== (idField === null || idField === void 0 ? void 0 : idField.name)) {
-                const targetTypeName = (_a = (0, Utils_1.targetTypeOf)(fieldMap[fieldName].type)) === null || _a === void 0 ? void 0 : _a.name;
-                if (!(0, Utils_1.isExecludedTypeName)(config, targetTypeName)) {
+                const targetTypeName = (_a = Utils_1.targetTypeOf(fieldMap[fieldName].type)) === null || _a === void 0 ? void 0 : _a.name;
+                if (!Utils_1.isExecludedTypeName(config, targetTypeName)) {
                     if (fieldMap[fieldName].args.length === 0) {
                         simpleFieldNames.add(fieldName);
                     }

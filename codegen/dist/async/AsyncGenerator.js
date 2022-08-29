@@ -32,9 +32,9 @@ class AsyncGenerator extends Generator_1.Generator {
     }
     generateAsync() {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = (0, Generator_1.createStreamAndLog)((0, path_1.join)(this.config.targetDir, "Async.ts"));
+            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "Async.ts"));
             stream.write(ASYNC_CODE);
-            yield (0, Generator_1.closeStream)(stream);
+            yield Generator_1.closeStream(stream);
         });
     }
     writeIndexCode(stream, schema) {

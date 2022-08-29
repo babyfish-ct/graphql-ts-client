@@ -47,8 +47,8 @@ class FetcherWriter extends Writer_1.Writer {
             const filteredFieldMap = {};
             for (const fieldName in fieldMap) {
                 const field = fieldMap[fieldName];
-                const targetTypeName = (_c = (0, Utils_1.targetTypeOf)(field.type)) === null || _c === void 0 ? void 0 : _c.name;
-                if (!(0, Utils_1.isExecludedTypeName)(config, targetTypeName)) {
+                const targetTypeName = (_c = Utils_1.targetTypeOf(field.type)) === null || _c === void 0 ? void 0 : _c.name;
+                if (!Utils_1.isExecludedTypeName(config, targetTypeName)) {
                     filteredFieldMap[fieldName] = field;
                 }
             }
@@ -60,7 +60,7 @@ class FetcherWriter extends Writer_1.Writer {
         this.hasArgs = false;
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
-            const targetType = (0, Utils_1.targetTypeOf)(field.type);
+            const targetType = Utils_1.targetTypeOf(field.type);
             if (this.modelType.name !== "Query" &&
                 this.modelType.name !== "Mutation" &&
                 targetType === undefined &&
@@ -114,7 +114,7 @@ class FetcherWriter extends Writer_1.Writer {
         this.defaultFetcherProps = defaultFetcherProps;
         this.fieldArgsMap = fieldArgsMap;
         this.fieldCategoryMap = fieldCategoryMap;
-        let prefix = (0, Utils_1.instancePrefix)(this.modelType.name);
+        let prefix = Utils_1.instancePrefix(this.modelType.name);
         this.emptyFetcherName = `${prefix}$`;
         this.defaultFetcherName = defaultFetcherProps.length !== 0 ? `${prefix}$$` : undefined;
     }
@@ -131,7 +131,7 @@ class FetcherWriter extends Writer_1.Writer {
         importedFetcherTypeNames.add(this.superFetcherTypeName(this.modelType));
         for (const fieldName in this.fieldMap) {
             const field = this.fieldMap[fieldName];
-            const targetType = (0, Utils_1.targetTypeOf)(field.type);
+            const targetType = Utils_1.targetTypeOf(field.type);
             if (targetType !== undefined) {
                 importedFetcherTypeNames.add(this.superFetcherTypeName(targetType));
             }
@@ -153,7 +153,7 @@ class FetcherWriter extends Writer_1.Writer {
         }
     }
     importedNamesForSuperType(superType) {
-        return [`${(0, Utils_1.instancePrefix)(superType.name)}$`];
+        return [`${Utils_1.instancePrefix(superType.name)}$`];
     }
     importingBehavior(type) {
         if (type === this.modelType) {
@@ -237,7 +237,7 @@ class FetcherWriter extends Writer_1.Writer {
         this.writePositivePropImpl(field, "FULL");
     }
     writeNegativeProp(field) {
-        if (field.args.length !== 0 || (0, Utils_1.targetTypeOf)(field.type) !== undefined) {
+        if (field.args.length !== 0 || Utils_1.targetTypeOf(field.type) !== undefined) {
             return;
         }
         const t = this.text.bind(this);
@@ -254,7 +254,7 @@ class FetcherWriter extends Writer_1.Writer {
         if (withArgs && field.args.length === 0) {
             return;
         }
-        const targetType = (0, Utils_1.targetTypeOf)(field.type);
+        const targetType = Utils_1.targetTypeOf(field.type);
         const withOptions = mode === "WITH_OTPIONS" || mode === "FULL";
         const renderAsField = field.args.length === 0 && targetType === undefined && !withOptions;
         const namePlus = field.args.length === 0 && targetType === undefined && withOptions;
@@ -372,7 +372,7 @@ class FetcherWriter extends Writer_1.Writer {
             t("?");
         }
         t(": ");
-        this.typeRef(field.type, (0, Utils_1.targetTypeOf)(field.type) !== undefined ? "X" : undefined);
+        this.typeRef(field.type, Utils_1.targetTypeOf(field.type) !== undefined ? "X" : undefined);
         t("}");
     }
     writeInstances() {
@@ -408,7 +408,7 @@ class FetcherWriter extends Writer_1.Writer {
                         if (upcastTypes !== undefined) {
                             for (const upcastType of upcastTypes) {
                                 this.separator(", ");
-                                t(`${(0, Utils_1.instancePrefix)(upcastType.name)}$.fetchableType`);
+                                t(`${Utils_1.instancePrefix(upcastType.name)}$.fetchableType`);
                             }
                         }
                     });
@@ -419,7 +419,7 @@ class FetcherWriter extends Writer_1.Writer {
                             this.separator(", ");
                             const args = this.fieldArgsMap.get(declaredFieldName);
                             const category = this.fieldCategoryMap.get(declaredFieldName);
-                            const targetType = (0, Utils_1.targetTypeOf)(field.type);
+                            const targetType = Utils_1.targetTypeOf(field.type);
                             if (args === undefined &&
                                 (category === undefined || category === "SCALAR") &&
                                 field.type instanceof graphql_1.GraphQLNonNull) {

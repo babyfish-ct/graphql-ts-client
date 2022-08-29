@@ -34,7 +34,7 @@ class CommonTypesWriter extends Writer_1.Writer {
         t("export type ImplementationType<T> = ");
         this.enter("BLANK", true);
         for (const [type, castTypes] of this.inheritanceInfo.downcastTypeMap) {
-            if (!(0, Utils_1.isExecludedTypeName)(this.config, type.name)) {
+            if (!Utils_1.isExecludedTypeName(this.config, type.name)) {
                 t("T extends '");
                 t(type.name);
                 t("' ? ");
@@ -45,7 +45,7 @@ class CommonTypesWriter extends Writer_1.Writer {
                     t("'");
                 }
                 for (const castType of castTypes) {
-                    if (!(0, Utils_1.isExecludedTypeName)(this.config, castType.name)) {
+                    if (!Utils_1.isExecludedTypeName(this.config, castType.name)) {
                         this.separator(" | ");
                         t("ImplementationType<'");
                         t(castType.name);
@@ -75,14 +75,14 @@ class CommonTypesWriter extends Writer_1.Writer {
             t("switch (typeName)");
             this.scope({ type: "BLOCK", multiLines: true, suffix: "\n" }, () => {
                 for (const [type, castTypes] of castTypeMap) {
-                    if (!(0, Utils_1.isExecludedTypeName)(this.config, type.name)) {
+                    if (!Utils_1.isExecludedTypeName(this.config, type.name)) {
                         t(`case '${type.name}':`);
                         this.scope({ type: "BLANK", multiLines: true }, () => {
                             if (!(type instanceof graphql_1.GraphQLUnionType)) {
                                 t(`output.push('${type.name}');\n`);
                             }
                             for (const castType of castTypes) {
-                                if (!(0, Utils_1.isExecludedTypeName)(this.config, castType.name)) {
+                                if (!Utils_1.isExecludedTypeName(this.config, castType.name)) {
                                     t(`${prefix}castTypes0('${castType.name}', output);\n`);
                                 }
                             }

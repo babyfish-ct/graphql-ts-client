@@ -58,30 +58,30 @@ class GraphQLStateGenerator extends Generator_1.Generator {
     }
     generateTypedConfiguration(ctx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = (0, Generator_1.createStreamAndLog)((0, path_1.join)(this.config.targetDir, "TypedConfiguration.ts"));
+            const stream = Generator_1.createStreamAndLog(path_1.join(this.config.targetDir, "TypedConfiguration.ts"));
             new TypedConfigurationWriter_1.TypedConfigurationWriter(ctx, stream, this.config).write();
-            yield (0, Generator_1.closeStream)(stream);
+            yield Generator_1.closeStream(stream);
         });
     }
     generateTriggerEvents(ctx) {
         return __awaiter(this, void 0, void 0, function* () {
             for (const triggerableType of ctx.triggerableTypes) {
                 const fetcherType = triggerableType;
-                const dir = (0, path_1.join)(this.config.targetDir, "triggers");
-                const stream = (0, Generator_1.createStreamAndLog)((0, path_1.join)(dir, `${fetcherType.name}Event.ts`));
+                const dir = path_1.join(this.config.targetDir, "triggers");
+                const stream = Generator_1.createStreamAndLog(path_1.join(dir, `${fetcherType.name}Event.ts`));
                 new TriggerEventWriter_1.TriggerEventWiter(fetcherType, ctx.idFieldMap.get(fetcherType), stream, this.config).write();
-                yield (0, Generator_1.closeStream)(stream);
+                yield Generator_1.closeStream(stream);
             }
         });
     }
     generateTriggerIndex(ctx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = (0, Generator_1.createStreamAndLog)((0, path_1.join)((0, path_1.join)(this.config.targetDir, "triggers"), "index.ts"));
+            const stream = Generator_1.createStreamAndLog(path_1.join(path_1.join(this.config.targetDir, "triggers"), "index.ts"));
             for (const triggerableType of ctx.triggerableTypes) {
                 const fetcherType = triggerableType;
                 stream.write(`export type { ${fetcherType.name}EvictEvent, ${fetcherType.name}ChangeEvent } from './${fetcherType.name}Event';\n`);
             }
-            yield (0, Generator_1.closeStream)(stream);
+            yield Generator_1.closeStream(stream);
         });
     }
 }

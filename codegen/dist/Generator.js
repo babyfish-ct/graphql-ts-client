@@ -34,13 +34,13 @@ const Utils_1 = require("./Utils");
 class Generator {
     constructor(config) {
         this.config = config;
-        (0, GeneratorConfig_1.validateConfig)(config);
+        GeneratorConfig_1.validateConfig(config);
     }
     generate() {
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
             const schema = yield this.loadSchema();
-            (0, GeneratorConfig_1.validateConfigAndSchema)(this.config, schema);
+            GeneratorConfig_1.validateConfigAndSchema(this.config, schema);
             yield this.rmdirIfNecessary();
             yield this.mkdirIfNecessary();
             const inheritanceInfo = new InheritanceInfo_1.InheritanceInfo(schema);
@@ -63,7 +63,7 @@ class Generator {
                             edgeTypes.add(tuple[1]);
                         }
                     }
-                    if (!(0, Utils_1.isExecludedTypeName)(this.config, type.name)) {
+                    if (!Utils_1.isExecludedTypeName(this.config, type.name)) {
                         if (type instanceof graphql_1.GraphQLObjectType || type instanceof graphql_1.GraphQLInterfaceType || type instanceof graphql_1.GraphQLUnionType) {
                             fetcherTypes.push(type);
                         }
@@ -182,13 +182,13 @@ class Generator {
     }
     generateFetcherTypes(ctx) {
         return __awaiter(this, void 0, void 0, function* () {
-            const dir = (0, path_1.join)(this.config.targetDir, "fetchers");
+            const dir = path_1.join(this.config.targetDir, "fetchers");
             const emptyFetcherNameMap = new Map();
             const defaultFetcherNameMap = new Map();
             const promises = ctx.fetcherTypes
                 .map((type) => __awaiter(this, void 0, void 0, function* () {
                 var _a, _b;
-                const stream = createStreamAndLog((0, path_1.join)(dir, `${type.name}${(_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.fetcherSuffix) !== null && _b !== void 0 ? _b : "Fetcher"}.ts`));
+                const stream = createStreamAndLog(path_1.join(dir, `${type.name}${(_b = (_a = this.config) === null || _a === void 0 ? void 0 : _a.fetcherSuffix) !== null && _b !== void 0 ? _b : "Fetcher"}.ts`));
                 const writer = this.createFetcheWriter(type, ctx, stream, this.config);
                 emptyFetcherNameMap.set(type, writer.emptyFetcherName);
                 if (writer.defaultFetcherName !== undefined) {
@@ -201,7 +201,7 @@ class Generator {
                 ...promises,
                 (() => __awaiter(this, void 0, void 0, function* () {
                     var _c, _d;
-                    const stream = createStreamAndLog((0, path_1.join)(dir, "index.ts"));
+                    const stream = createStreamAndLog(path_1.join(dir, "index.ts"));
                     for (const type of ctx.fetcherTypes) {
                         const fetcherTypeName = `${type.name}${(_d = (_c = this.config) === null || _c === void 0 ? void 0 : _c.fetcherSuffix) !== null && _d !== void 0 ? _d : "Fetcher"}`;
                         stream.write(`export type {${[
@@ -226,9 +226,9 @@ class Generator {
     }
     generateInputTypes(inputTypes) {
         return __awaiter(this, void 0, void 0, function* () {
-            const dir = (0, path_1.join)(this.config.targetDir, "inputs");
+            const dir = path_1.join(this.config.targetDir, "inputs");
             const promises = inputTypes.map((type) => __awaiter(this, void 0, void 0, function* () {
-                const stream = createStreamAndLog((0, path_1.join)(dir, `${type.name}.ts`));
+                const stream = createStreamAndLog(path_1.join(dir, `${type.name}.ts`));
                 new InputWriter_1.InputWriter(type, stream, this.config).write();
                 yield stream.end();
             }));
@@ -240,9 +240,9 @@ class Generator {
     }
     generateEnumTypes(enumTypes) {
         return __awaiter(this, void 0, void 0, function* () {
-            const dir = (0, path_1.join)(this.config.targetDir, "enums");
+            const dir = path_1.join(this.config.targetDir, "enums");
             const promises = enumTypes.map((type) => __awaiter(this, void 0, void 0, function* () {
-                const stream = createStreamAndLog((0, path_1.join)(dir, `${type.name}.ts`));
+                const stream = createStreamAndLog(path_1.join(dir, `${type.name}.ts`));
                 new EnumWriter_1.EnumWriter(type, stream, this.config).write();
                 yield stream.end();
             }));
@@ -254,21 +254,21 @@ class Generator {
     }
     generateCommonTypes(schema, inheritanceInfo) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = createStreamAndLog((0, path_1.join)(this.config.targetDir, "CommonTypes.ts"));
+            const stream = createStreamAndLog(path_1.join(this.config.targetDir, "CommonTypes.ts"));
             new CommonTypesWriter_1.CommonTypesWriter(schema, inheritanceInfo, stream, this.config).write();
             yield closeStream(stream);
         });
     }
     generateEnumInputMeatadata(schema) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = createStreamAndLog((0, path_1.join)(this.config.targetDir, "EnumInputMetadata.ts"));
+            const stream = createStreamAndLog(path_1.join(this.config.targetDir, "EnumInputMetadata.ts"));
             new EnumInputMetadataWriter_1.EnumInputMetadataWriter(schema, stream, this.config).write();
             yield closeStream(stream);
         });
     }
     writeSimpleIndex(dir, types) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = createStreamAndLog((0, path_1.join)(dir, "index.ts"));
+            const stream = createStreamAndLog(path_1.join(dir, "index.ts"));
             for (const type of types) {
                 stream.write(`export type {${type.name}} from './${type.name}';\n`);
             }
@@ -295,7 +295,7 @@ class Generator {
     mkdirIfNecessary(subDir) {
         return __awaiter(this, void 0, void 0, function* () {
             const dir = subDir !== undefined ?
-                (0, path_1.join)(this.config.targetDir, subDir) :
+                path_1.join(this.config.targetDir, subDir) :
                 this.config.targetDir;
             try {
                 yield accessAsync(dir);
@@ -314,7 +314,7 @@ class Generator {
     }
     writeIndex(schema) {
         return __awaiter(this, void 0, void 0, function* () {
-            const stream = createStreamAndLog((0, path_1.join)(this.config.targetDir, "index.ts"));
+            const stream = createStreamAndLog(path_1.join(this.config.targetDir, "index.ts"));
             this.writeIndexCode(stream, schema);
             yield closeStream(stream);
         });
@@ -327,12 +327,12 @@ class Generator {
 exports.Generator = Generator;
 function createStreamAndLog(path) {
     console.log(`Write code into file: ${path}`);
-    return (0, fs_1.createWriteStream)(path);
+    return fs_1.createWriteStream(path);
 }
 exports.createStreamAndLog = createStreamAndLog;
 function closeStream(stream) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield ((0, util_1.promisify)(stream.end).call(stream));
+        return yield (util_1.promisify(stream.end).call(stream));
     });
 }
 exports.closeStream = closeStream;
@@ -391,6 +391,6 @@ function waring(message) {
     console.warn("*************************************************");
     console.log("");
 }
-const mkdirAsync = (0, util_1.promisify)(fs_1.mkdir);
-const rmdirAsync = (0, util_1.promisify)(fs_1.rmdir);
-const accessAsync = (0, util_1.promisify)(fs_1.access);
+const mkdirAsync = util_1.promisify(fs_1.mkdir);
+const rmdirAsync = util_1.promisify(fs_1.rmdir);
+const accessAsync = util_1.promisify(fs_1.access);
