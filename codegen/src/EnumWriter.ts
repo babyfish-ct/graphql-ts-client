@@ -45,15 +45,13 @@ export class EnumWriter extends Writer {
         t(this.enumType.name);
         t("Enum ");
 
-        this.enter("BLOCK");
-        this.enter("BLANK", values.length > 3);
+        this.enter("BLOCK", true);
         for (const value of values) {
             t(value.name);
             t(" = '");
             t(value.name);
             t("',\n");
         }
-        this.leave();
         this.leave();
     }
 }
