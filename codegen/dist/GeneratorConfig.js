@@ -111,6 +111,11 @@ config) {
                     throw new Error('"confg.defaultFetcherExcludeMap" must be undefined or object');
                 }
                 break;
+            case 'tsEnum':
+                if (value !== undefined && typeof value !== 'boolean') {
+                    throw new Error('"confg.tsEnum" must be undefined or boolean');
+                }
+                break;
             case 'recreateTargetDir':
             case 'excludedOperations':
             case 'excludedTypes':

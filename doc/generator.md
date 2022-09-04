@@ -142,6 +142,7 @@ As mentioned above, no matter which Generator is used, its constructor needs a c
 |excludedTypes|string[]|false||
 |scalarTypeMap|{[key:string:] string &#124; { readonly typeName: string, readonly importSource: string }}|false||
 |defaultFetcherExcludeMap|{[key:string]: string[]}|false||
+|tsEnum|boolean|false|false|
 
 ### schemaLoader
 An asynchronous function with no parameters and returning Promise&lt;GraphQLSchema&gt;, used to obtain GraphQL schema information.
@@ -286,6 +287,17 @@ defaultFetcherExcludeMap: {
 
 This configuration will be validated by the GraphQL schema, all the spelling errors will be found and reported, please don't worry about spelling errors.
 
+### tsEnum
+
+-  If it is false(default), union types are generated for GraphQL enum types, like this
+   ```
+   export type Gender = "MALE" | "FEMALE";
+   ```
+-  If it is true, generate typescript enum types, like this
+   ```
+   export enum Gender { MALE, FEMALE}
+   ```
+   > Note: Some techniques, such as recoil, are not friendly to TypeScript enum types. That's why it defaults to false.
 ____________________
 
 

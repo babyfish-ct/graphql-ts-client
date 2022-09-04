@@ -22,6 +22,7 @@ export interface GeneratorConfig {
     readonly scalarTypeMap?: {readonly [key: string]: string | { readonly typeName: string, readonly importSource: string; }};
     readonly idFieldMap?: {readonly[key: string]: string};
     readonly defaultFetcherExcludeMap?: {readonly [key: string]: string[]};
+    readonly tsEnum?: boolean;
 }
 
 export function validateConfig(
@@ -120,6 +121,11 @@ export function validateConfig(
             case 'defaultFetcherExcludeMap':
                 if (value !== undefined && typeof value !== 'object') {
                     throw new Error('"confg.defaultFetcherExcludeMap" must be undefined or object');
+                }
+                break;
+            case 'tsEnum':
+                if (value !== undefined && typeof value !== 'boolean') {
+                    throw new Error('"confg.tsEnum" must be undefined or boolean');
                 }
                 break;
             case 'recreateTargetDir':

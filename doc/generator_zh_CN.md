@@ -145,6 +145,7 @@ yarn add \
 |excludedTypes|string[]|否||
 |scalarTypeMap|{[key:string:] string &#124; {readonly typeName: string, readonly importSource: string }}|否||
 |defaultFetcherExcludeMap|{[key:string]: string[]}|否||
+|tsEnum|boolean|false|false|
 
 ### schemaLoader
 一个没有参数且返回Promise&lt;GraphQLSchema&gt;类型的异步函数，用于获取GraphQL schema信息，用于生成代码。
@@ -287,6 +288,18 @@ defaultFetcherExcludeMap: {
 ```
 
 此配置会被GraphQL schema验证, 无需担拼写错误，如果出现拼写错误，将会导致报错.
+
+### tsEnum
+
+-  如果为false(默认)，为GraphQL的enum生成union类型，例如
+   ```
+   export type Gender = "MALE" | "FEMALE";
+   ```
+-  如果为true，生成TypeScript的enum类型，例如
+   ```
+   export enum Gender { MALE, FEMALE}
+   ```
+   > 注意：某些技术，例如recoil, 对TypeScript枚举类型不友好。这就是默认为false的原因。
 
 ____________________
 
