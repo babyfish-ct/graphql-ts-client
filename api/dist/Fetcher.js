@@ -439,7 +439,7 @@ class ResultContext {
         if (enumInputMedata === undefined || argGraphQLTypeName === undefined) {
             return undefined;
         }
-        return enumInputMedata.getType(argGraphQLTypeName.replace(/\[|\]|!/, ""));
+        return enumInputMedata.getType(argGraphQLTypeName.split(/\[|\]|!/).join(""));
     }
 }
 function isMultLineJSON(obj) {

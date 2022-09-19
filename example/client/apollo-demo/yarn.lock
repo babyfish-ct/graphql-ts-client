@@ -5527,17 +5527,17 @@ graphql-tag@^2.12.3:
   dependencies:
     tslib "^2.1.0"
 
-graphql-ts-client-api@^3.1.12:
-  version "3.1.12"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.12.tgz#cba4d15437e5a8667fca0f9b067c373ac03efc77"
-  integrity sha512-TIeqgJZ0MG1vlyI5JP3AjFkf15BX+bqDGWvBvbkXldULabyYRN8UXpKqWA72dxpwrwZoVL+9M5kJNwY2wQpYDA==
+graphql-ts-client-api@^3.1.14:
+  version "3.1.14"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-api/-/graphql-ts-client-api-3.1.14.tgz#49e594dbe3b8719138b62cba56e2c04c71832adb"
+  integrity sha512-xe29hl64vh5qIEdQabAQ4zzvYd5tSjyhL66aWorcpS2Csj4+Cp2q7Yp1dUWbGJFgMcMO1sqh5Wu1lX9qCPwNIA==
   dependencies:
     ts-md5 "^1.2.9"
 
-graphql-ts-client-codegen@^3.1.12:
-  version "3.1.12"
-  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.12.tgz#03507265211540147633a6fc4ef57aab8c30403f"
-  integrity sha512-k2cVXCKwYlDa6hjSWLkoqS6XmBFZA2ueVv8R1xH4bqXBazveR/BOMIudZHkpHlvpjZmxydL3KDeC8GJrnHRs6A==
+graphql-ts-client-codegen@^3.1.14:
+  version "3.1.14"
+  resolved "https://registry.yarnpkg.com/graphql-ts-client-codegen/-/graphql-ts-client-codegen-3.1.14.tgz#b2d7d62b6052a07a85f136d3ea0fb67cc6a21606"
+  integrity sha512-KOFN09muuC+jteAZti5P49sVmXovhQwUY1VMTVOcBic0giuw8Nxu3q65nEGRzBqEdwOsVU9r1JbIa7x5lNkAjA==
   dependencies:
     "@types/node" "^15.12.2"
     "@types/node-fetch" "^2.5.10"
@@ -11001,9 +11001,9 @@ typescript@^4.1.2:
   integrity sha512-DqQgihaQ9cUrskJo9kIyW/+g0Vxsk8cDtZ52a3NGh0YNTfpUSArXSohyUGnvbPazEPLu398C0UxmKSOrPumUzA==
 
 typescript@^4.3.2:
-  version "4.8.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.8.2.tgz#e3b33d5ccfb5914e4eeab6699cf208adee3fd790"
-  integrity sha512-C0I1UsrrDHo2fYI5oaCGbSejwX4ch+9Y5jTQELvovfmFkK3HHSZJB8MSJcWLmCUBzQBchCrZ9rMRV6GuNrvGtw==
+  version "4.8.3"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.8.3.tgz#d59344522c4bc464a65a730ac695007fdb66dd88"
+  integrity sha512-goMHfm00nWPa8UvR/CPSvykqf6dVV8x/dp0c5mFTMTIu0u0FlGWRioyy7Nn0PGAdHxpJZnuO/ut+PpQ8UiHAig==
 
 unicode-canonical-property-names-ecmascript@^1.0.4:
   version "1.0.4"
