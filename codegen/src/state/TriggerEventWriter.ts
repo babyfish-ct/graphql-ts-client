@@ -1,6 +1,7 @@
 import { WriteStream } from "fs";
 import { GraphQLField, GraphQLInterfaceType, GraphQLObjectType } from "graphql";
 import { GeneratorConfig } from "../GeneratorConfig";
+import { isExecludedTypeName, targetTypeOf } from "../Utils";
 import { Writer } from "../Writer";
 
 export class TriggerEventWiter extends Writer {
@@ -22,10 +23,13 @@ export class TriggerEventWiter extends Writer {
         const fieldMap = modelType.getFields();
         for (const fieldName in fieldMap) {
             if (fieldName !== idField?.name) {
-                if (fieldMap[fieldName].args.length === 0) {
-                    simpleFieldNames.add(fieldName);
-                } else {
-                    parameterizedFieldNames.add(fieldName);
+                const targetTypeName = targetTypeOf(fieldMap[fieldName].type)?.name;
+                if (!isExecludedTypeName(config, targetTypeName)) {
+                    if (fieldMap[fieldName].args.length === 0) {
+                        simpleFieldNames.add(fieldName);
+                    } else {
+                        parameterizedFieldNames.add(fieldName);
+                    }
                 }
             }
         }

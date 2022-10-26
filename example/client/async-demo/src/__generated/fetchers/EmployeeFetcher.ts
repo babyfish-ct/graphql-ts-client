@@ -1,8 +1,10 @@
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ObjectFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 import { node$ } from './NodeFetcher';
-import {Gender} from '../enums';
+import type {Gender} from '../enums';
 
 /*
  * Any instance of this interface is immutable,
@@ -206,7 +208,7 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
     >(
         child: ObjectFetcher<'Employee', X, XVariables>
     ): EmployeeFetcher<
-        T & {readonly "subordinates": readonly X[]}, 
+        T & {readonly "subordinates": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -224,8 +226,8 @@ export interface EmployeeFetcher<T extends object, TVariables extends object> ex
     ): EmployeeFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;
@@ -260,6 +262,7 @@ export const employee$: EmployeeFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;

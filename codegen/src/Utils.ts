@@ -9,6 +9,7 @@
  */
 
 import { GraphQLInterfaceType, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
+import { GeneratorConfig } from "./GeneratorConfig";
 
 export function targetTypeOf(type: GraphQLType): GraphQLObjectType | GraphQLInterfaceType | GraphQLUnionType | undefined {
     if (type instanceof GraphQLNonNull) {
@@ -25,4 +26,12 @@ export function targetTypeOf(type: GraphQLType): GraphQLObjectType | GraphQLInte
 
 export function instancePrefix(name: string): string {
     return name.substring(0, 1).toLowerCase() + name.substring(1);
+}
+
+export function isExecludedTypeName(config: GeneratorConfig, typeName: string | undefined) {
+    if (typeName == undefined) {
+        return false;
+    }
+    const list = config.excludedTypes;
+    return list !== undefined && list.findIndex(v => v == typeName) !== -1;
 }

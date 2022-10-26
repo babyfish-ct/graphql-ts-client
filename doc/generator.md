@@ -140,8 +140,9 @@ As mentioned above, no matter which Generator is used, its constructor needs a c
 |arrayEditable|boolean|false|false|
 |fetcherSuffix|string|false|"Fetcher"|
 |excludedTypes|string[]|false||
-|scalarTypeMap|{[key:string:] "string" \| "number" \| "boolean"}|false||
+|scalarTypeMap|{[key:string:] string &#124; { readonly typeName: string, readonly importSource: string }}|false||
 |defaultFetcherExcludeMap|{[key:string]: string[]}|false||
+|tsEnum|boolean|false|false|
 
 ### schemaLoader
 An asynchronous function with no parameters and returning Promise&lt;GraphQLSchema&gt;, used to obtain GraphQL schema information.
@@ -208,11 +209,13 @@ This configuration will be validated by the GraphQL schema, all the spelling err
 
 ## scalarTypeMap
 
+**Custom primary type**
+
 Code generator can handle some scalar types by itself, but scalar type name can be defined as any text by server-side, not all the scalar types can be handled automatically, eg:
 
 ```
 {
-	"scalarType": { 
+	"scalarTypeMap": { 
 		"Int8": "number", 
 		"Int16": "number",
 		"Int32": "number", 
@@ -223,6 +226,30 @@ Code generator can handle some scalar types by itself, but scalar type name can 
 Code generator will consider "Int8", "Int16", "Int32" and "Int64" to be "number" according to this configuration.
 
 You can also use the configuration to override the default behavior of code generator. If the scalar type that can be automatically handled by code generator is configured here, the user configuration has higher priority.
+
+**Custom inline type**
+
+```
+{
+	"scalarTypeMap": { 
+		"GraphQLPoint": "{readonly x: number, readonly: number}" 
+                // Becareful, this value is string
+	}
+}
+```
+
+**Custom non-inline type**
+```
+{
+	"scalarTypeMap": { 
+		"GraphQLPoint": {
+		    typeName: "Point",
+		    importSource: "commons/Type"
+                    // "import { Point } from '../common/Types';" will be generated
+		}
+	}
+}
+```
 
 ## defaultFetcherExcludeMap
 
@@ -260,6 +287,17 @@ defaultFetcherExcludeMap: {
 
 This configuration will be validated by the GraphQL schema, all the spelling errors will be found and reported, please don't worry about spelling errors.
 
+### tsEnum
+
+-  If it is false(default), union types are generated for GraphQL enum types, like this
+   ```
+   export type Gender = "MALE" | "FEMALE";
+   ```
+-  If it is true, generate typescript enum types, like this
+   ```
+   export enum Gender { MALE, FEMALE}
+   ```
+   > Note: Some techniques, such as recoil, are not friendly to TypeScript enum types. That's why it defaults to false.
 ____________________
 
 

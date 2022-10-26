@@ -10,7 +10,7 @@
 
 import { WriteStream } from "fs";
 import { GraphQLArgument, GraphQLField, GraphQLFieldMap, GraphQLInterfaceType, GraphQLList, GraphQLNamedType, GraphQLNonNull, GraphQLObjectType, GraphQLType, GraphQLUnionType } from "graphql";
-import { targetTypeOf, instancePrefix } from "./Utils";
+import { targetTypeOf, instancePrefix, isExecludedTypeName } from "./Utils";
 import { GeneratorConfig } from "./GeneratorConfig";
 import { ImportingBehavior, Writer } from "./Writer";
 import { FetcherContext } from "./FetcherContext";
@@ -63,8 +63,19 @@ export class FetcherWriter extends Writer {
                 }
             }
             this.fieldMap = map;
-        } else {
+        } else if (config.excludedTypes === undefined) {
             this.fieldMap = modelType.getFields();
+        } else {
+            const fieldMap = modelType.getFields();
+            const filteredFieldMap: GraphQLFieldMap<any, any> = {};
+            for (const fieldName in fieldMap) {
+                const field = fieldMap[fieldName];
+                const targetTypeName = targetTypeOf(field.type)?.name;
+                if (!isExecludedTypeName(config, targetTypeName)) {
+                    filteredFieldMap[fieldName] = field;
+                }
+            }
+            this.fieldMap = filteredFieldMap;
         }
       
         const fieldArgsMap = new Map<string, GraphQLArgument[]>();
@@ -142,6 +153,7 @@ export class FetcherWriter extends Writer {
         } else {
             this.importStatement("import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';");
         }
+        this.importStatement("import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';");
 
         const importedFetcherTypeNames = new Set<string>();
         importedFetcherTypeNames.add(this.superFetcherTypeName(this.modelType));
@@ -152,7 +164,8 @@ export class FetcherWriter extends Writer {
                 importedFetcherTypeNames.add(this.superFetcherTypeName(targetType));
             }
         }
-        this.importStatement(`import { ${Array.from(importedFetcherTypeNames).join(", ")}, createFetcher, createFetchableType } from 'graphql-ts-client-api';`);
+        this.importStatement(`import type { ${Array.from(importedFetcherTypeNames).join(", ")} } from 'graphql-ts-client-api';`);
+        this.importStatement(`import { createFetcher, createFetchableType } from 'graphql-ts-client-api';`);
         if (this.modelType.name !== "Query" && this.modelType.name !== "Mutation") {
             this.importStatement("import type { WithTypeName, ImplementationType } from '../CommonTypes';");
         }
@@ -203,8 +216,8 @@ export class FetcherWriter extends Writer {
             this.writeTypeName();
 
             for (const fieldName in this.fieldMap) {
-                this.text("\n");
                 const field = this.fieldMap[fieldName]!;
+                this.text("\n");
                 this.writePositiveProp(field);
                 this.writeNegativeProp(field);
             }
@@ -521,6 +534,8 @@ export class FetcherWriter extends Writer {
                     });
                 });
                 this.separator(", ");
+                this.text("ENUM_INPUT_METADATA");
+                this.separator(", ");
                 if (itemTypes.length === 0) {
                     t("undefined");
                 } else {
@@ -593,7 +608,7 @@ export class FetcherWriter extends Writer {
     private getDeclaredFieldNames(): ReadonlySet<string> {
         const fields = new Set<string>();
         if (this.modelType instanceof GraphQLObjectType || this.modelType instanceof GraphQLInterfaceType) {
-            const fieldMap = this.modelType.getFields();
+            const fieldMap = this.fieldMap;
             for (const fieldName in fieldMap) {
                 fields.add(fieldMap[fieldName]!.name);
             }

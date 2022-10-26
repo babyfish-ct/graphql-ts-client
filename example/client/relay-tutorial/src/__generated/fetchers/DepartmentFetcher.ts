@@ -1,7 +1,9 @@
 import { FragmentRefs } from 'relay-runtime';
 import { TypedFragment } from 'graphql-ts-client-relay';
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ObjectFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 import { node$ } from './NodeFetcher';
 
@@ -94,7 +96,7 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
     >(
         child: ObjectFetcher<'Employee', X, XVariables>
     ): DepartmentFetcher<
-        T & {readonly "employees": readonly X[]}, 
+        T & {readonly "employees": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -112,8 +114,8 @@ export interface DepartmentFetcher<T extends object, TVariables extends object> 
     ): DepartmentFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;
@@ -157,6 +159,7 @@ export const department$: DepartmentFetcher<{}, {}> =
                 "avgSalary"
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;

@@ -1,7 +1,9 @@
 import { FragmentRefs } from 'relay-runtime';
 import { TypedFragment } from 'graphql-ts-client-relay';
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ObjectFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 
 /*
@@ -78,6 +80,7 @@ export const node$: NodeFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;

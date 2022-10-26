@@ -1,6 +1,11 @@
 {
+<<<<<<< HEAD
   "name": "@rnwbllabs/graphql-ts-client-api",
   "version": "3.0.13",
+=======
+  "name": "graphql-ts-client-api",
+  "version": "3.1.14",
+>>>>>>> upstream/master
   "description": "Strongly type API for graphql client",
   "author": "ChenTao",
   "license": "MIT",

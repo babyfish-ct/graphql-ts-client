@@ -1,5 +1,7 @@
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ConnectionFetcher, EdgeFetcher, ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ConnectionFetcher, EdgeFetcher, ObjectFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 
 /*
@@ -59,7 +61,7 @@ export interface EmployeeConnectionFetcher<T extends object, TVariables extends 
     >(
         child: EdgeFetcher<'EmployeeEdge', X, XVariables>
     ): EmployeeConnectionFetcher<
-        T & {readonly "edges": readonly X[]}, 
+        T & {readonly "edges": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -77,8 +79,8 @@ export interface EmployeeConnectionFetcher<T extends object, TVariables extends 
     ): EmployeeConnectionFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;
@@ -135,6 +137,7 @@ export const employeeConnection$: EmployeeConnectionFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;

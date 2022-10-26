@@ -19,6 +19,8 @@ import { InputWriter } from "./InputWriter";
 import { CommonTypesWriter } from "./CommonTypesWriter";
 import { InheritanceInfo } from "./InheritanceInfo";
 import { Connection, FetcherContext } from "./FetcherContext";
+import { EnumInputMetadataWriter } from "./EnumInputMetadataWriter";
+import { isExecludedTypeName } from "./Utils";
 
 export abstract class Generator {
 
@@ -53,12 +55,14 @@ export abstract class Generator {
                         edgeTypes.add(tuple[1]);
                     }
                 }
-                if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType || type instanceof GraphQLUnionType) {
-                    fetcherTypes.push(type);
-                } else if (type instanceof GraphQLInputObjectType) {
-                    inputTypes.push(type);
-                } else if (type instanceof GraphQLEnumType) {
-                    enumTypes.push(type);
+                if (!isExecludedTypeName(this.config, type.name)) {    
+                    if (type instanceof GraphQLObjectType || type instanceof GraphQLInterfaceType || type instanceof GraphQLUnionType) {
+                        fetcherTypes.push(type);
+                    } else if (type instanceof GraphQLInputObjectType) {
+                        inputTypes.push(type);
+                    } else if (type instanceof GraphQLEnumType) {
+                        enumTypes.push(type);
+                    }
                 }
             }
         }
@@ -144,6 +148,7 @@ export abstract class Generator {
         }
 
         promises.push(this.generateCommonTypes(schema, inheritanceInfo));
+        promises.push(this.generateEnumInputMeatadata(schema));
 
         this.generateServices(ctx, promises);
 
@@ -281,6 +286,14 @@ export abstract class Generator {
         await closeStream(stream);
     }
 
+    private async generateEnumInputMeatadata(schema: GraphQLSchema) {
+        const stream = createStreamAndLog(
+            join(this.config.targetDir, "EnumInputMetadata.ts")
+        );
+        new EnumInputMetadataWriter(schema, stream, this.config).write();
+        await closeStream(stream);
+    }
+
     private async writeSimpleIndex(dir: string, types: GraphQLNamedType[]) {
         const stream = createStreamAndLog(join(dir, "index.ts"));
         for (const type of types) {
@@ -371,27 +384,32 @@ function connectionTypeTuple(
                 const node = edgeType.getFields()["node"];
                 if (node !== undefined) {
                     if (!(edges.type instanceof GraphQLNonNull)) {
-                        throw new Error(
+                        waring(
                             `The type "${type.name}" is connection, its field "edges" must be not-null list`
                         );
                     }
                     if (!(listType.ofType instanceof GraphQLNonNull)) {
-                        throw new Error(
+                        waring(
                             `The type "${type.name}" is connection, element of  its field "edges" must be not-null`
                         );
                     }
-                    if (!(node.type instanceof GraphQLNonNull)) {
-                        throw new Error(
+                    let nodeType: GraphQLType;
+                    if (node.type instanceof GraphQLNonNull) {
+                        nodeType = node.type.ofType;
+                    } else {
+                        waring(
                             `The type "${edgeType}" is edge, its field "node" must be non-null`
                         );
-                    } else if (!(node.type.ofType instanceof GraphQLObjectType) && !(node.type.ofType instanceof GraphQLInterfaceType) && !(node.type.ofType instanceof GraphQLUnionType)) {
+                        nodeType = node.type;
+                    }
+                    if (!(nodeType instanceof GraphQLObjectType) && !(nodeType instanceof GraphQLInterfaceType) && !(nodeType instanceof GraphQLUnionType)) {
                         throw new Error(
-                            `The type "${edgeType}" is edge, its field "node" must be object, interface or union`
+                            `The type "${edgeType}" is edge, its field "node" must be object, interface, union or their non-null wrappers`
                         );
                     }
                     const cursor = edgeType.getFields()["cursor"];
                     if (cursor === undefined) {
-                        throw new Error(
+                        waring(
                             `The type "${edgeType}" is edge, it must defined a field named "cursor"`
                         );
                     } else {
@@ -405,12 +423,19 @@ function connectionTypeTuple(
                             );
                         }
                     }
-                    return [type, edgeType, node.type.ofType];
+                    return [type, edgeType, nodeType];
                 }
             }
         }
     }
     return undefined;
+}
+
+function waring(message: String) {
+    console.warn("******** GraphQL code generator warning! ********");
+    console.log(message);
+    console.warn("*************************************************");
+    console.log("");
 }
 
 const mkdirAsync = promisify(mkdir);

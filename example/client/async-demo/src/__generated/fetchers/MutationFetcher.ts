@@ -1,7 +1,9 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
-import {DepartmentInput} from '../inputs';
-import {EmployeeInput} from '../inputs';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ObjectFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import type {DepartmentInput} from '../inputs';
+import type {EmployeeInput} from '../inputs';
 
 /*
  * Any instance of this interface is immutable,
@@ -281,6 +283,7 @@ export const mutation$: MutationFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;

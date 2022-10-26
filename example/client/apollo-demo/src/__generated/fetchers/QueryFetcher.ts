@@ -1,5 +1,7 @@
 import type { AcceptableVariables, UnresolvedVariables, FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ObjectFetcher, ConnectionFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ObjectFetcher, ConnectionFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 
 /*
  * Any instance of this interface is immutable,
@@ -246,6 +248,7 @@ export const query$: QueryFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;

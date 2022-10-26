@@ -18,9 +18,11 @@ export interface GeneratorConfig {
     readonly objectEditable?: boolean;
     readonly arrayEditable?: boolean;
     readonly fetcherSuffix?: string;
-    readonly scalarTypeMap: {[key: string]: 'string' | 'number' | 'boolean'};
-    readonly idFieldMap?: {[key: string]: string};
-    readonly defaultFetcherExcludeMap?: {[key: string]: string[]}
+    readonly excludedTypes?: ReadonlyArray<string>;
+    readonly scalarTypeMap?: {readonly [key: string]: string | { readonly typeName: string, readonly importSource: string; }};
+    readonly idFieldMap?: {readonly[key: string]: string};
+    readonly defaultFetcherExcludeMap?: {readonly [key: string]: string[]};
+    readonly tsEnum?: boolean;
 }
 
 export function validateConfig(
@@ -101,11 +103,12 @@ export function validateConfig(
                     }
                     for (const scalarTypeName in value) {
                         const mappedType = value[scalarTypeName];
-                        if (typeof mappedType !== 'string') {
-                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must be string`);
-                        }
-                        if (mappedType !== 'string' && mappedType !== 'number' && mappedType !== 'boolean') {
-                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" is illegal value '${mappedType}', its value must be 'string' | 'number' | 'boolean'`);
+                        if (typeof mappedType === 'object') {
+                            if (typeof mappedType.typeName !== 'string' || typeof mappedType.importSource !== 'string') {
+                                throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must have two string fields: 'typeName' and 'importSource'`);
+                            }
+                        } else if (typeof mappedType !== 'string') {
+                            throw new Error(`"confg.scalarTypeMap[${scalarTypeName}]" must be string or object`);
                         }
                     }
                 }
@@ -118,6 +121,11 @@ export function validateConfig(
             case 'defaultFetcherExcludeMap':
                 if (value !== undefined && typeof value !== 'object') {
                     throw new Error('"confg.defaultFetcherExcludeMap" must be undefined or object');
+                }
+                break;
+            case 'tsEnum':
+                if (value !== undefined && typeof value !== 'boolean') {
+                    throw new Error('"confg.tsEnum" must be undefined or boolean');
                 }
                 break;
             case 'recreateTargetDir':

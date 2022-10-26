@@ -1,23 +1,25 @@
 
-import { Fetcher, TextWriter, util } from "graphql-ts-client-api";
+import type { Fetcher } from "graphql-ts-client-api";
+import { TextWriter, util } from "graphql-ts-client-api";
 
 export type GraphQLExecutor = (request: string, variables: object) => Promise<any>;
 
-export function setGraphQLExecutor(exeucotr: GraphQLExecutor) {
-    graphQLExecutor = exeucotr;
+export function setGraphQLExecutor(executor: GraphQLExecutor) {
+    graphQLExecutor = executor;
 }
 
 export async function execute<TData extends object, TVariables extends object>(
     fetcher: Fetcher<"Query" | "Mutation", TData, TVariables>,
     options?: {
         readonly operationName?: string,
-        readonly variables?: TVariables
+        readonly variables?: TVariables,
+        readonly executor?: GraphQLExecutor
     }
 ) : Promise<TData> {
 
-    const executor = graphQLExecutor;
+    const executor = options?.executor ?? graphQLExecutor;
     if (executor === undefined) {
-        throw new Error("'setGraphQLExecutor' has not been called");
+        throw new Error("Executor not set. Call 'setGraphQLExecutor' first or pass executor in options.");
     }
 
     const writer = new TextWriter();

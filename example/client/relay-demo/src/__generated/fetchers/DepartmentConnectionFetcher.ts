@@ -1,7 +1,9 @@
 import { FragmentRefs } from 'relay-runtime';
 import { TypedFragment } from 'graphql-ts-client-relay';
 import type { FieldOptions, DirectiveArgs } from 'graphql-ts-client-api';
-import { ConnectionFetcher, EdgeFetcher, ObjectFetcher, createFetcher, createFetchableType } from 'graphql-ts-client-api';
+import { ENUM_INPUT_METADATA } from '../EnumInputMetadata';
+import type { ConnectionFetcher, EdgeFetcher, ObjectFetcher } from 'graphql-ts-client-api';
+import { createFetcher, createFetchableType } from 'graphql-ts-client-api';
 import type { WithTypeName, ImplementationType } from '../CommonTypes';
 
 /*
@@ -71,7 +73,7 @@ export interface DepartmentConnectionFetcher<T extends object, TVariables extend
     >(
         child: EdgeFetcher<'DepartmentEdge', X, XVariables>
     ): DepartmentConnectionFetcher<
-        T & {readonly "edges": readonly X[]}, 
+        T & {readonly "edges": ReadonlyArray<X>}, 
         TVariables & XVariables
     >;
 
@@ -89,8 +91,8 @@ export interface DepartmentConnectionFetcher<T extends object, TVariables extend
     ): DepartmentConnectionFetcher<
         T & (
             XDirectives extends { readonly include: any } | { readonly skip: any } ? 
-                {readonly [key in XAlias]?: readonly X[]} : 
-                {readonly [key in XAlias]: readonly X[]}
+                {readonly [key in XAlias]?: ReadonlyArray<X>} : 
+                {readonly [key in XAlias]: ReadonlyArray<X>}
         ), 
         TVariables & XVariables & XDirectiveVariables
     >;
@@ -147,6 +149,7 @@ export const departmentConnection$: DepartmentConnectionFetcher<{}, {}> =
                 }
             ]
         ), 
+        ENUM_INPUT_METADATA, 
         undefined
     )
 ;

@@ -1,6 +1,6 @@
 {
   "name": "@rnwbllabs/graphql-ts-client-codegen",
-  "version": "3.1.0",
+  "version": "3.1.14",
   "description": "A tool to generate strong type client code by GraphQL schema",
   "author": "ChenTao",
   "license": "MIT",

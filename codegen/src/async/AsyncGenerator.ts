@@ -1,8 +1,8 @@
 /**
  * @author ChenTao
- * 
+ *
  * 'graphql-ts-client' is a graphql client for TypeScript, it has two functionalities:
- * 
+ *
  * 1. Supports GraphQL queries with strongly typed code
  *
  * 2. Automatically infers the type of the returned data according to the strongly typed query
@@ -44,28 +44,27 @@ export class AsyncGenerator extends Generator {
 }
 
 const ASYNC_CODE = `
-import { Fetcher, TextWriter, util } from "graphql-ts-client-api";
+import type { Fetcher } from "graphql-ts-client-api";
+import { TextWriter, util } from "graphql-ts-client-api";
 
 export type GraphQLExecutor = (request: string, variables: object) => Promise<any>;
 
-export function setGraphQLExecutor(exeucotr: GraphQLExecutor) {
-    graphQLExecutor = exeucotr;
+export function setGraphQLExecutor(executor: GraphQLExecutor) {
+    graphQLExecutor = executor;
 }
 
 export async function execute<TData extends object, TVariables extends object>(
     fetcher: Fetcher<"Query" | "Mutation" | "query_root" | "mutation_root", TData, TVariables>,
     options?: {
         readonly operationName?: string,
-        readonly variables?: TVariables
-    },
-    executor?: GraphQLExecutor
+        readonly variables?: TVariables,
+        readonly executor?: GraphQLExecutor
+    }
 ) : Promise<TData> {
 
-    if (!executor) {
-        executor = graphQLExecutor;
-    }
+    const executor = options?.executor ?? graphQLExecutor;
     if (executor === undefined) {
-        throw new Error("'setGraphQLExecutor' has not been called and one has not been passed");
+        throw new Error("Executor not set. Call 'setGraphQLExecutor' first or pass executor in options.");
     }
 
     const writer = new TextWriter();

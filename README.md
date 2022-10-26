@@ -31,4 +31,4 @@ The essence of UI state is that one main mutation causes N extra mutations, the 
 > *My npm packages are 'graphql-ts-client-api', 'graphql-ts-client-codegen' and 'graphql-ts-client-relay'. There is another package named 'graphql-ts-client' in npm repository, but that's not my framework.*
 
 # Other projects:
-[graphql-provider](https://github.com/babyfish-ct/graphql-provider): GraphQL server-side rapid development framework, if users use RDBMS to manage persistent data, it can help users to quickly build GraphQL services in the shortest time (based on kotlin and R2DBC)
+[jimmer](https://github.com/babyfish-ct/jimmer)，A revolutionary ORM for Java and Kotlin. You can quickly implement a GraphQL server by using only a small part of these functions.

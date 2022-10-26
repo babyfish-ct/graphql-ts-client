@@ -8,6 +8,7 @@
  * 2. Automatically infers the type of the returned data according to the strongly typed query
  */
 
+import { EnumInputMetadata, EnumInputMetaType } from "./EnumInputMetadata";
 import { FetchableType } from "./Fetchable";
 import { FieldOptionsValue } from "./FieldOptions";
 import { ParameterRef } from "./Parameter";
@@ -21,7 +22,11 @@ export interface Fetcher<E extends string, T extends object, TVariables extends 
 
     readonly directiveMap: ReadonlyMap<string, DirectiveArgs>;
 
-    findField(fieldName: string): FetcherField | undefined;
+    findField(fieldKey: string): FetcherField | undefined;
+
+    findFieldsByName(fieldName: string): ReadonlyArray<FetcherField>;
+
+    findFieldByName(fieldName: string): FetcherField | undefined;
 
     toString(): string;
 
@@ -62,6 +67,8 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
 
     private _fetchableType: FetchableType<E>;
 
+    private _enumInputMetadata: EnumInputMetadata;
+
     private _unionItemTypes?: string[];
 
     private _prev?: AbstractFetcher<string, object, object>;
@@ -73,7 +80,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
     private _result: Result; 
 
     constructor(
-        ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, string[] | undefined],
+        ctx: AbstractFetcher<string, object, object> | [FetchableType<E>, EnumInputMetadata, string[] | undefined],
         private _negative: boolean,
         private _field: string,
         private _args?: {[key: string]: any},
@@ -84,9 +91,11 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
     ) {
         if (Array.isArray(ctx)) {
             this._fetchableType = ctx[0];
-            this._unionItemTypes = ctx[1] !== undefined && ctx[1].length !== 0 ? ctx[1] : undefined;
+            this._enumInputMetadata = ctx[1];
+            this._unionItemTypes = ctx.length > 2 && ctx[2] !== undefined && ctx[2].length !== 0 ? ctx[2] : undefined;
         } else {
             this._fetchableType = ctx._fetchableType as FetchableType<E>;
+            this._enumInputMetadata = ctx._enumInputMetadata;
             this._unionItemTypes = ctx._unionItemTypes;
             this._prev = ctx;
         }
@@ -193,18 +202,20 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         const fieldMap = new Map<string, FetcherField>();
         for (let i = fetchers.length - 1; i >= 0; --i) {
             const fetcher = fetchers[i];
+            const fetchKey = fetcher?._fieldOptionsValue?.alias ?? fetcher._field;
             if (fetcher._field.startsWith('...')) {
-                let childFetchers = fieldMap.get(fetcher._field)?.childFetchers as AbstractFetcher<string, object, object>[];
+                let childFetchers = fieldMap.get(fetchKey)?.childFetchers as AbstractFetcher<string, object, object>[];
                 if (childFetchers === undefined) {
                     childFetchers = [];
-                    fieldMap.set(fetcher._field, { plural: false, childFetchers }); // Fragment cause mutliple child fetchers
+                    fieldMap.set(fetchKey, { name: fetcher._field,  plural: false, childFetchers }); // Fragment cause mutliple child fetchers
                 }
                 childFetchers.push(fetcher._child!);
             } else {
                 if (fetcher._negative) {
-                    fieldMap.delete(fetcher._field);
+                    fieldMap.delete(fetchKey);
                 } else {
-                    fieldMap.set(fetcher._field, { 
+                    fieldMap.set(fetchKey, { 
+                        name: fetcher._field,
                         argGraphQLTypes: fetcher.fetchableType.fields.get(fetcher._field)?.argGraphQLTypeMap,
                         args: fetcher._args, 
                         fieldOptionsValue: fetcher._fieldOptionsValue,
@@ -245,15 +256,15 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
         return this.result.variableTypeMap;
     }
 
-    findField(fieldName: string): FetcherField | undefined {
-        const field = this.fieldMap.get(fieldName);
+    findField(fieldKey: string): FetcherField | undefined {
+        const field = this.fieldMap.get(fieldKey);
         if (field !== undefined) {
             return field;
         }
-        for (const [fieldName, field] of this.fieldMap) {
-            if (fieldName.startsWith("...") && field.childFetchers !== undefined) {
+        for (const [fieldKey, field] of this.fieldMap) {
+            if (field.name.startsWith("...") && field.childFetchers !== undefined) {
                 for (const fragmentFetcher of field.childFetchers) {
-                    const deeperField = fragmentFetcher.findField(fieldName);
+                    const deeperField = fragmentFetcher.findField(fieldKey);
                     if (deeperField !== undefined) {
                         return deeperField;
                     }
@@ -261,6 +272,37 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
             }
         }
         return undefined;
+    }
+
+    findFieldsByName(fieldName: string): ReadonlyArray<FetcherField> {
+        const fields: FetcherField[] = [];
+        this.collectFieldsByName(fieldName, fields);
+        return fields;
+    }
+
+    private collectFieldsByName(fieldName: string, outArr: Array<FetcherField>) {
+        for (const field of this.fieldMap.values()) {
+            if (field.name === fieldName) {
+                outArr.push(field);
+            } else if (field.name.startsWith("...") && field.childFetchers !== undefined) {
+                for (const fragmentFetcher of field.childFetchers) {
+                    outArr.push(...fragmentFetcher.findFieldsByName(fieldName));
+                }
+            }
+        };
+    }
+
+    findFieldByName(fieldName: string): FetcherField | undefined {
+        const fields = this.findFieldsByName(fieldName);
+        if (fields.length > 1) {
+            throw new Error(
+                `Too many fields named "${fieldName}" are declared in the fetcher of type "${this.fetchableType.name}"`
+            );
+        }
+        if (fields.length === 0) {
+            return undefined;
+        }
+        return fields[0];
     }
 
     toString(): string {
@@ -324,6 +366,7 @@ export abstract class AbstractFetcher<E extends string, T extends object, TVaria
 }
 
 export interface FetcherField {
+    readonly name: string;
     readonly argGraphQLTypes?: ReadonlyMap<string, string>;
     readonly args?: object;
     readonly fieldOptionsValue?: FieldOptionsValue;
@@ -372,7 +415,8 @@ class ResultContext {
     accept(fetcher: Fetcher<string, object, object>) {
         
         const t = this.writer.text.bind(this.writer);
-        for (const [fieldName, field] of fetcher.fieldMap) {
+        for (const field of fetcher.fieldMap.values()) {
+            const fieldName = field.name;
             if (fieldName !== "...") { // Inline fragment
                 const alias = field.fieldOptionsValue?.alias;
                 if (alias !== undefined && alias !== "" && alias !== fieldName) {
@@ -380,7 +424,8 @@ class ResultContext {
                 }
                 t(fieldName);
                 if (field.argGraphQLTypes !== undefined) {
-                    this.acceptArgs(field.args, field.argGraphQLTypes);
+                    const enumInputMedata = (fetcher as any)["_enumInputMetadata"] as EnumInputMetadata;
+                    this.acceptArgs(field.args, field.argGraphQLTypes, enumInputMedata);
                 }
                 this.acceptDirectives(field.fieldOptionsValue?.directives);
             }
@@ -423,7 +468,8 @@ class ResultContext {
 
     private acceptArgs(
         args?: object, 
-        argGraphQLTypeMap?: ReadonlyMap<string, string> // undefined: directive args; otherwise: field args 
+        argGraphQLTypeMap?: ReadonlyMap<string, string>, // undefined: directive args; otherwise: field args,
+        enumInputMetadata?: EnumInputMetadata
     ) {
         if (args === undefined) {
             return;
@@ -450,9 +496,8 @@ class ResultContext {
                 for (const argName in args) {
                     this.writer.seperator();
                     const arg = args[argName];
-                    let argGraphQLTypeName: string | undefined;
                     if (argGraphQLTypeMap !== undefined) {
-                        argGraphQLTypeName = argGraphQLTypeMap.get(argName);
+                        const argGraphQLTypeName = argGraphQLTypeMap.get(argName);
                         if (argGraphQLTypeName !== undefined) {
                             if (arg[" $__instanceOfParameterRef"]) {
                                 const parameterRef = arg as ParameterRef<string>;
@@ -473,7 +518,7 @@ class ResultContext {
                                 t(`${argName}: $${parameterRef.name}`);
                             } else {
                                 t(`${argName}: `);
-                                this.acceptLiteral(arg);
+                                this.acceptLiteral(arg, ResultContext.enumInputMetaType(enumInputMetadata, argGraphQLTypeName));
                             }
                         } else {
                             throw new Error(`Unknown argument '${argName}'`);
@@ -488,7 +533,7 @@ class ResultContext {
                             t(`${argName}: $${parameterRef.name}`);
                         } else {
                             t(`${argName}: `);
-                            this.acceptLiteral(arg);
+                            this.acceptLiteral(arg, undefined);
                         }
                     }
                 }
@@ -496,7 +541,7 @@ class ResultContext {
         }
     }
 
-    private acceptLiteral(value: any) {
+    private acceptLiteral(value: any, enumInputMetaType: EnumInputMetaType | undefined) {
 
         const t = this.writer.text.bind(this.writer);
 
@@ -505,47 +550,55 @@ class ResultContext {
         } else if (typeof value === 'number') {
             t(value.toString());
         } else if (typeof value === 'string') {
-            t(`"${value.replace('"', '\\"')}"`);
+            if (enumInputMetaType !== undefined) {
+                t(value);
+            } else {
+                t(JSON.stringify(value));
+            }
         } else if (typeof value === 'boolean') {
             t(value ? "true" : "false");
         } else if (value instanceof StringValue) {
             if (value.quotationMarks) {
-                t(`"${value.value.replace('"', '\\"')}"`);
+                t(JSON.stringify(value.value));
             } else {
                 t(value.value);
             }
         } else if (Array.isArray(value) || value instanceof Set) {
             this.writer.scope({type: "ARRAY"}, () => {
                 for (const e of value) {
-                    this.writer.seperator();
-                    this.acceptLiteral(e);
+                    this.writer.seperator(", ");
+                    this.acceptLiteral(e, enumInputMetaType);
                 }
             });
         } else if (value instanceof Map) {
-            for (const [k, v] of value) {
-                this.writer.seperator();
-                this.acceptMapKey(k);
-                t(": ");
-                this.acceptLiteral(v);
-            }
+            this.writer.scope({type: "BLOCK"}, () => {
+                for (const [k, v] of value) {
+                    this.writer.seperator(", ");
+                    this.writer.text(k);
+                    t(": ");
+                    this.acceptLiteral(v, enumInputMetaType?.fields?.get(k));
+                }
+            });
         } else if (typeof value === 'object') {
-            for (const k in value) {
-                this.writer.seperator();
-                this.acceptMapKey(k);
-                t(": ");
-                this.acceptLiteral(value[k]);
-            }
+            this.writer.scope({type: "BLOCK"}, () => {
+                for (const k in value) {
+                    this.writer.seperator(", ");
+                    this.writer.text(k);
+                    t(": ");
+                    this.acceptLiteral(value[k], enumInputMetaType?.fields?.get(k));
+                }
+            });
         }
     }
 
-    private acceptMapKey(key: any) {
-        if (typeof key === "string") {
-            this.writer.text(`"${key.replace('"', '\\"')}"`);
-        } else if (typeof key === "number") {
-            this.writer.text("${key}");
-        } else {
-            throw new Error(`Unsupported map key ${key}`);
+    private static enumInputMetaType(
+        enumInputMedata: EnumInputMetadata | undefined, 
+        argGraphQLTypeName: string | undefined
+    ): EnumInputMetaType | undefined {
+        if (enumInputMedata === undefined || argGraphQLTypeName === undefined) {
+            return undefined;
         }
+        return enumInputMedata.getType(argGraphQLTypeName.split(/\[|\]|!/).join(""));
     }
 }
 
