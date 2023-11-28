@@ -248,7 +248,7 @@ class Generator {
             }));
             yield Promise.all([
                 ...promises,
-                this.writeSimpleIndex(dir, enumTypes)
+                this.writeSimpleIndex(dir, enumTypes, false)
             ]);
         });
     }
@@ -266,11 +266,12 @@ class Generator {
             yield closeStream(stream);
         });
     }
-    writeSimpleIndex(dir, types) {
+    writeSimpleIndex(dir, types, isOnlyType = true) {
         return __awaiter(this, void 0, void 0, function* () {
             const stream = createStreamAndLog((0, path_1.join)(dir, "index.ts"));
             for (const type of types) {
-                stream.write(`export type {${type.name}} from './${type.name}';\n`);
+                const exportStr = isOnlyType ? 'export type' : 'export';
+                stream.write(`${exportStr} {${type.name}} from './${type.name}';\n`);
             }
             yield stream.end();
         });

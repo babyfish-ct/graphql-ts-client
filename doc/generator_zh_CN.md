@@ -295,9 +295,13 @@ defaultFetcherExcludeMap: {
    ```
    export type Gender = "MALE" | "FEMALE";
    ```
--  如果为true，生成TypeScript的enum类型，例如
+-  如果为true 或 "number"，生成TypeScript的enum类型，例如
    ```
    export enum Gender { MALE, FEMALE}
+   ```
+-  如果为 "string"，生成TypeScript的enum类型，例如
+   ```
+   export enum Gender { MALE = "MALE", FEMALE = "FEMALE"}
    ```
    > 注意：某些技术，例如recoil, 对TypeScript枚举类型不友好。这就是默认为false的原因。
 

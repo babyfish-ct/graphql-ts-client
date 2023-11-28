@@ -28,7 +28,7 @@ export interface GeneratorConfig {
     readonly defaultFetcherExcludeMap?: {
         readonly [key: string]: string[];
     };
-    readonly tsEnum?: boolean;
+    readonly tsEnum?: boolean | 'string' | 'number';
 }
 export declare function validateConfig(config: any): void;
 export declare function validateConfigAndSchema(config: GeneratorConfig, schema: GraphQLSchema): void;
