@@ -274,7 +274,7 @@ export abstract class Generator {
         });
         await Promise.all([
             ...promises,
-            this.writeSimpleIndex(dir, enumTypes)
+            this.writeSimpleIndex(dir, enumTypes, false)
         ]);
     }
 
@@ -294,12 +294,11 @@ export abstract class Generator {
         await closeStream(stream);
     }
 
-    private async writeSimpleIndex(dir: string, types: GraphQLNamedType[]) {
+    private async writeSimpleIndex(dir: string, types: GraphQLNamedType[], isOnlyType = true) {
         const stream = createStreamAndLog(join(dir, "index.ts"));
         for (const type of types) {
-            stream.write(
-                `export type {${type.name}} from './${type.name}';\n`
-            );
+            const exportStr = isOnlyType ? 'export type' : 'export'
+            stream.write(`${exportStr} {${type.name}} from './${type.name}';\n`);
         }
         await stream.end();
     }

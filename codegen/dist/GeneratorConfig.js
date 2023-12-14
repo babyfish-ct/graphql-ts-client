@@ -112,8 +112,8 @@ config) {
                 }
                 break;
             case 'tsEnum':
-                if (value !== undefined && typeof value !== 'boolean') {
-                    throw new Error('"confg.tsEnum" must be undefined or boolean');
+                if (value !== undefined && typeof value !== 'boolean' && typeof value !== 'string') {
+                    throw new Error('"confg.tsEnum" must be undefined or boolean or string');
                 }
                 break;
             case 'recreateTargetDir':

@@ -28,7 +28,7 @@ export class EnumWriter extends Writer {
         const t = this.text.bind(this);
         const values = this.enumType.getValues();
 
-        if (this.config.tsEnum === true) {
+        if (this.config.tsEnum === true || this.config.tsEnum === "number" || this.config.tsEnum === "string") {
             t("export enum ");
             t(this.enumType.name);
             this.scope({
@@ -39,7 +39,19 @@ export class EnumWriter extends Writer {
             }, () => {
                 for (const value of values) {
                     this.separator(", ");
-                    t(value.name);
+
+                    if(this.config.tsEnum === "string"){
+                        // Creates string enum type
+                        t(value.name);
+                        t(" = ");
+                        t("'");
+                        t(value.name);
+                        t("'");
+                    } else {
+                        // Creates number enum type 
+                        t(value.name);
+                    }
+
                 }    
             });
         } else {

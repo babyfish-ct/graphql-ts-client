@@ -293,9 +293,13 @@ This configuration will be validated by the GraphQL schema, all the spelling err
    ```
    export type Gender = "MALE" | "FEMALE";
    ```
--  If it is true, generate typescript enum types, like this
+-  If it is true or "number", generate typescript enum types, like this
    ```
    export enum Gender { MALE, FEMALE}
+   ```
+-  If it is "string", generate typescript enum types, like this
+   ```
+   export enum Gender { MALE = "MALE", FEMALE = "FEMALE"}
    ```
    > Note: Some techniques, such as recoil, are not friendly to TypeScript enum types. That's why it defaults to false.
 ____________________
