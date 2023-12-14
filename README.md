@@ -16,7 +16,7 @@ You can choose any of the following 4 ways
 - [Step-by-step guide with nothing](get-start-async.md)
 - [Step-by-step guide with apollo-client](get-start-apollo.md)
 - [Step-by-step guide with relay](get-start-relay.md)
-- [Step-by-step guide with graphql-state](get-start-graphql-state.md) **(Suggested)**
+- [Step-by-step guide with graphql-state](get-start-graphql-state.md)
 
    [graphql-state](https://github.com/babyfish-ct/graphql-state) is a collaborative framework tailored for graphql-ts-client, and is a complete react state management framework.
    

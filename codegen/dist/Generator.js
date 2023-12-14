@@ -248,7 +248,7 @@ class Generator {
             }));
             yield Promise.all([
                 ...promises,
-                this.writeSimpleIndex(dir, enumTypes, false)
+                this.writeSimpleIndex(dir, enumTypes, true)
             ]);
         });
     }

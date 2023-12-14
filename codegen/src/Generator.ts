@@ -274,7 +274,7 @@ export abstract class Generator {
         });
         await Promise.all([
             ...promises,
-            this.writeSimpleIndex(dir, enumTypes, false)
+            this.writeSimpleIndex(dir, enumTypes, true)
         ]);
     }
 
